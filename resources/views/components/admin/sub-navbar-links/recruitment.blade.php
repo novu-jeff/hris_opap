@@ -1,0 +1,12 @@
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fa-solid fa-user-plus"></i>
+        Recruitment
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{route('job.requirements.index')}}">Requirements</a></li>
+        <li><a class="dropdown-item" href="{{route('job.interview.index')}}#">Interview</a></li>
+        <li><a class="dropdown-item" href="{{route('job.posts.index')}}">Job Posting</a></li>
+        <li><a class="dropdown-item" href="{{route('job.applicants.index', ['status' => 'pending'])}}">Applicants</a></li>
+    </ul>
+</li>

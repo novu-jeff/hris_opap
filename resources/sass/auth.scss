@@ -1,0 +1,135 @@
+@import 'variables';
+
+#auth-app {
+    min-height: 100vh;
+    width: 100vw;
+    
+    label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #787878;
+        text-transform: uppercase;
+    }
+
+    .nav-pills .nav-link {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .login {
+        margin-top: 40px;
+
+        .card {
+            border-radius: 15px;
+
+            .logo img {
+                width: 120px;
+            }
+
+        }
+
+    }
+
+    .register {
+
+        .left-side {
+            width: 500px;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            box-shadow: 0px 0px 20px 0.5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+
+            .logo {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .logo img {
+                width: 220px;
+            }
+
+            .description {
+                text-align: center;
+                margin-top: 30px;
+
+                h3 {
+                    text-transform: uppercase;
+                    margin: 10px 0 20px 0;
+                    font-weight: 600;
+                }
+
+                p {
+                    font-weight: 500;
+                }
+
+            }
+
+            .description p {
+                font-size: 16px;
+            }
+
+        }
+
+        .right-side {
+
+            width: calc(100% - 500px);
+            height: 100%;
+            display: flex;
+            justify-content: center;
+
+            .card {
+                border-radius: 15px;
+                margin-top: 30px;
+
+                .note {
+                    font-size: 14px;
+                    color: #676767;
+                }
+
+                .droparea {
+                    width: 100%;
+                    height: 150px;
+                    border: 2px dotted #676767;
+                    border-radius: 10px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-transform: uppercase;
+                    cursor: pointer;
+
+                    .icon {
+                        width: 50px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        color: #676767;
+                        font-size: 20px;
+                    }
+
+                    h6 {
+                        font-size: 12px;
+                        margin: 5px 0 0 0;
+                        font-weight: 600;
+                        color: #676767;
+                    }
+
+                    small {
+                        font-size: 10px;
+                        font-weight: 600;    
+                        color: #676767;
+                    }
+
+                }
+
+            }
+
+        }
+    }
+
+}
