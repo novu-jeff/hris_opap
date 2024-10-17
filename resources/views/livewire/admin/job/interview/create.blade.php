@@ -32,7 +32,7 @@
                         <div class="col-12 mb-3">
                             <label class="mb-2" for="description">Description <span class="text-danger">*</span></label>
                             <div wire:ignore>
-                                <textarea wire:model="description" id="description" class="form-control text-uppercase"></textarea>
+                                <textarea wire:model="description" id="ckeditor" class="form-control text-uppercase"></textarea>
                             </div>
                             <div class="error-field">
                                 @error('description') <span class="text-danger">{{ $message }}</span> @enderror
