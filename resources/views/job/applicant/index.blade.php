@@ -6,8 +6,8 @@
 <div class="container pb-5">
     <div class="d-flex justify-content-between align-items-center">
         <div class="section-title">
-            <h1>All Applicants</h1>
-            <p>See all the applicants</p>
+            <h1>Manage All Applications</h1>
+            <p>View all the applicants and process</p>
         </div>
     </div>
     <div class="mt-3">
