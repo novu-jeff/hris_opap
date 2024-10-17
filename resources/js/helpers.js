@@ -1,0 +1,82 @@
+export function copy_link() {
+    $('.copy-link').on('click', function(e) {
+        e.preventDefault();
+        const link = $(this).data('target');
+
+        const tempInput = document.createElement('input');
+        tempInput.value = link;
+        document.body.appendChild(tempInput);
+
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999); 
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        Swal.fire({
+            icon: "success",
+            title: 'Job Link Copied',
+            message: 'You can now paste or send the link you copied!'
+        });  
+    });
+}
+
+export function reinitializeDataTable() {
+    if ($.fn.DataTable.isDataTable('table')) {
+        $('table').DataTable().destroy();
+    }
+    $('table').DataTable({
+        scrollX: true
+    });
+}
+
+export function resetErrorsAndFields() {
+    $('input[type="text"], input[type="number"], textarea').val('');
+    $('select').prop('selectedIndex', 0);
+    $('.error-field span').text('');
+    $('.ck-content').empty();
+}
+
+export function ckeditor(isReadOnly = false) {
+
+    let editEditor;
+
+    ClassicEditor
+    .create(document.querySelector('#ckeditor'), {
+        toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote'],
+        height: '500px'
+    })
+    .then(editor => {
+        editEditor = editor;
+        editor.model.document.on('change:data', () => {
+            Livewire.dispatch('ckeditor', [editor.getData()]);
+        } );
+        if(isReadOnly) {
+            editor.isReadOnly = true
+        }
+    })
+    .catch(error => {
+        console.error(error);
+    });
+}
+
+export function removeRowDT(id) {
+    var table = $('table').DataTable();
+    var row = table.row($('tr[data-id="' + id + '"]'));
+    if (row.node()) {
+        row.remove().draw(false); 
+    } else {
+        console.log('Row not found!');
+    }
+}
+
+export function reloadDT() {
+    location.reload();
+}
+
+export function hideModal() {
+    $('.modal').removeClass('show').css('display', 'none');
+    $('.modal-backdrop').remove(); 
+    $('.modal-backdrop').css({
+        'position': 'relative',
+        'height': '100%'
+    });
+}

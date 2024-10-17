@@ -1,0 +1,23 @@
+// Body
+$body-bg: #f8fafc;
+
+$primary:    #225F8B;
+$secondary:  #FAD02C;
+$success:    #198754;
+$danger:     #dc3545;
+$warning:    #ffc107;
+$info:       #0dcaf0;
+$light:      #f8f9fa;
+$dark:       #212529;
+
+// Typography
+$font-family-sans-serif: "Helvetica", sans-serif;
+$font-size-base: 0.9rem;
+$line-height-base: 1.6;
+
+
+.form-control:hover,
+.form-control:focus,
+.form-control:focus-within {
+    box-shadow: none;
+}
