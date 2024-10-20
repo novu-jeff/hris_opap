@@ -23,7 +23,7 @@
             @endif
         </div>
     @endif
-    <div class="jobs-lists" wire:poll='showRecords'>
+    <div class="jobs-lists">
         <div class="row">
             @if ($record)
                 <div class="col-12 mb-4">
@@ -49,14 +49,30 @@
                                     <div class="actions">
                                         @if (!in_array($record->id, $applied_jobs_id))
                                             <div class="d-flex gap-3">
-                                                <button class="btn btn-outline-primary" wire:click='go_back'>Go Back</button>
+                                                <a href="{{ 
+                                                    (url()->previous() === url()->current() && !str_contains(url()->previous(), '/job')) 
+                                                        ? url('/') 
+                                                        : (url()->previous() === url()->current() ? url('/job/applicants/pending') : url()->previous())
+                                                }}" class="btn btn-outline-primary d-flex align-items-center px-5 py-2 mb-0">
+                                                    Go Back
+                                                </a>
+                                                
                                                 <button class="btn btn-primary" wire:click='apply({{$record->id}})'>Apply Now</button>
                                             </div>
                                         @else
-                                            <div class="d-flex gap-3">
-                                                <button class="btn btn-outline-primary" wire:click='go_back'>Go Back</button>
-                                                <button class="btn btn-primary">Applied Already</button>
-                                            </div>
+                                            @if ($record->status !== 'hired')
+                                                <div class="d-flex gap-3">
+                                                    <a href="{{ 
+                                                        (url()->previous() === url()->current() && !str_contains(url()->previous(), '/job')) 
+                                                            ? url('/') 
+                                                            : (url()->previous() === url()->current() ? url('/job/applicants/pending') : url()->previous())
+                                                    }}" class="btn btn-outline-primary d-flex align-items-center px-5 py-2 mb-0">
+                                                        Go Back
+                                                    </a>
+                                                    
+                                                    <button class="btn btn-primary">Applied Already</button>
+                                                </div>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>

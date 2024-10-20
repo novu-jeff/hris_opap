@@ -5,7 +5,7 @@
     </a>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="#">Company Settings</a></li>
-        <li class="nav-item dropend">
+        <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 User Management
             </a>
@@ -14,30 +14,30 @@
                 <li><a class="dropdown-item" href="#">Access Management</a></li>
             </ul>
         </li>
-        <li class="nav-item dropend">
+        <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 HRIS Settings
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Bank Information</a></li>
-                <li><a class="dropdown-item" href="#">Batch Configuration</a></li>
-                <li class="nav-item dropend">
+                <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
+                <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li>
+                <li class="nav-item dropstart">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Location Management
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Branch</a></li>
-                        <li><a class="dropdown-item" href="#">Cost Center</a></li>
-                        <li><a class="dropdown-item" href="#">Department Center</a></li>
+                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branch</a></li>
+                        <li><a class="dropdown-item" href="{{route('cost-center.index')}}">Cost Center</a></li>
+                        <li><a class="dropdown-item" href="{{route('department-center.index')}}">Department Center</a></li>
                     </ul>
                 </li>
-                <li><a class="dropdown-item" href="#">Employee Status</a></li>
-                <li><a class="dropdown-item" href="#">Positions</a></li>
-                <li><a class="dropdown-item" href="#">Violations</a></li>
+                <li><a class="dropdown-item" href="{{route('employee-status.index')}}">Employee Status</a></li>
+                <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
+                <li><a class="dropdown-item" href="{{route('violation.index')}}">Violations</a></li>
             </ul>
         </li>
 
-        <li class="nav-item dropend">
+        <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Payroll
             </a>
@@ -50,7 +50,7 @@
             </ul>
         </li>
 
-        <li class="nav-item dropend">
+        <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Timekeeping Settings
             </a>

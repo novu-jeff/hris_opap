@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class CostCenters extends Model
 {
     use HasFactory;
+
+    protected $table = 'cost_centers';
+    protected $fillable = [
+        'name',
+        'code',
+        'isActive'
+    ];
 }

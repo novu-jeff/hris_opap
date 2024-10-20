@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Admin\Job\Applicant;
 
+use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Models\Interview;
 use App\Models\JobApplicants;
 use App\Models\JobApplicantsInterview;
 use App\Models\JobApplicantsOffer;
 use App\Models\JobApplicantsRequirements;
 use App\Models\JobRequirements;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -112,6 +114,69 @@ class Index extends Component
         } else {
             dd('why are you here?');
         }
+    }
+
+    # set requirements checklist
+    public function set_checklist($isSaved, int $id = null) {
+        if(!$isSaved) {
+            $records = JobRequirements::all();
+            
+            $savedRequirements = JobApplicantsRequirements::where('job_applicants_id', $id)
+                ->get();
+
+            $this->requirements = $records;
+            foreach($savedRequirements as $key => $value) {
+                $this->selected_requirements[$value->requirement_id] = true;
+            }
+
+            $this->selected_id = $id;
+
+            return $this->dispatch('showModal', [
+                'modal' => 'applicant_requirements',
+                'plugins' => [
+                    'ckeditor'
+                ]
+            ]);
+        }
+            
+        JobApplicantsRequirements::where('job_applicants_id', $this->selected_id)
+            ->delete();
+
+
+        foreach ($this->selected_requirements as $key => $item) {
+            
+            if($item === true) {
+
+                $record = JobRequirements::find($key);     
+
+                if ($record) {
+                    JobApplicantsRequirements::insert([
+                        'job_applicants_id' => $this->selected_id,
+                        'requirement_id' => $record->id,
+                    ]);
+                } else {
+                    return $this->dispatch('alert', [
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'isRemoveRowDT' => false,
+                        'showAlert' => true,
+                        'message' => 'The selected requirement does not exist.'
+                    ]);
+                }
+            }
+            
+        }
+        
+        $this->loadRecords();
+        return $this->dispatch('alert', [
+            'id' => $this->selected_id,
+            'status' => 'success',
+            'title' => 'Success!', 
+            'isRemoveRowDT' => false,
+            'isReloadDT' => false,
+            'message' => 'Requirements were marked successfully.' 
+        ]);
+
     }
 
     # set an interview / test to applicant
@@ -253,19 +318,21 @@ class Index extends Component
             $this->notify($title, $message, $action);
         } else {
 
-            $model->update([
-                'status' => 'hired',
-            ]);
+            if($this->create_employee()) {
+                $model->update([
+                    'status' => 'hired',
+                ]);
     
-            $this->loadRecords();
-            $this->dispatch('alert', [
-                'id' => $this->selected_id,
-                'status' => 'success',
-                'title' => 'Success!', 
-                'isRemoveRowDT' => true,
-                'message' => 'Applicant has been hired!.' 
-            ]);
-
+                $this->loadRecords();
+                $this->dispatch('alert', [
+                    'id' => $this->selected_id,
+                    'status' => 'success',
+                    'title' => 'Success!', 
+                    'isRemoveRowDT' => true,
+                    'showAlert' => true,
+                    'message' => 'Applicant has been hired!.' 
+                ]);
+            }
         }
     
     }
@@ -319,69 +386,6 @@ class Index extends Component
             'message' => 'Job offer has been sent to the applicant.',
             'isRemoveRowDT' => false,
             'isReloadDT' => true,
-        ]);
-
-    }
-
-    # set requirements checklist
-    public function set_checklist($isSaved, int $id = null) {
-        if(!$isSaved) {
-            $records = JobRequirements::all();
-            
-            $savedRequirements = JobApplicantsRequirements::where('job_applicants_id', $id)
-                ->get();
-
-            $this->requirements = $records;
-            foreach($savedRequirements as $key => $value) {
-                $this->selected_requirements[$value->requirement_id] = true;
-            }
-
-            $this->selected_id = $id;
-
-            return $this->dispatch('showModal', [
-                'modal' => 'applicant_requirements',
-                'plugins' => [
-                    'ckeditor'
-                ]
-            ]);
-        }
-            
-        JobApplicantsRequirements::where('job_applicants_id', $this->selected_id)
-            ->delete();
-
-
-        foreach ($this->selected_requirements as $key => $item) {
-            
-            if($item === true) {
-
-                $record = JobRequirements::find($key);     
-
-                if ($record) {
-                    JobApplicantsRequirements::insert([
-                        'job_applicants_id' => $this->selected_id,
-                        'requirement_id' => $record->id,
-                    ]);
-                } else {
-                    return $this->dispatch('alert', [
-                        'status' => 'error',
-                        'title' => 'Oops', 
-                        'isRemoveRowDT' => false,
-                        'showAlert' => true,
-                        'message' => 'The selected requirement does not exist.'
-                    ]);
-                }
-            }
-            
-        }
-        
-        $this->loadRecords();
-        $this->dispatch('alert', [
-            'id' => $this->selected_id,
-            'status' => 'success',
-            'title' => 'Success!', 
-            'isRemoveRowDT' => false,
-            'isReloadDT' => false,
-            'message' => 'Requirements were marked successfully.' 
         ]);
 
     }
@@ -474,6 +478,29 @@ class Index extends Component
             return true;
         }
         return false;
+    }
+
+    public function create_employee() {
+
+        $process = new HRISProcessingService();
+        
+        DB::beginTransaction();
+        
+        try {
+            $process->save(true, $this->selected_id);
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'isRemoveRowDT' => true,
+                'showAlert' => true,
+                'message' => 'Error: ' . $e->getMessage() 
+            ]);
+        }
+
     }
 
     public function render()

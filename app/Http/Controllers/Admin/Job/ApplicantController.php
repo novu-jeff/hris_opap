@@ -12,7 +12,7 @@ class ApplicantController extends Controller
      */
     public function index(string $status)
     {
-        return view('job.applicant.index', compact('status'));
+        return view('admin.job.applicant.index', compact('status'));
     }
 
 

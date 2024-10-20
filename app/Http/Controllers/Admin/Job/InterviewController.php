@@ -12,7 +12,7 @@ class InterviewController extends Controller
      */
     public function index()
     {
-        return view('job.interview.index');
+        return view('admin.job.interview.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class InterviewController extends Controller
      */
     public function create()
     {
-        return view('job.interview.create');
+        return view('admin.job.interview.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class InterviewController extends Controller
      */
     public function edit(string $id)
     {
-        return view('job.interview.edit', compact('id'));
+        return view('admin.job.interview.edit', compact('id'));
     }
 
     /**

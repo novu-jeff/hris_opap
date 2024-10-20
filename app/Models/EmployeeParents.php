@@ -29,4 +29,6 @@ class EmployeeParents extends Model
         'mother_tel_no',
     ];
 
+    public $timestamps = false;
+
 }

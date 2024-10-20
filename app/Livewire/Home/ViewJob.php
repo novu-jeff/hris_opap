@@ -56,8 +56,23 @@ class ViewJob extends Component
     }
 
     public function go_back() {
-        return redirect()->back();
+
+        $previousUrl = url()->previous();
+        $currentUrl = url()->current();
+    
+        // Check if the previous URL is the same as the current URL
+        if ($previousUrl === $currentUrl) {
+            // Check if the previous URL does not have '/job' in it
+            if (!str_contains($previousUrl, '/job')) {
+                return redirect('/'); // Redirect to home
+            } else {
+                return redirect('/job/applicants/pending'); // Redirect to pending applicants
+            }
+        }
+    
+        return redirect()->back(); // Default back redirect if the previous URL is different
     }
+    
     
     public function render()
     {

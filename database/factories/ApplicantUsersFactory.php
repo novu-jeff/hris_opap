@@ -25,7 +25,7 @@ class ApplicantUsersFactory extends Factory
             'phone_no' => fake()->phoneNumber(),
             'tel_no' => '',
             'sex' => 'male',
-            'birthday' => '04-18-2002',
+            'birthday' => '2024-10-20',
             'civil_status' => 'single',
             'address' => fake()->address(),
             'province' => fake()->streetAddress(),

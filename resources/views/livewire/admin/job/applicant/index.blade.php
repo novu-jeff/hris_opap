@@ -69,24 +69,24 @@
                     @if (!empty($interview))
                         <div class="row">
                             @foreach($interview as $key => $item)
-                            <div class="col-12 col-md-6">
-                                <div class="d-flex gap-2 align-items-center">
-                                    <div>
-                                        <input type="checkbox" wire:model='selected_interview.{{$item->id}}'  class="form-check">
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                <div class="col-12 col-md-6">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <div>
+                                            <input type="checkbox" wire:model='selected_interview.{{$item->id}}'  class="form-check">
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
                         </div>
                     @else
                         <div class="alert alert-info mb-0">No Interviews created, please add first.</div>
                     @endif
                 </div>
                 @if (!empty($interview))
-                    <div class="card-footer d-flex justify-content-end">
+                    <div class="modal-footer d-flex justify-content-end">
                         <button class="btn btn-primary" wire:click="set_interview(false)">Proceed</button>
                     </div>
                 @endif
@@ -175,7 +175,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer d-flex justify-content-end">
+                <div class="modal-footer d-flex justify-content-end">
                     <button class="btn btn-primary" wire:click="send_offer(true)">Proceed</button>
                 </div>
             </div>
@@ -210,7 +210,7 @@
                         <div class="alert alert-info mb-0">No Interviews created, please add first.</div>
                     @endif
                 </div>
-                <div class="card-footer d-flex justify-content-end">
+                <div class="modal-footer d-flex justify-content-end">
                     <button class="btn btn-primary" wire:click="set_checklist(true)">Proceed</button>
                 </div>
             </div>
@@ -311,5 +311,4 @@
             </div>
         </div>
     </div>
-
 </div>

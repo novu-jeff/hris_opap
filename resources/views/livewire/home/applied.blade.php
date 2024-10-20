@@ -18,7 +18,7 @@
                 <div class="row">
                     <div class="col-12 col-md-12 col-lg-5 col-xl-5 mb-4">
                         <div class="row">
-                            <div class="col-12" wire:poll='showRecords'>
+                            <div class="col-12">
                                 <div class="total-applied my-4">
                                     <div>
                                         <h5 class="m-0">{{!is_null($records) ? $records->count() : '0'}} Job/s Found</h5>
@@ -119,9 +119,15 @@
                                                 Posted {{relative_time($record_info->created_at, 'hours ago')}}
                                             </p>
                                         </div>
-                                        <div class="actions">
-                                            <button class="btn btn-outline-primary d-block my-2 px-5 py-3" wire:click='withdraw({{$record->id}})'>Withdraw Application</button>
-                                        </div>
+                                        @if ($record->status !== 'hired')
+                                            <div class="actions">
+                                                <button class="btn btn-outline-primary d-block my-2 px-5 py-3" wire:click='withdraw({{$record->id}})'>Withdraw Application</button>
+                                            </div>
+                                        @else
+                                            <div class="actions">
+                                                <a class="w-50 btn btn-outline-primary d-block my-2 px-5 py-3" href="{{route('home.view-job', ['slug' => $record_info->slug])}}">View Job</a>
+                                            </div>
+                                        @endif
                                     </div>
                                     <hr class="mx-3">
                                     <div class="card-body pt-1 pb-5">

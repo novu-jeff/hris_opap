@@ -56,6 +56,36 @@
             gap: 5px;
         }
         .dropdown:hover > .dropdown-menu,
+        .dropstart:hover > .dropdown-menu {
+            display: block;
+            margin-top: 0.125em;
+            margin-left: 0.125em;
+        }
+        .dropstart:hover > .dropdown-menu {
+            position: absolute;
+            top: 0;
+            right: 100%;
+          }
+          .dropdown .dropdown-menu {
+            display: none;
+          }
+          @media screen and (min-width: 769px) {
+            .dropstart:hover > .dropdown-menu {
+              position: absolute;
+              top: 0;
+              right: 100%;
+            }
+          }
+          .dropdown-item:hover{
+            background-color: $primary;
+            color: #fff;
+          }
+          @media screen and (min-width:992px) {
+            .dropstart .dropdown-toggle{
+              margin-left: .5em;
+            }
+          }
+
         .dropend:hover > .dropdown-menu {
             display: block;
             margin-top: 0.125em;
@@ -261,6 +291,10 @@
       list-style: circle;
     }
     
+  }
+
+  input[type="text"],  select {
+    text-transform: uppercase;
   }
 
   table {

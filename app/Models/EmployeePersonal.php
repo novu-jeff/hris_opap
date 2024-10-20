@@ -42,4 +42,7 @@ class EmployeePersonal extends Model
         'sss_no',
         'tin_no',
     ];
+
+    public $timestamps = false;
+
 }

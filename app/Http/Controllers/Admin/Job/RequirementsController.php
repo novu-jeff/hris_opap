@@ -12,7 +12,7 @@ class RequirementsController extends Controller
      */
     public function index()
     {
-        return view('job.requirements.index');
+        return view('admin.job.requirements.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class RequirementsController extends Controller
      */
     public function create()
     {
-        return view('job.requirements.create');
+        return view('admin.job.requirements.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class RequirementsController extends Controller
      */
     public function edit(string $id)
     {
-        return view('job.requirements.edit', compact('id'));
+        return view('admin.job.requirements.edit', compact('id'));
     }
 
     /**
