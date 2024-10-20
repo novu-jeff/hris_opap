@@ -13,27 +13,43 @@ return new class extends Migration
     {
         Schema::create('employee_information', function (Blueprint $table) {
             $table->id();
-            $table->integer('employee_id')
-                ->unique();
             $table->string('biometrics_id');
             $table->foreignId('branch_id')
+                ->nullable()
                 ->constrained('branches');
             // $table->foreignId('department_id')
             //     ->constrained('departments');
             $table->foreignId('position_id')
+                ->nullable()
                 ->constrained('positions');
             $table->string('date_hired');
             $table->string('date_resignation')
                 ->nullable();
-            $table->string('type');
+            $table->string('type')
+                ->nullable();
             $table->string('status')
                 ->default('active');
-            $table->string('salary_method');
-            $table->integer('leave_credits');
-            $table->float('monthly_rate');
-            $table->float('daily_rate');
-            $table->integer('payroll_account_number');
+            $table->string('salary_method')
+                ->nullable();
+            $table->integer('leave_credits')
+                ->nullable();;
+            $table->float('monthly_rate')
+                ->nullable();;
+            $table->integer('payroll_account_number')
+                ->nullable();;
             $table->timestamps();
+        });
+
+        Schema::create('employee_account', function(Blueprint $table) {
+            $table->id();
+            $table->foreignId('employee_id')
+                ->constrained('employee_information')
+                ->onCascade('delete');
+            $table->string('email')
+                ->unique()
+                ->nullable();
+            $table->string('password')
+                ->nullable();
         });
 
         Schema::create('employee_personal', function(Blueprint $table) {
@@ -190,7 +206,16 @@ return new class extends Migration
             $table->foreignId('employee_id')
                 ->constrained('employee_information')
                 ->onCascade('delete');
-            $table->string('level')
+            $table->enum('level', [
+                    'elementary',
+                    'secondary',
+                    'vocational',
+                    'highschool',
+                    'senior_highschool',
+                    'college',
+                    'masters',
+                    'doctoral'
+                ])
                 ->nullable();
             $table->string('school_name')
                 ->nullable();
@@ -217,9 +242,17 @@ return new class extends Migration
                 ->nullable();
             $table->float('monthly_salary')
                 ->nullable();
-            $table->float('employment_status')
+            $table->enum('employment_status', [
+                    'regular',
+                    'part time',
+                    'feelance',
+                    'project base'
+                ])
                 ->nullable();
-            $table->boolean('isGovernment')
+            $table->enum('isGovernment', [
+                    'yes',
+                    'no'
+                ])
                 ->nullable();
             $table->string('from_year')
                 ->nullable();
@@ -240,6 +273,7 @@ return new class extends Migration
         Schema::dropIfExists('employee_children');
         Schema::dropIfExists('employee_parents');
         Schema::dropIfExists('employee_personal');
+        Schema::dropIfExists('employee_account');
         Schema::dropIfExists('employee_information');
     }
 };

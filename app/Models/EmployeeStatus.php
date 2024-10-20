@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class EmployeeStatus extends Model
 {
     use HasFactory;
+    protected $table  = 'employee_statuses';
+    protected $fillable = [
+        'status',
+        'isActive'
+    ];
 }

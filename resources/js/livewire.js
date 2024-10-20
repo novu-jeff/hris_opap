@@ -3,7 +3,8 @@ import {
     removeRowDT,
     reloadDT,
     hideModal ,
-    ckeditor
+    ckeditor,
+    reinitializeDataTable
 } from "./helpers";
 
 Livewire.on('alert', (event) => {
@@ -12,7 +13,6 @@ Livewire.on('alert', (event) => {
 
     if (alert.status === 'success') {
 
-        console.log(alert);
         if (alert.resetFields === true) {
             resetErrorsAndFields();
         }
@@ -76,7 +76,21 @@ Livewire.on('showConfirmation', function(data) {
 Livewire.on('showModal', function(data) {
     var modal = new bootstrap.Modal($('#'+data[0].modal));
     modal.show();
+
     if (data[0].plugins && data[0].plugins.includes('ckeditor')) {
         ckeditor();
+    }
+
+});
+
+Livewire.on('hideModal', function(data) {
+    var modalElement = document.getElementById(data[0].modal);
+    if (modalElement) {
+        var modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+    } else {
+        console.error('Modal with ID ' + data[0].modal + ' not found.');
     }
 });

@@ -29,7 +29,8 @@ return new class extends Migration
             $table->string('province');
             $table->string('city');
             $table->string('resume');
-            $table->string('email');
+            $table->string('email')
+                ->unique();
             $table->string('password');
             $table->string('level')->nullable();
             $table->string('school_name')->nullable();;

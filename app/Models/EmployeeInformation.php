@@ -12,7 +12,6 @@ class EmployeeInformation extends Model
     protected $table = 'employee_information';
 
     protected $fillable = [
-        'employee_id',
         'biometrics_id',
         'branch_id',
         'position_id',
@@ -26,5 +25,32 @@ class EmployeeInformation extends Model
         'daily_rate',
         'payroll_account_number',
     ];
+    public $timestamps = false;
+
+    public function account() {
+        return $this->hasOne(EmployeeAccount::class, 'employee_id');
+    }
+
+    public function personal() {
+        return $this->hasOne(EmployeePersonal::class, 'employee_id');
+    }
+
+    public function education() {
+        return $this->hasMany(EmployeeEducation::class, 'employee_id');
+    }
+
+    public function parents() {
+        return $this->hasOne(EmployeeParents::class, 'employee_id');
+    }
+
+    public function children() {
+        return $this->hasMany(EmployeeChildren::class, 'employee_id');
+    }
+
+    public function employment_history() {
+        return $this->hasMany(EmployeeEmploymentHistory::class, 'employee_id');
+    }
+
+
 
 }

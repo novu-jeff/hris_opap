@@ -94,7 +94,7 @@ if(!function_exists('application_status')) {
             case 'hired':
                 return '
                     <div class="alert alert-success text-center fw-bold py-3">
-                        rejected
+                        hired
                     </div>
                 ';
             case 'rejected':
@@ -128,5 +128,17 @@ if(!function_exists('format_date')) {
                 return Carbon::parse($date)->age;
 
         }
+    }
+}
+
+if(!function_exists('format_id')) {
+    function format_id($id, $length) {
+        return str_pad($id, $length, '0', STR_PAD_LEFT);
+    }
+}
+
+if(!function_exists('computeAge')) {
+    function computeAge($birthday) {
+        return Carbon::parse($birthday)->age ?? '';
     }
 }

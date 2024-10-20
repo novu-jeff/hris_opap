@@ -12,7 +12,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        return view('job.posts.index');
+        return view('admin.job.posts.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('job.posts.create');
+        return view('admin.job.posts.create');
     }
 
     /**
@@ -44,7 +44,7 @@ class PostController extends Controller
      */
     public function edit(string $id)
     {
-        return view('job.posts.edit', compact('id'));
+        return view('admin.job.posts.edit', compact('id'));
     }
 
     /**

@@ -21,4 +21,6 @@ class EmployeeEmploymentHistory extends Model
         'from_year',
         'to_year',
     ];
+
+    public $timestamps = false;
 }

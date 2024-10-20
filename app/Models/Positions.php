@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Positions extends Model
 {
     use HasFactory;
+
+    protected $table = 'positions';
+    protected $fillable = [
+        'name',
+        'isActive'
+    ];
+
 }
