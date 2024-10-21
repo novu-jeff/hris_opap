@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             RequirementSeeder::class,
             InterviewSeeder::class,
             JobPostSeeder::class,
-            PositionSeeder::class
+            PositionSeeder::class,
+            ViolationSeeder::class
         ]);
     }
 }

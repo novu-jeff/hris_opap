@@ -6,39 +6,43 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Select Employee</h1>
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Select Employee</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered w-100">
-                            <thead>
-                                <tr>
-                                    <td></td>
-                                    <th>Employee ID</th>
-                                    <th>Biometrics ID</th>
-                                    <th>Full Name</th>
-                                    <th>Date Hired</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (!empty($employees)) 
-                                    @foreach($employees as $key => $item)
-                                        <tr>
-                                            <td></td>
-                                            <td>{{format_id($item->id, 6)}}</td>
-                                            <td>{{$item->biometrics_id}}</td>
-                                            <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
-                                            <td>{{$item->date_hired}}</td>
-                                            <td>
-                                                <button class="btn btn-primary w-100" wire:click="loadRecords({{$item->id}})">Choose</button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @endif
-                            </tbody>
-                        </table>
+                        @if(is_null($employees))
+                            <table class="table table-bordered w-100">
+                                <thead>
+                                    <tr>
+                                        <td></td>
+                                        <th>Employee ID</th>
+                                        <th>Biometrics ID</th>
+                                        <th>Full Name</th>
+                                        <th>Date Hired</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (!empty($employees)) 
+                                        @foreach($employees as $key => $item)
+                                            <tr>
+                                                <td></td>
+                                                <td>{{format_id($item->id, 6)}}</td>
+                                                <td>{{$item->biometrics_id}}</td>
+                                                <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
+                                                <td>{{$item->date_hired}}</td>
+                                                <td>
+                                                    <button class="btn btn-primary w-100" wire:click="loadRecords({{$item->id}})">Choose</button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="alert alert-warning text-uppercase text-center my-5">Currently No Employees</div>
+                        @endif
                     </div>
                 </div>
             </div>

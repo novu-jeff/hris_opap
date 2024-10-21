@@ -193,10 +193,10 @@ class Index extends Component
             
             if(empty($this->selected_interview)) {
                 return $this->dispatch('alert', [
+                    'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops', 
                     'isRemoveRowDT' => false,
-                    'showAlert' => true,
                     'message' => 'Please select atleast one interview'
                 ]);
             }
@@ -210,10 +210,10 @@ class Index extends Component
                     ]);
                 } else {
                     return $this->dispatch('alert', [
+                        'showAlert' => true,
                         'status' => 'error',
                         'title' => 'Oops', 
                         'isRemoveRowDT' => false,
-                        'showAlert' => true,
                         'message' => 'The selected interview does not exists'
                     ]);
                 }
@@ -226,6 +226,7 @@ class Index extends Component
             $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
+                'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => true,
@@ -286,6 +287,7 @@ class Index extends Component
             $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
+                'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => true,
@@ -327,10 +329,10 @@ class Index extends Component
                 $this->loadRecords();
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
+                    'showAlert' => true,
                     'status' => 'success',
                     'title' => 'Success!', 
                     'isRemoveRowDT' => true,
-                    'showAlert' => true,
                     'message' => 'Applicant has been hired!.' 
                 ]);
             }
@@ -413,6 +415,7 @@ class Index extends Component
             if(!$record) {
                 return $this->dispatch('alert', [
                     'id' => $this->selected_id,
+                    'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops!', 
                     'isRemoveRowDT' => false,
@@ -427,6 +430,7 @@ class Index extends Component
             $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $record->id,
+                'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Success', 
                 'isRemoveRowDT' => true,
@@ -451,6 +455,7 @@ class Index extends Component
             if(!$record) {
                 return $this->dispatch('alert', [
                     'id' => $this->selected_id,
+                    'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops!', 
                     'isRemoveRowDT' => false,
@@ -463,6 +468,7 @@ class Index extends Component
             $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $record->id,
+                'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => true,
@@ -491,10 +497,10 @@ class Index extends Component
 
         if(!$record) {
             $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!', 
                 'isRemoveRowDT' => true,
-                'showAlert' => true,
                 'message' => 'Error: ' . 'Job applicant id does not exists'
             ]);
         }
@@ -506,10 +512,10 @@ class Index extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!', 
                 'isRemoveRowDT' => false,
-                'showAlert' => true,
                 'message' => 'Error: ' . $e->getMessage() 
             ]);
         }

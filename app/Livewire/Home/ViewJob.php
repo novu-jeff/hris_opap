@@ -2,14 +2,18 @@
 
 namespace App\Livewire\Home;
 
+use App\Models\JobApplicants;
 use App\Models\JobPosted;
 use App\Models\JobPosts;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 
 class ViewJob extends Component
 {
 
+    public $user_id;
     public $slug;
     public $record;
     public $applied_jobs_id;
@@ -17,6 +21,10 @@ class ViewJob extends Component
 
     # load default data needed
     public function mount($slug) {
+
+        # initially store user id
+
+        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
 
         # initially load the slug
 
@@ -29,6 +37,92 @@ class ViewJob extends Component
         # initially load all applied jobs
 
         $this->showAppliedJobs();
+
+    }
+
+    # apply logic
+    public function apply(int $job_id) {
+
+        if (!Auth::guard('applicants')->check()) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Account Required!', 
+                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('register').'">here.</a>'
+            ]);
+        }
+
+        $rules = [
+            'job_id' => 'required|exists:job_posts,id',
+            'user_id' => 'required|exists:applicant_users,id'
+        ];
+
+        $validator = Validator::make([
+            'job_id' => $job_id,
+            'user_id' => $this->user_id
+        ], $rules);
+
+        if($validator->fails()) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'message' => 'Error occured: ' . $validator->errors()
+            ]);
+        }
+
+        $record = JobApplicants::where('user_id', $this->user_id)
+            ->where('job_id', $job_id)
+            ->exists();
+
+        if($record) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Already Applied!', 
+                'message' => 'You have already applied to this job, please wait for the employer\'s response.'
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            # insert application to db 
+
+            JobApplicants::create([
+                'user_id' => $this->user_id,
+                'applicant_no' => generate_code('APP'),
+                'job_id' => $job_id,
+                'status' => 'pending'
+            ]);
+            
+            DB::commit();
+
+            # update the status of apply button when usue applied
+
+            $this->showAppliedJobs();
+
+            # dispatch event if user successfully applied
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Congratulations!', 
+                'message' => 'Your application has been sent to the employer. Please wait for further instructions.'
+            ]);
+
+            $this->dispatch('sample');
+
+        } catch (\Exception $e) {
+            
+            DB::rollBack();
+
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'message' => 'Error occured: ' . $e->getMessage()
+            ]);
+        }
 
     }
 

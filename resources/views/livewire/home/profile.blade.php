@@ -1,11 +1,14 @@
-<div class="profile" wire:poll='getUserData'>
+<div class="profile">
+
     <div class="row">
         <div class="col-12 col-md-4 col-lg-3 mb-4">
             <div class="sticky">
                 <div class="profile-section">
                     <div class="d-flex justify-content-center">
                         <div class="img-content">
-                            <img src="{{Storage::url('applicant/users/'.$record->user_id.'/'.$record->image)}}" alt="">
+                            <img src="{{
+                                $record->image ? Storage::url('applicant/users/'.$record->user_id.'/'.$record->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                            }}" alt="">
                             <div class="edit-icon" data-bs-toggle="modal" data-bs-target="#update-profile-image-modal">
                                 <i class="fa-solid fa-camera"></i>
                             </div>
@@ -21,9 +24,9 @@
                 <div class="pills-section">
                     <div class="d-flex align-items-start">
                         <div class="nav flex-column nav-pills w-100 " id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                          <button wire:ignore class="nav-link text-start active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
-                          <button wire:ignore class="nav-link text-start" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
-                          <button wire:ignore class="nav-link text-start" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
+                            <button wire:ignore class="nav-link text-start active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
+                            <button wire:ignore class="nav-link text-start" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
+                            <button wire:ignore class="nav-link text-start" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
                         </div>
                     </div>
                 </div>
@@ -134,11 +137,11 @@
             </div>
         </div>
     </div>
+ 
+    @livewire('home.modals.update-profile')
+
     
-    <div>
-        @livewire('home.modals.update-profile', [
-            'record' => $record
-        ], key('update-profile' . $record->user_id))
+    {{-- <div >
 
         @livewire('home.modals.update-profile-image', [
             'record' => $record
@@ -147,5 +150,5 @@
         @livewire('home.modals.update-profile-resume', [
             'record' => $record
         ], key('update-profile-resume' . $record->user_id))
-    </div>
+    </div> --}}
 </div>
