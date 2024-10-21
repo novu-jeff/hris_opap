@@ -20,11 +20,11 @@ class HRISProcessingService extends Controller
 
     public function save(bool $isFirstTime = false, int $id, array $data = null) 
     {
-        // Fetch the applicant record
+
         $record = ApplicantUsers::find($id);
 
         if ($isFirstTime && $record) {
-            // If it's the first time login, populate data from $record
+
             $data = [
                 'employee_account' => [
                     'email' => $record->email,

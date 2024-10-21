@@ -121,7 +121,6 @@ class Index extends Component
             return $this->dispatch('hideModal', [
                 'modal' => 'select_employee', 
             ]);
-
         }
 
         $this->employees = $model::with('personal')->get();

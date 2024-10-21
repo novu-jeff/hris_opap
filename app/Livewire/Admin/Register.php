@@ -15,7 +15,7 @@ class Register extends Component
     use WithFileUploads;
 
     public string $activeTab = 'personal';
-    public array $fields;
+    public array $fields = [];
 
     public function register() {
         
