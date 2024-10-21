@@ -4,7 +4,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Code</th>
+                    <th>Cost Center</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
             </thead>                

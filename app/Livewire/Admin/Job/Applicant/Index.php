@@ -319,9 +319,9 @@ class Index extends Component
         } else {
 
             if($this->create_employee()) {
-                $model->update([
-                    'status' => 'hired',
-                ]);
+                // $model->update([
+                //     'status' => 'hired',
+                // ]);
     
                 $this->loadRecords();
                 $this->dispatch('alert', [
@@ -486,16 +486,28 @@ class Index extends Component
         
         DB::beginTransaction();
         
+        $record = JobApplicants::find($this->selected_id);
+
+        if(!$record) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'isRemoveRowDT' => true,
+                'showAlert' => true,
+                'message' => 'Error: ' . 'Job applicant id does not exists'
+            ]);
+        }
+
         try {
-            $process->save(true, $this->selected_id);
+            $process->save(true, $record->user_id);
             DB::commit();
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->dispatch('alert', [
+            $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Oops!', 
-                'isRemoveRowDT' => true,
+                'isRemoveRowDT' => false,
                 'showAlert' => true,
                 'message' => 'Error: ' . $e->getMessage() 
             ]);

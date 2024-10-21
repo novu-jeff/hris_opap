@@ -85,7 +85,7 @@ if(!function_exists('application_status')) {
                         job offer sent
                     </div>
                 ';
-            case 'onboard':
+            case 'onboarding':
                 return '
                     <div class="alert alert-info text-center fw-bold py-3">
                         requirements submission

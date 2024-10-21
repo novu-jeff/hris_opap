@@ -4,7 +4,10 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Http\Requests\Admin\Hris\saveRequest;
+use App\Models\Branches;
+use App\Models\DepartmentCenters;
 use App\Models\EmployeeInformation;
+use App\Models\Positions;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -12,17 +15,27 @@ class Index extends Component
 {
 
     public $employees;
-    public array $records = [];
+    public array $records;
+    public object $departments;
+    public object $branches;
+    public object $positions;
+
     public $activeTab = 'details';
     public $activeAccordion;
 
-    // public function mount() {
-    //     $this->loadRecords();
-    // }
+    public function mount() {
+        $this->loadRecords(1);
+    }
+
 
     public function loadRecords(int $id = null) {
 
         $model = EmployeeInformation::class;
+
+        $this->branches = Branches::all();
+        $this->departments = DepartmentCenters::all();
+        $this->positions = Positions::all();
+
 
         if(!is_null($id)) {
             $data = $model::with(
@@ -41,6 +54,7 @@ class Index extends Component
                     'id'  => $data->id,
                     'employee_id'  => format_id($data->id, 6),
                     'biometrics_id' => $data->biometrics_id ?? null,
+                    'department_id' => $data->department_id ?? null,
                     'branch_id' => $data->branch_id ?? null,
                     'position_id' => $data->position_id ?? null,
                     'date_hired' => $data->date_hired ?? null,
@@ -62,7 +76,6 @@ class Index extends Component
                     'lastname' => $data->personal->lastname ?? null,
                     'suffix' => $data->personal->suffix ?? null,
                     'birthday' => $data->personal->birthday ?? null,
-                    'age' =>  computeAge($data->personal->birthday) ?? null,
                     'civil_status' => $data->personal->civil_status ?? null,
                     'sex' => $data->personal->sex ?? null,
                     'citizenship' => $data->personal->citizenship ?? null,
@@ -270,7 +283,7 @@ class Index extends Component
         $this->validate($this->rules($id));
         
         DB::beginTransaction();
-        
+
         try {
             $process = new HRISProcessingService;
             $process->save(false, $id, $this->records);

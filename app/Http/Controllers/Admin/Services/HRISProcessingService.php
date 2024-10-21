@@ -76,6 +76,7 @@ class HRISProcessingService extends Controller
 
         return $record->update([
             'branch_id' => $data['branch_id'],
+            'department_id' => $data['department_id'],
             'position_id' => $data['position_id'],
             'date_resignation' => $data['date_resignation'] ?? null,
             'type' => $data['type'],
