@@ -319,9 +319,10 @@ class Index extends Component
         } else {
 
             if($this->create_employee()) {
-                // $model->update([
-                //     'status' => 'hired',
-                // ]);
+                
+                $model->update([
+                    'status' => 'hired',
+                ]);
     
                 $this->loadRecords();
                 $this->dispatch('alert', [
