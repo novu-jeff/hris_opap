@@ -17,8 +17,9 @@ return new class extends Migration
             $table->foreignId('branch_id')
                 ->nullable()
                 ->constrained('branches');
-            // $table->foreignId('department_id')
-            //     ->constrained('departments');
+            $table->foreignId('department_id')
+                ->nullable()
+                ->constrained('departments');
             $table->foreignId('position_id')
                 ->nullable()
                 ->constrained('positions');
@@ -57,7 +58,8 @@ return new class extends Migration
             $table->foreignId('employee_id')
                 ->constrained('employee_information')
                 ->onCascade('delete');
-            $table->string('profile');
+            $table->string('profile')
+                ->nullable();
             $table->string('firstname');
             $table->string('middlename')
                 ->nullable();

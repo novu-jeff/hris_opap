@@ -213,25 +213,3 @@
           </div>
     </div>
 </div>
-
-@script
-<script>
-
-    $wire.on('notice', (event) => {
-        const notice = JSON.parse(JSON.stringify(event))[0];
-        Swal.fire({
-            icon: "warning",
-            title: notice.title,
-            html: notice.message,
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, I Understand"
-        }).then((result) => {
-            if(result.isConfirmed) {
-                $wire.withdraw(notice.id, true);
-            }
-        });  
-    });
-</script>
-@endscript

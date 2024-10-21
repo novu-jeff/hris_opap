@@ -18,6 +18,8 @@ class Applied extends Component
     public $applied_jobs_id;
     public $sort_status;
 
+    public $listeners = ['withdraw'];
+
     public function mount() {
 
         # initially load user id
@@ -60,6 +62,7 @@ class Applied extends Component
 
 
     # show job status if apply or applied
+    
     public function showAppliedJobs() {
         if(!Auth::guard('applicants')->check()) {
            return  $this->applied_jobs_id = [];
@@ -69,16 +72,26 @@ class Applied extends Component
     }
 
     public function showSavedJobs() {
-        $records = Auth::guard('applicants')->user()->with('saved_jobs.job')
-            ->first()
-            ->saved_jobs;
-
-        if(!$records->count() > 0) {
-           return $this->saved_jobs = null;
+        // Check if the user is authenticated
+        $user = Auth::guard('applicants')->user();
+    
+        if (!$user) {
+            // If no authenticated user, return null
+            return $this->saved_jobs = null;
         }
-
+    
+        // Retrieve saved jobs with eager loading
+        $records = $user->saved_jobs()->with('job')->get();
+    
+        // Check if there are any saved jobs
+        if ($records->isEmpty()) {
+            return $this->saved_jobs = null;
+        }
+    
+        // Set the saved jobs
         $this->saved_jobs = $records;
     }
+    
  
     public function show_more($id) {
         try {

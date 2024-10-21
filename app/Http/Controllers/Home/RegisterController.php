@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class RegisterController extends Controller
 {
     public function index() {
-        return view('auth.register');
+        return view('auth.admin.register');
     }
 
     public function store(Request $request) {
@@ -47,6 +47,7 @@ class RegisterController extends Controller
         $filename = 'applicant_resume_' . time() . '.' . $extension;
 
         DB::beginTransaction();
+        
         try {
             
             $user = ApplicantUsers::create([

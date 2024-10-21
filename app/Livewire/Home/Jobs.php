@@ -151,6 +151,7 @@ class Jobs extends Component
 
         if (!Auth::guard('applicants')->check()) {
             return $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
                 'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('register').'">here.</a>'
@@ -169,6 +170,7 @@ class Jobs extends Component
 
         if($validator->fails()) {
             $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!', 
                 'message' => 'Error occured: ' . $validator->errors()
@@ -181,6 +183,7 @@ class Jobs extends Component
 
         if($record) {
             return $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Already Applied!', 
                 'message' => 'You have already applied to this job, please wait for the employer\'s response.'
@@ -232,7 +235,6 @@ class Jobs extends Component
     # save this job
     public function save_job(int $id) {
         
-
         $jobPosts = JobPosts::class;
         $savedJobs = SavedJobs::class;
 
@@ -240,6 +242,15 @@ class Jobs extends Component
         $saved_already = $savedJobs::where('user_id', $this->user_id)
             ->where('job_id', $id)->exists();
         
+        if (!Auth::guard('applicants')->check()) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Account Required!', 
+                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('register').'">here.</a>'
+            ]);
+        }
+
         if($job_exists) {
 
             DB::beginTransaction();
@@ -272,6 +283,7 @@ class Jobs extends Component
                 DB::rollBack();
 
                 $this->dispatch('alert', [
+                    'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops!', 
                     'message' => 'Error occured: ' . $e->getMessage()
@@ -280,6 +292,7 @@ class Jobs extends Component
 
         } else {
             $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!', 
                 'message' => 'The job does not exists!'

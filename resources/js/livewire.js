@@ -7,6 +7,27 @@ import {
     reinitializeDataTable
 } from "./helpers";
 
+Livewire.on('notice', (event) =>  {
+    const notice = JSON.parse(JSON.stringify(event))[0];
+    Swal.fire({
+        icon: "warning",
+        title: notice.title,
+        html: notice.message,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showCancelButton: true,        
+        cancelButtonText: 'Cancel',   
+        confirmButtonText: 'Proceed',   
+        confirmButtonColor: '#143953', 
+        cancelButtonColor: '#d33',      
+        reverseButtons: true,  
+    }).then((result) => {
+        if(result.isConfirmed) {
+            Livewire.dispatch('withdraw', [notice.id, true]);
+        }
+    });  
+}) 
+
 Livewire.on('alert', (event) => {
 
     const alert = JSON.parse(JSON.stringify(event))[0]; 
@@ -67,7 +88,6 @@ Livewire.on('showConfirmation', function(data) {
         reverseButtons: true,  
     }).then(function(result) {
         if(result.isConfirmed) {
-            console.log(data[0]);
             Livewire.dispatch(data[0].action, [false]);
         }
     });  
