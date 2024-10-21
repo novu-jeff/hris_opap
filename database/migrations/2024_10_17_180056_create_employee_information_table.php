@@ -19,7 +19,7 @@ return new class extends Migration
                 ->constrained('branches');
             $table->foreignId('department_id')
                 ->nullable()
-                ->constrained('departments');
+                ->constrained('department_centers');
             $table->foreignId('position_id')
                 ->nullable()
                 ->constrained('positions');

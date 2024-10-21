@@ -15,4 +15,6 @@ class InterviewItems extends Model
         'name'
     ];
 
+    public $timestamps = false;
+
 }
