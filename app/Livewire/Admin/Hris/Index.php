@@ -23,11 +23,6 @@ class Index extends Component
     public $activeTab = 'details';
     public $activeAccordion;
 
-    public function mount() {
-        $this->loadRecords(1);
-    }
-
-
     public function loadRecords(int $id = null) {
 
         $model = EmployeeInformation::class;
