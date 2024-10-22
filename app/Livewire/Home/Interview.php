@@ -27,7 +27,7 @@ class Interview extends Component
             ->first();
 
         if(!$applicant) {
-            return redirect()->route('home.profile');
+            return redirect()->route('home.profile.index');
         }
 
         $record = JobApplicantsInterview::with('interview.items')
