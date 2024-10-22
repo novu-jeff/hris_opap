@@ -11,7 +11,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        @if(is_null($employees))
+                        @if($employees)
                             <table class="table table-bordered w-100">
                                 <thead>
                                     <tr>
