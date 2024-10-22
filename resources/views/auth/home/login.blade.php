@@ -2,13 +2,13 @@
 
 @section('content')
     <div class="login">
-        <div class="row d-flex justify-content-center align-items-center py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
             <div class="col-12 col-md-5">
-                <div class="container mx-5">
+                <div class="container">
                     <form id="submit-form">
                         @method('POST')
                         @csrf
-                        <div class="card shadow p-3">
+                        <div class="card shadow p-3 ">
                             <div class="card-header bg-transparent py-2 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
@@ -60,16 +60,6 @@
 @section('scripts')
 <script>
     $(function() {
-
-        $('.droparea').on('click', function(e) {
-            const fileInput = $(this).next('input[type="file"]');
-            fileInput.trigger('click');
-            
-            fileInput.on('change', function() {
-                const fileName = $(this).val().split('\\').pop(); 
-                $(this).next('.droparea-preview').text('File uploaded: ' + fileName);
-            });
-        });
 
         $('#submit-form').submit(function(e) {
             e.preventDefault();

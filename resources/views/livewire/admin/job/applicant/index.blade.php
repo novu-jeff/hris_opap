@@ -9,47 +9,64 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <strong>Image:</strong> 
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>ID:</strong> {{$applicant_information->id ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>First Name:</strong> {{$applicant_information->firstname ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Middle Name:</strong> {{$applicant_information->middlename ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Last Name:</strong> {{$applicant_information->lastname ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Phone Number:</strong> {{$applicant_information->phone_no ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Telephone Number:</strong> {{$applicant_information->tel_no ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Sex:</strong> {{$applicant_information->sex ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Birthday:</strong> {{$applicant_information->birthday ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Civil Status:</strong> {{$applicant_information->civil_status ?? null}}
+                                </div>
+                                <div class="col-md-12 mb-3 text-uppercase">
+                                    <strong>Address:</strong> {{$applicant_information->address ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>Province:</strong> {{$applicant_information->province ?? null}}
+                                </div>
+                                <div class="col-md-6 mb-3 text-uppercase">
+                                    <strong>City:</strong> {{$applicant_information->city ?? null}}
+                                </div>
+                                <div class="col-md-12 mb-3 text-uppercase">
+                                    <strong>Resume:</strong> 
+                                    @if ($applicant_information && !is_null($applicant_information->resume))
+                                        <a target="_blank" href="{{ Storage::url('applicant/users/' . $applicant_information->id . '/' . $applicant_information->resume) }}" class="text-lowercase">
+                                            {{ $applicant_information->resume }}
+                                        </a>
+                                    @else
+                                        <span class="text-lowercase">No resume uploaded</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>ID:</strong> {{$applicant_information->id ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>First Name:</strong> {{$applicant_information->firstname ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Middle Name:</strong> {{$applicant_information->middlename ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Last Name:</strong> {{$applicant_information->lastname ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Phone Number:</strong> {{$applicant_information->phone_no ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Telephone Number:</strong> {{$applicant_information->tel_no ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Sex:</strong> {{$applicant_information->sex ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Birthday:</strong> {{$applicant_information->birthday ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Civil Status:</strong> {{$applicant_information->civil_status ?? null}}
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <strong>Address:</strong> {{$applicant_information->address ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Province:</strong> {{$applicant_information->province ?? null}}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>City:</strong> {{$applicant_information->city ?? null}}
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <strong>Resume:</strong> 
+                        <div class="col-md-3 mb-3 text-uppercase  d-flex justify-content-end">
+                            <div class="profile" style="width: 150px; height: 150px;">
+                                <img src="{{
+                                    isset($applicant_information) && !is_null($applicant_information->image)
+                                        ? Storage::url('applicant/users/' . $applicant_information->id . '/' . $applicant_information->image)
+                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                }}" class="w-100 h-100" style="width: 150px; height: 150px; object-fit:cover" alt="" srcset="">
+                            </div>                            
                         </div>
                     </div>
                 </div>

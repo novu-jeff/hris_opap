@@ -37,18 +37,20 @@
             </ul>
             @if (Auth::guard('applicants')->user())
                 <div class="dropdown ms-3 d-none d-md-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown">
-                    <img class="profile-img" src="{{Storage::url('applicant/users/'.Auth::guard('applicants')->user()->id.'/'.Auth::guard('applicants')->user()->image)}}" alt="Profile Image">
+                    <img class="profile-img" src="{{
+                                Auth::guard('applicants')->user()->image ? Storage::url('applicant/users/'.Auth::guard('applicants')->user()->id.'/'.Auth::guard('applicants')->user()->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                            }}" alt="Profile Image">
                     <div class="email">{{ trimEmail(Auth::guard('applicants')->user()->email ?? 'Guest')}}</div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{{route('home.profile.index')}}" wire:navigate>Profile</a></li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('logout') }}"
+                            <a class="dropdown-item" href="{{ route('home.logout') }}"
                                 onclick="event.preventDefault();
                                             document.getElementById('logout-form').submit();">
                                 {{ __('Logout') }}
                             </a>
 
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            <form id="logout-form" action="{{ route('home.logout') }}" method="POST" class="d-none">
                                 @csrf
                             </form>
                         </li>

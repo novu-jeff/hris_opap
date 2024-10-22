@@ -20,6 +20,7 @@ use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\ProfileController;
 use App\Http\Controllers\Home\RegisterController;
 use App\Http\Controllers\Home\ViewJobController;
+use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Livewire\Admin\Job\Create;
 use App\Livewire\Admin\Job\Index;
 use App\Livewire\Admin\Job\Update;
@@ -47,7 +48,7 @@ Route::prefix('login')->group(function() {
 });
 
 Route::any('logout', [HomeLoginController::class, 'logout'])
-    ->name('logout');
+    ->name('home.logout');
 
 Route::prefix('register')->group(function() {
     Route::get('/', [RegisterController::class, 'index'])
@@ -59,7 +60,7 @@ Route::prefix('register')->group(function() {
 
 Route::middleware(['applicant'])->group(function() {
     Route::get('applied', [AppliedController::class, 'index'])
-    ->name('home.applied');
+        ->name('home.applied');
     Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.view-job');
     Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
@@ -68,7 +69,11 @@ Route::middleware(['applicant'])->group(function() {
         ->name('home.search');
     Route::resource('profile', ProfileController::class)
         ->names('home.profile');
+    Route::get('interview/{job_id}/{interview_id}', [HomeInterviewController::class, 'index'])
+        ->name('interview-assessment');
 });
+
+
     
 Route::prefix('admin')->group(function() {
     Route::get('login', [AdminLoginController::class, 'index'])
@@ -76,7 +81,7 @@ Route::prefix('admin')->group(function() {
     Route::post('login', [AdminLoginController::class, 'login'])
         ->name('admin.login');
     Route::any('logout', [AdminLoginController::class, 'logout'])
-        ->name('logout');
+        ->name('admin.logout');
 });
 
 Route::prefix('job')->group(function() {

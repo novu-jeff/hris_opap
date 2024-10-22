@@ -4,7 +4,7 @@
     <div class="login">
         <div class="row d-flex justify-content-center align-items-center py-5">
             <div class="col-12 col-md-5">
-                <div class="container mx-5">
+                <div class="container">
                     <form id="submit-form">
                         @method('POST')
                         @csrf

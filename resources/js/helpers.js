@@ -73,6 +73,7 @@ export function reloadDT() {
 }
 
 export function hideModal() {
+    $('body').css('overflow-y', 'scroll');
     $('.modal').removeClass('show').css('display', 'none');
     $('.modal-backdrop').remove(); 
     $('.modal-backdrop').css({

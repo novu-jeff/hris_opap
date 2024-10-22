@@ -1,5 +1,5 @@
-<div wire:ignore>
-    <div class="modal fade" id="update-profile-resume-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="update-profile-resume-modalLabel" aria-hidden="true">
+<div>
+    <div class="modal fade" wire:ignore.self id="update-profile-resume-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="update-profile-resume-modalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -12,18 +12,14 @@
                             <label for="resume" class="mb-2">Resume <span class="text-danger">*</span></label>
                             <div class="droparea">
                                 <div>
-                                    <div class="m-auto text-center icon">
-                                        <i class="fa-solid fa-upload fa-bounce"></i>
-                                    </div>
-                                    <div class="text-center">
-                                        <h6>Upload resume here</h6>
-                                        <small>(only accepts doc, docx, and pdf file)</small>
+                                    <div class="text-center d-flex">
+                                        <input type="file" wire:model="resume" id="resume" class="w-100">
                                     </div>
                                 </div>
                             </div>
-                            <input type="file" wire:model="record.resume" id="resume" class="form-control d-none">
-                            <div class="droparea-preview"></div>
-                            <div class="error-field"></div>
+                            <div class="error-field">
+                                @error('resume') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -32,5 +28,5 @@
                 </div>
             </div>
         </div>
-    </div>      
+    </div> 
 </div>

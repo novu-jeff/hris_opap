@@ -9,9 +9,14 @@ class ApplicantSkills extends Model
 {
     use HasFactory;
 
-    protected $table = 'applicant_skills';
+    protected $table = 'job_applicant_skills';
     protected $fillable = [
         'user_id',
-        'name'
+        'skill_id'
     ];
+
+    public function skills() {
+        return $this->hasOne(SkillList::class, 'id', 'skill_id');
+    }
+
 }

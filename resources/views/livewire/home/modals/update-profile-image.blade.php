@@ -1,5 +1,5 @@
-<div wire:ignore>
-    <div class="modal fade" id="update-profile-image-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="update-profile-image-modalLabel" aria-hidden="true">
+<div>
+    <div class="modal fade" wire:ignore.self id="update-profile-image-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="update-profile-image-modalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -12,18 +12,22 @@
                             <label for="image" class="mb-2">Image <span class="text-danger">*</span></label>
                             <div class="droparea">
                                 <div>
-                                    <div class="m-auto text-center icon">
-                                        <i class="fa-solid fa-upload fa-bounce"></i>
-                                    </div>
-                                    <div class="text-center">
-                                        <h6>Upload image here</h6>
-                                        <small>(only accepts jpg, jpeg, and png file)</small>
+                                    <div class="text-center d-flex">
+                                        <input type="file" wire:model="profile" id="profile" class="w-100">
                                     </div>
                                 </div>
                             </div>
-                            <input type="file" wire:model="record.image" id="image" class="form-control d-none">
-                            <div class="droparea-preview"></div>
-                            <div class="error-field"></div>
+                            @if (!empty($record))
+                                <div class="image-preview">
+                                    <img src="{{Storage::url('applicant/users/'.$user_id.'/'.$record)}}" alt="" srcset="">
+                                    <button wire:click='remove_profile'>
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            @endif
+                            <div class="error-field">
+                                @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -32,5 +36,5 @@
                 </div>
             </div>
         </div>
-    </div>      
+    </div>    
 </div>

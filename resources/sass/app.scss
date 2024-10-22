@@ -37,6 +37,33 @@ $theme-colors: (
 
 // }
 
+.image-preview {
+    width: 100px;
+    display: flex;
+    justify-content: start;
+    margin: 20px 0 10px 0;
+    position: relative;
+
+    button {
+        width: 30px;
+        height: 30px;
+        padding: 5px;
+        display: flex;
+        justify-content: center;    
+        position: absolute;
+        right: 0;    
+        color: #fff;
+        background-color: $danger;
+        border: 1px solid $danger;
+        border-radius: 4px;
+    }
+
+}
+
+.image-preview img {
+    width: 100px;
+}
+
 .error-field {
     margin-top: 5px;
     font-weight: 600;
