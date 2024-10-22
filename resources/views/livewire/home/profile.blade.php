@@ -55,7 +55,7 @@
         </div>
         <div class="col-12 col-md-8 col-lg-8 mb-4">
             <div class="tab-content" id="v-pills-tabContent">
-                <div wire:ignore.self class="tab-pane fade " id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <div>
@@ -126,7 +126,7 @@
                         </div>
                     </div>
                 </div>
-                <div wire:ignore.self class="tab-pane fade show active" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <h4>My Interviews</h4>
