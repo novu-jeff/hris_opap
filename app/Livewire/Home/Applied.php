@@ -98,6 +98,7 @@ class Applied extends Component
             $record = JobPosts::find($id);
             if(is_null($record)) {
                 $this->dispatch('alert', [
+                    'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops!',
                     'message' => 'Unknown job selected'
@@ -108,6 +109,7 @@ class Applied extends Component
 
         } catch (\Exception $e) {
             $this->dispatch('alert', [
+                'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
                 'message' => 'Error occured: ' . $e->getMessage()

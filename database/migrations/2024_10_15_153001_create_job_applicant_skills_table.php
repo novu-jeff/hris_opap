@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('job_applicant_skills', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
-                ->constrained('users')
+                ->constrained('applicant_users')
                 ->onDelete('cascade');
-            $table->string('name');
+            $table->foreignId('skill_id')
+                ->constrained('skills_list')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

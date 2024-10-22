@@ -1,17 +1,16 @@
 <div class="profile">
-
     <div class="row">
-        <div class="col-12 col-md-4 col-lg-3 mb-4">
+        <div class="col-12 col-md-4 col-lg-4 mb-4">
             <div class="sticky">
                 <div class="profile-section">
                     <div class="d-flex justify-content-center">
-                        <div class="img-content">
+                        <div class="img-content" wire:ignore.self>
                             <img src="{{
-                                $record->image ? Storage::url('applicant/users/'.$record->user_id.'/'.$record->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                $record->image ? Storage::url('applicant/users/'.$record->id.'/'.$record->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
                             }}" alt="">
-                            <div class="edit-icon" data-bs-toggle="modal" data-bs-target="#update-profile-image-modal">
+                            <button class="edit-icon" data-bs-toggle="modal" data-bs-target="#update-profile-image-modal">
                                 <i class="fa-solid fa-camera"></i>
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -32,21 +31,31 @@
                 </div>
                 <hr>
                 <div class="skills-section">
-                    <h5>Skills</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            Skills
+                        </h5>
+                        <button class="edit-icon btn btn-primary" data-bs-toggle="modal" data-bs-target="#update-profile-skills-modal">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
                     <div class="skill-content">
-                        <div class="skill-box">
-                            HTML
-                        </div>
-                        <div class="skill-box">
-                            CSS 3
-                        </div>
+                        @if ($record->skills->isEmpty())
+                            <div class="alert alert-info w-100 text-center text-uppercase fw-bold">No skills listed</div>
+                        @else
+                            @foreach ($record->skills as $skill)
+                                <div class="skill-box">
+                                    {{$skill->skills->name}}
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-8 col-lg-9 mb-4">
+        <div class="col-12 col-md-8 col-lg-8 mb-4">
             <div class="tab-content" id="v-pills-tabContent">
-                <div wire:ignore.self class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade " id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <div>
@@ -81,16 +90,16 @@
                             <div class="mt-4">
                                 <h6>Education Information</h6>
                                 <ul class="list-unstyled">
-                                    <li>Highest Attainment: <span class="text-uppercase">{{!is_null($record->level) ? $record->level : 'No info'}}</span></li>
-                                    <li>School Name: <span class="text-uppercase">{{!is_null($record->school_name) ? $record->school_name : 'No info'}}</span></li>
-                                    <li>Course: <span class="text-uppercase">{{!is_null($record->course) ? $record->course : 'No info'}}</span></li>
-                                    <li>School Year: <span class="text-uppercase">{{!is_null($record->started) && !is_null($record->finished) ? format_date($record->started, 'date_string') . ' - ' . format_date($record->finished, 'date_string') : 'No info'}}</span></li>
+                                    <li>Highest Attainment: <span class="text-uppercase">{{$record->level ? $record->level : 'No info'}}</span></li>
+                                    <li>School Name: <span class="text-uppercase">{{$record->school_name ? $record->school_name : 'No info'}}</span></li>
+                                    <li>Course: <span class="text-uppercase">{{$record->course ? $record->course : 'No info'}}</span></li>
+                                    <li>School Year: <span class="text-uppercase">{{ $record->started && $record->finished ? format_date($record->started, 'date_string') . ' - ' . format_date($record->finished, 'date_string') : 'No info' }}</span></li>
                                 </ul>
                             </div> 
                             <div class="mt-4" wire:ignore>
                                 <h6>Resume</h6>
                                 <p>Update your resume to streamline your job application and increase visibility to potential employers.</p>
-                                <div data-bs-toggle="modal" data-bs-target="#update-profile-resume-modal">
+                                <button class="w-100 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#update-profile-resume-modal">
                                     <div class="droparea">
                                         <div>
                                             <div class="m-auto text-center icon">
@@ -102,8 +111,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                {{-- <p>Current Resume: <a target="_blank" href="{{Storage::url('applicant/users/'.$record->user_id.'/'.$record->resume)}}">{{$record->resume}}</a></p> --}}
+                                </button>
+                                <p>Current Resume: <a target="_blank" href="{{Storage::url('applicant/users/'.$record->id.'/'.$record->resume)}}">{{$record->resume}}</a></p>
                             </div>
                             <div class="mt-4">
                                 <h6>Job Information</h6>
@@ -117,7 +126,7 @@
                         </div>
                     </div>
                 </div>
-                <div wire:ignore.self class="tab-pane fade" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade show active" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <h4>My Interviews</h4>
@@ -127,7 +136,37 @@
                         </div>
                         <hr>
                         <div class="card-body">
-                            
+                            @foreach ($record->applied as $record)
+                                @if ($record->status === 'interview')
+                                    <div class="card px-2" style="border: none">
+                                        <div class="card-header border-0 bg-transparent">
+                                            <div class="position-title">
+                                                <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                            </div>
+                                            <div class="company-info">
+                                                <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
+                                                <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
+                                            </div>
+                                            <div class="salary">
+                                                <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                            </div>
+                                            <div class="date-posted">
+                                                <p class="m-0">
+                                                    Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                                </p>
+                                            </div>
+                                            <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                <a href="{{route('interview-assessment', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2">
+                                                    <span>
+                                                        Answer Interview
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -138,17 +177,17 @@
         </div>
     </div>
  
-    @livewire('home.modals.update-profile')
+    <div>
+        @livewire('home.modals.update-profile', ['key' => 'update-profile-modal'])
+    </div>
+    <div>
+        @livewire('home.modals.update-profile-resume', ['key' => 'update-profile-resume-modal'])
+    </div>
+    <div>
+        @livewire('home.modals.update-profile-image', ['key' => 'update-profile-image-modal'])
+    </div>
+    <div>
+        @livewire('home.modals.update-profile-skills', ['key' => 'update-profile-skills-modal'])
+    </div>
 
-    
-    {{-- <div >
-
-        @livewire('home.modals.update-profile-image', [
-            'record' => $record
-        ], key('update-profile-image' . $record->user_id))
-
-        @livewire('home.modals.update-profile-resume', [
-            'record' => $record
-        ], key('update-profile-resume' . $record->user_id))
-    </div> --}}
 </div>

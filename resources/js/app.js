@@ -25,3 +25,4 @@ $(document).on('livewire:poll', function() {
     reinitializeDataTable();
 })
 
+$('.select-2').select2();

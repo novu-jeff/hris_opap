@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             InterviewSeeder::class,
             JobPostSeeder::class,
             PositionSeeder::class,
-            ViolationSeeder::class
+            ViolationSeeder::class,
+            SkillListSeeder::class
         ]);
     }
 }

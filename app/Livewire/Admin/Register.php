@@ -52,8 +52,6 @@ class Register extends Component
                 
                 DB::commit();
 
-                $this->reset('fields');
-
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'success',

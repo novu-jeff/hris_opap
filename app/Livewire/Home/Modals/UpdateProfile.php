@@ -20,7 +20,8 @@ class UpdateProfile extends Component
 
     public function mount() {
         $id = Auth::guard('applicants')->user()->id;
-        $record = ApplicantUsers::where('id', $id)->first();
+        $record = ApplicantUsers::where('id', $id)
+            ->first();
         $this->user_id = $id;
         $this->fields = [
             'information' => [
@@ -88,10 +89,10 @@ class UpdateProfile extends Component
             'fields.information.province.required' => 'The Province is required.',
             'fields.information.city.required' => 'The City is required.',
             'fields.education.level.required_with' => 'The level field is required.',
-    'fields.education.school_name.required_with' => 'The school name field is required.',
-    'fields.education.course.required_with' => 'The course field is required.',
-    'fields.education.started.required_with' => 'The started field is required.',
-    'fields.education.finished.required_with' => 'The finished field is required.',
+            'fields.education.school_name.required_with' => 'The school name field is required.',
+            'fields.education.course.required_with' => 'The course field is required.',
+            'fields.education.started.required_with' => 'The started field is required.',
+            'fields.education.finished.required_with' => 'The finished field is required.',
         ];
     }
 
@@ -108,6 +109,7 @@ class UpdateProfile extends Component
                 ->update($data);
 
             $this->dispatch('loadRecords')->to(Profile::class);
+            
             return $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Profile Updated!',
@@ -117,7 +119,6 @@ class UpdateProfile extends Component
             $errors = $e->errors();
             $active = explode('.', array_key_first($errors))[1];
             $this->activeTab = $active;
-            // dd($e->validator->errors());
             $this->setErrorBag($e->validator->errors());
         }
     }
