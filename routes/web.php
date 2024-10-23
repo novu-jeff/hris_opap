@@ -62,7 +62,8 @@ Route::middleware(['applicant'])->group(function() {
     Route::get('applied', [AppliedController::class, 'index'])
         ->name('home.applied');
     Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
-        ->name('home.view-job');
+        ->name('home.view-job')
+        ->withoutMiddleware(['applicant']);
     Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.applied.view-job');
     Route::get('search/{search?}', [HomeController::class, 'index'])

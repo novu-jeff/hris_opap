@@ -22,11 +22,6 @@
                         My Jobs
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a wire:navigate href="#" class="nav-link">
-                        Help Center
-                    </a>
-                </li>
                 @if (!Auth::guard('applicants')->user())
                     <li class="nav-item">
                         <a wire:navigate href="{{route('login')}}" class="btn btn-primary py-2 px-4">

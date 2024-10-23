@@ -4,7 +4,6 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Level</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
             </thead>                
@@ -12,7 +11,6 @@
                 @foreach($records as $record)
                     <tr>
                         <td>{{$record->name}}</td>
-                        <td>{{$record->level}}</td>
                         <td>
                             <a href="{{route('job.interview.edit', ['interview' => $record->id])}}" class="btn btn-primary mx-1">
                                 <i class="fa-solid fa-pen-to-square"></i>

@@ -20,6 +20,8 @@ return new class extends Migration
             $table->foreignId('job_id')
                 ->constrained('job_posts');
             $table->string('status');
+            $table->boolean('isInterviewResponded')
+                ->default(false);
             $table->timestamps();
         });
 

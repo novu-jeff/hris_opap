@@ -74,9 +74,13 @@ class Index extends Component
 
     # view responses from the interview
     public function view_responses(int $id) {
-        $records = JobApplicantsInterview::with(['interview.items'])
-            ->where('job_applicants_id', $id)->get();
+        $records = JobApplicants::with('interview.details', 'interview.items.options', 'interview.items.answers')
+            ->where('id', $id)
+            ->first();
+        // $records = JobApplicantsInterview::with( 'details', 'interview.options', 'interview.answers')
+        //     ->where('job_applicants_id', $id)->get();
         $this->applicant_responses = $records;
+        // dd($records->toArray());
         $this->dispatch('showModal', [
             'modal' => 'applicant_responses'
         ]);

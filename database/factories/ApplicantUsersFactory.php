@@ -18,7 +18,7 @@ class ApplicantUsersFactory extends Factory
     public function definition(): array
     {
         return [
-            'image' => 'default.jpg',
+            'image' => null,
             'firstname' => fake()->firstName(),
             'middlename' => fake()->lastName(),
             'lastname' => fake()->lastName(),

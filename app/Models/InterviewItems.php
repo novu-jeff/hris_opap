@@ -12,9 +12,22 @@ class InterviewItems extends Model
     protected $table = 'job_interview_items';
     protected $fillable = [
         'interview_id',
-        'name'
+        'question',
+        'response_type'
     ];
 
     public $timestamps = false;
+
+    public function items() {
+        return $this->hasMany(InterviewItems::class, 'interview_id');
+    }
+
+    public function answers() {
+        return $this->hasMany( InterviewItemsResponses::class, 'interview_item_id');
+    }
+
+    public function options() {
+        return $this->hasMany(InterviewItemsOptions::class, 'interview_item_id');
+    }
 
 }

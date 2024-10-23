@@ -113,7 +113,7 @@
 
     {{-- Applicant Responses Modal --}}
     <div class="modal fade" wire:ignore.self id="applicant_responses" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View Responses</h1>
@@ -122,33 +122,93 @@
                 <div class="modal-body">
                     @if (!is_null($applicant_responses))
                         <div class="accordion" id="accordionExample">
-                            @foreach ($applicant_responses as $index => $response)
-                            <div class="accordion-item mb-3 shadow-sm border-1">
-                                <h2 class="accordion-header" id="heading{{ $index }}">
-                                    <button class="accordion-button text-uppercase {{ $index == 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse{{ $index }}">
-                                        {{$response->interview->name}}
-                                    </button>
-                                </h2>
-                                <div id="collapse{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading{{ $index }}" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        @foreach ($response->interview->items as $key => $item)
-                                        <div class="d-flex align-items-start gap-3">
-                                            <div class="d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; color: #fff; background-color: #225F8B">
-                                                {{ $key + 1 }}
-                                            </div>
-                                            <div class="w-100">
-                                                <div class="w-100 mb-2">
-                                                    <input type="text" class="form-control" value="{{ $item->name }}" readonly>
+                            @foreach ($applicant_responses['interview'] as $index => $response)
+                                <div class="accordion-item mb-3 shadow-sm border-1">
+                                    <h2 class="accordion-header" id="heading{{ $index }}">
+                                        <button class="accordion-button text-uppercase {{ $index == 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse{{ $index }}">
+                                            {{ $response['details']['name'] }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ $index }}" class="accordion-collapse collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading{{ $index }}" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            @if (empty($response['items']))
+                                                <div class="mt-3 mb-4">
+                                                    <h6 class="text-danger text-uppercase">No interview items available.</h6>
                                                 </div>
-                                                <div class="w-100 mb-2">
-                                                    <input type="text" class="form-control" value="" readonly>
+                                            @endif
+
+                                            @foreach($response['items'] as $itemIndex => $item)
+                                                <div class="col-12 mb-4 text-uppercase">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="count d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: white; background-color: #225F8B">
+                                                            {{ $itemIndex + 1 }}
+                                                        </div>
+                                                        <div class="question w-100">
+                                                            <h6 class="mb-0">{{ $item['question'] }}</h6>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-3">
+                                                        @if ($item['response_type'] == 'simple')
+                                                            <div class="col-12 mb-3">
+                                                                <input type="text" class="form-control text-uppercase restricted" value="{{ $item['answers'][0]['answer'] ?? '' }}" placeholder="Your Answer" readonly>
+                                                            </div>
+                                                        @elseif ($item['response_type'] == 'explanatory')
+                                                            <div class="col-12 mb-3">
+                                                                <textarea class="form-control text-uppercase restricted" rows="5" placeholder="Your Answer" readonly>{{ $item['answers'][0]['answer'] ?? '' }}</textarea>
+                                                            </div>
+                                                        @elseif ($item['response_type'] == 'checkbox')
+                                                            <div class="col-12 mb-3">
+                                                                @foreach ($item['options'] as $optionIndex => $option)
+                                                                    <div class="ms-5 form-check d-flex align-items-center gap-3">
+                                                                        <input 
+                                                                            type="checkbox" 
+                                                                            class="form-check-input" 
+                                                                            id="checkbox-{{ $index }}-{{ $optionIndex }}" 
+                                                                            value="{{ $option['name'] }}" 
+                                                                            style="width: 1.5em; height: 1.5em"
+                                                                            @if (in_array($option['id'], array_column($item['answers']->toArray(), 'answer')))
+                                                                                checked
+                                                                            @endif
+                                                                            disabled
+                                                                            >
+                                                                        <label class="form mt-1 mb-0" for="checkbox-{{ $index }}-{{ $optionIndex }}">
+                                                                            {{ $option['name'] }}
+                                                                        </label>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @elseif ($item['response_type'] == 'radio')
+                                                            <div class="col-12 mb-3">
+                                                                @foreach ($item['options'] as $optionIndex => $option)
+                                                                    <div class="ms-5 form-check d-flex align-items-center gap-3">
+                                                                        <input 
+                                                                            type="radio" 
+                                                                            class="form-check-input" 
+                                                                            id="radio-{{ $index }}-{{ $optionIndex }}" 
+                                                                            value="{{ $option['id'] }}" 
+                                                                            style="width: 1.5em; height: 1.5em"
+                                                                            @if (in_array($option['id'], array_column($item['answers']->toArray(), 'answer')))
+                                                                                checked
+                                                                            @endif
+                                                                            disabled
+                                                                            >
+                                                                        <label class="form mt-1 mb-0" for="radio-{{ $index }}-{{ $optionIndex }}">
+                                                                            {{ $option['name'] }}
+                                                                        </label>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @elseif ($item['response_type'] == 'file')
+                                                            <div class="col-12 mb-3">
+                                                                <input type="file" class="form-control" disabled>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endforeach
                                         </div>
-                                        @endforeach
                                     </div>
                                 </div>
-                            </div>
                             @endforeach
                         </div>
                     @endif

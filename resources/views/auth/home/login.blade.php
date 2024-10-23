@@ -8,7 +8,7 @@
                     <form id="submit-form">
                         @method('POST')
                         @csrf
-                        <div class="card shadow p-3 ">
+                        <div class="card shadow p-3">
                             <div class="card-header bg-transparent py-2 border-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <ul class="nav nav-pills" id="pills-tab" role="tablist">

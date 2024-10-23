@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Job\Interview;
 
 use App\Models\Interview;
 use App\Models\InterviewItems;
+use App\Models\InterviewItemsOptions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
@@ -13,64 +14,117 @@ class Create extends Component
 
     protected $listeners = ['ckeditor'];
     public $name;
-    public $level;
     public $description;
-    public $items = [''];
-    public $item_count = 1;
+    public $question;
+    public $type = 'simple';
+    public $options = [];
+    public $interview = [];
 
     public function ckeditor($data) {
         $this->description = $data;
     }
 
     public function add_item() {
-        $this->item_count += 1;
-        $this->items[] = '';
+        $this->dispatch('showModal', [
+            'modal' => 'add-item'
+        ]);
     }
 
-    public function remove_item($index) {
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
-        $this->item_count -= 1;
+    public function remove_item(int $index) {
+        unset($this->interview[$index]);
     }
 
-    protected function rules() {
-        return [
-            'name' => 'required',
-            'level' => 'integer|lt:6',
-            'description' => 'required',
-            'items.*' => 'required|string',
+    public function setItemType(string $type) {
+        $this->type = $type;
+    }
+
+    public function add_option() {
+        $this->options[] = '';
+    }
+
+    public function remove_option(int $index) {
+        unset($this->options[$index]);
+        $this->options = array_values($this->options);
+    }
+
+    public function save_interview() {
+
+        $this->validate([
+            'question' => 'required|string|max:255',
+            'type' => 'required|string|in:simple,explanatory,checkbox,radio,file',
+            'options' => 'required_if:type,checkbox,radio|array',
+            'options.*' => 'required|string|max:255'
+        ],[
+            'question.required' => 'The interview question is required.',
+            'question.string' => 'The interview question must be a valid string.',
+            'question.max' => 'The interview question may not be greater than 255 characters.',
+            
+            'type.required' => 'Please select a response type.',
+            'type.in' => 'The selected response type is invalid.',
+
+            'options.required_if' => 'At least one option is required when the type is checkbox or radio.',
+            'options.*.required' => 'Each option is required.',
+            'options.array' => 'Options must be an array.',
+            'options.*.string' => 'Each option must be a valid string.',
+            'options.*.max' => 'Each option may not be greater than 255 characters.',
+        ]);
+
+
+        $data = [
+            'question' => $this->question,
+            'type' => $this->type,
+            'options' => $this->options,
         ];
-    }
 
-    protected function messages() {
-        return [
-            'items.*.required' => 'This field is required'
-        ];
+
+        $this->interview[] = $data;
+
+        $this->reset('question', 'type', 'options');
+
+        $this->dispatch('hideModal', [
+            'modal' => 'add-item'
+        ]);
+
+        
+
     }
 
     public function save() {
 
-        $this->validate();
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required',
+            'interview' => 'required|array'
+        ], [
+            'interview.required' => 'Please make atleast one interview question.'
+        ]);
        
-
         DB::beginTransaction();
 
         try {
 
             $interview = Interview::create([
                 'name' => $this->name,
-                'level' => $this->level,
                 'description' => $this->description,
             ]);
-
             
-            foreach($this->items as $item) {
-                InterviewItems::insert([
+            foreach ($this->interview as $item) {
+                $interview_item = InterviewItems::create([
                     'interview_id' => $interview->id,
-                    'name' => $item,
+                    'question' => $item['question'],
+                    'response_type' => $item['type']
                 ]);
+            
+                if ($item['type'] === 'checkbox' || $item['type'] === 'radio') {
+                    foreach ($item['options'] as $options) {
+                        InterviewItemsOptions::create([ 
+                            'interview_item_id' => $interview_item->id,
+                            'name' => $options
+                        ]);
+                    }
+                }
             }
-
+            
             DB::commit();
 
             $this->reset();

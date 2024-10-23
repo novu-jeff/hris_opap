@@ -13,7 +13,6 @@ class Interview extends Model
     protected $fillable = [
         'name',
         'description',
-        'level'
     ];
 
     public function items() {

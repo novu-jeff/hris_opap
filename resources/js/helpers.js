@@ -14,7 +14,11 @@ export function copy_link() {
         Swal.fire({
             icon: "success",
             title: 'Job Link Copied',
-            message: 'You can now paste or send the link you copied!'
+            html: 'You can now paste or send the link you copied!',  
+            confirmButtonText: 'GOT IT',   
+            confirmButtonColor: '#143953', 
+            cancelButtonColor: '#d33',      
+            reverseButtons: true,  
         });  
     });
 }
@@ -73,7 +77,7 @@ export function reloadDT() {
 }
 
 export function hideModal() {
-    $('body').css('overflow-y', 'scroll');
+    // $('body').css('overflow-y', 'scroll');
     $('.modal').removeClass('show').css('display', 'none');
     $('.modal-backdrop').remove(); 
     $('.modal-backdrop').css({

@@ -56,12 +56,13 @@ class UpdateProfileSkills extends Component
             }
         }
 
+        $this->dispatch('loadRecords')->to('home.profile');
+
         return $this->dispatch('alert', [
             'showAlert' => true,
             'status' => 'success',
             'title' => 'Skills Updated',
             'message' => 'Your skills has been successfully updated!',
-            'isReloadDT' => true
         ]);
 
     }

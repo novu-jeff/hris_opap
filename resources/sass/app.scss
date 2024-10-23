@@ -70,3 +70,15 @@ $theme-colors: (
     text-transform: uppercase;
     font-size: 10px !important;
 }
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+    opacity: 1 !important;
+}
+
+input[type="checkbox"]:disabled:not(:checked),
+input[type="radio"]:disabled:not(:checked) {
+    opacity: 1 !important;
+    background-color: #f8fafc !important;
+    border-color: #6f7070 !important; 
+}

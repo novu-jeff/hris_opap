@@ -73,7 +73,6 @@ class UpdateProfileResume extends Component
                 'status' => 'success',
                 'title' => 'Resume Updated', 
                 'message' => 'You have now updated your resume, this might help you get hired!',
-                'isReloadDT' => true
             ]);
 
         } catch (\Exception $e) {

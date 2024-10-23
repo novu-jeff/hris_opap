@@ -15,11 +15,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ApplicantAccountSeeder::class,
             RequirementSeeder::class,
-            InterviewSeeder::class,
+            // InterviewSeeder::class,
             JobPostSeeder::class,
             PositionSeeder::class,
             ViolationSeeder::class,
-            SkillListSeeder::class
+            SkillListSeeder::class,
+            BranchSeeder::class,
+            CostCenterSeeder::class,
+            DepartmentSeeder::class
         ]);
     }
 }
