@@ -66,14 +66,13 @@ class UpdateProfileImage extends Component
 
             $file->storeAs($path, $filename);
 
-            // $this->dispatch('loadRecords')->to('home.profile');
+            $this->dispatch('loadRecords')->to('home.profile');
 
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Profile Updated',
                 'message' => 'Your profile has been successfully updated!',
-                'isReloadDT' => true
             ]);
 
         } catch (\Exception $e) {
@@ -113,14 +112,13 @@ class UpdateProfileImage extends Component
         $record->image = null;
         $record->save();
 
-        $this->dispatch('loadRecords')->to(Profile::class);
+        $this->dispatch('loadRecords')->to('home.profile');
         
         return $this->dispatch('alert', [
             'showAlert' => true,
             'status' => 'success',
             'title' => 'Profile Removed', 
             'message' => 'You have now updated your resume, this might help you get hired!',
-            'isReloadDT' => true
         ]);
     }
 

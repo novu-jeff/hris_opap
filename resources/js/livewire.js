@@ -38,7 +38,13 @@ Livewire.on('alert', (event) => {
             resetErrorsAndFields();
         }
 
-        hideModal();
+        // Properly hide all visible modals
+        $('.modal.show').each(function() {  // Only modals that are currently shown
+            var modalInstance = bootstrap.Modal.getInstance(this);  // Get the existing modal instance
+            if (modalInstance) {
+                modalInstance.hide();  // Hide the modal
+            }
+        });
 
         Swal.fire({
             icon: "success",
@@ -46,7 +52,7 @@ Livewire.on('alert', (event) => {
             html: alert.message,
             allowOutsideClick: false,
             allowEscapeKey: false,
-            confirmButtonText: 'GOT IT',   
+            confirmButtonText: 'GOT IT',
             confirmButtonColor: '#143953',
         }).then((result) => {
             if (result.isConfirmed && alert.isRemoveRowDT) {
@@ -66,12 +72,13 @@ Livewire.on('alert', (event) => {
                 html: alert.message,
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                confirmButtonText: 'GOT IT',   
+                confirmButtonText: 'GOT IT',
                 confirmButtonColor: '#143953',
             });
         }
     }
 });
+
 
 Livewire.on('showConfirmation', function(data) {
     Swal.fire({

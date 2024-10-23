@@ -165,38 +165,3 @@
         </div>
     </div>
 @endsection
-
-@section('scripts')
-<script>
-    $(function() {
-
-        $('#submit-form').submit(function(e) {
-            e.preventDefault();
-            const url = '{{route('register')}}';
-            const tabs = {
-                'personal': [
-                    'firstname',
-                    'middlename',
-                    'lastname',
-                    'phone_no',
-                    'tel_no',
-                    'sex',
-                    'birthday',
-                    'civil_status',
-                    'address',
-                    'province',
-                    'city'
-                ],
-                'account': [
-                    'resume',
-                    'email',
-                    'password',
-                    'confirm_password',
-                ]
-            };
-            const data = new FormData($(this)[0]);
-            post(true, url, data, tabs);
-        });
-    });
-</script>
-@endsection

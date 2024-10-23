@@ -128,22 +128,22 @@
                                     </div>
                                     <div class="actions d-flex gap-3 justify-content-start">
                                         @if (!in_array($record_info->id, $applied_job_ids))
-                                            <button class="btn btn-outline-primary" wire:click='apply({{$record_info->id}})'>Apply Now</button>
-                                            @if (!in_array($record->id, $saved_job_ids))
-                                                <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record->id}})' href="javascript:void(0)">
+                                            @if (!in_array($record_info->id, $saved_job_ids))
+                                                <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
                                                     <i class="fa-solid fa-thumbtack"></i>
                                                     <span>
                                                         Save Job
                                                     </span>
                                                 </button>
                                             @else
-                                                <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record->id}})' href="javascript:void(0)">
+                                                <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
                                                     <i class="fa-solid fa-xmark"></i>
                                                     <span>
                                                         Unsave Job
                                                     </span>
                                                 </button>
                                             @endif
+                                            <button class="btn btn-outline-primary" wire:click='apply({{$record_info->id}})'>Apply Now</button>
                                         @else
                                             <button class="btn btn-primary">Applied Already</button>
                                         @endif

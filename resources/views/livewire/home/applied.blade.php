@@ -119,7 +119,8 @@
                                                 Posted {{relative_time($record_info->created_at, 'hours ago')}}
                                             </p>
                                         </div>
-                                        @if ($record->status !== 'hired')
+                                        {{$record->status}}
+                                        @if ($record->status != 'hired')
                                             <div class="actions">
                                                 <button class="btn btn-outline-primary d-block my-2 px-5 py-3" wire:click='withdraw({{$record->id}})'>Withdraw Application</button>
                                             </div>

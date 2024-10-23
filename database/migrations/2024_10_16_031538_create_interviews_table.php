@@ -15,10 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->longText('description');
-            $table->integer('level')
-                ->default(0);
             $table->timestamps();
         });
+
     }
 
     /**

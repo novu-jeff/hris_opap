@@ -16,8 +16,15 @@ class Profile extends Component
 
     public object $record;
     public $resume;
+    public $activeTab = 'profile';
+    public $isUpdateProfile = false;
     protected $listeners = ['loadRecords'];
 
+    public function showModal($modal) {
+        $this->dispatch('showModal', [
+            'modal' => $modal,
+        ]);
+    } 
     
     public function mount() {
 
@@ -25,6 +32,10 @@ class Profile extends Component
 
         $this->loadRecords();
         
+    }
+
+    public function setActiveTab(string $tab) {
+        $this->activeTab = $tab;
     }
     
     public function loadRecords() {

@@ -26,3 +26,4 @@ $(document).on('livewire:poll', function() {
 })
 
 $('.select-2').select2();
+$('.selectpicker').selectpicker();

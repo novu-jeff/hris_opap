@@ -15,7 +15,24 @@ class JobApplicantsInterview extends Model
         'job_interview_id',
     ];
 
-    public function interview() {
+    public function details() {
         return $this->belongsTo(Interview::class, 'job_interview_id', 'id');
     }
+
+    public function items() {
+        return $this->hasMany(InterviewItems::class, 'interview_id', 'job_interview_id');
+    }
+
+    public function applicant() {
+        return $this->belongsTo(JobApplicants::class, 'job_applicants_id', 'id');
+    }
+
+    public function options() {
+        return $this->hasMany(InterviewItemsOptions::class, 'interview_item_id');
+    }
+
+    public function answers() {
+        return $this->hasMany( InterviewItemsResponses::class, 'interview_item_id');
+    }
+
 }

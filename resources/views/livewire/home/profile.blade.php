@@ -23,9 +23,9 @@
                 <div class="pills-section">
                     <div class="d-flex align-items-start">
                         <div class="nav flex-column nav-pills w-100 " id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                            <button wire:ignore class="nav-link text-start active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
-                            <button wire:ignore class="nav-link text-start" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
-                            <button wire:ignore class="nav-link text-start" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
+                            <button class="nav-link text-start {{$activeTab == 'profile' ? 'active' : ''}}" wire:click.prevent="setActiveTab('profile')" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
+                            <button class="nav-link text-start {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
+                            <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                                                 </p>
                                             </div>
                                             <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                                <a href="{{route('interview-assessment', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2">
+                                                <a href="{{route('interview-assessment', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
                                                     <span>
                                                         Answer Interview
                                                     </span>
@@ -177,17 +177,19 @@
         </div>
     </div>
  
-    <div>
-        @livewire('home.modals.update-profile', ['key' => 'update-profile-modal'])
-    </div>
-    <div>
-        @livewire('home.modals.update-profile-resume', ['key' => 'update-profile-resume-modal'])
-    </div>
-    <div>
-        @livewire('home.modals.update-profile-image', ['key' => 'update-profile-image-modal'])
-    </div>
-    <div>
-        @livewire('home.modals.update-profile-skills', ['key' => 'update-profile-skills-modal'])
+    <div wire:ignore>
+        <div>
+            @livewire('home.modals.update-profile', ['key' => 'update-profile-modal'])
+        </div>
+        <div>
+            @livewire('home.modals.update-profile-resume', ['key' => 'update-profile-resume-modal'])
+        </div>
+        <div>
+            @livewire('home.modals.update-profile-image', ['key' => 'update-profile-image-modal'])
+        </div>
+        <div>
+            @livewire('home.modals.update-profile-skills', ['key' => 'update-profile-skills-modal'])
+        </div>
     </div>
 
 </div>
