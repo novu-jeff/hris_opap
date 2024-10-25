@@ -25,6 +25,7 @@
                         <div class="nav flex-column nav-pills w-100 " id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <button class="nav-link text-start {{$activeTab == 'profile' ? 'active' : ''}}" wire:click.prevent="setActiveTab('profile')" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
                             <button class="nav-link text-start {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
+                            <button class="nav-link text-start {{$activeTab == 'placement' ? 'active' : ''}}" wire:click.prevent="setActiveTab('placement')" id="v-pills-placement-tab" data-bs-toggle="pill" data-bs-target="#v-pills-placement" type="button" role="tab" aria-controls="v-pills-placement" aria-selected="false">Placement</button>
                             <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
                         </div>
                     </div>
@@ -55,7 +56,7 @@
         </div>
         <div class="col-12 col-md-8 col-lg-8 mb-4">
             <div class="tab-content" id="v-pills-tabContent">
-                <div wire:ignore.self class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade {{$activeTab == 'profile' ? 'show active' : ''}}" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <div>
@@ -126,7 +127,7 @@
                         </div>
                     </div>
                 </div>
-                <div wire:ignore.self class="tab-pane fade" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
+                <div wire:ignore.self class="tab-pane fade {{$activeTab == 'interview' ? 'show active' : ''}}" id="v-pills-interview" role="tabpanel" aria-labelledby="v-pills-interview-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
                             <h4>My Interviews</h4>
@@ -135,43 +136,160 @@
                             </p>
                         </div>
                         <hr>
-                        <div class="card-body">
-                            @foreach ($record->applied as $record)
-                                @if ($record->status === 'interview')
-                                    <div class="card px-2" style="border: none">
-                                        <div class="card-header border-0 bg-transparent">
-                                            <div class="position-title">
-                                                <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
-                                            </div>
-                                            <div class="company-info">
-                                                <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
-                                                <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
-                                            </div>
-                                            <div class="salary">
-                                                <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
-                                            </div>
-                                            <div class="date-posted">
-                                                <p class="m-0">
-                                                    Posted {{relative_time($record->job->created_at, 'hours ago')}}
-                                                </p>
-                                            </div>
-                                            <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                                <a href="{{route('interview-assessment', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                    <span>
-                                                        Answer Interview
-                                                    </span>
-                                                </a>
+                        <div class="card-body" wire:ignore>
+                           @if (!$record->applied->isEmpty())
+                                @foreach ($record->applied as $record)
+                                    @if (!is_null($record->interview) && $record->status === 'interview')
+                                        <div class="card px-2" style="border: none">
+                                            <div class="card-header border-0 bg-transparent">
+                                                <div class="position-title">
+                                                    <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                                </div>
+                                                <div class="company-info">
+                                                    <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
+                                                    <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
+                                                </div>
+                                                <div class="salary">
+                                                    <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                                </div>
+                                                <div class="date-posted">
+                                                    <p class="m-0">
+                                                        Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                                    </p>
+                                                </div>
+                                                <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                    @if (!$record->isSignedJobOffer)
+                                                        <a href="{{route('interview-respond', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                            <span>
+                                                                Answer Interview
+                                                            </span>
+                                                        </a>
+                                                    @else
+                                                        <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                            <span>
+                                                                Already Answered
+                                                            </span>
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <hr>
-                                @endif
-                            @endforeach
+                                        <hr>
+                                    @else
+                                        <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
+                                    @endif
+                                @endforeach
+                            @else
+                                <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
+                            @endif
                         </div>
                     </div>
                 </div>
-                <div wire:ignore.self class="tab-pane fade" id="v-pills-onboarding" role="tabpanel" aria-labelledby="v-pills-onboarding-tab" tabindex="0">
-                    
+                <div wire:ignore.self class="tab-pane fade {{$activeTab == 'placement' ? 'show active' : ''}}" id="v-pills-placement" role="tabpanel" aria-labelledby="v-pills-placement-tab" tabindex="0">
+                    <div class="card px-3 pt-4 pb-5 profile-content">
+                        <div class="card-header bg-transparent border-0">
+                            <h4>Your Job Offers</h4>
+                            <p>
+                                Once your interviews are finished, if HR considers you a suitable candidate, your job offers will be provided and shown here.
+                            </p>
+                        </div>
+                        <hr>
+                        <div class="card-body" wire:ignore>
+                            @if (!is_null($record->offer) && $record->status === 'placement')
+                                <div class="card px-2" style="border: none">
+                                    <div class="card-header border-0 bg-transparent">
+                                        <div class="position-title">
+                                            <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                        </div>
+                                        <div class="company-info">
+                                            <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
+                                            <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
+                                        </div>
+                                        <div class="salary">
+                                            <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                        </div>
+                                        <div class="date-posted">
+                                            <p class="m-0">
+                                                Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                            </p>
+                                        </div>
+                                        <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                            <button wire:click="download_offer({{$record->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                <span>
+                                                    Download Job Offer
+                                                </span>
+                                            </button>
+                                            @if (!$record->isSignedJobOffer)
+                                                <a href="{{route('upload-signed-offer', ['job_id' => $record->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <span>
+                                                        Upload Signed Job Offer
+                                                    </span>
+                                                </a>
+                                            @else
+                                                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <span>
+                                                        Already Signed
+                                                    </span>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                            @else
+                                <div class="alert alert-info text-uppercase text-center">Currently no job offers.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div wire:ignore.self class="tab-pane fade {{$activeTab == 'onboarding' ? 'show active' : ''}}" id="v-pills-onboarding" role="tabpanel" aria-labelledby="v-pills-onboarding-tab" tabindex="0">
+                    <div class="card px-3 pt-4 pb-5 profile-content">
+                        <div class="card-header bg-transparent border-0">
+                            <h4>Your Job Offers</h4>
+                            <p>
+                                Once your interviews are finished, if HR considers you a suitable candidate, your job offers will be provided and shown here.
+                            </p>
+                        </div>
+                        <hr>
+                        <div class="card-body" wire:ignore>
+                            @if (!is_null($record->offer))
+                                <div class="card px-2" style="border: none">
+                                    <div class="card-header border-0 bg-transparent">
+                                        <div class="position-title">
+                                            <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                        </div>
+                                        <div class="company-info">
+                                            <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
+                                            <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
+                                        </div>
+                                        <div class="salary">
+                                            <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                        </div>
+                                        <div class="date-posted">
+                                            <p class="m-0">
+                                                Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                            </p>
+                                        </div>
+                                        <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                            <button wire:click="download_offer({{$record->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                <span>
+                                                    Download Job Offer
+                                                </span>
+                                            </button>
+                                            <a href="{{route('upload-requirements', ['job_id' => $record->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                <span>
+                                                    Upload Requirements
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                            @else
+                                <div class="alert alert-info text-uppercase text-center">Currently not ready for any onboarding.</div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,16 +297,16 @@
  
     <div wire:ignore>
         <div>
-            @livewire('home.modals.update-profile', ['key' => 'update-profile-modal'])
+            @livewire('home.modals.update-profile')
         </div>
         <div>
-            @livewire('home.modals.update-profile-resume', ['key' => 'update-profile-resume-modal'])
+            @livewire('home.modals.update-profile-resume')
         </div>
         <div>
-            @livewire('home.modals.update-profile-image', ['key' => 'update-profile-image-modal'])
+            @livewire('home.modals.update-profile-image')
         </div>
         <div>
-            @livewire('home.modals.update-profile-skills', ['key' => 'update-profile-skills-modal'])
+            @livewire('home.modals.update-profile-skills')
         </div>
     </div>
 

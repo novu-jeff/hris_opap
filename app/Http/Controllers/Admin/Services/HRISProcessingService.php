@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Services;
 
 use App\Helper\Generate;
 use App\Http\Controllers\Controller;
+use App\Mail\SendEmployeeAccount;
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
@@ -13,7 +14,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class HRISProcessingService extends Controller
 {
@@ -59,8 +60,7 @@ class HRISProcessingService extends Controller
         }
     }
 
-    public function employee_information(int $id, array $data, bool $isFirstTime = false) 
-    {
+    public function employee_information(int $id, array $data, bool $isFirstTime = false)  {
         if ($isFirstTime) {
             $generate = new Generate;
 
@@ -88,29 +88,34 @@ class HRISProcessingService extends Controller
         ]);
     }
 
-    public function employee_account(int $id, array $data, bool $isFirstTime = false) 
-    {
+    public function employee_account(int $id, array $data, bool $isFirstTime = false)  {
+        
         if ($isFirstTime) {
+
             $generate = new Generate;
+
+            $firstname = $data['employee_personal']['firstname'];
+            $lastname = $data['employee_personal']['lastname'];
+
+            $email = $generate->email($id, $firstname, $lastname);
 
             $record = EmployeeAccount::create([
                 'employee_id' => $id,
-                'email' => $data['email'],
-                'password' => $generate->password(),
+                'email' => $email,
             ]);
 
             return $record;
         }
 
         $record = EmployeeAccount::where('employee_id', $id);
+
         return $record->update([
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
     }
 
-    public function employee_personal(int $id, array $data, bool $isFirstTime = false) 
-    {
+    public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {
         $template = [
             'profile' => $data['profile'] ?? null,
             'firstname' => $data['firstname'] ?? null,
@@ -131,7 +136,7 @@ class HRISProcessingService extends Controller
             'permanent_city' => $data['permanent_city'] ?? null,
             'mobile_number' => $data['mobile_number'] ?? null,
             'tel_no' => $data['tel_no'] ?? null,
-            'company_email' => $data['company_email'] ?? null,
+            'email' => $data['email'] ?? null,
             'height' => $data['height'] ?? null,
             'weight' => $data['weight'] ?? null,
             'blood_type' => $data['blood_type'] ?? null,
@@ -160,22 +165,23 @@ class HRISProcessingService extends Controller
         } 
 
         $record = EmployeeParents::where('employee_id', $id);
+
         return $record->update([
+            'spouse_surname' => $data['spouse_surname'],
+            'spouse_firstname' => $data['spouse_firstname'],
+            'spouse_middlename' => $data['spouse_middlename'],
+            'spouse_suffix' => $data['spouse_suffix'],
+            'spouse_occupation' => $data['spouse_occupation'],
+            'spouse_business_name_employer' => $data['spouse_business_name_employer'],
+            'spouse_business_address' => $data['spouse_business_address'],
+            'spouse_contact_no' => $data['spouse_contact_no'],
             'father_surname' => $data['father_surname'],
             'father_firstname' => $data['father_firstname'],
             'father_middlename' => $data['father_middlename'],
-            'suffix' => $data['suffix'],
-            'father_occupation' => $data['father_occupation'],
-            'father_business_name' => $data['father_business_name'],
-            'father_business_address' => $data['father_business_address'],
-            'father_tel_no' => $data['father_tel_no'],
+            'father_suffix' => $data['father_suffix'],
             'mother_surname' => $data['mother_surname'],
             'mother_firstname' => $data['mother_firstname'],
             'mother_middlename' => $data['mother_middlename'],
-            'mother_occupation' => $data['mother_occupation'],
-            'mother_business_name' => $data['mother_business_name'],
-            'mother_business_address' => $data['mother_business_address'],
-            'mother_tel_no' => $data['mother_tel_no']
         ]);
 
     }

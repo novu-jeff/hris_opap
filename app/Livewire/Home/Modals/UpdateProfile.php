@@ -108,13 +108,14 @@ class UpdateProfile extends Component
             ApplicantUsers::where('id', $this->user_id)
                 ->update($data);
 
-            $this->dispatch('loadRecords')->to(Profile::class);
+            $this->dispatch('loadRecords')->to('home.profile');
             
             return $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Profile Updated!',
                 'message' => 'You have successfully updated your profile.',
             ]);
+
         } catch (ValidationException $e) {
             $errors = $e->errors();
             $active = explode('.', array_key_first($errors))[1];

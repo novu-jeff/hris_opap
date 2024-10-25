@@ -309,4 +309,18 @@
       font-size: 13px;
     }
   }
+  .skill-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+     
+    .skill-box {
+      padding: 8px 30px 8px 30px;
+      background-color: #cecece;
+      border-radius: 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+  }
 }

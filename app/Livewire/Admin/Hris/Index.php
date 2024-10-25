@@ -8,8 +8,10 @@ use App\Models\Branches;
 use App\Models\DepartmentCenters;
 use App\Models\EmployeeInformation;
 use App\Models\Positions;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Str;
 
 class Index extends Component
 {
@@ -19,9 +21,14 @@ class Index extends Component
     public object $departments;
     public object $branches;
     public object $positions;
-
-    public $activeTab = 'details';
+    public bool $isDualCitizenship = false;
+    public array $countries;
+    public string $activeTab = 'details';
     public $activeAccordion;
+
+    public function mount() {
+        $this->loadCountries();
+    }
 
     public function loadRecords(int $id = null) {
 
@@ -43,7 +50,6 @@ class Index extends Component
                     'employment_history'
                 ])->first();
         
-            // Initialize records array
             $records = [
                 'employee_information' => [
                     'id'  => $data->id,
@@ -96,21 +102,21 @@ class Index extends Component
                 ],
                 'employee_education' => $data->education->isEmpty() ? [] : $data->education->toArray(),
                 'employee_parents' => [
+                    'spouse_surname' => $data->parents->spouse_surname ?? null,
+                    'spouse_firstname' => $data->parents->spouse_firstname ?? null,
+                    'spouse_middlename' => $data->parents->spouse_middlename ?? null,
+                    'spouse_suffix' => $data->parents->spouse_suffix ?? null,
+                    'spouse_occupation' => $data->parents->spouse_occupation ?? null,
+                    'spouse_business_name_employer' => $data->parents->spouse_business_name_employer ?? null,
+                    'spouse_business_address' => $data->parents->spouse_business_address ?? null,
+                    'spouse_contact_no' => $data->parents->spouse_contact_no ?? null,
                     'father_surname' => $data->parents->father_surname ?? null,
                     'father_firstname' => $data->parents->father_firstname ?? null,
                     'father_middlename' => $data->parents->father_middlename ?? null,
-                    'suffix' => $data->parents->suffix ?? null,
-                    'father_occupation' => $data->parents->father_occupation ?? null,
-                    'father_business_name' => $data->parents->father_business_name ?? null,
-                    'father_business_address' => $data->parents->father_business_address ?? null,
-                    'father_tel_no' => $data->parents->father_tel_no ?? null,
+                    'father_suffix' => $data->parents->suffix ?? null,
                     'mother_surname' => $data->parents->mother_surname ?? null,
                     'mother_firstname' => $data->parents->mother_firstname ?? null,
                     'mother_middlename' => $data->parents->mother_middlename ?? null,
-                    'mother_occupation' => $data->parents->mother_occupation ?? null,
-                    'mother_business_name' => $data->parents->mother_business_name ?? null,
-                    'mother_business_address' => $data->parents->mother_business_address ?? null,
-                    'mother_tel_no' => $data->parents->mother_tel_no ?? null
                 ],
                 'employee_children' => $data->children->isEmpty() ? [] : $data->children->toArray(),
                 'employee_employment_history' => $data->employment_history->isEmpty() ? [] : $data->employment_history->toArray(),
@@ -133,6 +139,19 @@ class Index extends Component
 
 
     }
+
+    public function loadCountries() {
+        $client = new Client();
+        $response = $client->get('https://restcountries.com/v3.1/all?fields=name');
+    
+        $countries = json_decode($response->getBody()->getContents(), true);
+    
+        usort($countries, function ($a, $b) {
+            return strcmp($a['name']['common'], $b['name']['common']);
+        });
+
+        return $this->countries = $countries;
+    }
     
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
@@ -143,6 +162,17 @@ class Index extends Component
             $this->activeAccordion = $accordion;
         } else {
             $this->activeAccordion = '';
+        }
+    }
+
+    public function select_change(string $property) {
+        
+        if($property == 'citizenship') {
+            if($this->records['employee_personal']['citizenship'] == 'dual_citizenship') {
+                $this->isDualCitizenship = true;
+            } else {
+                $this->isDualCitizenship = false;
+            }
         }
     }
 
@@ -189,7 +219,46 @@ class Index extends Component
     }
 
     protected function rules(int $id) {
-        return (new saveRequest())->rules($id);
+        return [
+            'records.employee_account.email' => [
+                'required',
+                'email',
+                // Rule::unique('employee_account', 'email')
+                //     ->ignore($id), 
+            ],
+            'records.employee_personal.firstname' => 'required|string|max:255',
+            'records.employee_personal.lastname' => 'required|string|max:255',
+            'records.employee_personal.suffix' => 'nullable|in:jr,sr,I,II,III,IV,V',
+            'records.employee_personal.civil_status' => 'in:single,married,divorced,seperated,widowed,anulled',
+            'records.employee_personal.sex' => 'in:male,female',
+            'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
+            'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
+
+            'records.employee_personal.mobile_number' => 'regex:/^09\d{9}$/',
+            'records.employee_personal.email' => 'email',
+
+
+            'records.employee_children.*.firstname' => 'required|string|max:255',
+            'records.employee_children.*.middlename' => 'nullable|string|max:255',
+            'records.employee_children.*.lastname' => 'required|string|max:255',
+            'records.employee_children.*.birthdate' => 'required|date',
+
+            'records.employee_education.*.level' => 'required|string',
+            'records.employee_education.*.school_name' => 'required|string|max:255',
+            'records.employee_education.*.course' => 'required|string|max:255',
+            'records.employee_education.*.from_year' => 'required|date',
+            'records.employee_education.*.to_year' => 'required|date',
+
+            'records.employee_employment_history.*.position' => 'required|string|max:255',
+            'records.employee_employment_history.*.department' => 'required|string|max:255',
+            'records.employee_employment_history.*.company_name' => 'required|string|max:255',
+            'records.employee_employment_history.*.monthly_salary' => 'required|numeric|min:0',
+            'records.employee_employment_history.*.employment_status' => 'required|string',
+            'records.employee_employment_history.*.isGovernment' => 'required|string',
+            'records.employee_employment_history.*.from_year' => 'required|date',
+            'records.employee_employment_history.*.to_year' => 'required|date|after_or_equal:records.employee_employment_history.*.from_year',
+
+        ];
     }
 
     public function messages(): array
@@ -198,7 +267,12 @@ class Index extends Component
             'records.employee_account.email.required' => 'Account email is required.',
             'records.employee_personal.firstname.required' => 'The first name field is required.',
             'records.employee_personal.lastname.required' => 'The last name field is required.', 
-        
+            
+            'records.employee_personal.suffix.in' => 'The suffix is invalid',
+
+
+            'records.employee_personal.country.required_if' => 'The country field is required for dual citizenships.',
+
             'records.employee_children.*.firstname.required' => 'The first name is required.',
             'records.employee_children.*.firstname.string' => 'The first name must be a valid string.',
             'records.employee_children.*.firstname.max' => 'The first name may not exceed 255 characters.',

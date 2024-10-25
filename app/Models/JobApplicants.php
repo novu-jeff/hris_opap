@@ -15,7 +15,8 @@ class JobApplicants extends Model
         'applicant_no',
         'job_id',
         'status',
-        'isInterviewResponded'
+        'isInterviewResponded',
+        'isSignedJobOffer'
     ];
 
     public function applicant() {

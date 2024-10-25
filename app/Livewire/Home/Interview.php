@@ -26,53 +26,78 @@ class Interview extends Component
     }
 
     public function loadRecords() {
+
         $id = Auth::guard('applicants')->user()->id;
         $this->user_id = $id;
+
         
-        $applicant = JobApplicants::where('user_id', $id)
+        $record = JobApplicants::with('interview.details', 'interview.items.options', 'interview.items.answers')
+            ->where('user_id', $id)
             ->where('job_id', $this->job_id)
             ->where('status', 'interview')
             ->first();
 
-        if(!$applicant) {
-            return redirect()->route('home.profile.index');
-        }
 
-        $this->applicant_id = $applicant->id;
-
-        $record = JobApplicants::with('interview.details', 'interview.items.options', 'interview.items.answers')
-            ->first();
- 
         if(!$record) {
             return redirect()->route('home.profile.index');
         }
 
+        $this->applicant_id = $record->id;
         $this->record = $record;
+
+        foreach ($record->interview as $interview) {
+            foreach ($interview->items as $item) {
+                if (in_array($item->response_type, ['checkbox', 'radio'])) {
+                    if (!isset($this->answer[$item->id])) {
+                        $this->answer[$item->id] = [];
+                    }
+                    foreach ($item->answers as $answer) {
+                        $this->answer[$item->id][$answer['answer']] = '';
+                    }
+                } else {
+                    $this->answer[$item->id] = '';
+                }
+            }
+        }
+        
+
 
     }
 
 
     protected function rules() {
         return [
-            'answer' => 'required',
+            'answer' => 'required|array',
             'answer.*' => 'required',
+            'answer.*.*' => 'required', 
+        ];
+    }
+    
+    protected function messages() {
+        return [
+            'answer.required' => 'Answer is required.',
+            'answer.*' => 'Answer is required.',
+            'answer.*.*.required' => 'Answer is required.',
         ];
     }
 
-    protected function messages() {
-        return [
-            'answer.*.required' => 'You answer is required'
-        ];
+    public function go_back() {
+        session()->put('target', [
+            'page' => 'profile',
+            'tab' => 'interview',
+            'accordion' => '',
+        ]);
+        return redirect()->route('home.profile.index');
     }
+    
 
     public function save(bool $isNotify = true) {
 
         $this->validate();
 
-
         if($isNotify) {
             return $this->dispatch('showConfirmation', [
-                'title' => 'Are you sure to submit this reponse?',
+                'title' => 'Are you sure to submit this response?',
                 'message' => 'Please be informed that once submitted, you\re not be able to edit your responses.',
                 'action' => 'save'
             ]);
@@ -104,6 +129,8 @@ class Interview extends Component
                 ]);
 
             DB::commit();
+
+            $this->answer = [];
 
             $this->loadRecords();
 

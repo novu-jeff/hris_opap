@@ -2,14 +2,21 @@
 
 namespace App\Livewire\Admin\Job\Applicant;
 
+use App\Helper\Generate;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
+use App\Mail\SendEmployeeAccount;
+use App\Mail\SendJobOffer;
+use App\Models\EmployeeAccount;
 use App\Models\Interview;
 use App\Models\JobApplicants;
 use App\Models\JobApplicantsInterview;
 use App\Models\JobApplicantsOffer;
 use App\Models\JobApplicantsRequirements;
 use App\Models\JobRequirements;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -19,6 +26,7 @@ class Index extends Component
 
     use WithFileUploads;
 
+    public $user_id;
     public $records;
     public $status;
     public $applicant_information;
@@ -49,6 +57,7 @@ class Index extends Component
     }
 
     public function loadRecords() {
+        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
         $this->records = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
             ->where('status', $this->status)
             ->get();
@@ -58,7 +67,7 @@ class Index extends Component
 
     public function view_applicant(int $id) {
 
-        $record = JobApplicants::with(['applicant', 'job'])
+        $record = JobApplicants::with(['applicant.skills.skills', 'job'])
             ->where('id', $id);
 
         if(!$record->exists()) {
@@ -70,6 +79,8 @@ class Index extends Component
             'modal' => 'applicant_info'
         ]);
 
+        // dd($record->first()->toArray());
+
     }
 
     # view responses from the interview
@@ -77,13 +88,38 @@ class Index extends Component
         $records = JobApplicants::with('interview.details', 'interview.items.options', 'interview.items.answers')
             ->where('id', $id)
             ->first();
-        // $records = JobApplicantsInterview::with( 'details', 'interview.options', 'interview.answers')
-        //     ->where('job_applicants_id', $id)->get();
         $this->applicant_responses = $records;
-        // dd($records->toArray());
         $this->dispatch('showModal', [
             'modal' => 'applicant_responses'
         ]);
+    }
+
+    public function download_requirement(int $id) {
+        
+        $record = JobApplicantsRequirements::where('id', $id)
+            ->first();
+
+            if(is_null($record)) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'message' => 'Requirement does not exists'
+                ]);
+            }
+
+            $path = 'public/applicant/users/'.$this->user_id. '/' . $this->selected_id .'/requirements/' . $record->attachment;
+            
+            if(!Storage::exists($path)) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'message' => 'Job offer does not exists'
+                ]);
+            } 
+
+            return response()->download(Storage::path($path));
     }
 
     public function set_action(string $action, int $id) {
@@ -123,17 +159,15 @@ class Index extends Component
     # set requirements checklist
     public function set_checklist($isSaved, int $id = null) {
         if(!$isSaved) {
+
             $records = JobRequirements::all();
-            
-            $savedRequirements = JobApplicantsRequirements::where('job_applicants_id', $id)
+            $submittedRequirements = JobApplicantsRequirements::where('job_applicants_id', $id)
                 ->get();
 
             $this->requirements = $records;
-            foreach($savedRequirements as $key => $value) {
-                $this->selected_requirements[$value->requirement_id] = true;
-            }
 
             $this->selected_id = $id;
+            $this->selected_requirements = $submittedRequirements;
 
             return $this->dispatch('showModal', [
                 'modal' => 'applicant_requirements',
@@ -304,7 +338,7 @@ class Index extends Component
     # set application to hired
     public function set_hired(bool $isNotify = true) {
 
-        $model = JobApplicants::with('requirements')->find($this->selected_id);
+        $model = JobApplicants::with('job', 'requirements')->find($this->selected_id);
 
         if($model->requirements->count() < 3) {
             return $this->dispatch('alert', [
@@ -325,12 +359,14 @@ class Index extends Component
         } else {
 
             if($this->create_employee()) {
-                
+                $model->job->slots -= 1;
+                $model->job->save();
                 $model->update([
                     'status' => 'hired',
                 ]);
     
                 $this->loadRecords();
+
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
                     'showAlert' => true,
@@ -368,15 +404,15 @@ class Index extends Component
             return $this->setErrorBag($validator->errors());
         }
 
-        $model = JobApplicants::with('job')->find($this->selected_id);
+        $record = JobApplicants::with('job')->find($this->selected_id);
         
         $attachment = $this->job_offer['attachment'];
         $extension = $attachment->getClientOriginalExtension();
-        $filename = 'job_offer_' . str_replace(' ', '_', $model->job->position 
+        $filename = 'job_offer_' . str_replace(' ', '_', $record->job->position 
             . '_' . time()) 
             . '.' . $extension;
 
-        $attachment->storeAs('public/applicant/users/' . $model->user_id . '/offers', $filename);
+        $attachment->storeAs('public/applicant/users/' . $record->user_id . '/' . $record->job->id . '/offers', strtolower($filename));
 
         JobApplicantsOffer::insert([
             'job_applicants_id' => $this->selected_id,
@@ -384,6 +420,20 @@ class Index extends Component
             'body' => $this->job_offer['body'],
             'attachment' => $filename,
         ]); 
+
+        $data = [
+            'fullname' => $record->applicant->firstname . ' ' . $record->applicant->lastname,
+            'slug' => $record->job->slug,
+            'position' => $record->job->position,
+            'company_name' => $record->job->company_name,
+            'location' => $record->job->location,
+            'setup' => $record->job->setup,
+            'type' => $record->job->type,
+            'range' => $record->job->min_salary . ' - ' . $record->job->max_salary, 
+        ];
+
+        Mail::to($record->applicant->email)
+            ->send(new SendJobOffer($data));
 
         return $this->dispatch('alert', [
             'id' => $this->selected_id,
@@ -394,6 +444,37 @@ class Index extends Component
             'isRemoveRowDT' => false,
             'isReloadDT' => true,
         ]);
+
+    }
+
+    public function download_offer(int $id) {
+
+        $record = JobApplicants::with('offer')
+            ->where('id', $id)
+            ->where('user_id', $this->user_id)
+            ->first();
+
+        if(is_null($record->offer)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Job offer does not exists'
+            ]);
+        }
+
+        $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/offers/' . $record->offer->signed_attachment;
+        
+        if(!Storage::exists($path)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Job offer does not exists'
+            ]);
+        } 
+
+        return response()->download(Storage::path($path));
 
     }
 
@@ -482,7 +563,7 @@ class Index extends Component
         }
     
     }
-
+    
     public function validate_action(string $action) {
         $allowed = ['process', 'rejected', 'delete'];
         if(in_array($action, $allowed)) {
@@ -497,7 +578,7 @@ class Index extends Component
         
         DB::beginTransaction();
         
-        $record = JobApplicants::find($this->selected_id);
+        $record = JobApplicants::with('applicant', 'job')->find($this->selected_id);
 
         if(!$record) {
             $this->dispatch('alert', [
@@ -510,9 +591,38 @@ class Index extends Component
         }
 
         try {
+            
             $process->save(true, $record->user_id);
+
+            $account = EmployeeAccount::where('email', $record->applicant->email)
+                ->first();
+
+            $generate = new Generate;
+            $password = $generate->password();
+
+            $account->password = $password['hashed'];
+            $account->save();
+
+            $data = [
+                'fullname' => $record->applicant->firstname . ' ' . $record->applicant->lastname,
+                'slug' => $record->job->slug,
+                'position' => $record->job->position,
+                'company_name' => $record->job->company_name,
+                'location' => $record->job->location,
+                'setup' => $record->job->setup,
+                'type' => $record->job->type,
+                'range' => $record->job->min_salary . ' - ' . $record->job->max_salary, 
+                'email' => $account->email,
+                'password' => $password['plain'],
+            ];
+
+            Mail::to($record->applicant->email)
+                ->send(new SendEmployeeAccount($data));
+
             DB::commit();
+            
             return true;
+        
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', [

@@ -47,8 +47,7 @@ return new class extends Migration
                 ->constrained('employee_information')
                 ->onCascade('delete');
             $table->string('email')
-                ->unique()
-                ->nullable();
+                ->unique();
             $table->string('password')
                 ->nullable();
         });
@@ -118,7 +117,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('tel_no')
                 ->nullable();
-            $table->string('company_email')
+            $table->string('email')
                 ->nullable(); 
             $table->string('height')
                 ->nullable(); 
@@ -145,6 +144,23 @@ return new class extends Migration
             $table->foreignId('employee_id')
                 ->constrained('employee_information')
                 ->onCascade('delete');
+            
+            $table->string('spouse_surname')
+                ->nullable();
+            $table->string('spouse_firstname')
+                ->nullable();
+            $table->string('spouse_middlename')
+                ->nullable();
+            $table->string('spouse_occupation')
+                ->nullable();
+            $table->string('spouse_business_name_employer')
+                ->nullable();
+            $table->string('spouse_business_address')
+                ->nullable();
+            $table->string('spouse_contact_no')
+                ->nullable();  
+
+
             $table->string('father_surname')
                 ->nullable();
             $table->string('father_firstname')
@@ -161,28 +177,12 @@ return new class extends Migration
                     'IIIII'
                 ])
                 ->nullable();
-            $table->string('father_occupation')
-                ->nullable();
-            $table->string('father_business_name')
-                ->nullable();
-            $table->string('father_business_address')
-                ->nullable();
-            $table->string('father_tel_no')
-                ->nullable();
 
             $table->string('mother_surname')
                 ->nullable();
             $table->string('mother_firstname')
                 ->nullable();
             $table->string('mother_middlename')
-                ->nullable();
-            $table->string('mother_occupation')
-                ->nullable();
-            $table->string('mother_business_name')
-                ->nullable();
-            $table->string('mother_business_address')
-                ->nullable();
-            $table->string('mother_tel_no')
                 ->nullable();
         });
 

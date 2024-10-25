@@ -17,4 +17,6 @@ class JobApplicantsOffer extends Model
         'attachment'
     ];
 
+    public $timestamps = false;
+
 }
