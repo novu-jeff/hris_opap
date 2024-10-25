@@ -115,7 +115,6 @@ class UpdateProfileImage extends Component
         $this->dispatch('loadRecords')->to('home.profile');
         
         return $this->dispatch('alert', [
-            'showAlert' => true,
             'status' => 'success',
             'title' => 'Profile Removed', 
             'message' => 'You have now updated your resume, this might help you get hired!',

@@ -28,10 +28,16 @@
                                                         @if ($item['response_type'] == 'simple')
                                                             <div class="col-12 mb-3">
                                                                 <input type="text" wire:model="answer.{{$item->id}}" class="form-control text-uppercase" placeholder="Your Answer">
+                                                                <div class="error-field mt-2 ms-5">
+                                                                    @error('answer.' . $item->id) <span class="text-danger">{{ $message }}</span> @enderror
+                                                                </div>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'explanatory')
                                                             <div class="col-12 mb-3">
                                                                 <textarea wire:model="answer.{{$item->id}}" class="form-control text-uppercase" rows="5" placeholder="Your Answer"></textarea>
+                                                                <div class="error-field mt-2">
+                                                                    @error('answer.' . $item->id) <span class="text-danger">{{ $message }}</span> @enderror
+                                                                </div>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'checkbox')
                                                             <div class="col-12 mb-3">
@@ -42,7 +48,17 @@
                                                                             {{ $option->name }}
                                                                         </label>
                                                                     </div>
+                                                                    <div class="error-field mt-2 ms-5">
+                                                                        @error('answer.' . $item->id . '.' . $option->id)
+                                                                            <span class="text-danger">{{ $message }}</span>
+                                                                        @enderror
+                                                                    </div>
                                                                 @endforeach
+                                                                <div class="error-field mt-3">
+                                                                    @error('answer.' . $item->id)
+                                                                        <span class="text-danger">{{ $message }}</span>
+                                                                    @enderror
+                                                                </div>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'radio')
                                                             <div class="col-12 mb-3">
@@ -53,16 +69,26 @@
                                                                             {{ $option->name }}
                                                                         </p>
                                                                     </div>
+                                                                    <div class="error-field mt-2 ms-5">
+                                                                        @error('answer.' . $item->id . '.' . $option->id)
+                                                                            <span class="text-danger">{{ $message }}</span>
+                                                                        @enderror
+                                                                    </div>
                                                                 @endforeach
+                                                                <div class="error-field mt-3">
+                                                                    @error('answer.' . $item->id)
+                                                                        <span class="text-danger">{{ $message }}</span>
+                                                                    @enderror
+                                                                </div>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'file')
                                                             <div class="col-12 mb-3">
                                                                 <input type="file" wire:model="answer.{{$item->id}}" name="file_upload" class="form-control">
                                                             </div>
+                                                            <div class="error-field mt-2 ms-5">
+                                                                @error('answer.' . $item->id) <span class="text-danger">{{ $message }}</span> @enderror
+                                                            </div>
                                                         @endif
-                                                    </div>
-                                                    <div class="error-field ms-5">
-                                                        @error('answer.{{$interview->id}}.{{$item->id}}') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -72,12 +98,16 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="mt-4 d-flex justify-content-end">
+                    <div class="mt-4 d-flex justify-content-between">
+                        <button type="button" wire:click="go_back" class="btn btn-outline-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</button>
                         <button type="submit" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Submit</button>
                     </div>
                 </form>
             @else
                 <div class="alert alert-warning mb-0 text-uppercase text-center">You've already responded to this interview.</div>
+                <div class="mt-3 d-flex justify-content-center">
+                    <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button>
+                </div>
             @endif
         </div>
     </div>

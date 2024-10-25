@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('status');
             $table->boolean('isInterviewResponded')
                 ->default(false);
+            $table->boolean('isSignedJobOffer')
+                ->default(false);
             $table->timestamps();
         });
 
@@ -42,7 +44,11 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->string('subject');
             $table->longText('body');
+            $table->string('starting_date');
+            $table->string('salary');
             $table->string('attachment');
+            $table->string('signed_attachment')
+                ->nullable();
         });
 
         Schema::create('job_applicants_requirements', function(Blueprint $table) {
@@ -53,6 +59,7 @@ return new class extends Migration
             $table->foreignId('requirement_id')
                 ->constrained('job_requirements')
                 ->onDelete('cascade');
+            $table->string('attachment');
         });
     }
 

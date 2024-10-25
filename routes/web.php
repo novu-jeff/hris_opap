@@ -70,8 +70,12 @@ Route::middleware(['applicant'])->group(function() {
         ->name('home.search');
     Route::resource('profile', ProfileController::class)
         ->names('home.profile');
-    Route::get('interview/{job_id}/{interview_id}', [HomeInterviewController::class, 'index'])
-        ->name('interview-assessment');
+    Route::get('interview/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
+        ->name('interview-respond');
+    Route::get('job/offer/upload/signed/{job_id}', [HomeInterviewController::class, 'offer'])
+        ->name('upload-signed-offer');
+    Route::get('job/requirements/upload/{job_id}', [HomeInterviewController::class, 'requirements'])
+        ->name('upload-requirements');
 });
 
 

@@ -142,3 +142,14 @@ if(!function_exists('computeAge')) {
         return Carbon::parse($birthday)->age ?? '';
     }
 }
+
+if (!function_exists('file_type')) {
+    function file_type($string) {
+        $extension = strtolower(pathinfo($string, PATHINFO_EXTENSION));
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+            return 'image';
+        } else {
+            return $extension;
+        }
+    }
+}

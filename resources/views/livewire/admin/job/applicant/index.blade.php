@@ -1,7 +1,7 @@
 <div>
     {{-- Applicant Information Modal --}}
     <div class="modal fade" wire:ignore.self id="applicant_info" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Applicant Information</h1>
@@ -24,10 +24,10 @@
                                     <strong>Last Name:</strong> {{$applicant_information->lastname ?? null}}
                                 </div>
                                 <div class="col-md-6 mb-3 text-uppercase">
-                                    <strong>Phone Number:</strong> {{$applicant_information->phone_no ?? null}}
+                                    <strong>Phone No:</strong> {{$applicant_information->phone_no ?? null}}
                                 </div>
                                 <div class="col-md-6 mb-3 text-uppercase">
-                                    <strong>Telephone Number:</strong> {{$applicant_information->tel_no ?? null}}
+                                    <strong>Tel No:</strong> {{$applicant_information->tel_no ?? null}}
                                 </div>
                                 <div class="col-md-6 mb-3 text-uppercase">
                                     <strong>Sex:</strong> {{$applicant_information->sex ?? null}}
@@ -38,6 +38,9 @@
                                 <div class="col-md-6 mb-3 text-uppercase">
                                     <strong>Civil Status:</strong> {{$applicant_information->civil_status ?? null}}
                                 </div>
+                                <div class="col-12 mb-3">
+                                    <hr>
+                                </div>
                                 <div class="col-md-12 mb-3 text-uppercase">
                                     <strong>Address:</strong> {{$applicant_information->address ?? null}}
                                 </div>
@@ -46,6 +49,9 @@
                                 </div>
                                 <div class="col-md-6 mb-3 text-uppercase">
                                     <strong>City:</strong> {{$applicant_information->city ?? null}}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <hr>
                                 </div>
                                 <div class="col-md-12 mb-3 text-uppercase">
                                     <strong>Resume:</strong> 
@@ -57,6 +63,25 @@
                                         <span class="text-lowercase">No resume uploaded</span>
                                     @endif
                                 </div>
+                                <div class="col-md-12 mb-3 text-uppercase">
+                                    @if (!is_null($applicant_information) && !$applicant_information->skills->isEmpty())
+                                        <strong>Skills:</strong> 
+                                    @endif
+                                    <div class="skill-content pt-2 pb-3">
+                                        @if (!is_null($applicant_information) && !$applicant_information->skills->isEmpty())
+                                            @foreach ($applicant_information->skills as $skill)
+                                                <div class="skill-box">
+                                                    {{$skill->skills->name}}
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                                @if (!empty($application_information->level))
+                                    <div class="col-12 mb-3">
+                                        <hr>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-3 mb-3 text-uppercase  d-flex justify-content-end">
@@ -68,6 +93,27 @@
                                 }}" class="w-100 h-100" style="width: 150px; height: 150px; object-fit:cover" alt="" srcset="">
                             </div>                            
                         </div>
+                        @if (!empty($applicant_information->level))
+                            <div class="col-md-12 mb-3 text-uppercase">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <strong>Highest School Attaintment:</strong> {{$applicant_information->level ?? null}}
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <strong>School Name:</strong> {{$applicant_information->school_name ?? null}}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <strong>Course:</strong> {{$applicant_information->course ?? null}}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <strong>From:</strong> {{$applicant_information->started ?? null}}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <strong>To:</strong> {{$applicant_information->finished ?? null}}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -236,11 +282,25 @@
                         </div>
                         <div class="col-12 mb-3">
                             <label class="mb-2" for="body">Body <span class="text-danger">*</span></label>
-                            <div wire:ignore>
+                            <div wire:ignore >
                                 <textarea wire:model="job_offer.body" id="ckeditor" class="form-control text-uppercase"></textarea>
                             </div>
                             <div class="error-field">
                                 @error('body') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="mb-2" for="starting_date">Starting Date <span class="text-danger">*</span></label>
+                            <input type="date" wire:model="job_offer.starting_date" id="job_offer.starting_date" class="form-control">
+                            <div class="error-field">
+                                @error('starting_date') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="mb-2" for="salary">Salary <span class="text-danger">*</span></label>
+                            <input type="range" wire:model="job_offer.salary" id="job_offer.salary" class="form-range">
+                            <div class="error-field">
+                                @error('salary') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">
@@ -261,34 +321,41 @@
 
     {{-- Requirements Checklist Modal--}}
     <div class="modal fade" wire:ignore.self id="applicant_requirements" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Requirements Checklist</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body py-4">
                     @if (!empty($requirements))
                         <div class="row">
                             @foreach($requirements as $key => $item)
-                            <div class="col-12 col-md-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div>
-                                        <input type="checkbox" wire:model='selected_requirements.{{$item->id}}'  class="form-check">
+                                <div class="col-12 col-md-6 mb-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div>
+                                            <input type="checkbox" class="form-check-input" {{ $selected_requirements->contains('requirement_id', $item->id) ? 'checked' : '' }}  disabled>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                    <div class="mt-2">
+                                        @php
+                                            $selectedReq = $selected_requirements->firstWhere('requirement_id', $item->id);
+                                        @endphp
+                                        @if ($selectedReq)
+                                            <a href="javascript:void(0)" wire:click='download_requirement({{$selectedReq->id}})'>{{$selectedReq->attachment}}</a>
+                                        @else
+                                            <p class="text-uppercase">No attachment</p>
+                                        @endif
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
                         </div>
                     @else
                         <div class="alert alert-info mb-0">No Interviews created, please add first.</div>
                     @endif
-                </div>
-                <div class="modal-footer d-flex justify-content-end">
-                    <button class="btn btn-primary" wire:click="set_checklist(true)">Proceed</button>
                 </div>
             </div>
         </div>
@@ -297,22 +364,22 @@
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'pending'])}}" class="nav-link {{$status == 'pending' ? 'active' : ''}}" id="pills-pending-tab"  aria-selected="true">Pending</a>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'interview'])}}" class="nav-link {{$status == 'interview' ? 'active' : ''}}" id="pills-interview-tab" type="button" role="tab" aria-controls="pills-interview" aria-selected="false">Interview</a>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'placement'])}}" class="nav-link {{$status == 'placement' ? 'active' : ''}}" id="pills-placement-tab" type="button" role="tab" aria-controls="pills-placement" aria-selected="false">Placement</a>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'onboarding'])}}" class="nav-link {{$status == 'onboarding' ? 'active' : ''}}" id="pills-onboarding-tab"type="button" role="tab" aria-controls="pills-onboarding" aria-selected="false">Onboarding</a>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'hired'])}}" class="nav-link {{$status == 'hired' ? 'active' : ''}}" id="pills-hired-tab"  type="button" role="tab" aria-controls="pills-hired" aria-selected="false">Hired</a>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('job.applicants.index', ['status' => 'rejected'])}}" class="nav-link {{$status == 'rejected' ? 'active' : ''}}" id="pills-rejected-tab"  type="button" role="tab" aria-controls="pills-rejected" aria-selected="false">Rejected</a>
                 </li>
             </ul>
@@ -325,7 +392,10 @@
                             <th>Position</th>
                             @if ($status == 'placement')
                                 <th>
-                                    Offers
+                                    Job Offer Status
+                                </th>
+                                <th>
+                                    Signed Job Offer
                                 </th>
                             @endif
                             <th>Date Applied</th>
@@ -340,7 +410,14 @@
                                 <td>{{$record->job->position}}</td>
                                 @if ($status == 'placement')
                                     <td>
-                                        {{$records[0]->offer ? 'Offer Sent' : 'No offer sent'}}
+                                        {{$records[0]->offer ? 'Offer Sent' : 'Pending For Offer'}}
+                                    </td>
+                                    <td>
+                                        {{$records[0]->offer 
+                                        ?
+                                        'Received'
+                                        : 
+                                        'Waiting For Signature'}}
                                     </td>
                                 @endif
                                 <td>{{$record->created_at}}</td>
@@ -359,6 +436,11 @@
                                     @if($status != 'rejected' && $status != 'hired')
                                         <button wire:click="set_action('rejected', {{$record->id}})" class="btn btn-danger mx-1">
                                             <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    @endif
+                                    @if ($status === 'placement' && $record->isSignedJobOffer)
+                                        <button wire:click="download_offer({{$record->id}})" class="btn btn-primary mx-1">
+                                            <i class="fa-solid fa-signature"></i>
                                         </button>
                                     @endif
                                     @if ($status === 'placement' && is_null($record->offer))

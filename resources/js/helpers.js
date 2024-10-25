@@ -43,24 +43,42 @@ export function ckeditor(isReadOnly = false) {
 
     let editEditor;
 
+    // Check if an existing instance of CKEditor exists and destroy it
+    const ckeditorElement = document.querySelector('#ckeditor');
+    if (ckeditorElement && ckeditorElement.ckeditorInstance) {
+        ckeditorElement.ckeditorInstance.destroy()
+        .then(() => {
+            console.log('Existing CKEditor instance destroyed.');
+        })
+        .catch(error => {
+            console.error('Error destroying the existing editor:', error);
+        });
+    }
+
+    // Create a new instance of CKEditor
     ClassicEditor
-    .create(document.querySelector('#ckeditor'), {
+    .create(ckeditorElement, {
         toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote'],
         height: '500px'
     })
     .then(editor => {
         editEditor = editor;
+
+        // Store the editor instance on the DOM element for future reference
+        ckeditorElement.ckeditorInstance = editor;
+
         editor.model.document.on('change:data', () => {
             Livewire.dispatch('ckeditor', [editor.getData()]);
-        } );
-        if(isReadOnly) {
-            editor.isReadOnly = true
+        });
+        if (isReadOnly) {
+            editor.isReadOnly = true;
         }
     })
     .catch(error => {
-        console.error(error);
+        console.error('Error creating the CKEditor instance:', error);
     });
 }
+
 
 export function removeRowDT(id) {
     var table = $('table').DataTable();

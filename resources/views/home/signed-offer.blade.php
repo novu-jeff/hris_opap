@@ -1,13 +1,12 @@
 @extends('layouts.app', [
-    'title' => 'Symphony | Answer Interview'
+    'title' => 'Symphony | Upload Signed Job Offer'
 ])
 
 @section('content')
 <div class="container mt-5 pb-5">
     <div class="mt-5">
-        @livewire('home.interview', [
+        @livewire('home.signed-offer', [
             'job_id' => $job_id,
-            'interview_id' => $interview_id
         ])
     </div>
 </div>

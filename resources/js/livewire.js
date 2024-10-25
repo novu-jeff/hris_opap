@@ -38,11 +38,10 @@ Livewire.on('alert', (event) => {
             resetErrorsAndFields();
         }
 
-        // Properly hide all visible modals
-        $('.modal.show').each(function() {  // Only modals that are currently shown
-            var modalInstance = bootstrap.Modal.getInstance(this);  // Get the existing modal instance
+        $('.modal.show').each(function() {  
+            var modalInstance = bootstrap.Modal.getInstance(this);  
             if (modalInstance) {
-                modalInstance.hide();  // Hide the modal
+                modalInstance.hide(); 
             }
         });
 

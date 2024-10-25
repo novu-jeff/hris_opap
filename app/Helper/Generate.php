@@ -22,6 +22,24 @@ class Generate {
         return $date->format('Ymd') . $date->timestamp;
     }
 
+    public function email(int $id, string $firstname, string $lastname) {
+
+        $suffix = trim(env('COMPANY_DOMAIN'));
+
+        $emailPrefix = strtolower(trim(str_replace(' ', '.', $firstname . '.' . $lastname)));
+
+        $uniqueId = Str::random(5);
+
+        $email = "{$emailPrefix}.{$uniqueId}@{$suffix}";
+
+        while (User::where('email', $email)->exists()) {
+            $uniqueId = Str::random(5);
+            $email = "{$emailPrefix}.{$uniqueId}@{$suffix}"; // Use the correct domain suffix
+        }
+
+        return $email;
+    }
+
     public function password(int $length = 8) {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
         $password = '';        
@@ -29,7 +47,11 @@ class Generate {
             $password .= $characters[random_int(0, strlen($characters) - 1)];
         }
 
-        return Hash::make($password);
+        return [
+            'plain' => $password,
+            'hashed' => Hash::make($password)
+        ];
+
     }
 
 }

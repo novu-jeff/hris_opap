@@ -15,4 +15,6 @@ class JobApplicantsRequirements extends Model
         'requirement_id',
     ];
 
+    public $timestamps = false;
+
 }
