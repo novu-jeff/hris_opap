@@ -352,15 +352,20 @@ class Index extends Component
         }
 
         if($isNotify) {
+
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
             $action = 'set_hired';
+
             $this->notify($title, $message, $action);
+
         } else {
 
             if($this->create_employee()) {
+
                 $model->job->slots -= 1;
                 $model->job->save();
+
                 $model->update([
                     'status' => 'hired',
                 ]);
@@ -382,8 +387,62 @@ class Index extends Component
 
     # send offer in under placement
     public function send_offer($isSaved, int $id = null) {
+
+
         if(!$isSaved) {
-            $this->selected_id = $id;
+
+            $this->selected_id = $id;  
+            
+            $records = JobApplicants::with('job', 'offer')->find($id);
+            
+            $this->job_offer = [
+                'min_salary' => $records->job->min_salary,
+                'max_salary' => $records->job->max_salary,
+            ];
+
+            $data = [
+                'fullname' => $records->applicant->firstname . ' ' . $records->applicant->lastname,
+                'slug' => $records->job->slug,
+                'position' => $records->job->position,
+                'company_name' => $records->job->company_name,
+                'location' => $records->job->location,
+                'setup' => $records->job->setup,
+                'type' => $records->job->type,
+            ];
+
+            $this->job_offer['subject'] = 'Job Offer for ' . ucwords($data['position']) . ' Position at ' . $data['company_name'];
+
+            $this->job_offer['body'] = '
+                <p>Hello <b>' . ucwords($data["fullname"]) . ',</b></p>
+                <p>
+                    We are pleased to extend an offer for you to join <strong>' . ucwords($data["company_name"]) . '</strong> as our new <strong>' . $data["position"] . '</strong>. 
+                    Based on your impressive skills, experience, and interview performance, we are confident that you will make a valuable addition to our team.
+                </p>
+
+                <h3><b>Job Details:</b></h3>
+                <ul>
+                    <li><strong>Company</strong>: ' . ucwords($data["company_name"]) . '</li>
+                    <li><strong>Position</strong>: ' . ucwords($data["position"]) . '</li>
+                    <li><strong>Work Setup</strong>: ' . ucwords($data["setup"]) . '</li>
+                    <li><strong>Employment Type</strong>: ' . ucwords(str_replace("-", " ", $data["type"])) . '</li>
+                </ul>
+
+                <h3><b>Offer Details:</b> Please check the attachment.</h3>
+
+                <p>We’re excited to welcome you to a supportive, growth-oriented environment where you will have the opportunity to make a meaningful impact on our projects and culture. We believe your expertise will be instrumental in achieving our team’s goals.</p>
+
+                <h3><b>Next Steps:</b></h3>
+                <p>Please review the attached document, which includes the full terms and conditions of the offer. To confirm your acceptance, simply sign the attached offer letter and return it by <strong>uploading it to our website under profile and placement tab</strong>.</p>
+
+                <p>If you have any questions regarding the offer or the details of your employment, feel free to reach out to support@' . env("COMPANY_DOMAIN") . '.</p>
+
+                <p>Congratulations again, ' . ucwords($data["fullname"]) . '! We look forward to the opportunity to work together and are excited about the contributions you’ll bring to our team.</p>
+                <p style="margin-bottom: 0px">Warm regards,
+                    <br>
+                    <b>HR Department</b>
+                </p>
+            ';
+
             return $this->dispatch('showModal', [
                 'modal' => 'applicant_job_offer',
                 'plugins' => [
@@ -392,47 +451,59 @@ class Index extends Component
             ]);
         }
 
+        $records = JobApplicants::with('applicant', 'job', 'offer')->find($this->selected_id);
+
         $rules = [
-            'subject' => 'required',
-            'body' => 'required',
-            'attachment' => 'required|file|mimes:docx,doc,pdf',
+            'job_offer.subject' => 'required',
+            'job_offer.body' => 'required',
+            'job_offer.attachment' => 'required|file|mimes:docx,doc,pdf',
+            'job_offer.starting_date' => 'required|after_or_equal:today',
+            'job_offer.salary' => 'required|numeric|between:' . $this->job_offer['min_salary'] . ',' . $this->job_offer['max_salary'],
+        ];
+        
+        $messages = [
+            'job_offer.subject.required' => 'The subject is required.',
+            'job_offer.body.required' => 'The body is required.',
+            'job_offer.attachment.required' => 'Please attach a document.',
+            'job_offer.attachment.file' => 'The attachment must be a file.',
+            'job_offer.attachment.mimes' => 'The attachment must be a file of type: docx, doc, or pdf.',
+            'job_offer.starting_date.required' => 'The starting date is required.',
+            'job_offer.starting_date.after_or_equal' => 'The starting date must be today or a future date.',
+            'job_offer.salary.required' => 'The salary is required.',
+            'job_offer.salary.numeric' => 'The salary must be a numeric value.',
+            'job_offer.salary.between' => 'The salary must be between ' . $this->job_offer['min_salary'] . ' and ' . $this->job_offer['max_salary'] . '.',
         ];
 
-        $validator = Validator::make($this->job_offer, $rules);
-
-        if($validator->fails()) {
-            return $this->setErrorBag($validator->errors());
-        }
-
-        $record = JobApplicants::with('job')->find($this->selected_id);
+        $this->validate($rules, $messages);
         
         $attachment = $this->job_offer['attachment'];
         $extension = $attachment->getClientOriginalExtension();
-        $filename = 'job_offer_' . str_replace(' ', '_', $record->job->position 
+        $filename = 'job_offer_' . str_replace(' ', '_', $records->job->position 
             . '_' . time()) 
             . '.' . $extension;
 
-        $attachment->storeAs('public/applicant/users/' . $record->user_id . '/' . $record->job->id . '/offers', strtolower($filename));
+        $attachment->storeAs('public/applicant/users/' . $records->user_id . '/' . $records->job->id . '/offers', strtolower($filename));
 
         JobApplicantsOffer::insert([
             'job_applicants_id' => $this->selected_id,
             'subject' => $this->job_offer['subject'],
             'body' => $this->job_offer['body'],
-            'attachment' => $filename,
+            'attachment' => strtolower($filename),
+            'starting_date' => $this->job_offer['starting_date'],
+            'salary' => $this->job_offer['salary']
         ]); 
 
+        $path = 'applicant/users/' . $records->user_id. '/' . $records->job_id .'/offers/' . strtolower($filename);
+
         $data = [
-            'fullname' => $record->applicant->firstname . ' ' . $record->applicant->lastname,
-            'slug' => $record->job->slug,
-            'position' => $record->job->position,
-            'company_name' => $record->job->company_name,
-            'location' => $record->job->location,
-            'setup' => $record->job->setup,
-            'type' => $record->job->type,
-            'range' => $record->job->min_salary . ' - ' . $record->job->max_salary, 
+            'subject' => $this->job_offer['subject'],
+            'body' => $this->job_offer['body'],
+            'attachment' => $path,
+            'position' => $records->job->position,
+            'company_name' => $records->job->company_name
         ];
 
-        Mail::to($record->applicant->email)
+        Mail::to($records->applicant->email)
             ->send(new SendJobOffer($data));
 
         return $this->dispatch('alert', [
@@ -573,7 +644,7 @@ class Index extends Component
     }
 
     public function create_employee() {
-
+relations: 
         $process = new HRISProcessingService();
         
         DB::beginTransaction();
@@ -581,6 +652,7 @@ class Index extends Component
         $record = JobApplicants::with('applicant', 'job')->find($this->selected_id);
 
         if(!$record) {
+
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -594,7 +666,7 @@ class Index extends Component
             
             $process->save(true, $record->user_id);
 
-            $account = EmployeeAccount::where('email', $record->applicant->email)
+            $account = EmployeeAccount::where('applicant_id', $record->applicant->id)
                 ->first();
 
             $generate = new Generate;
@@ -634,6 +706,48 @@ class Index extends Component
             ]);
         }
 
+    }
+
+    public function updated($propertyName) {
+
+        if ($propertyName === 'job_offer.attachment') {
+            
+            if (isset($this->job_offer['attachment'])) {
+                
+                $file = $this->job_offer['attachment'];
+
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    if (in_array($extension, ['pdf'])) {
+                        $filename = $file->store('public/temp'); 
+                        $url = Storage::url($filename); 
+    
+                        return $this->job_offer['attachment_preview'] = $url;
+                    } 
+
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Attachment must be PDF.'
+                    ]);
+                  
+
+                } else {    
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Error: Invalid File'
+                    ]);
+                }
+            }
+        }
+        
     }
 
     public function render()

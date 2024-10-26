@@ -136,38 +136,44 @@
                             </p>
                         </div>
                         <hr>
-                        <div class="card-body" wire:ignore>
+                        <div class="card-body">
                            @if (!$record->applied->isEmpty())
-                                @foreach ($record->applied as $record)
-                                    @if (!is_null($record->interview) && $record->status === 'interview')
+                                @foreach ($record->applied as $applied)
+                                    @if ($applied->status != 'hired')
                                         <div class="card px-2" style="border: none">
                                             <div class="card-header border-0 bg-transparent">
                                                 <div class="position-title">
-                                                    <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                                    <h4 class="m-0 text-uppercase">{{$applied->job->position}}</h4>
                                                 </div>
                                                 <div class="company-info">
-                                                    <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
-                                                    <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
+                                                    <p class="m-0 text-uppercase">{{$applied->job->company_name}}</p>
+                                                    <p class="m-0 text-uppercase">{{$applied->job->location . ' • ' . str_replace('-', ' ', $applied->job->setup) . ' • ' . str_replace('-', ' ', $applied->job->type)}}</p>
                                                 </div>
                                                 <div class="salary">
-                                                    <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                                    <p class="m-0 text-uppercase">{{money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary)}} per month</p>
                                                 </div>
                                                 <div class="date-posted">
                                                     <p class="m-0">
-                                                        Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                                        Posted {{relative_time($applied->job->created_at, 'hours ago')}}
                                                     </p>
                                                 </div>
                                                 <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                                    @if (!$record->isSignedJobOffer)
-                                                        <a href="{{route('interview-respond', ['job_id' => $record->job->id, 'interview_id' => $record->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    @if ($applied->status == 'interview' && !$applied->isInterviewResponded)
+                                                        <a href="{{route('interview-respond', ['job_id' => $applied->job->id, 'interview_id' => $applied->interview[0]->job_interview_id])}}" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
                                                             <span>
                                                                 Answer Interview
                                                             </span>
                                                         </a>
-                                                    @else
-                                                        <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    @elseif($applied->isInterviewResponded)
+                                                        <button type="button" class="btn btn-outline-warning d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
                                                             <span>
                                                                 Already Answered
+                                                            </span>
+                                                        </button>
+                                                    @else
+                                                        <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                            <span>
+                                                                Interview Unavailable
                                                             </span>
                                                         </button>
                                                     @endif
@@ -175,8 +181,6 @@
                                             </div>
                                         </div>
                                         <hr>
-                                    @else
-                                        <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
                                     @endif
                                 @endforeach
                             @else
@@ -194,50 +198,53 @@
                             </p>
                         </div>
                         <hr>
-                        <div class="card-body" wire:ignore>
-                            @if (!is_null($record->offer) && $record->status === 'placement')
-                                <div class="card px-2" style="border: none">
-                                    <div class="card-header border-0 bg-transparent">
-                                        <div class="position-title">
-                                            <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
-                                        </div>
-                                        <div class="company-info">
-                                            <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
-                                            <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
-                                        </div>
-                                        <div class="salary">
-                                            <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
-                                        </div>
-                                        <div class="date-posted">
-                                            <p class="m-0">
-                                                Posted {{relative_time($record->job->created_at, 'hours ago')}}
-                                            </p>
-                                        </div>
-                                        <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                            <button wire:click="download_offer({{$record->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                <span>
-                                                    Download Job Offer
-                                                </span>
-                                            </button>
-                                            @if (!$record->isSignedJobOffer)
-                                                <a href="{{route('upload-signed-offer', ['job_id' => $record->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                    <span>
-                                                        Upload Signed Job Offer
-                                                    </span>
-                                                </a>
-                                            @else
-                                                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                    <span>
-                                                        Already Signed
-                                                    </span>
-                                                </button>
-                                            @endif
+                        <div class="card-body">
+                            @php
+                                $filterRecords = $record->applied->filter(fn($applied) => $applied->status === 'placement' || $applied->status === 'onboarding');
+                            @endphp
+
+                            @if ($filterRecords->isEmpty())
+                                <div class="alert alert-info text-center text-uppercase">Currently No Job Offers</div>
+                            @else
+                                @foreach ($filterRecords as $applied)
+                                    <div class="card px-2" style="border: none">
+                                        <div class="card-header border-0 bg-transparent">
+                                            <div class="position-title">
+                                                <h4 class="m-0 text-uppercase">{{$applied->job->position}}</h4>
+                                            </div>
+                                            <div class="company-info">
+                                                <p class="m-0 text-uppercase">{{$applied->job->company_name}}</p>
+                                                <p class="m-0 text-uppercase">{{$applied->job->location . ' • ' . str_replace('-', ' ', $applied->job->setup) . ' • ' . str_replace('-', ' ', $applied->job->type)}}</p>
+                                            </div>
+                                            <div class="salary">
+                                                <p class="m-0 text-uppercase">{{money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary)}} per month</p>
+                                            </div>
+                                            <div class="date-posted">
+                                                <p class="m-0">
+                                                    Posted {{relative_time($applied->job->created_at, 'hours ago')}}
+                                                </p>
+                                            </div>
+                                            <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                @if (!$applied->isSignedJobOffer)
+                                                    <button wire:click="download_offer({{$applied->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                        <span>Download Job Offer</span>
+                                                    </button>
+                                                    <a href="{{route('upload-signed-offer', ['job_id' => $applied->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                        <span>Upload Signed Job Offer</span>
+                                                    </a>
+                                                @else
+                                                    <button wire:click="download_offer({{$applied->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                        <span>Download Job Offer</span>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                        <span>Already Signed</span>
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <hr>
-                            @else
-                                <div class="alert alert-info text-uppercase text-center">Currently no job offers.</div>
+                                    <hr>
+                                @endforeach
                             @endif
                         </div>
                     </div>
@@ -245,48 +252,49 @@
                 <div wire:ignore.self class="tab-pane fade {{$activeTab == 'onboarding' ? 'show active' : ''}}" id="v-pills-onboarding" role="tabpanel" aria-labelledby="v-pills-onboarding-tab" tabindex="0">
                     <div class="card px-3 pt-4 pb-5 profile-content">
                         <div class="card-header bg-transparent border-0">
-                            <h4>Your Job Offers</h4>
+                            <h4>Your Requirements</h4>
                             <p>
-                                Once your interviews are finished, if HR considers you a suitable candidate, your job offers will be provided and shown here.
+                                Once you've signed your job offer, HR will require your initial documents.
                             </p>
                         </div>
                         <hr>
                         <div class="card-body" wire:ignore>
-                            @if (!is_null($record->offer))
-                                <div class="card px-2" style="border: none">
-                                    <div class="card-header border-0 bg-transparent">
-                                        <div class="position-title">
-                                            <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
-                                        </div>
-                                        <div class="company-info">
-                                            <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
-                                            <p class="m-0 text-uppercase">{{$record->job->location . ' • ' . str_replace('-', ' ', $record->job->setup) . ' • ' . str_replace('-', ' ', $record->job->type)}}</p>
-                                        </div>
-                                        <div class="salary">
-                                            <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
-                                        </div>
-                                        <div class="date-posted">
-                                            <p class="m-0">
-                                                Posted {{relative_time($record->job->created_at, 'hours ago')}}
-                                            </p>
-                                        </div>
-                                        <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                            <button wire:click="download_offer({{$record->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                <span>
-                                                    Download Job Offer
-                                                </span>
-                                            </button>
-                                            <a href="{{route('upload-requirements', ['job_id' => $record->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                <span>
-                                                    Upload Requirements
-                                                </span>
-                                            </a>
+                            @php
+                                $filterRecords = $record->applied->filter(fn($applied) => $applied->status === 'placement' || $applied->status === 'onboarding');
+                            @endphp
+
+                            @if ($filterRecords->isEmpty())
+                                <div class="alert alert-info text-center text-uppercase">Currently No Job Offers</div>
+                            @else
+                                @foreach ($filterRecords as $applied)
+                                    <div class="card px-2" style="border: none">
+                                        <div class="card-header border-0 bg-transparent">
+                                            <div class="position-title">
+                                                <h4 class="m-0 text-uppercase">{{$applied->job->position}}</h4>
+                                            </div>
+                                            <div class="company-info">
+                                                <p class="m-0 text-uppercase">{{$applied->job->company_name}}</p>
+                                                <p class="m-0 text-uppercase">{{$applied->job->location . ' • ' . str_replace('-', ' ', $applied->job->setup) . ' • ' . str_replace('-', ' ', $applied->job->type)}}</p>
+                                            </div>
+                                            <div class="salary">
+                                                <p class="m-0 text-uppercase">{{money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary)}} per month</p>
+                                            </div>
+                                            <div class="date-posted">
+                                                <p class="m-0">
+                                                    Posted {{relative_time($applied->job->created_at, 'hours ago')}}
+                                                </p>
+                                            </div>
+                                            <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                <a href="{{route('upload-requirements', ['job_id' => $applied->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <span>
+                                                        Upload Requirements
+                                                    </span>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <hr>
-                            @else
-                                <div class="alert alert-info text-uppercase text-center">Currently not ready for any onboarding.</div>
+                                    <hr>
+                                @endforeach
                             @endif
                         </div>
                     </div>

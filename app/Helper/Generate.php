@@ -2,8 +2,11 @@
 
 namespace App\Helper;
 
+use App\Models\ApplicantUsers;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Str;
 
 class Generate {
 
@@ -32,17 +35,19 @@ class Generate {
 
         $email = "{$emailPrefix}.{$uniqueId}@{$suffix}";
 
-        while (User::where('email', $email)->exists()) {
+        while (ApplicantUsers::where('email', $email)->exists()) {
             $uniqueId = Str::random(5);
-            $email = "{$emailPrefix}.{$uniqueId}@{$suffix}"; // Use the correct domain suffix
+            $email = "{$emailPrefix}.{$uniqueId}@{$suffix}"; 
         }
 
         return $email;
     }
 
     public function password(int $length = 8) {
+        
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-        $password = '';        
+        $password = ''; 
+
         for ($i = 0; $i < $length; $i++) {
             $password .= $characters[random_int(0, strlen($characters) - 1)];
         }

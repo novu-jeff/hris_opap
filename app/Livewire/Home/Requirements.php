@@ -111,8 +111,6 @@ class Requirements extends Component
             unset($this->previews[$index]);
         }
     }
-    
-   
 
     public function updated($propertyName) {
 
@@ -130,6 +128,7 @@ class Requirements extends Component
                 $file = $this->responses[$index]['document'];
 
                 if ($file instanceof \Illuminate\Http\UploadedFile) {
+
                     $extension = strtolower($file->getClientOriginalExtension());
 
                     if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
@@ -152,7 +151,6 @@ class Requirements extends Component
             }
         }
     }
-
 
     protected function rules() {
         $rules = [
@@ -209,8 +207,8 @@ class Requirements extends Component
                     $attachment->storeAs($path, strtolower($filename));
                 
                     $existingRecord = JobApplicantsRequirements::where('job_applicants_id', $this->job_id)
-                    ->where('requirement_id', $requirementId)
-                    ->first();
+                        ->where('requirement_id', $requirementId)
+                        ->first();
 
                     if ($existingRecord && $existingRecord->attachment) {
                         $previousPath = 'public/applicant/users/' . $this->user_id . '/' . $this->job_id . '/requirements/' . $existingRecord->attachment;
@@ -219,7 +217,7 @@ class Requirements extends Component
 
                     JobApplicantsRequirements::updateOrInsert(
                         [
-                            'job_applicants_id' => $this->job_id,
+                            'job_applicants_id' => $this->record->id,
                             'requirement_id' => $requirementId
                         ],
                         [
@@ -229,7 +227,7 @@ class Requirements extends Component
                 } else {
                     JobApplicantsRequirements::updateOrInsert(
                         [
-                            'job_applicants_id' => $this->job_id,
+                            'job_applicants_id' => $this->record->id,
                             'requirement_id' => $requirementId
                         ],
                         [
@@ -269,6 +267,14 @@ class Requirements extends Component
 
     }
 
+    public function go_back() {
+        session()->put('target', [
+            'page' => 'profile',
+            'tab' => 'onboarding',
+            'accordion' => '',
+        ]);
+        return redirect()->route('home.profile.index');
+    }
     public function render()
     {
         return view('livewire.home.requirements');

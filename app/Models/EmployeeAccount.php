@@ -12,6 +12,7 @@ class EmployeeAccount extends Model
     protected $table = 'employee_account';
     protected $fillable = [
         'employee_id',
+        'applicant_id',
         'email',
         'password'
     ];

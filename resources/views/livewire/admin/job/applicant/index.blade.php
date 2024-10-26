@@ -277,37 +277,44 @@
                             <label class="mb-2" for="subject">Subject <span class="text-danger">*</span></label>
                             <input type="text" wire:model="job_offer.subject" id="subject" class="form-control text-uppercase">
                             <div class="error-field">
-                                @error('subject') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="mb-2" for="body">Body <span class="text-danger">*</span></label>
-                            <div wire:ignore >
-                                <textarea wire:model="job_offer.body" id="ckeditor" class="form-control text-uppercase"></textarea>
-                            </div>
-                            <div class="error-field">
-                                @error('body') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('job_offer.subject') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="mb-2" for="starting_date">Starting Date <span class="text-danger">*</span></label>
-                            <input type="date" wire:model="job_offer.starting_date" id="job_offer.starting_date" class="form-control">
+                            <input type="date" wire:model.live="job_offer.starting_date" id="job_offer.starting_date" class="form-control">
                             <div class="error-field">
-                                @error('starting_date') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('job_offer.starting_date') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="mb-2" for="salary">Salary <span class="text-danger">*</span></label>
-                            <input type="range" wire:model="job_offer.salary" id="job_offer.salary" class="form-range">
+                            <input type="number" wire:model.live="job_offer.salary" id="job_offer.salary" min="{{$job_offer['min_salary'] ?? 0}}" max="{{$job_offer['max_salary'] ?? 0}}" class="form-control">
+                            <input type="range" wire:model.live="job_offer.salary" id="job_offer.salary" min="{{$job_offer['min_salary'] ?? 0}}" max="{{$job_offer['max_salary'] ?? 0}}" class="form-range">
+                            <div class="mt-2">
+                                <p class="fw-bold text-uppercase mb-0">&#8369; {{ number_format($job_offer['salary'] ?? 0, 2) }}</p>
+                            </div>
                             <div class="error-field">
-                                @error('salary') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('job_offer.salary') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="mb-2" for="body">Body <span class="text-danger">*</span></label>
+                            <div wire:ignore>
+                                <textarea wire:model="job_offer.body" id="ckeditor" class="form-control text-uppercase"></textarea>
+                            </div>
+                            <div class="error-field">
+                                @error('job_offer.body') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="mb-2" for="attachment">Attachments <span class="text-danger">*</span></label>
                             <input type="file" wire:model="job_offer.attachment" id="attachment" class="form-control text-uppercase">
+                            @if (isset($job_offer['attachment_preview']))
+                                <iframe src="{{ $job_offer['attachment_preview']}}" width="100%" height="500px" class="mt-3"></iframe>                                                    
+                            @endif
                             <div class="error-field">
-                                @error('attachment') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('job_offer.attachment') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>

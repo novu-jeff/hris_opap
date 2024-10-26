@@ -14,7 +14,9 @@ class JobApplicantsOffer extends Model
         'job_applicants_id',
         'subject',
         'body',
-        'attachment'
+        'attachment',
+        'starting_date',
+        'salary'
     ];
 
     public $timestamps = false;

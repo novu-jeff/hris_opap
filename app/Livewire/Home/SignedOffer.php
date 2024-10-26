@@ -8,6 +8,7 @@ use App\Models\JobApplicantsInterview;
 use App\Models\JobApplicantsOffer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -20,6 +21,7 @@ class SignedOffer extends Component
     public $job_id;
     public $record = [];
     public $offer;
+    public $preview_offer;
 
     protected $listeners = ['save'];
 
@@ -46,7 +48,6 @@ class SignedOffer extends Component
 
     }
 
-
     protected function rules() {
         return [
             'offer' => 'required|file|mimes:doc,docx,docs,pdf'
@@ -59,6 +60,49 @@ class SignedOffer extends Component
         'offer.mimes' => 'The file must be a document of type: doc, docx, docs, pdf.',
     ];
     
+    public function updated($propertyName) {
+        
+
+        if ($propertyName == 'offer') {
+
+            if (isset($this->offer)) {
+                
+                $file = $this->offer;
+
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    if (in_array($extension, ['pdf'])) {
+                        $filename = $file->store('public/temp'); 
+                        $url = Storage::url($filename); 
+    
+                        return $this->preview_offer = $url;
+                    } 
+
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Attachment must be PDF.'
+                    ]);
+                  
+
+                } else {    
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Error: Invalid File'
+                    ]);
+                }
+            }
+        }
+        
+    }
+
     public function save(bool $isNotify = true) {
 
         $this->validate();
@@ -77,7 +121,7 @@ class SignedOffer extends Component
 
             $attachment = $this->offer;
             $extension = $attachment->getClientOriginalExtension(); 
-            $filename = 'signed_job_offer_' . str_replace(' ', '_', $this->record->job->position 
+            $filename = 'signed_offer_' . str_replace(' ', '_', $this->record->job->position 
                 . '_' . time()) 
                 . '.' . $extension;
             $attachment->storeAs('public/applicant/users/' . $this->user_id .'/' . $this->job_id . '/offers', strtolower($filename));
@@ -88,8 +132,8 @@ class SignedOffer extends Component
                     'signed_attachment' => strtolower($filename)
                 ]);
 
-            JobApplicants::where('id', $this->user_id)
-                ->where('job_id', $this->job_id)
+            JobApplicants::where('id', $this->record->id)
+                ->where('job_id', $this->record->job_id)
                 ->update([
                     'isSignedJobOffer' => true
                 ]);
@@ -117,6 +161,15 @@ class SignedOffer extends Component
             ]);
         }
 
+    }
+
+    public function go_back() {
+        session()->put('target', [
+            'page' => 'profile',
+            'tab' => 'placement',
+            'accordion' => '',
+        ]);
+        return redirect()->route('home.profile.index');
     }
 
     public function render()

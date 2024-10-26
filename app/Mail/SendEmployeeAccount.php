@@ -29,7 +29,7 @@ class SendEmployeeAccount extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Employee Account',
+            subject: 'Congratulation!',
         );
     }
 
@@ -39,7 +39,7 @@ class SendEmployeeAccount extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'email.employee.account.',
+            view: 'emails.employee.account',
         );
     }
 
