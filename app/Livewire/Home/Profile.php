@@ -42,6 +42,8 @@ class Profile extends Component
 
         }
 
+        $this->loadRecords();
+
     }
 
     public function mount() {
@@ -86,7 +88,7 @@ class Profile extends Component
                 'message' => 'Job offer does not exists'
             ]);
         }
-
+        
         $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/offers/' . $record->offer->attachment;
         
         if(!Storage::exists($path)) {

@@ -28,7 +28,10 @@ class HRISProcessingService extends Controller
 
             $data = [
                 'employee_account' => [
+                    'applicant_id' => $record->id,
                     'email' => $record->email,
+                    'firstname' => $record->firstname,
+                    'lastname' => $record->lastname,
                 ],
                 'employee_personal' => [
                     'profile' => $record->image,
@@ -43,7 +46,7 @@ class HRISProcessingService extends Controller
                 ],
             ];
 
-            $record = $this->employee_information($id, $data , true);
+            $record = $this->employee_information($id, $data , true);            
             $this->employee_account($record->id, $data['employee_account'], true);
             $this->employee_personal($record->id, $data['employee_personal'], true);
             $this->employee_parents($record->id, null, true);
@@ -94,13 +97,15 @@ class HRISProcessingService extends Controller
 
             $generate = new Generate;
 
-            $firstname = $data['employee_personal']['firstname'];
-            $lastname = $data['employee_personal']['lastname'];
+            $applicant_id = $data['applicant_id'];
+            $firstname = $data['firstname'];
+            $lastname = $data['lastname'];
 
             $email = $generate->email($id, $firstname, $lastname);
 
             $record = EmployeeAccount::create([
                 'employee_id' => $id,
+                'applicant_id' => $applicant_id,
                 'email' => $email,
             ]);
 

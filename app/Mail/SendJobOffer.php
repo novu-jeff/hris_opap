@@ -5,9 +5,11 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 
 class SendJobOffer extends Mailable
 {
@@ -29,7 +31,7 @@ class SendJobOffer extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Job Offer for ' . $this->data['position'],
+            subject: $this->data['subject'],
         );
     }
 
@@ -50,6 +52,14 @@ class SendJobOffer extends Mailable
      */
     public function attachments(): array
     {
+
+        if (Storage::disk('public')->exists($this->data['attachment'])) {
+            return [
+                Attachment::fromPath(Storage::disk('public')->path($this->data['attachment']))
+                    ->as('Job Offer | ' . ucwords($this->data['position']) . ' at ' . $this->data['company_name'])
+            ];
+        }
+
         return [];
     }
 }

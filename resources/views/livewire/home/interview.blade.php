@@ -3,7 +3,34 @@
         <div class="col-7">
             @if (!$record->isInterviewResponded)
                 <form wire:submit.prevent='save'>
-                    <div class="accordion" id="accordionInterview">
+                    <div class="jobs-lists">
+                        <div class="card shadow px-2">
+                            <div class="card-header border-0 bg-transparent">
+                                <div class="position-title">
+                                    <h4 class="m-0 text-uppercase">{{$record->job->position}}</h4>
+                                </div>
+                                <div class="company-info">
+                                    <p class="m-0 text-uppercase">{{$record->job->company_name}}</p>
+                                    <p class="m-0 text-uppercase">{{$record->job->location}}</p>
+                                </div>
+                                <div class="salary">
+                                    <p class="m-0 text-uppercase">{{money_format($record->job->min_salary) . ' - ' . money_format($record->job->max_salary)}} per month</p>
+                                </div>
+                                <div class="date-posted">
+                                    <p class="m-0">
+                                        Posted {{relative_time($record->job->created_at, 'hours ago')}}
+                                    </p>
+                                </div>
+                            </div>    
+                            <div class="card-body py-4">
+                                <div class="d-flex gap-3 justify-content-start">
+                                    <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button>
+                                    <a href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 px-5 py-3 text-uppercase fw-bold">View Job</a>
+                                </div> 
+                            </div>                           
+                        </div>
+                    </div>
+                    <div class="accordion mt-5" id="accordionInterview">
                         @foreach ($record->interview as $interviewIndex => $interview)
                             <div class="accordion-item mb-3 shadow-sm border-1">
                                 <h2 class="accordion-header" id="headingInterview{{ $interviewIndex }}">
@@ -98,8 +125,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="mt-4 d-flex justify-content-between">
-                        <button type="button" wire:click="go_back" class="btn btn-outline-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</button>
+                    <div class="mt-4 d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Submit</button>
                     </div>
                 </form>

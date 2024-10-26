@@ -24,25 +24,22 @@
                                     <hr class="mx-3">
                                     <div class="card-body pt-1 pb-4">
                                         <div class="d-flex gap-3 justify-content-start">
-                                            <a href="{{route('home.profile.index')}}" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</a>
+                                            <button type="button" wire:click="go_back" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</button>
                                             <a href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 px-5 py-3 text-uppercase fw-bold">View Job</a>
                                         </div>   
-                                        <div class="row">
+                                        <div class="row mt-4">
                                             <div class="col-12">
                                                 <label for="file" class="mb-2">Signed Job Offer <span class="text-danger">*</span></label>
-                                                <div class="droparea">
-                                                    <div>
-                                                        <div class="text-center d-flex">
-                                                            <input type="file" wire:model="offer" id="offer" class="w-100">
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <input type="file" wire:model="offer" id="offer" class="form-control">
+                                                @if (isset($preview_offer))
+                                                    <iframe src="{{ $preview_offer}}" width="100%" height="500px" class="mt-3"></iframe>                                                    
+                                                @endif
                                                 <div class="error-field mt-3">
                                                     @error('offer') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mt-5 d-flex justify-content-end gap-3">
+                                        <div class="mt-5 d-flex justify-content-end">
                                             <button type="submit" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Submit</button>
                                         </div>
                                     </div>
@@ -53,6 +50,9 @@
                 </form>
             @else
                 <div class="alert alert-info text-uppercase text-center">Job Offer Already Signed.</div>
+                <div class="mt-3 d-flex justify-content-center">
+                    <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button>
+                </div>
             @endif
         </div>
     </div>
