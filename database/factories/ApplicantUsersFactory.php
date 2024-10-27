@@ -22,7 +22,7 @@ class ApplicantUsersFactory extends Factory
             'firstname' => fake()->firstName(),
             'middlename' => fake()->lastName(),
             'lastname' => fake()->lastName(),
-            'phone_no' => 09364344500,
+            'phone_no' => '09364344500',
             'tel_no' => '',
             'sex' => 'male',
             'birthday' => '2024-10-20',
