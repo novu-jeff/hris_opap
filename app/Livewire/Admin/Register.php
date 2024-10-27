@@ -15,7 +15,7 @@ class Register extends Component
     use WithFileUploads;
 
     public string $activeTab = 'personal';
-    public array $fields = [];
+    public $fields = [];
 
     public function register() {
         
@@ -52,13 +52,15 @@ class Register extends Component
                 
                 DB::commit();
 
+                $email = $this->fields['account']['email'];
+
                 $this->fields = [];
 
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'success',
                     'title' => 'Account Created!', 
-                    'message' => 'User account `'.$this->fields['account']['email'].'` has been created.',
+                    'message' => 'User account `'.$email.'` has been created.',
                 ]);
 
             } catch (\Exception $e) {
