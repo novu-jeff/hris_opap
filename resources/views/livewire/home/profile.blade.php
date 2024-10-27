@@ -246,7 +246,7 @@
                                                         <span>Upload Signed Job Offer</span>
                                                     </a>
                                                 @else
-                                                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold" disabled>
+                                                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
                                                         <span>Already Signed</span>
                                                     </button>
                                                 @endif
