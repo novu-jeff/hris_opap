@@ -98,11 +98,9 @@ class Index extends Component
         
         $record = JobApplicants::with('requirements')
             ->whereHas('requirements', function($query) use ($id) {
-                return $query->where('id', $id);
+                $query->where('id', $id);
             })->first(); 
-
-            dd($record->toArray());
-
+            
             if(is_null($record)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
