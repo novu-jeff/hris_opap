@@ -271,7 +271,7 @@
                         <div class="card-body" wire:ignore>
                             @php
                                     $filterRecords = $record->applied->filter(fn($applied) => 
-                                    in_array($applied->status, ['placement', 'onboarding']) && !is_null($applied->offer) && $applied->isSignedJobOffer
+                                    in_array($applied->status, ['onboarding']) && !is_null($applied->offer) && $applied->isSignedJobOffer
                                 );
                             @endphp
 
