@@ -153,6 +153,16 @@ return new class extends Migration
                 ->nullable();
             $table->string('spouse_middlename')
                 ->nullable();
+            $table->enum('spouse_suffix', [
+                    'jr',
+                    'sr',
+                    'I',
+                    'II',
+                    'III',
+                    'IIII',
+                    'IIIII'
+                ])
+                ->nullable();
             $table->string('spouse_occupation')
                 ->nullable();
             $table->string('spouse_business_name_employer')

@@ -1,6 +1,6 @@
 <div>
     <div class="modal fade" wire:ignore.self id="update-profile-resume-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="update-profile-resume-modalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-md">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="update-profile-resume-modalLabel">Update Profile Resume</h1>
@@ -17,6 +17,14 @@
                                     </div>
                                 </div>
                             </div>
+                            @if ($resume_preview)
+                                <div class="image-preview w-100">
+                                    <iframe src="{{ $resume_preview }}" width="100%" height="500px" class="mt-3"></iframe>                                                    
+                                    <button wire:click='remove_resume'>
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            @endif
                             <div class="error-field">
                                 @error('resume') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
@@ -24,7 +32,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" wire:click='save'>Proceed</button>
+                    <button type="button" class="btn btn-primary" wire:click='save_resume'>Proceed</button>
                 </div>
             </div>
         </div>

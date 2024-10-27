@@ -17,9 +17,9 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (!empty($record))
-                                <div class="image-preview">
-                                    <img src="{{Storage::url('applicant/users/'.$user_id.'/'.$record)}}" alt="" srcset="">
+                            @if ($profile_preview)
+                                <div class="image-preview w-100">
+                                    <img src="{{ $profile_preview }}" class="img-fluid mt-3 rounded-4" alt="Preview Image" style="height: 300px; width: 100%; object-fit:cover;">
                                     <button wire:click='remove_profile'>
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" wire:click='save'>Proceed</button>
+                    <button type="button" class="btn btn-primary" wire:click='save_profile'>Proceed</button>
                 </div>
             </div>
         </div>

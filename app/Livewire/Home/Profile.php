@@ -48,8 +48,6 @@ class Profile extends Component
 
     public function mount() {
 
-        # load user data
-
         $this->loadRecords();
         
     }

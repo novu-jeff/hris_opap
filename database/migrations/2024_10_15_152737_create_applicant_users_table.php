@@ -28,7 +28,8 @@ return new class extends Migration
             $table->string('address');
             $table->string('province');
             $table->string('city');
-            $table->string('resume');
+            $table->string('resume')
+                ->nullable();
             $table->string('email')
                 ->unique();
             $table->string('password');
