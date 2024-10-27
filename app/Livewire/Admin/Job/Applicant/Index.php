@@ -422,12 +422,18 @@ class Index extends Component
                 <h3><b>Job Details:</b></h3>
                 <ul>
                     <li><strong>Company</strong>: ' . ucwords($data["company_name"]) . '</li>
+                    <li><strong>Location</strong>: ' . ucwords($data["location"]) . '</li>
                     <li><strong>Position</strong>: ' . ucwords($data["position"]) . '</li>
                     <li><strong>Work Setup</strong>: ' . ucwords($data["setup"]) . '</li>
                     <li><strong>Employment Type</strong>: ' . ucwords(str_replace("-", " ", $data["type"])) . '</li>
+                    <li><strong>Job Applied</strong>: <a href="' . route('home.view-job', ['slug' => $data['slug']]) . '">'.route('home.view-job', ['slug' => $data['slug']]).'</a></li>
                 </ul>
 
-                <h3><b>Offer Details:</b> Please check the attachment.</h3>
+                <h3><b>Offer Details:</b></h3>
+                <ul>
+                    <li>Please refer to the attached job offer for details regarding salary and benefits.</li>
+                    <li>A separate email will be sent to you with your employee account information once your hiring process is complete.</li>
+                </ul>
 
                 <p>We’re excited to welcome you to a supportive, growth-oriented environment where you will have the opportunity to make a meaningful impact on our projects and culture. We believe your expertise will be instrumental in achieving our team’s goals.</p>
 
@@ -683,7 +689,8 @@ relations:
                 'location' => $record->job->location,
                 'setup' => $record->job->setup,
                 'type' => $record->job->type,
-                'range' => $record->job->min_salary . ' - ' . $record->job->max_salary, 
+                'starting_date' => $record->offer->starting_date,
+                'salary' => $record->offer->salary, 
                 'email' => $account->email,
                 'password' => $password['plain'],
             ];

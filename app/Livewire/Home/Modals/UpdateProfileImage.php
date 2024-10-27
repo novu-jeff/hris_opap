@@ -16,39 +16,133 @@ class UpdateProfileImage extends Component
 
     public $user_id;
     public $profile;
-    public $record;
+    public $profile_preview;
+    protected $listeners = ['remove_profile', 'save_profile'];
 
     public function mount() {
+        $this->loadRecords();
+    }
+
+    public function loadRecords() {
         $id = Auth::guard('applicants')->user()->id;
         $record = ApplicantUsers::where('id', $id)->first();
+        
         $this->user_id = $id;
-        $this->record = $record->image;
+        $this->profile = $record->image;
+        $this->profile_preview = $record->image ? Storage::url('public/applicant/users/' . $this->user_id .'/' . $record->image) : null;
+    }
+
+    public function updated($propertyName) {
+
+        if ($propertyName === 'profile') {
+            
+            if (isset($this->profile)) {
+                
+                $file = $this->profile;
+
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        $filename = $file->store('public/temp'); 
+                        $url = Storage::url($filename); 
+
+                        return $this->profile_preview = $url;
+                    } 
+
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Profile image must be an image.'
+                    ]);
+                  
+
+                } else {    
+                    $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops!', 
+                        'isRemoveRowDT' => false,
+                        'message' => 'Error: Invalid File'
+                    ]);
+                }
+            }
+        }
+        
     }
 
     public function rules() {
         return [
-            'profile' => 'required|image|mimes:jpg,jpeg,png'
+            'profile' => 'required|image|mimes:jpg,jpeg,png,gif'
         ];
     }
 
-    public function save() {
-        
-        $this->validate();
+    public function remove_profile(bool $isNotify = true) {
+
+        if($isNotify) {
+            return $this->dispatch('showConfirmation', [
+                'title' => 'Are you sure to remove your profile?',
+                'message' => 'It\'s highly recommended for applicants to have a profile image.',
+                'action' => 'remove_profile'
+            ]);
+        }
 
         try {
 
             $record = ApplicantUsers::where('id', $this->user_id)
                 ->first();
 
-            if(!$record) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'message' => 'Unable to update profile, no user found'
-                ]);
-            }
+            $path = 'public/applicant/users/'.$record->id;
+            $filepath = $path . '/' . $record->profile;
+            
+            if(Storage::exists($filepath)) {
+                Storage::delete($filepath);
+            } 
 
+            $record->image = null;
+
+            $record->save();
+
+            $this->loadRecords();
+
+            $this->dispatch('loadRecords')->to('home.profile');
+            
+            return $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Profile Image Removed', 
+                'message' => 'We are encouraging you to have a profile image!',
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Error occured: ' . $e->getMessage()
+            ]);
+        }
+        
+    }
+
+    public function save_profile(bool $isNotify = true) {
+        
+        $this->validate();
+
+        if($isNotify) {
+            return $this->dispatch('showConfirmation', [
+                'title' => 'Are you sure to save profile?',
+                'message' => 'Saving a profile will help us to recognize you more.',
+                'action' => 'save_profile'
+            ]);
+        }
+
+        try {
+
+            $record = ApplicantUsers::where('id', $this->user_id)
+                ->first();
 
             $path = 'public/applicant/users/'.$record->id;
             $filepath = $path . '/' . $record->profile;
@@ -62,21 +156,24 @@ class UpdateProfileImage extends Component
             $filename = 'applicant_profile_' . time() . '.' . $extension;
 
             $record->image = $filename;
+
             $record->save();
 
             $file->storeAs($path, $filename);
+
+            $this->loadRecords();
 
             $this->dispatch('loadRecords')->to('home.profile');
 
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'success',
-                'title' => 'Profile Updated',
-                'message' => 'Your profile has been successfully updated!',
+                'title' => 'Profile Image Updated',
+                'message' => 'Your profile image has been updated!',
             ]);
 
         } catch (\Exception $e) {
-            $this->dispatch('alert', [
+            return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
@@ -85,40 +182,6 @@ class UpdateProfileImage extends Component
         }
 
 
-    }
-
-    public function remove_profile() {
-
-        $record = ApplicantUsers::where('id', $this->user_id)
-                ->first();
-
-        if(!$record) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!',
-                'message' => 'Unable to remove profile, no user found'
-            ]);
-        }
-
-
-        $path = 'public/applicant/users/'.$record->id;
-        $filepath = $path . '/' . $record->profile;
-        
-        if(Storage::exists($filepath)) {
-            Storage::delete($filepath);
-        } 
-
-        $record->image = null;
-        $record->save();
-
-        $this->dispatch('loadRecords')->to('home.profile');
-        
-        return $this->dispatch('alert', [
-            'status' => 'success',
-            'title' => 'Profile Removed', 
-            'message' => 'You have now updated your resume, this might help you get hired!',
-        ]);
     }
 
     public function render()

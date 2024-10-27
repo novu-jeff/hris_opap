@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Congratulations on Your New Position!</title>
+    <title>Employee Account</title>
 </head>
 <body>
-    
-    <h1>Congratulations on Your New Position!</h1>
-    
-    <p>Dear <strong>{{ $data['fullname'] }}</strong>,</p>
 
-    <p>We are pleased to inform you that you have been hired for the position of <strong>{{ $data['position'] }}</strong> at <strong>{{ $data['company_name'] }}</strong>, located in <strong>{{ $data['location'] }}</strong>.</p>
+    <p>Hello <strong>{{ $data['fullname'] }}</strong>,</p>
 
-    <h2>Your Employment Setup:</h2>
+    <p>We are pleased to inform you that you have been hired for the position of <strong>{{ ucwords($data['position']) }}</strong> at <strong>{{ ucwords($data['company_name']) }}</strong>, located in <strong>{{ ucwords($data['location']) }}</strong>.</p>
+
+    <h3><b>Job Details:</b></h3>
     <ul>
-        <li><strong>Type:</strong> {{ $data['type'] }}</li>
-        <li><strong>Salary Range:</strong> {{ $data['range'] }}</li>
+        <li><strong>Company:</strong> {{ ucwords($data["company_name"]) }}</li>
+        <li><strong>Location:</strong> {{ ucwords($data['location']) }}</li>
+        <li><strong>Position:</strong> {{ ucwords($data["position"]) }}</li>
+        <li><strong>Salary:</strong> {{ ucwords($data["salary"]) }}</li>
+        <li><strong>Starting Date:</strong> {{ ucwords($data["starting_date"]) }}</li>
+        <li><strong>Work Setup:</strong> {{ ucwords($data["setup"]) }}</li>
+        <li><strong>Employment Type:</strong> {{ ucwords(str_replace("-", " ", $data["type"])) }}</li>
+        <li><strong>Job Applied:</strong> <a href="{{ route('home.view-job', ['slug' => $data['slug']]) }}">{{ route('home.view-job', ['slug' => $data['slug']]) }}</a></li>
     </ul>
-
-    <p>Please note that you will receive another email detailing your start date.</p>
-
-    <h2>Your Employee Account Credentials:</h2>
+    <hr>
+    
+    <h3>Your Employee Account Credentials:</h3>
     <ul>
         <li><strong>Email:</strong> {{ $data['email'] }}</li>
         <li><strong>Password:</strong> {{ $data['password'] }}</li>
@@ -32,6 +35,7 @@
     <p>Congratulations once again!</p>
 
     <p>Best regards,<br>
-    HR Department<br>
+    HR Department</p>
+
 </body>
 </html>

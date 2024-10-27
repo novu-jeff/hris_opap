@@ -97,12 +97,20 @@ class UpdateProfile extends Component
     }
 
 
-    public function save() {
+    public function save(bool $isNotify = true) {
+
+        $this->validate();
+
+        if($isNotify) {
+            return $this->dispatch('showConfirmation', [
+                'title' => 'Are you sure to save your profile?',
+                'message' => 'Please make sure that all the details in your profile are correct and current.',
+                'action' => 'remove'
+            ]);
+        }
 
         try {
-            
-            $this->validate();
-            
+                        
             $data = array_merge($this->fields['information'], $this->fields['education']);
             
             ApplicantUsers::where('id', $this->user_id)

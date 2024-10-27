@@ -8,7 +8,7 @@
                             <img src="{{
                                 $record->image ? Storage::url('applicant/users/'.$record->id.'/'.$record->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
                             }}" alt="">
-                            <button class="edit-icon" data-bs-toggle="modal" data-bs-target="#update-profile-image-modal">
+                            <button class="edit-icon btn btn-primary" data-bs-toggle="modal" data-bs-target="#update-profile-image-modal">
                                 <i class="fa-solid fa-camera"></i>
                             </button>
                         </div>
@@ -26,7 +26,7 @@
                             <button class="nav-link text-start {{$activeTab == 'profile' ? 'active' : ''}}" wire:click.prevent="setActiveTab('profile')" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
                             <button class="nav-link text-start {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
                             <button class="nav-link text-start {{$activeTab == 'placement' ? 'active' : ''}}" wire:click.prevent="setActiveTab('placement')" id="v-pills-placement-tab" data-bs-toggle="pill" data-bs-target="#v-pills-placement" type="button" role="tab" aria-controls="v-pills-placement" aria-selected="false">Placement</button>
-                            <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">On Boarding</button>
+                            <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">OnBoarding</button>
                         </div>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                                     <li>School Year: <span class="text-uppercase">{{ $record->started && $record->finished ? format_date($record->started, 'date_string') . ' - ' . format_date($record->finished, 'date_string') : 'No info' }}</span></li>
                                 </ul>
                             </div> 
-                            <div class="mt-4" wire:ignore>
+                            <div class="mt-4">
                                 <h6>Resume</h6>
                                 <p>Update your resume to streamline your job application and increase visibility to potential employers.</p>
                                 <button class="w-100 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#update-profile-resume-modal">
@@ -113,7 +113,15 @@
                                         </div>
                                     </div>
                                 </button>
-                                <p>Current Resume: <a target="_blank" href="{{Storage::url('applicant/users/'.$record->id.'/'.$record->resume)}}">{{$record->resume}}</a></p>
+                                <p>Current Resume: 
+                                    @if ($record->resume)
+                                        <a target="_blank" href="{{ Storage::url('applicant/users/' . $record->id . '/' . $record->resume) }}">
+                                            {{ $record->resume }}
+                                        </a>
+                                    @else
+                                        No uploaded resume
+                                    @endif
+                                </p>
                             </div>
                             <div class="mt-4">
                                 <h6>Job Information</h6>
@@ -200,7 +208,9 @@
                         <hr>
                         <div class="card-body">
                             @php
-                                $filterRecords = $record->applied->filter(fn($applied) => $applied->status === 'placement' || $applied->status === 'onboarding');
+                                $filterRecords = $record->applied->filter(fn($applied) => 
+                                    in_array($applied->status, ['placement', 'onboarding']) && !is_null($applied->offer)
+                                );
                             @endphp
 
                             @if ($filterRecords->isEmpty())
@@ -210,33 +220,33 @@
                                     <div class="card px-2" style="border: none">
                                         <div class="card-header border-0 bg-transparent">
                                             <div class="position-title">
-                                                <h4 class="m-0 text-uppercase">{{$applied->job->position}}</h4>
+                                                <h4 class="m-0 text-uppercase">{{ $applied->job->position }}</h4>
                                             </div>
                                             <div class="company-info">
-                                                <p class="m-0 text-uppercase">{{$applied->job->company_name}}</p>
-                                                <p class="m-0 text-uppercase">{{$applied->job->location . ' • ' . str_replace('-', ' ', $applied->job->setup) . ' • ' . str_replace('-', ' ', $applied->job->type)}}</p>
+                                                <p class="m-0 text-uppercase">{{ $applied->job->company_name }}</p>
+                                                <p class="m-0 text-uppercase">
+                                                    {{ $applied->job->location }} • {{ str_replace('-', ' ', ucwords($applied->job->setup)) }} • {{ str_replace('-', ' ', ucwords($applied->job->type)) }}
+                                                </p>
                                             </div>
                                             <div class="salary">
-                                                <p class="m-0 text-uppercase">{{money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary)}} per month</p>
+                                                <p class="m-0 text-uppercase">{{ money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary) }} per month</p>
                                             </div>
                                             <div class="date-posted">
                                                 <p class="m-0">
-                                                    Posted {{relative_time($applied->job->created_at, 'hours ago')}}
+                                                    Posted {{ relative_time($applied->job->created_at, 'hours ago') }}
                                                 </p>
                                             </div>
                                             <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                <button wire:click="download_offer({{ $applied->id }})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <span>Download Job Offer</span>
+                                                </button>
+
                                                 @if (!$applied->isSignedJobOffer)
-                                                    <button wire:click="download_offer({{$applied->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                        <span>Download Job Offer</span>
-                                                    </button>
-                                                    <a href="{{route('upload-signed-offer', ['job_id' => $applied->job->id])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <a href="{{ route('upload-signed-offer', ['job_id' => $applied->job->id]) }}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
                                                         <span>Upload Signed Job Offer</span>
                                                     </a>
                                                 @else
-                                                    <button wire:click="download_offer({{$applied->id}})" class="btn btn-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
-                                                        <span>Download Job Offer</span>
-                                                    </button>
-                                                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">
+                                                    <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold" disabled>
                                                         <span>Already Signed</span>
                                                     </button>
                                                 @endif
@@ -260,11 +270,13 @@
                         <hr>
                         <div class="card-body" wire:ignore>
                             @php
-                                $filterRecords = $record->applied->filter(fn($applied) => $applied->status === 'placement' || $applied->status === 'onboarding');
+                                    $filterRecords = $record->applied->filter(fn($applied) => 
+                                    in_array($applied->status, ['placement', 'onboarding']) && !is_null($applied->offer) && $applied->isSignedJobOffer
+                                );
                             @endphp
 
                             @if ($filterRecords->isEmpty())
-                                <div class="alert alert-info text-center text-uppercase">Currently No Job Offers</div>
+                                <div class="alert alert-info text-center text-uppercase">Not ready for any onboarding</div>
                             @else
                                 @foreach ($filterRecords as $applied)
                                     <div class="card px-2" style="border: none">
