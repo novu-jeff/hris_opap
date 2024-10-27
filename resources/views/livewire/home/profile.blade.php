@@ -40,16 +40,18 @@
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                     </div>
-                    <div class="skill-content">
-                        @if ($record->skills->isEmpty())
-                            <div class="alert alert-info w-100 text-center text-uppercase fw-bold">No skills listed</div>
-                        @else
-                            @foreach ($record->skills as $skill)
-                                <div class="skill-box">
-                                    {{$skill->skills->name}}
-                                </div>
-                            @endforeach
-                        @endif
+                    <div class="skill-content-outer">
+                        <div class="skill-content-inner">
+                            @if ($record->skills->isEmpty())
+                                <div class="alert alert-info w-100 text-center text-uppercase fw-bold">No skills listed</div>
+                            @else
+                                @foreach ($record->skills as $skill)
+                                    <div class="skill-box">
+                                        {{$skill->skills->name}}
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
