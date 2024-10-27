@@ -96,7 +96,7 @@ class Index extends Component
 
     public function download_requirement(int $id) {
         
-        $record = JobApplicants::with('requirements')->where('id', $id)
+        $record = JobApplicants::with('requirements')
             ->whereHas('requirements', function($query) use ($id) {
                 return $query->where('id', $id);
             })->first(); 
