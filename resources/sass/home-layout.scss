@@ -588,7 +588,9 @@
 
       .sticky {
         position: sticky;
+        height: 100vh;
         top: 50px;
+        margin-bottom: 100px;
       }
 
       .profile-section {
