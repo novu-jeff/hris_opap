@@ -109,10 +109,8 @@ class Index extends Component
                 ]);
             }
 
-            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->requirements[0]->attachment;
+            $path = 'public/applicant/users/' . $record->user_id . '/' . $record->job_id .'/requirements/' . $record->requirements[0]->attachment;
             
-            dd($path);
-
             if(!Storage::exists($path)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
