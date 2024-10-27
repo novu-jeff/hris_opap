@@ -100,7 +100,7 @@ class Index extends Component
             ->whereHas('requirements', function($query) use ($id) {
                 $query->where('id', $id);
             })->first(); 
-            
+
             if(is_null($record)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
@@ -110,7 +110,7 @@ class Index extends Component
                 ]);
             }
 
-            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->attachment;
+            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->requirements->attachment;
             
             if(!Storage::exists($path)) {
                 return $this->dispatch('alert', [
