@@ -96,8 +96,10 @@ class Index extends Component
 
     public function download_requirement(int $id) {
         
-        $record = JobApplicantsRequirements::where('id', $id)
-            ->first();
+        $record = JobApplicants::with('requirements')->where('id', $id)
+            ->whereHas('requirements', function($query) use ($id) {
+                return $query->where('id', $id);
+            }); 
 
             if(is_null($record)) {
                 return $this->dispatch('alert', [
@@ -108,14 +110,14 @@ class Index extends Component
                 ]);
             }
 
-            $path = 'public/applicant/users/'.$this->user_id. '/' . $this->selected_id .'/requirements/' . $record->attachment;
+            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->attachment;
             
             if(!Storage::exists($path)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
                     'title' => 'Oops!',
-                    'message' => 'Job offer does not exists'
+                    'message' => 'Requirement file does not exists'
                 ]);
             } 
 
