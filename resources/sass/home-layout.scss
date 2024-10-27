@@ -577,7 +577,7 @@
 
     .profile {
 
-      margin-top: 20px;
+      padding-top: 20px;
 
       label {
         font-size: 12px;
@@ -590,7 +590,6 @@
         position: sticky;
         height: 100vh;
         top: 50px;
-        margin-bottom: 100px;
       }
 
       .profile-section {
@@ -666,21 +665,32 @@
       }
 
       .skills-section {
+        padding-bottom: 300px;
+
         h5 {
           text-transform: uppercase;
           font-weight: 600;
         }
-        .skill-content {
+
+        .skill-content-outer {
+          height: 400px;
+          overflow-y: auto;
+        }
+
+        .skill-content-inner {
+
           display: flex;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 8px;
           margin-top: 20px;
            
           .skill-box {
-            padding: 8px 30px 8px 30px;
+            padding: 8px 12px 8px 12px;
             background-color: #cecece;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
             text-transform: uppercase;
           }
 
