@@ -16,7 +16,7 @@ class UpdateProfile extends Component
     public $fields = [];
     public $user_id;
     public $activeTab = 'information';
-    protected $listeners = ['loadRecords'];
+    protected $listeners = ['save', 'loadRecords'];
 
     public function mount() {
         $id = Auth::guard('applicants')->user()->id;
@@ -105,7 +105,7 @@ class UpdateProfile extends Component
             return $this->dispatch('showConfirmation', [
                 'title' => 'Are you sure to save your profile?',
                 'message' => 'Please make sure that all the details in your profile are correct and current.',
-                'action' => 'remove'
+                'action' => 'save'
             ]);
         }
 
