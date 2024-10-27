@@ -189,6 +189,8 @@
                                             </div>
                                         </div>
                                         <hr>
+                                    @else
+                                        <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
                                     @endif
                                 @endforeach
                             @else
