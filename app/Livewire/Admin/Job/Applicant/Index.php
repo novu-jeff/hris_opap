@@ -99,7 +99,7 @@ class Index extends Component
         $record = JobApplicants::with('requirements')->where('id', $id)
             ->whereHas('requirements', function($query) use ($id) {
                 return $query->where('id', $id);
-            }); 
+            })->first(); 
 
             if(is_null($record)) {
                 return $this->dispatch('alert', [
