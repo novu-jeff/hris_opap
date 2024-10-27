@@ -100,8 +100,6 @@ class Index extends Component
                 $query->where('id', $id);
             }])->first(); 
 
-            dd($record->toArray());
-
             if(is_null($record)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
@@ -111,7 +109,7 @@ class Index extends Component
                 ]);
             }
 
-            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->requirements->attachment;
+            $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/requirements/' . $record->requirements[0]->attachment;
             
             if(!Storage::exists($path)) {
                 return $this->dispatch('alert', [
