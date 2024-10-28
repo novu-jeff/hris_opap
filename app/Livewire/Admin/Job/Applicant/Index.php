@@ -79,8 +79,6 @@ class Index extends Component
             'modal' => 'applicant_info'
         ]);
 
-        // dd($record->first()->toArray());
-
     }
 
     # view responses from the interview
@@ -340,17 +338,6 @@ class Index extends Component
     public function set_hired(bool $isNotify = true) {
 
         $model = JobApplicants::with('job', 'requirements')->find($this->selected_id);
-
-        if($model->requirements->count() < 3) {
-            return $this->dispatch('alert', [
-                'id' => $this->selected_id,
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!', 
-                'message' => 'Unable to hire this application. No requirements submitted. Applicant must submit atleast three (3) requirements.',
-                'isRemoveRowDT' => false,
-            ]);
-        }
 
         if($isNotify) {
 

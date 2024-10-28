@@ -64,9 +64,9 @@
                                             <input type="file" wire:model="responses.{{$index}}.document" id="responses.document" class="w-100 form-control">
                                             @if (isset($previews[$index]))
                                                 @if ($previews[$index]['type'] === 'image')
-                                                    <img src="{{ $previews[$index]['url'] }}" class="img-fluid mt-3" alt="Preview Image" style="height: 300px; width: 100%; object-fit:cover;">
+                                                    <img src="{{ $previews[$index]['url'] }}" class="img-fluid mt-3" alt="Preview Image" style="height: 500px; width: 100%; object-fit:cover;">
                                                 @elseif ($previews[$index]['type'] === 'pdf')
-                                                    <iframe src="{{ $previews[$index]['url'] }}" width="100%" height="300px" class="mt-3"></iframe>                                                    
+                                                    <iframe src="{{ $previews[$index]['url'] }}" width="100%" height="500px" class="mt-3"></iframe>                                                    
                                                 @endif
                                             @endif
                                             <div class="error-field mt-3">

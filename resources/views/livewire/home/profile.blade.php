@@ -1,5 +1,5 @@
 <div class="profile">
-    <div class="row">
+    <div class="row" wire:poll>
         <div class="col-12 col-md-4 col-lg-4 mb-4">
             <div class="sticky">
                 <div class="profile-section">
@@ -127,12 +127,37 @@
                             </div>
                             <div class="mt-4">
                                 <h6>Job Information</h6>
-                                <div class="alert alert-info mt-3 text-uppercase fw-bold text-center">Currenly Unemployed</div>
-                                {{-- <ul class="list-unstyled">
-                                    <li>Employment Status: Unemployed</li>
-                                    <li>Job Position: Quality Assurance</li>
-                                    <li>Job Location: Pasig, City</li>
-                                </ul> --}}
+                                <div class="mt-4">
+                                    @foreach ($record->applied as $applied)
+                                        @if ($applied->status == 'hired')
+                                            <div class="card px-2" style="border: none">
+                                                <div class="card-header border-0 bg-transparent">
+                                                    <div class="position-title">
+                                                        <h4 class="m-0 text-uppercase">{{$applied->job->position}}</h4>
+                                                    </div>
+                                                    <div class="company-info">
+                                                        <p class="m-0 text-uppercase">{{$applied->job->company_name}}</p>
+                                                        <p class="m-0 text-uppercase">{{$applied->job->location . ' • ' . str_replace('-', ' ', $applied->job->setup) . ' • ' . str_replace('-', ' ', $applied->job->type)}}</p>
+                                                    </div>
+                                                    <div class="salary">
+                                                        <p class="m-0 text-uppercase">{{money_format($applied->job->min_salary) . ' - ' . money_format($applied->job->max_salary)}} per month</p>
+                                                    </div>
+                                                    <div class="date-posted">
+                                                        <p class="m-0">
+                                                            Posted {{relative_time($applied->job->created_at, 'hours ago')}}
+                                                        </p>
+                                                    </div>
+                                                    <div class="actions mt-4 d-flex gap-3 justify-content-start">
+                                                        <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">Employee Login</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        @else
+                                            <div class="alert alert-info mt-3 text-uppercase fw-bold text-center">Currenly Unemployed</div>
+                                        @endif
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>

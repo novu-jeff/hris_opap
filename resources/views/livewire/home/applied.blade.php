@@ -126,7 +126,7 @@
                                             </div>
                                         @else
                                             <div class="actions">
-                                                <a class="w-50 btn btn-outline-primary d-block my-2 px-5 py-3" href="{{route('home.view-job', ['slug' => $record_info->slug])}}">View Job</a>
+                                                <a class="w-50 btn btn-outline-primary d-block my-2 px-5 py-3 text-uppercase fw-bold" href="{{route('home.view-job', ['slug' => $record_info->slug])}}">View Job</a>
                                             </div>
                                         @endif
                                     </div>
@@ -192,7 +192,7 @@
                                                                 <p class="m-0 text-uppercase">{{money_format($saved_job->job->min_salary) . ' - ' . money_format($saved_job->job->max_salary)}}</p>
                                                             </div>
                                                             <hr>
-                                                            <a href="{{route('home.view-job', ['slug' => $saved_job->job->slug])}}" class="btn btn-outline-primary px-5 py-3">View Job</a>
+                                                            <a href="{{route('home.view-job', ['slug' => $saved_job->job->slug])}}" class="btn btn-outline-primary px-5 py-3 text-uppercase fw-bold">View Job</a>
                                                         </div>
                                                         <div class="status">
                                                             <p class="m-0">
