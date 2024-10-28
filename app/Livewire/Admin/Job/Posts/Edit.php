@@ -28,6 +28,7 @@ class Edit extends Component
     }
 
     public function pullRecords() {
+        
         $record = JobPosts::find($this->id);
         if(!$record) {
             return redirect()->route('job.posts.index');
@@ -49,57 +50,23 @@ class Edit extends Component
         $this->description = $data;
     }
 
-    // form submit  
-    public function save() {
-    
-        $data = [
-            'id' => $this->id,
-            'position' => $this->position,
-            'company_name' => $this->company_name,
-            'location' => $this->location,
-            'setup' => $this->setup,
-            'type' => $this->type,
-            'slot' => $this->slot,
-            'min_salary' => $this->min_salary,
-            'max_salary' => $this->max_salary,
-            'description' => $this->description,
-        ];
-
-        $rules =  [
-            'id' => 'required|exists:job_posts',
+    public function rules() {
+        return [
             'position' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'setup' => 'required|string',
-            'type' => 'required|string',
-            'slot' => 'required|integer|min:1|max:10',
+            'setup' => 'required|string|in:work from home,onsite,hybrid',
+            'type' => 'required|string|in:regular,part time,freelance,project base',
+            'slot' => 'required|integer|min:1|max:100',
             'min_salary' => 'required|numeric|min:0',
             'max_salary' => 'required|numeric|min:0|gt:min_salary',
             'description' => 'required|string',
         ];
+    }
 
-
-        $validator = Validator::make($data, $rules);
-        
-        if($validator->fails()) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'showAlert' => false,
-                'resetFields' => false,
-            ]);
-
-            $this->setErrorBag([]);
-            
-            foreach ($validator->errors()->toArray() as $field => $messages) {
-                foreach ($messages as $message) {
-                    $this->addError($field, $message);
-                }
-            }
-
-            return;
-        };
-
-
+    public function save() {
+    
+        $this->validate();
         
         DB::beginTransaction();
 

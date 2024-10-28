@@ -38,8 +38,8 @@
                     <label class="mb-2" for="setup">Work Setup <span class="text-danger">*</span></label>
                     <select wire:model="setup" id="setup" class="form-select">
                         <option value=""> - CHOOSE - </option>
-                        <option value="work-from-home">Work From Home</option>
-                        <option value="on-site">On Site</option>
+                        <option value="work from home">Work From Home</option>
+                        <option value="onsite">On Site</option>
                         <option value="hybrid">Hybrid</option>
                     </select>
                     <div class="error-field">

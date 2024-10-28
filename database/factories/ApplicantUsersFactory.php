@@ -25,7 +25,7 @@ class ApplicantUsersFactory extends Factory
             'phone_no' => '09364344500',
             'tel_no' => '',
             'sex' => 'male',
-            'birthday' => '2024-10-20',
+            'birthday' => fake()->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d'), // Generate a date between 18 and 60 years ago
             'civil_status' => 'single',
             'address' => fake()->address(),
             'province' => fake()->streetAddress(),
@@ -34,5 +34,6 @@ class ApplicantUsersFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
         ];
+        
     }
 }

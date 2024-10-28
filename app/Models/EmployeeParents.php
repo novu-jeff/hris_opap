@@ -12,10 +12,14 @@ class EmployeeParents extends Model
     protected $table = 'employee_parents';
     protected $fillable = [
         'employee_id',
+        'spouse_surname',
+        'spouse_firstname',
+        'spouse_middlename',
+        'spouse_suffix',
         'father_surname',
         'father_firstname',
         'father_middlename',
-        'suffix',
+        'father_suffix',
         'father_occupation',
         'father_business_name',
         'father_business_address',

@@ -218,6 +218,7 @@ class Index extends Component
 
     # set an interview / test to applicant
     public function set_interview(bool $isNotify = true) {
+        
         if($isNotify) {
             $this->interview = Interview::get();
             $this->interview = $this->interview->isNotEmpty() ? $this->interview : null;
@@ -407,7 +408,7 @@ class Index extends Component
                     Based on your impressive skills, experience, and interview performance, we are confident that you will make a valuable addition to our team.
                 </p>
 
-                <h3><b>Job Details:</b></h3>
+                <h4><b>Job Details:</b></h4>
                 <ul>
                     <li><strong>Company</strong>: ' . ucwords($data["company_name"]) . '</li>
                     <li><strong>Location</strong>: ' . ucwords($data["location"]) . '</li>
@@ -417,7 +418,7 @@ class Index extends Component
                     <li><strong>Job Applied</strong>: <a href="' . route('home.view-job', ['slug' => $data['slug']]) . '">'.route('home.view-job', ['slug' => $data['slug']]).'</a></li>
                 </ul>
 
-                <h3><b>Offer Details:</b></h3>
+                <h4><b>Offer Details:</b></h4>
                 <ul>
                     <li>Please refer to the attached job offer for details regarding salary and benefits.</li>
                     <li>A separate email will be sent to you with your employee account information once your hiring process is complete.</li>
@@ -425,7 +426,7 @@ class Index extends Component
 
                 <p>We’re excited to welcome you to a supportive, growth-oriented environment where you will have the opportunity to make a meaningful impact on our projects and culture. We believe your expertise will be instrumental in achieving our team’s goals.</p>
 
-                <h3><b>Next Steps:</b></h3>
+                <h4><b>Next Steps:</b></h4>
                 <p>Please review the attached document, which includes the full terms and conditions of the offer. To confirm your acceptance, simply sign the attached offer letter and return it by <strong>uploading it to our website under profile and placement tab</strong>.</p>
 
                 <p>If you have any questions regarding the offer or the details of your employment, feel free to reach out to support@' . env("COMPANY_DOMAIN") . '.</p>
@@ -658,7 +659,7 @@ relations:
 
         try {
             
-            $process->save(true, $record->user_id);
+            $process->save(true, $record->user_id, $this->selected_id);
 
             $account = EmployeeAccount::where('applicant_id', $record->applicant->id)
                 ->first();

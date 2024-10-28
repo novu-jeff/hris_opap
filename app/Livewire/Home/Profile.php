@@ -51,11 +51,6 @@ class Profile extends Component
         $this->loadRecords();
         
     }
-
-    public function setActiveTab(string $tab) {
-        $this->activeTab = $tab;
-        session()->forget('target');
-    }
     
     public function loadRecords() {
         $id = Auth::guard('applicants')->user()->id;
@@ -70,6 +65,42 @@ class Profile extends Component
         $this->record = $record;
 
     }
+
+    public function setActiveTab(string $tab) {
+        $this->activeTab = $tab;
+
+        $this->isSeen($tab);
+
+        session()->forget('target');
+    }
+
+    public function isSeen(string $tab) {
+        
+        $record = JobApplicants::with('offer')->where('user_id', $this->user_id)->first();
+    
+        if (!$record) {
+            return; 
+        }
+    
+        if ($tab === 'interview' && $record->status === 'interview') {
+            return $record->update([
+                'isInterviewSeen' => true,
+            ]);
+        }
+    
+        if ($tab === 'placement' && $record->status === 'placement' && $record->offer != null) {
+            return $record->update([
+                'isPlacementSeen' => true,
+            ]);
+        }
+    
+        if ($tab === 'onboarding' && $record->status === 'onboarding') {
+            return $record->update([
+                'isOnboardingSeen' => true,
+            ]);
+        }
+    }
+    
 
     public function download_offer(int $id) {
         

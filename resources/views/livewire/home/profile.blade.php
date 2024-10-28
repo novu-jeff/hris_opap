@@ -1,7 +1,7 @@
 <div class="profile">
     <div class="row" wire:poll>
         <div class="col-12 col-md-4 col-lg-4 mb-4">
-            <div class="sticky">
+            <div class="sticky" wire:ignore.self>
                 <div class="profile-section">
                     <div class="d-flex justify-content-center">
                         <div class="img-content" wire:ignore.self>
@@ -24,9 +24,59 @@
                     <div class="d-flex align-items-start">
                         <div class="nav flex-column nav-pills w-100 " id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <button class="nav-link text-start {{$activeTab == 'profile' ? 'active' : ''}}" wire:click.prevent="setActiveTab('profile')" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
-                            <button class="nav-link text-start {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">Interview</button>
-                            <button class="nav-link text-start {{$activeTab == 'placement' ? 'active' : ''}}" wire:click.prevent="setActiveTab('placement')" id="v-pills-placement-tab" data-bs-toggle="pill" data-bs-target="#v-pills-placement" type="button" role="tab" aria-controls="v-pills-placement" aria-selected="false">Placement</button>
-                            <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">OnBoarding</button>
+                            <button class="nav-link text-start d-flex gap-1 {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">
+                                <div class="position-relative">
+                                    Interview
+                                    @php
+                                        $unseenInterview = $record->applied->where('status', 'interview')->where('isInterviewSeen', 0)->count();
+                                    @endphp
+
+                                    @if ($unseenInterview > 0)
+                                        <span class="badge bg-primary fs-6" style="position: absolute; top: -10px; right: -35px;">
+                                            {{ $unseenInterview }}
+                                            <span class="visually-hidden">unseen interview</span>
+                                        </span>
+                                    @endif
+                                </div>
+                            </button>
+                            <button class="nav-link text-start {{$activeTab == 'placement' ? 'active' : ''}}" wire:click.prevent="setActiveTab('placement')" id="v-pills-placement-tab" data-bs-toggle="pill" data-bs-target="#v-pills-placement" type="button" role="tab" aria-controls="v-pills-placement" aria-selected="false">
+                                <div class="position-relative">
+                                    Placement
+                                    @php
+                                        $unseenPlacement = $record->applied->filter(fn($applied) => 
+                                            $applied->status === 'placement' && 
+                                            $applied->isPlacementSeen === 0 && 
+                                            !is_null($applied->offer)
+                                        )->count();
+                                    @endphp
+
+                                    @if ($unseenPlacement > 0)
+                                        <span class="badge bg-primary fs-6" style="position: absolute; top: -10px; right: -35px;">
+                                            {{ $unseenPlacement }}
+                                            <span class="visually-hidden">unseen placement</span>
+                                        </span>
+                                    @endif
+                                </div>
+                            </button>
+                            <button class="nav-link text-start {{$activeTab == 'onboarding' ? 'active' : ''}}" wire:click.prevent="setActiveTab('onboarding')" id="v-pills-onboarding-tab" data-bs-toggle="pill" data-bs-target="#v-pills-onboarding" type="button" role="tab" aria-controls="v-pills-onboarding" aria-selected="false">
+                                <div class="position-relative">
+                                    Onboarding
+                                    @php
+                                        $unseenOnboarding = $record->applied->filter(fn($applied) => 
+                                            $applied->status === 'onboarding' && 
+                                            $applied->isOnboardingSeen === 0 && 
+                                            !is_null($applied->offer) && 
+                                            $applied->isSignedJobOffer
+                                        )->count();
+                                    @endphp
+                                    @if ($unseenOnboarding > 0)
+                                        <span class="badge bg-primary fs-6" style="position: absolute; top: -10px; right: -35px;">
+                                            {{ $unseenOnboarding }}
+                                            <span class="visually-hidden">unseen onboarding</span>
+                                        </span>
+                                    @endif
+                                </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -126,7 +176,7 @@
                                 </p>
                             </div>
                             <div class="mt-4">
-                                <h6>Job Information</h6>
+                                <h6>Your Jobs Hired</h6>
                                 <div class="mt-4">
                                     @foreach ($record->applied as $applied)
                                         @if ($applied->status == 'hired')
@@ -172,9 +222,17 @@
                         </div>
                         <hr>
                         <div class="card-body">
-                           @if (!$record->applied->isEmpty())
+                            @php
+                                $filterRecords = $record->applied->filter(fn($applied) => 
+                                    in_array($applied->status, ['pending', 'interview'])
+                                );
+                            @endphp
+
+                            @if ($filterRecords->isEmpty())
+                                <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
+                            @else
                                 @foreach ($record->applied as $applied)
-                                    @if ($applied->status != 'hired')
+                                    @if (in_array($applied->status, ['pending', 'interview']))
                                         <div class="card px-2" style="border: none">
                                             <div class="card-header border-0 bg-transparent">
                                                 <div class="position-title">
@@ -220,8 +278,6 @@
                                         <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
                                     @endif
                                 @endforeach
-                            @else
-                                <div class="alert alert-info text-center text-uppercase">Currently No Interview</div>
                             @endif
                         </div>
                     </div>
@@ -297,7 +353,7 @@
                             </p>
                         </div>
                         <hr>
-                        <div class="card-body" wire:ignore>
+                        <div class="card-body">
                             @php
                                     $filterRecords = $record->applied->filter(fn($applied) => 
                                     in_array($applied->status, ['onboarding']) && !is_null($applied->offer) && $applied->isSignedJobOffer
