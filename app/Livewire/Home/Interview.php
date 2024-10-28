@@ -17,7 +17,8 @@ class Interview extends Component
     public $applicant_id;
     public $interview_id;
     public $record = [];
-    public array $answer;
+    public $answer;
+    public $activeTab;
 
     protected $listeners = ['save'];
 
@@ -31,7 +32,7 @@ class Interview extends Component
         $this->user_id = $id;
 
         
-        $record = JobApplicants::with('interview.details', 'interview.items.options', 'interview.items.answers')
+        $record = JobApplicants::with('job', 'interview.details', 'interview.items.options', 'interview.items.answers')
             ->where('user_id', $id)
             ->where('job_id', $this->job_id)
             ->where('status', 'interview')
@@ -59,11 +60,7 @@ class Interview extends Component
                 }
             }
         }
-        
-
-
     }
-
 
     protected function rules() {
         return [
@@ -88,6 +85,10 @@ class Interview extends Component
             'accordion' => '',
         ]);
         return redirect()->route('home.profile.index');
+    }
+
+    public function setActive(int $tab) {
+        $this->activeTab = $tab;
     }
     
 

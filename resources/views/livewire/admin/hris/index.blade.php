@@ -6,7 +6,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Select Employee</h1>
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Choose Employee</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -14,7 +14,7 @@
                         <table class="table table-bordered w-100">
                             <thead>
                                 <tr>
-                                    <td></td>
+                                    <th>Profile</th>
                                     <th>Employee ID</th>
                                     <th>Biometrics ID</th>
                                     <th>Full Name</th>
@@ -26,7 +26,11 @@
                                 @if (!empty($employees)) 
                                     @forelse($employees as $key => $item)
                                         <tr>
-                                            <td></td>
+                                            <td>
+                                                <img src="{{
+                                                    $item->personal->profile ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                                }}">
+                                            </td>
                                             <td>{{format_id($item->id, 6)}}</td>
                                             <td>{{$item->biometrics_id}}</td>
                                             <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
@@ -56,20 +60,29 @@
     @if (!empty($records))
         <form wire:submit.prevent="save({{$records['employee_information']['id']}})">
             <div class="card mb-4">
-                <div class="card-body">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 px-3">Employee Details</h5>
+                </div>
+                <div class="card-body px-4">
                     <div class="row my-3">
-                        <div class="col-12 mb-5 d-flex justify-content-end">
+                        <div class="col-12 mb-5">
                             <div class="row">
-                                <div class="col-5 w-100">
-                                    <div class="profile">
-                                        <input type="file" wire:model="profile" id="profile" class="form-control">
-                                    </div>
-                                    <div class="error-field">
-                                        @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
+                                <div class="col-12 col-md-6">
+                                    <img src="{{
+                                        $records['employee_personal']['profile'] ? Storage::url('employee/users/'.$records['employee_personal']['employee_id'].'/'.$records['employee_personal']['profile']) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                    }}" style="width: 180px; height: 180px;">
                                 </div>
                             </div>
                         </div>  
+                        <div class="col-12 col-md-3">
+                            <div class="profile">
+                                <label class="mb-2" for="profile">Employee Image</label>
+                                <input type="file" wire:model="profile" id="profile" class="form-control">
+                            </div>
+                            <div class="error-field">
+                                @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="employee_id">Employee ID</label>
                             <input type="text" wire:model="records.employee_information.employee_id" id="records.employee_information.employee_id" class="form-control restricted" readonly>
@@ -139,42 +152,59 @@
                         </div>  
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="type">Employment Type</label>
-                            <input type="text" wire:model="records.employee_information.type" id="records.employee_information.type" class="form-control restricted" readonly>
+                            <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                <option value="freelance">Freelance</option>
+                                <option value="part time">Part Time</option>
+                                <option value="contractual">Contractual</option>
+                                <option value="project based">Project Based</option>
+                                <option value="regular">Regular</option>
+                            </select>
                             <div class="error-field">
                                 @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div> 
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="status">Account Status</label>
-                            <input type="text" wire:model="records.employee_information.status" id="records.employee_information.status" class="form-control restricted" readonly>
+                            <select wire:model="records.employee_information.status" id="records.employee_information.status" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
                             <div class="error-field">
                                 @error('records.employee_information.status') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div> 
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="salary_method">Salary Method</label>
-                            <input type="text" wire:model="records.employee_information.salary_method" id="records.employee_information.salary_method" class="form-control restricted" readonly>
+                            <select wire:model="records.employee_information.salary_method" id="records.employee_information.salary_method" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                <option value="cash">Cash</option>
+                                <option value="bank transfer">Bank Transfer</option>
+                                <option value="paycheck">Paycheck</option>
+                                <option value="e-wallet">E-Wallet</option>
+                            </select>
                             <div class="error-field">
                                 @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div> 
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="leave_credits">Leave Credits</label>
-                            <input type="text" wire:model="records.employee_information.leave_credits" id="records.employee_information.leave_credits" class="form-control restricted" readonly>
+                            <input type="text" wire:model="records.employee_information.leave_credits" id="records.employee_information.leave_credits" class="form-control">
                             <div class="error-field">
                                 @error('records.employee_information.leave_credits') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div> 
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="monthly_rate">Monthly Rate</label>
-                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control restricted" readonly>
+                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
                             <div class="error-field">
                                 @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>  
                         <div class="col-12 col-md-4 mb-3">
                             <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
-                            <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control restricted" readonly>
+                            <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">
                             <div class="error-field">
                                 @error('records.employee_information.payroll_account_number') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
@@ -202,7 +232,7 @@
                         </li>
                     </ul>
                     <div class="tab-content" id="pills-tabContent">
-                        <div class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
+                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
                             <div class="row mt-3">
                                 <div class="col-12 mb-4">
                                     <div class="accordion" id="accordionTabPersonal">
@@ -212,7 +242,7 @@
                                                     Personal Information
                                                 </button>
                                             </h2>
-                                            <div id="flush-personal" class="accordion-collapse collapse show" data-bs-parent="#accordionTabPersonal">
+                                            <div wire:ignore.self id="flush-personal" class="accordion-collapse collapse show" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-3 mb-3">
@@ -336,7 +366,7 @@
                                                     Address
                                                 </button>
                                             </h2>
-                                            <div id="flush-address" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div wire:ignore.self id="flush-address" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-12 mb-3">
@@ -394,7 +424,7 @@
                                                     Contact Information
                                                 </button>
                                             </h2>
-                                            <div id="flush-contact" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div wire:ignore.self id="flush-contact" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-4 mb-3">
@@ -428,7 +458,7 @@
                                                     Appearance
                                                 </button>
                                             </h2>
-                                            <div id="flush-appearance" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div wire:ignore.self id="flush-appearance" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-6 mb-3">
@@ -462,7 +492,7 @@
                                                     Identification Numbers
                                                 </button>
                                             </h2>
-                                            <div id="flush-benefits" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div wire:ignore.self id="flush-benefits" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-4 mb-3">
@@ -508,7 +538,7 @@
                                 </div>              
                             </div>
                         </div>
-                        <div class="tab-pane fade {{$activeTab == 'family' ? 'active show' : ''}} " id="pills-family" role="tabpanel" aria-labelledby="pills-family-tab" tabindex="0">
+                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'family' ? 'active show' : ''}} " id="pills-family" role="tabpanel" aria-labelledby="pills-family-tab" tabindex="0">
                             <div class="row mt-3">
                                 <div class="col-12 mb-4">
                                     <div class="accordion" id="accordionTabFamily">
@@ -518,7 +548,7 @@
                                                     Parents Details
                                                 </button>
                                             </h2>
-                                            <div id="flush-parents" class="accordion-collapse {{$activeAccordion == 'parents' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
+                                            <div wire:ignore.self id="flush-parents" class="accordion-collapse {{$activeAccordion == 'parents' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
                                                 <div class="accordion-body">
                                                     <div class="row">
 
@@ -662,7 +692,7 @@
                                                     Children Details
                                                 </button>
                                             </h2>
-                                            <div id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
+                                            <div wire:ignore.self id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
                                                 <div class="accordion-body mt-4">
                                                     <div class="d-flex justify-content-end mb-4">
                                                         <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('family', 'employee_children', 'children')">Add Record</button>
@@ -726,7 +756,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade {{$activeTab == 'education' ? 'active show' : ''}} " id="pills-education" role="tabpanel" aria-labelledby="pills-education-tab" tabindex="0">
+                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'education' ? 'active show' : ''}} " id="pills-education" role="tabpanel" aria-labelledby="pills-education-tab" tabindex="0">
 
                             <div class="d-flex justify-content-end mb-4">
                                 <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('education', 'employee_education')">Add Record</button>
@@ -803,7 +833,7 @@
                             @endif
 
                         </div>
-                        <div class="tab-pane fade {{$activeTab == 'history' ? 'active show' : ''}}" id="pills-history" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
+                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'history' ? 'active show' : ''}}" id="pills-history" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                             
                             <div class="d-flex justify-content-end mb-4">
                                 <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('history', 'employee_employment_history')">Add Record</button>
@@ -901,7 +931,7 @@
                             @endif
 
                         </div>
-                        <div class="tab-pane fade {{$activeTab == 'account' ? 'active show' : ''}} " id="pills-account" role="tabpanel" aria-labelledby="pills-account-tab" tabindex="0">
+                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'account' ? 'active show' : ''}} " id="pills-account" role="tabpanel" aria-labelledby="pills-account-tab" tabindex="0">
                             <div class="mt-3">
                                 <div class="row">
                                     <div class="col-12 col-md-12 mb-3">
@@ -931,8 +961,8 @@
                     </div>
                 </div>
                 @if (!empty($records))
-                    <div class="card-footer d-flex justify-content-end bg-transparent">
-                        <button type="submit" class="btn btn-primary py-2 px-5 my-3">Save</button>
+                    <div class="card-footer d-flex justify-content-end bg-transparent border-0">
+                        <button type="submit" class="btn btn-primary py-3 px-5 my-3 text-uppercase fw-bold">Save</button>
                     </div>
                 @endif
             </div>

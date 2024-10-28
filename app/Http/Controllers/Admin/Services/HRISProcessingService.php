@@ -19,14 +19,19 @@ use Illuminate\Support\Facades\Mail;
 class HRISProcessingService extends Controller
 {
 
-    public function save(bool $isFirstTime = false, int $id, array $data = null) 
+    public function save(bool $isFirstTime = false, int $id, int $job_id, array $data = null) 
     {
 
-        $record = ApplicantUsers::find($id);
-
+        $record = ApplicantUsers::with('applied.offer')
+            ->whereHas('applied.offer', fn($query) => $query->where('id', $job_id))
+            ->find($id);
+        
         if ($isFirstTime && $record) {
 
             $data = [
+                'employee_information' => [
+                    'salary' => $record->applied[0]->offer->salary
+                ],
                 'employee_account' => [
                     'applicant_id' => $record->id,
                     'email' => $record->email,
@@ -64,11 +69,14 @@ class HRISProcessingService extends Controller
     }
 
     public function employee_information(int $id, array $data, bool $isFirstTime = false)  {
+        
         if ($isFirstTime) {
+
             $generate = new Generate;
 
             $record = EmployeeInformation::create([
                 'biometrics_id' => $generate->biometrics(),
+                'monthly_rate' => $data['employee_information']['salary'],
                 'date_hired' => Carbon::now()->format('d F, Y'),
             ]);
 
@@ -121,36 +129,38 @@ class HRISProcessingService extends Controller
     }
 
     public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {
+        
         $template = [
-            'profile' => $data['profile'] ?? null,
-            'firstname' => $data['firstname'] ?? null,
-            'middlename' => $data['middlename'] ?? null,
-            'lastname' => $data['lastname'] ?? null,
-            'suffix' => $data['suffix'] ?? null,
-            'birthday' => $data['birthday'] ?? null,
-            'civil_status' => $data['civil_status'] ?? null,
-            'sex' => $data['sex'] ?? null,
-            'citizenship' => $data['citizenship'] ?? null,
-            'citizenship_type' => $data['citizenship_type'] ?? null,
-            'country' => $data['country'] ?? null,
-            'present_address' => $data['present_address'] ?? null,
-            'present_province' => $data['present_province'] ?? null,
-            'present_city' => $data['present_city'] ?? null,
-            'permanent_address' => $data['permanent_address'] ?? null,
-            'permanent_province' => $data['permanent_province'] ?? null,
-            'permanent_city' => $data['permanent_city'] ?? null,
-            'mobile_number' => $data['mobile_number'] ?? null,
-            'tel_no' => $data['tel_no'] ?? null,
-            'email' => $data['email'] ?? null,
-            'height' => $data['height'] ?? null,
-            'weight' => $data['weight'] ?? null,
-            'blood_type' => $data['blood_type'] ?? null,
-            'gsis_no' => $data['gsis_no'] ?? null,
-            'pagibig_no' => $data['pagibig_no'] ?? null,
-            'philhealth_no' => $data['philhealth_no'] ?? null,
-            'sss_no' => $data['sss_no'] ?? null,
-            'tin_no' => $data['tin_no'] ?? null,
+            'profile' => !empty($data['profile']) ? $data['profile'] : null,
+            'firstname' => !empty($data['firstname']) ? $data['firstname'] : null,
+            'middlename' => !empty($data['middlename']) ? $data['middlename'] : null,
+            'lastname' => !empty($data['lastname']) ? $data['lastname'] : null,
+            'suffix' => !empty($data['suffix']) ? $data['suffix'] : null,
+            'birthday' => !empty($data['birthday']) ? $data['birthday'] : null,
+            'civil_status' => !empty($data['civil_status']) ? $data['civil_status'] : null,
+            'sex' => !empty($data['sex']) ? $data['sex'] : null,
+            'citizenship' => !empty($data['citizenship']) ? $data['citizenship'] : null,
+            'citizenship_type' => !empty($data['citizenship_type']) ? $data['citizenship_type'] : null,
+            'country' => !empty($data['country']) ? $data['country'] : null,
+            'present_address' => !empty($data['present_address']) ? $data['present_address'] : null,
+            'present_province' => !empty($data['present_province']) ? $data['present_province'] : null,
+            'present_city' => !empty($data['present_city']) ? $data['present_city'] : null,
+            'permanent_address' => !empty($data['permanent_address']) ? $data['permanent_address'] : null,
+            'permanent_province' => !empty($data['permanent_province']) ? $data['permanent_province'] : null,
+            'permanent_city' => !empty($data['permanent_city']) ? $data['permanent_city'] : null,
+            'mobile_number' => !empty($data['mobile_number']) ? $data['mobile_number'] : null,
+            'tel_no' => !empty($data['tel_no']) ? $data['tel_no'] : null,
+            'email' => !empty($data['email']) ? $data['email'] : null,
+            'height' => !empty($data['height']) ? $data['height'] : null,
+            'weight' => !empty($data['weight']) ? $data['weight'] : null,
+            'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : null,
+            'gsis_no' => !empty($data['gsis_no']) ? $data['gsis_no'] : null,
+            'pagibig_no' => !empty($data['pagibig_no']) ? $data['pagibig_no'] : null,
+            'philhealth_no' => !empty($data['philhealth_no']) ? $data['philhealth_no'] : null,
+            'sss_no' => !empty($data['sss_no']) ? $data['sss_no'] : null,
+            'tin_no' => !empty($data['tin_no']) ? $data['tin_no'] : null,
         ];
+        
 
         if ($isFirstTime) {
             $template['employee_id'] = $id;

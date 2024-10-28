@@ -125,20 +125,20 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Select Interview</h1>
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Choose Interview</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     @if (!empty($interview))
                         <div class="row">
                             @foreach($interview as $key => $item)
-                                <div class="col-12 col-md-6">
-                                    <div class="d-flex gap-2 align-items-center">
+                                <div class="col-12">
+                                    <div class="d-flex gap-2 align-items-start">
                                         <div>
                                             <input type="checkbox" wire:model='selected_interview.{{$item->id}}'  class="form-check">
                                         </div>
                                         <div>
-                                            <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                            <h6 class="mt-1 mb-0 text-uppercase">{{$item->name}}</h6>
                                         </div>
                                     </div>
                                 </div>

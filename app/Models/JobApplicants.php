@@ -15,6 +15,9 @@ class JobApplicants extends Model
         'applicant_no',
         'job_id',
         'status',
+        'isInterviewSeen',
+        'isPlacementSeen',
+        'isOnboardingSeen',
         'isInterviewResponded',
         'isSignedJobOffer'
     ];

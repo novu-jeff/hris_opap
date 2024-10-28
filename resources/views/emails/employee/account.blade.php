@@ -11,7 +11,7 @@
 
     <p>We are pleased to inform you that you have been hired for the position of <strong>{{ ucwords($data['position']) }}</strong> at <strong>{{ ucwords($data['company_name']) }}</strong>, located in <strong>{{ ucwords($data['location']) }}</strong>.</p>
 
-    <h3><b>Job Details:</b></h3>
+    <h4><b>Job Details:</b></h4>
     <ul>
         <li><strong>Company:</strong> {{ ucwords($data["company_name"]) }}</li>
         <li><strong>Location:</strong> {{ ucwords($data['location']) }}</li>
@@ -24,7 +24,7 @@
     </ul>
     <hr>
     
-    <h3>Your Employee Account Credentials:</h3>
+    <h4>Your Employee Account Credentials:</h4>
     <ul>
         <li><strong>Email:</strong> {{ $data['email'] }}</li>
         <li><strong>Password:</strong> {{ $data['password'] }}</li>

@@ -18,8 +18,15 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->string('applicant_no');
             $table->foreignId('job_id')
-                ->constrained('job_posts');
+                ->constrained('job_posts')
+                ->onDelete('cascade');
             $table->string('status');
+            $table->boolean('isInterviewSeen')
+                ->default(false);
+            $table->boolean('isPlacementSeen')
+                ->default(false);
+            $table->boolean('isOnboardingSeen')
+                ->default(false);
             $table->boolean('isInterviewResponded')
                 ->default(false);
             $table->boolean('isSignedJobOffer')

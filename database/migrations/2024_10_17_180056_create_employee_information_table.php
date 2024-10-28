@@ -26,18 +26,35 @@ return new class extends Migration
             $table->string('date_hired');
             $table->string('date_resignation')
                 ->nullable();
-            $table->string('type')
+            $table->enum('type', [
+                    'freelance',
+                    'part time',
+                    'contractual',
+                    'project based',
+                    'regular'
+                ])
                 ->nullable();
-            $table->string('status')
+            $table->enum('status', [
+                    'active',
+                    'inactive'
+                ])
+                ->nullable()
                 ->default('active');
-            $table->string('salary_method')
+            $table->enum('salary_method', [
+                    'cash',
+                    'bank transfer',
+                    'paycheck',
+                    'e-wallet'
+                ])
                 ->nullable();
             $table->integer('leave_credits')
+                ->default(0)
                 ->nullable();;
             $table->float('monthly_rate')
-                ->nullable();;
-            $table->integer('payroll_account_number')
-                ->nullable();;
+                ->default(0)
+                ->nullable();
+            $table->string('payroll_account_number')
+                ->nullable();
             $table->timestamps();
         });
 
@@ -179,7 +196,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('father_middlename')
                 ->nullable();
-            $table->enum('suffix', [
+            $table->enum('father_suffix', [
                     'jr',
                     'sr',
                     'I',
@@ -259,7 +276,7 @@ return new class extends Migration
             $table->enum('employment_status', [
                     'regular',
                     'part time',
-                    'feelance',
+                    'freelance',
                     'project base'
                 ])
                 ->nullable();

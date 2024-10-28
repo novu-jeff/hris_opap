@@ -31,14 +31,15 @@
                         </div>
                     </div>
                     <div class="accordion mt-5" id="accordionInterview">
+                        {{$activeTab}}
                         @foreach ($record->interview as $interviewIndex => $interview)
                             <div class="accordion-item mb-3 shadow-sm border-1">
                                 <h2 class="accordion-header" id="headingInterview{{ $interviewIndex }}">
-                                    <button class="accordion-button text-uppercase {{ $interviewIndex == 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInterview{{ $interviewIndex }}" aria-expanded="{{ $interviewIndex == 0 ? 'true' : 'false' }}" aria-controls="collapseInterview{{ $interviewIndex }}">
-                                        Interview #{{ $interviewIndex + 1 }} ({{ $interview->id }})
+                                    <button type="button" wire:ignore.self class="accordion-button text-uppercase {{ $interviewIndex == $activeTab ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInterview{{ $interviewIndex }}" aria-expanded="{{ $interviewIndex == 0 ? 'true' : 'false' }}" aria-controls="collapseInterview{{ $interviewIndex }}">
+                                        Interview #{{ $interviewIndex + 1 }} ({{$interview->details->name}})
                                     </button>
                                 </h2>
-                                <div id="collapseInterview{{ $interviewIndex }}" class="accordion-collapse collapse {{ $interviewIndex == 0 ? 'show' : '' }}" aria-labelledby="headingInterview{{ $interviewIndex }}" data-bs-parent="#accordionInterview">
+                                <div wire:ignore.self id="collapseInterview{{ $interviewIndex }}" class="accordion-collapse collapse {{ $interviewIndex == $activeTab ? 'show' : '' }}" aria-labelledby="headingInterview{{ $interviewIndex }}" data-bs-parent="#accordionInterview">
                                     <div class="accordion-body p-4">
                                         <div class="row ">
                                             @foreach($interview->items as $index => $item)

@@ -26,7 +26,7 @@
                                     <a class="dropdown-item" href="{{route('job.posts.edit', ['post' => $record->id])}}">Update</a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{route('job.posts.show', ['post' => $record->id])}}">Delete</a>
+                                    <a href="javascript:void(0)" wire:click="remove(true, {{$record->id}})" class="dropdown-item">Delete</a>
                                 </li>
                             </ul>
                         </div>

@@ -17,8 +17,18 @@ return new class extends Migration
             $table->string('position');
             $table->string('company_name');
             $table->string('location');
-            $table->string('setup');
-            $table->string('type');
+            $table->enum('setup', [
+                    'work from home',
+                    'onsite',
+                    'hybrid'
+                ]);
+            $table->enum('type', [
+                    'freelance',
+                    'part time',
+                    'contractual',
+                    'project based',
+                    'regular'
+                ]);
             $table->integer('min_salary');
             $table->integer('max_salary');
             $table->longText('description');

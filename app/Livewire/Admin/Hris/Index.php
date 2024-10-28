@@ -229,8 +229,8 @@ class Index extends Component
             'records.employee_personal.firstname' => 'required|string|max:255',
             'records.employee_personal.lastname' => 'required|string|max:255',
             'records.employee_personal.suffix' => 'nullable|in:jr,sr,I,II,III,IV,V',
-            'records.employee_personal.civil_status' => 'in:single,married,divorced,seperated,widowed,anulled',
-            'records.employee_personal.sex' => 'in:male,female',
+            'records.employee_personal.civil_status' => 'nullable|in:single,married,divorced,seperated,widowed,anulled',
+            'records.employee_personal.sex' => 'nullable|in:male,female',
             'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
@@ -354,7 +354,7 @@ class Index extends Component
 
         try {
             $process = new HRISProcessingService;
-            $process->save(false, $id, $this->records);
+            $process->save(false, $id, $this->selected_id, $this->records);
             DB::commit();
 
             return$this->dispatch('alert', [
