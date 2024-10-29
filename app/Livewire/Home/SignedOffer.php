@@ -31,10 +31,10 @@ class SignedOffer extends Component
 
     public function loadRecords() {
 
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $this->user_id = $id;
         
-        $record = JobApplicants::with('job', 'offer')
+        $record = JobApplicants::with('applicant', 'job', 'offer')
             ->where('user_id', $id)
             ->where('job_id', $this->job_id)
             ->where('status', 'placement')
@@ -124,7 +124,10 @@ class SignedOffer extends Component
             $filename = 'signed_offer_' . str_replace(' ', '_', $this->record->job->position 
                 . '_' . time()) 
                 . '.' . $extension;
-            $attachment->storeAs('public/applicant/users/' . $this->user_id .'/' . $this->job_id . '/offers', strtolower($filename));
+                
+            $folder = strtolower($this->record->applicant->firstname . '_' . $this->record->applicant->lastname . '_' . $this->record->applicant->id);
+
+            $attachment->storeAs('users/applicant/' . $folder .'/' . $this->record->job->slug . '/offers', strtolower($filename), 'public');
 
 
             JobApplicantsOffer::where('id', $this->record->offer->id)

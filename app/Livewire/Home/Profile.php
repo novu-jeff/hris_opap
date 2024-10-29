@@ -53,7 +53,7 @@ class Profile extends Component
     }
     
     public function loadRecords() {
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $record = ApplicantUsers::with(
             [
                     'skills.skills',
@@ -109,6 +109,8 @@ class Profile extends Component
             ->where('user_id', $this->user_id)
             ->first();
 
+        $folder = strtolower($record->applicant->firstname . '_' . $record->applicant->lastname . '_' . $record->applicant->id);
+        
         if(is_null($record->offer)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
@@ -118,18 +120,48 @@ class Profile extends Component
             ]);
         }
         
-        $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/offers/' . $record->offer->attachment;
+        $path = 'users/applicant/' . $folder . '/' . $record->job->slug .'/offers/' . $record->offer->attachment;
         
-        if(!Storage::exists($path)) {
+        if(!Storage::disk('public')->exists($path)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Job offer does not exists'
+                'message' => 'Job offer file does not exists'
             ]);
         } 
 
-        return response()->download(Storage::path($path));
+        return response()->download(Storage::disk('public')->path($path));
+
+    }
+
+    public function download_resume() {
+        
+        $record = ApplicantUsers::where('id', $this->user_id)
+            ->first();
+
+        if(is_null($record->resume)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Resume does not exists'
+            ]);
+        }
+        
+        $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
+        $path = 'users/applicant/' . $folder.  '/' . $record->resume;
+
+        if(!Storage::disk('public')->exists($path)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Resume file does not exists'
+            ]);
+        } 
+
+        return response()->download(Storage::disk('public')->path($path));
 
     }
     

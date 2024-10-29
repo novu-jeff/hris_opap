@@ -16,7 +16,7 @@ class UpdateProfileSkills extends Component
     protected $listeners = ['populateField'];
 
     public function mount() {
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $record = ApplicantSkills::where('user_id', $id)->get();
         $this->user_id = $id;
         $this->record = SkillList::all();

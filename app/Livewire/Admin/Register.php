@@ -48,7 +48,9 @@ class Register extends Component
                     'password' => Hash::make($this->fields['account']['password']) ?? null,
                 ]);
 
-                $file->storeAs('public/applicant/users/'.$user->id, $filename);
+                $folder = $user->firstname . '_' . $user->lastname . '_' . $user->id;
+
+                $file->storeAs('users/applicant/' . $folder, $filename, 'public');
                 
                 DB::commit();
 

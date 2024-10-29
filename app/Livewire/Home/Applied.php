@@ -23,7 +23,7 @@ class Applied extends Component
     public function mount() {
 
         # initially load user id
-        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
+        $this->user_id = Auth::guard('applicant')->user()->id ?? null;
 
         # initially load all applied records
 
@@ -64,16 +64,16 @@ class Applied extends Component
     # show job status if apply or applied
     
     public function showAppliedJobs() {
-        if(!Auth::guard('applicants')->check()) {
+        if(!Auth::guard('applicant')->check()) {
            return  $this->applied_jobs_id = [];
         }
 
-        $this->applied_jobs_id = Auth::guard('applicants')->user()->applied->pluck('job_id')->toArray();
+        $this->applied_jobs_id = Auth::guard('applicant')->user()->applied->pluck('job_id')->toArray();
     }
 
     public function showSavedJobs() {
         // Check if the user is authenticated
-        $user = Auth::guard('applicants')->user();
+        $user = Auth::guard('applicant')->user();
     
         if (!$user) {
             // If no authenticated user, return null

@@ -57,7 +57,6 @@ class Index extends Component
     }
 
     public function loadRecords() {
-        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
         $this->records = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
             ->where('status', $this->status)
             ->get();
@@ -94,7 +93,7 @@ class Index extends Component
 
     public function download_requirement(int $id) {
         
-        $record = JobApplicants::with(['requirements' => function($query) use ($id) {
+        $record = JobApplicants::with(['job', 'requirements' => function($query) use ($id) {
                 $query->where('id', $id);
             }])->first(); 
 
@@ -107,9 +106,10 @@ class Index extends Component
                 ]);
             }
 
-            $path = 'public/applicant/users/' . $record->user_id . '/' . $record->job_id .'/requirements/' . $record->requirements[0]->attachment;
+            $folder = strtolower($record->applicant->firstname . '_' . $record->applicant->lastname . '_' . $record->applicant->id);
+            $path = 'users/applicant/' . $folder . '/' . $record->job->slug .'/requirements/' . $record->requirements[0]->attachment;
             
-            if(!Storage::exists($path)) {
+            if(!Storage::disk('public')->exists($path)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
@@ -118,7 +118,7 @@ class Index extends Component
                 ]);
             } 
 
-            return response()->download(Storage::path($path));
+            return response()->download(Storage::disk('public')->path($path));
     }
 
     public function set_action(string $action, int $id) {
@@ -382,7 +382,7 @@ class Index extends Component
 
             $this->selected_id = $id;  
             
-            $records = JobApplicants::with('job', 'offer')->find($id);
+            $records = JobApplicants::with('applicant', 'job', 'offer')->find($id);
             
             $this->job_offer = [
                 'min_salary' => $records->job->min_salary,
@@ -470,14 +470,16 @@ class Index extends Component
         ];
 
         $this->validate($rules, $messages);
-        
+
+        $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
+
         $attachment = $this->job_offer['attachment'];
         $extension = $attachment->getClientOriginalExtension();
         $filename = 'job_offer_' . str_replace(' ', '_', $records->job->position 
             . '_' . time()) 
             . '.' . $extension;
 
-        $attachment->storeAs('public/applicant/users/' . $records->user_id . '/' . $records->job->id . '/offers', strtolower($filename));
+        $attachment->storeAs('users/applicant/' . $folder . '/' . $records->job->slug . '/offers', strtolower($filename), 'public');
 
         JobApplicantsOffer::insert([
             'job_applicants_id' => $this->selected_id,
@@ -488,7 +490,7 @@ class Index extends Component
             'salary' => $this->job_offer['salary']
         ]); 
 
-        $path = 'applicant/users/' . $records->user_id. '/' . $records->job_id .'/offers/' . strtolower($filename);
+        $path = Storage::disk('public')->path('users/applicant/' . $folder. '/' . $records->job->slug .'/offers/' . strtolower($filename));
 
         $data = [
             'subject' => $this->job_offer['subject'],
@@ -515,12 +517,12 @@ class Index extends Component
 
     public function download_offer(int $id) {
 
-        $record = JobApplicants::with('offer')
+        $record = JobApplicants::with('applicant', 'job', 'offer')
             ->where('id', $id)
-            ->where('user_id', $this->user_id)
             ->first();
 
-        if(is_null($record->offer)) {
+
+        if(is_null($record->offer) || empty($record->offer->signed_attachment)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -529,9 +531,11 @@ class Index extends Component
             ]);
         }
 
-        $path = 'public/applicant/users/'.$this->user_id. '/' . $record->job_id .'/offers/' . $record->offer->signed_attachment;
-        
-        if(!Storage::exists($path)) {
+        $folder = strtolower($record->applicant->firstname . '_' . $record->applicant->lastname . '_' . $record->applicant->id);
+        $path = 'users/applicant/'.$folder. '/' . $record->job->slug .'/offers/' . $record->offer->signed_attachment;
+
+
+        if(!Storage::disk('public')->exists($path)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -540,7 +544,7 @@ class Index extends Component
             ]);
         } 
 
-        return response()->download(Storage::path($path));
+        return response()->download(Storage::disk('public')->path($path));
 
     }
 

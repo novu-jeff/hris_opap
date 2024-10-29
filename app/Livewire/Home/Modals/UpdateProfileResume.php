@@ -25,12 +25,14 @@ class UpdateProfileResume extends Component
     }
 
     public function loadRecords() {
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $record = ApplicantUsers::where('id', $id)->first();
+        $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
 
         $this->user_id = $id;        
         $this->resume = $record->resume;
-        $this->resume_preview = $record->resume ? Storage::url('public/applicant/users/' . $this->user_id .'/' . $record->resume) : null;
+        $this->resume_preview = $record->resume ? Storage::url('public/users/applicant/' . $folder .'/' . $record->resume) : null;
+    
     }
 
     public function updated($propertyName) {
@@ -96,11 +98,12 @@ class UpdateProfileResume extends Component
             $record = ApplicantUsers::where('id', $this->user_id)
                 ->first();
 
-            $path = 'public/applicant/users/'.$record->id;
+            $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
+            $path = 'users/applicant/' . $folder;
             $filepath = $path . '/' . $record->resume;
             
-            if(Storage::exists($filepath)) {
-                Storage::delete($filepath);
+            if(Storage::disk('public')->exists($filepath)) {
+                Storage::disk('public')->delete($filepath);
             } 
             
             $record->resume = null;
@@ -144,11 +147,12 @@ class UpdateProfileResume extends Component
             $record = ApplicantUsers::where('id', $this->user_id)
                 ->first();
 
-            $path = 'public/applicant/users/'.$record->id;
+            $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
+            $path = 'users/applicant/' . $folder;
             $filepath = $path . '/' . $record->resume;
             
-            if(Storage::exists($filepath)) {
-                Storage::delete($filepath);
+            if(Storage::disk('public')->exists($filepath)) {
+                Storage::disk('public')->delete($filepath);
             } 
 
             $file = $this->resume;
@@ -158,7 +162,7 @@ class UpdateProfileResume extends Component
             $record->resume = $filename;
             $record->save();
 
-            $file->storeAs($path, $filename);
+            $file->storeAs($path, $filename, 'public');
 
             $this->dispatch('loadRecords')->to('home.profile');
 

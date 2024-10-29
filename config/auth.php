@@ -40,10 +40,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'applicants' => [
+        'applicant' => [
             'driver' => 'session',
             'provider' => 'applicants',
         ],
+        'employee' => [
+            'driver' => 'session',
+            'provider' => 'employees'
+        ]
     ],
 
     /*
@@ -71,6 +75,10 @@ return [
         'applicants' => [
             'driver' => 'eloquent',
             'model' => App\Models\ApplicantUsers::class
+        ],
+        'employees' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\EmployeeInformation::class
         ]
 
         // 'users' => [

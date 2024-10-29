@@ -24,12 +24,14 @@ class UpdateProfileImage extends Component
     }
 
     public function loadRecords() {
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $record = ApplicantUsers::where('id', $id)->first();
+        $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
         
         $this->user_id = $id;
         $this->profile = $record->image;
-        $this->profile_preview = $record->image ? Storage::url('public/applicant/users/' . $this->user_id .'/' . $record->image) : null;
+        $this->profile_preview = $record->image ? 
+            Storage::url('public/users/applicant/' . $folder .'/' . $record->image) : null;
     }
 
     public function updated($propertyName) {
@@ -95,11 +97,12 @@ class UpdateProfileImage extends Component
             $record = ApplicantUsers::where('id', $this->user_id)
                 ->first();
 
-            $path = 'public/applicant/users/'.$record->id;
-            $filepath = $path . '/' . $record->profile;
-            
-            if(Storage::exists($filepath)) {
-                Storage::delete($filepath);
+            $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
+            $path = 'users/applicant/' . $folder;
+            $filepath = $path . '/' . $record->image;
+
+            if(Storage::disk('public')->exists($filepath)) {
+                Storage::disk('public')->delete($filepath);
             } 
 
             $record->image = null;
@@ -144,11 +147,14 @@ class UpdateProfileImage extends Component
             $record = ApplicantUsers::where('id', $this->user_id)
                 ->first();
 
-            $path = 'public/applicant/users/'.$record->id;
+            $folder = strtolower($record->firstname . '_' . $record->lastname . '_' . $record->id);
+            $path = 'users/applicant/' . $folder;
             $filepath = $path . '/' . $record->profile;
             
-            if(Storage::exists($filepath)) {
-                Storage::delete($filepath);
+
+            
+            if(Storage::disk('public')->exists($filepath)) {
+                Storage::disk('public')->delete($filepath);
             } 
 
             $file = $this->profile;
@@ -159,7 +165,7 @@ class UpdateProfileImage extends Component
 
             $record->save();
 
-            $file->storeAs($path, $filename);
+            $file->storeAs($path, $filename, 'public');
 
             $this->loadRecords();
 

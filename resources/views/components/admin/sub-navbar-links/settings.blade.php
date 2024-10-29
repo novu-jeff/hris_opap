@@ -10,7 +10,7 @@
                 User Management
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Users</a></li>
+                <li><a class="dropdown-item" href="{{route('users.index', ['type' => 'applicants'])}}">Users</a></li>
                 <li><a class="dropdown-item" href="#">Access Management</a></li>
             </ul>
         </li>

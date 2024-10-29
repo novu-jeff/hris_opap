@@ -28,7 +28,7 @@ class Jobs extends Component
 
         # initially store user id
 
-        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
+        $this->user_id = Auth::guard('applicant')->user()->id ?? null;
 
         # initially load all job records
 
@@ -67,20 +67,20 @@ class Jobs extends Component
 
     # show job status if apply or applied
     public function showAppliedJobs() {
-        if(!Auth::guard('applicants')->check()) {
+        if(!Auth::guard('applicant')->check()) {
            return  $this->applied_job_ids = [];
         }
 
-        $this->applied_job_ids = Auth::guard('applicants')->user()->applied->pluck('job_id')->toArray();
+        $this->applied_job_ids = Auth::guard('applicant')->user()->applied->pluck('job_id')->toArray();
     }
 
      # show job is already saved or not
      public function showSavedJobs() {
-        if(!Auth::guard('applicants')->check()) {
+        if(!Auth::guard('applicant')->check()) {
            return  $this->saved_job_ids = [];
         }
 
-        $this->saved_job_ids = Auth::guard('applicants')->user()->saved_jobs->pluck('job_id')->toArray();   
+        $this->saved_job_ids = Auth::guard('applicant')->user()->saved_jobs->pluck('job_id')->toArray();   
     }
 
     # view job's full info
@@ -149,7 +149,7 @@ class Jobs extends Component
     # apply logic
     public function apply(int $job_id) {
 
-        if (!Auth::guard('applicants')->check()) {
+        if (!Auth::guard('applicant')->check()) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -242,7 +242,7 @@ class Jobs extends Component
         $saved_already = $savedJobs::where('user_id', $this->user_id)
             ->where('job_id', $id)->exists();
         
-        if (!Auth::guard('applicants')->check()) {
+        if (!Auth::guard('applicant')->check()) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
