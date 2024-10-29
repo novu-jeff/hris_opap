@@ -1,4 +1,6 @@
-@extends('layouts.auth')
+@extends('layouts.auth', [
+    'title' => 'HRIS | Applicant Login'
+])
 
 @section('content')
     <div class="login">

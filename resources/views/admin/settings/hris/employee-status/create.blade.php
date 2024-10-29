@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'Symphony | Add Employees Status'
+    'title' => 'HRIS | Add Employees Status'
 ])
 
 @section('content')

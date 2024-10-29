@@ -291,6 +291,44 @@ return new class extends Migration
                 ->nullable();
         });
 
+        Schema::create('employee_leave', function(Blueprint $table) {
+            $table->id();
+            $table->foreignId('employee_id')
+                ->constrained('employee_information')
+                ->onCascade('delete');
+            $table->string('status')
+                ->default('pending');
+            $table->enum('type', [
+                'casual',
+                'medical',
+                'unpaid',
+                'emergency',
+                'sick'
+            ]);
+            $table->longtext('reason');
+            $table->string('from');
+            $table->string('to');
+            $table->enum('measurement', [
+                'full day',
+                'half day',
+                'range'
+            ]);
+            $table->string('consumed_hours')
+                ->nullable();
+            $table->timestamps();
+        });
+
+
+        Schema::create('employee_time_in_out', function(Blueprint $table) {
+            $table->id();
+            $table->foreignId('employee_id')
+                ->constrained('employee_information')
+                ->onCascade('delete');
+            $table->string('time_in');
+            $table->string('time_out');
+            $table->string('total_hours');
+        });
+
     }
 
     /**
@@ -299,6 +337,8 @@ return new class extends Migration
     public function down(): void
     {
 
+        Schema::dropIfExists('employee_leave');
+        Schema::dropIfExists('employee_time_in_out');
         Schema::dropIfExists('employee_employment_history');
         Schema::dropIfExists('employee_education');
         Schema::dropIfExists('employee_children');

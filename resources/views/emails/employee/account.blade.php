@@ -7,7 +7,7 @@
 </head>
 <body>
 
-    <p>Hello <strong>{{ $data['fullname'] }}</strong>,</p>
+    <p>Hello <strong>{{ ucwords($data['fullname']) }}</strong>,</p>
 
     <p>We are pleased to inform you that you have been hired for the position of <strong>{{ ucwords($data['position']) }}</strong> at <strong>{{ ucwords($data['company_name']) }}</strong>, located in <strong>{{ ucwords($data['location']) }}</strong>.</p>
 
