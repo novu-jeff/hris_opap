@@ -19,7 +19,7 @@ class UpdateProfile extends Component
     protected $listeners = ['save', 'loadRecords'];
 
     public function mount() {
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $record = ApplicantUsers::where('id', $id)
             ->first();
         $this->user_id = $id;
@@ -95,7 +95,6 @@ class UpdateProfile extends Component
             'fields.education.finished.required_with' => 'The finished field is required.',
         ];
     }
-
 
     public function save(bool $isNotify = true) {
 

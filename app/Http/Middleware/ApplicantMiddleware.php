@@ -17,12 +17,12 @@ class ApplicantMiddleware
     public function handle(Request $request, Closure $next): Response
     {
 
-        if (!Auth::guard('applicants')->check() && 
+        if (!Auth::guard('applicant')->check() && 
             $request->route()->getName() !== 'login') {
             return redirect('login');
         }
 
-        Auth::setDefaultDriver('applicants');
+        Auth::setDefaultDriver('applicant');
         return $next($request);
 
     }

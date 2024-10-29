@@ -28,7 +28,7 @@ class Interview extends Component
 
     public function loadRecords() {
 
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $this->user_id = $id;
 
         

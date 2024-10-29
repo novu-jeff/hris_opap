@@ -37,10 +37,10 @@ class Requirements extends Component
 
     public function loadRecords() {
 
-        $id = Auth::guard('applicants')->user()->id;
+        $id = Auth::guard('applicant')->user()->id;
         $this->user_id = $id;
         
-        $record = JobApplicants::with('job', 'requirements')
+        $record = JobApplicants::with('applicant', 'job', 'requirements')
             ->where('user_id', $id)
             ->where('job_id', $this->job_id)
             ->where('status', 'onboarding')
@@ -51,8 +51,9 @@ class Requirements extends Component
         }
 
         $this->record = $record;
-        
+            
         if(!$record->requirements->isEmpty()) {
+            $folder = strtolower($record->applicant->firstname . '_' . $record->applicant->lastname . '_' . $record->applicant->id);
             foreach($record->requirements as $index => $requirements) {
                 $this->responses[$index] = [
                     'type' => $requirements->requirement_id ,
@@ -60,7 +61,7 @@ class Requirements extends Component
                 ];
                 $this->previews[$index] = [
                     'type' => file_type($requirements->attachment),
-                    'url' => Storage::url('applicant/users/' . $this->user_id .'/' . $this->job_id . '/requirements/' . $requirements->attachment),
+                    'url' => Storage::url('public/users/applicant/' . $folder .'/' . $this->record->job->slug . '/requirements/' . $requirements->attachment),
                 ];
             }
         } else {
@@ -96,10 +97,12 @@ class Requirements extends Component
             if (isset($response['document']) && !($response['document'] instanceof \Illuminate\Http\UploadedFile)) {
                 $filename = $response['document']; 
     
-                $path = 'public/applicant/users/' . $this->user_id . '/' . $this->job_id . '/requirements/' . $filename;
-    
-                if (Storage::exists($path)) {
-                    Storage::delete($path);
+                $folder = strtolower($this->record->applicant->firstname . '_' . $this->record->applicant->lastname . '_' . $this->record->applicant->id);
+                $path = 'users/applicant/' . $folder . '/' . $this->record->job->slug . '/requirements/' . $filename;
+
+
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
     
                 JobApplicantsRequirements::where('job_applicants_id', $this->job_id)
@@ -202,17 +205,18 @@ class Requirements extends Component
                     $extension = $attachment->getClientOriginalExtension();
                     $filename = 'requirement_' . Str::uuid() . '_' . str_replace(' ', '_', $this->record->job->position . '_' . time()) . '.' . $extension;
                 
-                    $path = 'public/applicant/users/' . $this->user_id . '/' . $this->job_id . '/requirements';
+                    $folder = strtolower($this->record->applicant->firstname . '_' . $this->record->applicant->lastname . '_' . $this->record->applicant->id);
+                    $path = 'users/applicant/' . $folder . '/' . $this->record->job->slug . '/requirements';
                     
-                    $attachment->storeAs($path, strtolower($filename));
+                    $attachment->storeAs($path, strtolower($filename), 'public');
                 
                     $existingRecord = JobApplicantsRequirements::where('job_applicants_id', $this->job_id)
                         ->where('requirement_id', $requirementId)
                         ->first();
 
                     if ($existingRecord && $existingRecord->attachment) {
-                        $previousPath = 'public/applicant/users/' . $this->user_id . '/' . $this->job_id . '/requirements/' . $existingRecord->attachment;
-                        Storage::delete($previousPath); 
+                        $previousPath = 'users/applicant/' . $folder . '/' . $this->record->job->slug . '/requirements/' . $existingRecord->attachment;
+                        Storage::disk('public')->delete($previousPath); 
                     }
 
                     JobApplicantsRequirements::updateOrInsert(

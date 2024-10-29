@@ -22,7 +22,7 @@
                         My Jobs
                     </a>
                 </li>
-                @if (!Auth::guard('applicants')->user())
+                @if (!Auth::guard('applicant')->user())
                     <li class="nav-item">
                         <a wire:navigate href="{{route('login')}}" class="btn btn-primary py-2 px-4">
                             Login
@@ -30,12 +30,15 @@
                     </li>
                 @endif
             </ul>
-            @if (Auth::guard('applicants')->user())
+            @if (Auth::guard('applicant')->user())
+                @php
+                    $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);
+                @endphp
                 <div class="dropdown ms-3 d-none d-md-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown">
                     <img class="profile-img" src="{{
-                                Auth::guard('applicants')->user()->image ? Storage::url('applicant/users/'.Auth::guard('applicants')->user()->id.'/'.Auth::guard('applicants')->user()->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                            }}" alt="Profile Image">
-                    <div class="email">{{ trimEmail(Auth::guard('applicants')->user()->email ?? 'Guest')}}</div>
+                        Auth::guard('applicant')->user()->image ? Storage::url('public/users/applicant/'. $folder . '/'. Auth::guard('applicant')->user()->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                    }}" alt="Profile Image">
+                    <div class="email">{{ trimEmail(Auth::guard('applicant')->user()->email ?? 'Guest')}}</div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{{route('home.profile.index')}}" wire:navigate>Profile</a></li>
                         <li>

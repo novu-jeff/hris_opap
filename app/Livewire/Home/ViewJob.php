@@ -24,7 +24,7 @@ class ViewJob extends Component
 
         # initially store user id
 
-        $this->user_id = Auth::guard('applicants')->user()->id ?? null;
+        $this->user_id = Auth::guard('applicant')->user()->id ?? null;
 
         # initially load the slug
 
@@ -43,7 +43,7 @@ class ViewJob extends Component
     # apply logic
     public function apply(int $job_id) {
 
-        if (!Auth::guard('applicants')->check()) {
+        if (!Auth::guard('applicant')->check()) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -142,11 +142,11 @@ class ViewJob extends Component
 
     # show job status if apply or applied
     public function showAppliedJobs() {
-        if(!Auth::guard('applicants')->check()) {
+        if(!Auth::guard('applicant')->check()) {
            return  $this->applied_jobs_id = [];
         }
 
-        $this->applied_jobs_id = Auth::guard('applicants')->user()->applied->pluck('job_id')->toArray();
+        $this->applied_jobs_id = Auth::guard('applicant')->user()->applied->pluck('job_id')->toArray();
     }
 
     public function go_back() {

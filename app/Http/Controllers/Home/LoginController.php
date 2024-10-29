@@ -33,7 +33,7 @@ class LoginController extends Controller
             ];
         }
 
-        if(Auth::guard('applicants')->attempt([
+        if(Auth::guard('applicant')->attempt([
             'email' => $request->email,
             'password' => $request->password
         ])) {
