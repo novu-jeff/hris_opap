@@ -15,9 +15,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 
-
-    
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{$title}}</title>
     @livewireScripts
     @livewireStyles
     @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/admin-layout.scss'])

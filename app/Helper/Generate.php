@@ -3,6 +3,7 @@
 namespace App\Helper;
 
 use App\Models\ApplicantUsers;
+use App\Models\EmployeeAccount;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -26,20 +27,20 @@ class Generate {
     }
 
     public function email(int $id, string $firstname, string $lastname) {
-
         $suffix = trim(env('COMPANY_DOMAIN'));
-
-        $emailPrefix = strtolower(trim(str_replace(' ', '.', $firstname . '.' . $lastname)));
-
-        $uniqueId = Str::random(5);
-
-        $email = "{$emailPrefix}.{$uniqueId}@{$suffix}";
-
-        while (ApplicantUsers::where('email', $email)->exists()) {
-            $uniqueId = Str::random(5);
-            $email = "{$emailPrefix}.{$uniqueId}@{$suffix}"; 
+        $emailPrefix = strtolower(trim(str_replace(' ', '.', "{$firstname}.{$lastname}")));
+        
+        // Start with the basic format
+        $email = "{$emailPrefix}@{$suffix}";
+        $counter = 1;
+    
+        // Check if the email already exists
+        while (EmployeeAccount::where('email', $email)->exists()) {
+            // If it exists, append a counter to make it unique
+            $email = "{$emailPrefix}.{$counter}@{$suffix}";
+            $counter++;
         }
-
+    
         return $email;
     }
 

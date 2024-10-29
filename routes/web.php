@@ -22,9 +22,10 @@ use App\Http\Controllers\Home\ProfileController;
 use App\Http\Controllers\Home\RegisterController;
 use App\Http\Controllers\Home\ViewJobController;
 use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
-use App\Livewire\Admin\Job\Create;
-use App\Livewire\Admin\Job\Index;
-use App\Livewire\Admin\Job\Update;
+
+use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
+use App\Http\Controllers\Employee\DashboardController;
+use App\Http\Controllers\Employee\LeaveController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -148,3 +149,27 @@ Route::prefix('settings')->group( function() {
     });
 });
 
+Route::prefix('employee')->group(function() {
+    Route::prefix('login')->group(function() {
+        Route::get('/', [EmployeeLoginController::class, 'index'])
+            ->name('employee.login');
+        Route::post('/', [EmployeeLoginController::class, 'store'])
+            ->name('login');
+    });
+
+    Route::middleware('employee')->group(function() {
+        Route::get('dashboard', [DashboardController::class, 'index'])
+            ->name('employee.dashboard');
+        Route::prefix('leave')->group(function() {
+
+            Route::get('/', [LeaveController::class, 'index'])
+                ->name('employee.leave');
+            Route::get('apply', [LeaveController::class, 'create'])
+                ->name('employee.leave.apply');
+            Route::get('edit/{id}', [LeaveController::class, 'edit'])
+                ->name('employee.leave.edit');
+
+
+        });
+    });
+});

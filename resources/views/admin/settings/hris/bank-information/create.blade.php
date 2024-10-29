@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'Symphony | Add Bank Information'
+    'title' => 'HRIS | Add Bank Information'
 ])
 
 @section('content')
