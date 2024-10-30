@@ -135,9 +135,6 @@ class Index extends Component
         return $this->dispatch('showModal', [
             'modal' => 'select_employee', 
         ]);
-        
-
-
     }
 
     public function loadCountries() {

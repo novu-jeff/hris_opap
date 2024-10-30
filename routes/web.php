@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
 use App\Http\Controllers\Admin\Job\InterviewController;
@@ -26,7 +27,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -168,8 +169,10 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [LeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
-
-
         });
+
+        Route::get('profile', [EmployeeProfileController::class, 'index'])
+            ->name('employee.profile');
+
     });
 });
