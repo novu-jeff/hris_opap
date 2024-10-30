@@ -59,7 +59,7 @@
 
     @if (!empty($records))
         <form wire:submit.prevent="save({{$records['employee_information']['id']}})">
-            <div class="card mb-4">
+            <div class="card mb-4 border-0">
                 <div class="card-header border-0 bg-transparent">
                     <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 px-3">Employee Details</h5>
                 </div>

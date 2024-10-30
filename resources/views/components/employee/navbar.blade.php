@@ -28,7 +28,7 @@
                     }}" alt="Profile Image">
                     <div class="email">{{ trimEmail(Auth::guard('employee')->user()->email ?? 'Guest')}}</div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{{route('home.profile.index')}}" wire:navigate>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{route('employee.profile')}}" wire:navigate>Profile</a></li>
                         <li>
                             <a class="dropdown-item" href="{{ route('home.logout') }}"
                                 onclick="event.preventDefault();
