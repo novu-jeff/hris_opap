@@ -48,7 +48,7 @@ class ViewJob extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
-                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('register').'">here.</a>'
+                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
             ]);
         }
 
