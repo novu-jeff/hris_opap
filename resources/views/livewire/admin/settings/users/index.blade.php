@@ -203,31 +203,63 @@
                             <th>Profile</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Date Applied</th>
+                            @if($type === 'applicants')
+                                <th>Date Joined</th>
+                            @elseif($type == 'employees')
+                                <th>Date Hired</th>
+                            @endif
                             <th style="max-width: 200px;">Action</th>
                         </tr>
                     </thead>                
                     <tbody>
-                        @foreach($records as $record)
-                            <tr data-id="{{$record->id}}">
-                                <td colspan="1">
-                                    <img src="{{
-                                        $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                    }}" style="width: 40px; height: 40px">
-                                </td>
-                                <td>{{$record->firstname . ' ' . $record->lastname}}</td>
-                                <td>{{$record->email}}</td>
-                                <td>{{$record->created_at}}</td>
-                                <td>
-                                    <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
-                                        <i class="fa-solid fa-person"></i>
-                                    </button>
-                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>  
-                                </td>
-                            </tr>
-                        @endforeach
+                        @if($type === 'applicants')
+                            @foreach($records as $record)
+                                <tr data-id="{{$record->id}}">
+                                    <td colspan="1">
+                                        <img src="{{
+                                            $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                        }}" style="width: 40px; height: 40px">
+                                    </td>
+                                    <td>{{$record->firstname . ' ' . $record->lastname}}</td>
+                                    <td>{{$record->email}}</td>
+                                    @if($type === 'applicants')
+                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                    @endif
+                                    <td>
+                                        <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
+                                            <i class="fa-solid fa-person"></i>
+                                        </button>
+                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>  
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @elseif($type === 'employees')
+                            @foreach($records as $record)
+                                <tr data-id="{{$record->id}}">
+                                    <td colspan="1">
+                                        <img src="{{
+                                            $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                        }}" style="width: 40px; height: 40px">
+                                    </td>
+                                    <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
+                                    <td>{{$record->account->email}}</td>
+                                    @if($type === 'employees')
+                                        <td>{{$record->date_hired}}</td>
+                                    @endif
+                                    <td>
+                                        <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
+                                            <i class="fa-solid fa-person"></i>
+                                        </button>
+                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>  
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                        @endif
                     </tbody>
                 </table>
             </div>

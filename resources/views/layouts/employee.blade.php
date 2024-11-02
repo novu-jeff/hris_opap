@@ -30,7 +30,7 @@
         crossorigin="anonymous"
         referrerpolicy="no-referrer"
     ></script>
-    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/home-layout.scss'])
+    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/home-layout.scss', 'resources/sass/employee-layout.scss'])
 
     @livewireStyles
     @livewireScripts

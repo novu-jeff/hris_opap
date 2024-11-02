@@ -1,4 +1,6 @@
-@extends('layouts.auth')
+@extends('layouts.auth', [
+    'title' => 'HRIS | Applicant Register'
+])
 
 @section('content')
     <div class="register">
@@ -16,7 +18,7 @@
                     </div>
                     <div class="actions d-flex justify-content-center gap-4 mt-4">
                         <a wire:navigate href="{{route('home.index')}}" class="btn btn-outline-primary px-5 py-2">Go Home</a>
-                        <a wire:navigate href="{{route('login')}}" class="btn btn-primary px-5 py-2">Login</a>
+                        <a wire:navigate href="{{route('home.login')}}" class="btn btn-primary px-5 py-2">Login</a>
                     </div>
                 </div>
             </div>

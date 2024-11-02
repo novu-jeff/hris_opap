@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class RegisterController extends Controller
 {
     public function index() {
-        return view('auth.admin.register');
+        return view('auth.home.register');
     }
 
     public function store(Request $request) {

@@ -45,9 +45,9 @@ Route::get('/', [HomeController::class, 'index'])
 
 Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])
-        ->name('login');
+        ->name('home.login');
     Route::post('/', [HomeLoginController::class, 'store'])
-        ->name('login');
+        ->name('home.login');
 });
 
 Route::any('logout', [HomeLoginController::class, 'logout'])
@@ -55,9 +55,9 @@ Route::any('logout', [HomeLoginController::class, 'logout'])
 
 Route::prefix('register')->group(function() {
     Route::get('/', [RegisterController::class, 'index'])
-        ->name('register');
+        ->name('home.register');
     Route::post('/', [RegisterController::class, 'store'])
-        ->name('register');
+        ->name('home.register');
 });
         
 

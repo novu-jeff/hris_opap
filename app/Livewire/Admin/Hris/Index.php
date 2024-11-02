@@ -3,15 +3,14 @@
 namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
-use App\Http\Requests\Admin\Hris\saveRequest;
 use App\Models\Branches;
 use App\Models\DepartmentCenters;
 use App\Models\EmployeeInformation;
 use App\Models\Positions;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
-use Str;
 
 class Index extends Component
 {
@@ -25,6 +24,20 @@ class Index extends Component
     public array $countries;
     public string $activeTab = 'details';
     public $activeAccordion;
+
+    protected $listeners = ['loadRecords'];
+
+    public function boot() {
+        if(Session::has('target')) {
+            $data = session('target');
+            if(array_key_exists('id', $data)) {
+                $this->loadRecords($data['id']);
+            }
+            
+            session()->forget('target');
+
+        }
+    }
 
     public function mount() {
         $this->loadCountries();

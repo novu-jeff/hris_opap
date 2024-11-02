@@ -4,7 +4,7 @@
             <img src="{{asset('img/logo.png')}}" alt="logo">
         </a>
         <div class="d-flex align-items-center gap-5 pt-3">
-            <ul class="navbar-nav">
+            {{-- <ul class="navbar-nav">
                 <div class="close-icon d-lg-none">
                     <i class="fa-solid fa-xmark"></i>
                 </div>
@@ -17,7 +17,7 @@
                 <li class="nav-item">
                     <a href="" class="nav-link">Talk HR</a>
                 </li>
-            </ul>
+            </ul> --}}
             @if (Auth::guard('employee')->user())
                 @php
                     $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);

@@ -639,22 +639,3 @@ label {
   text-transform: uppercase;
 }
 
-table {
-  width: 100%; 
-  table-layout: auto;
-  th, td {
-    text-transform: uppercase;
-    white-space: nowrap;
-    width: 100px;
-    vertical-align: middle;
-  }
-  td {
-    font-size: 13px;
-
-    img {
-      width: 100%;
-      height: 100px;
-    }
-
-  }
-}
