@@ -24,7 +24,7 @@
                 </li>
                 @if (!Auth::guard('applicant')->user())
                     <li class="nav-item">
-                        <a wire:navigate href="{{route('login')}}" class="btn btn-primary py-2 px-4">
+                        <a wire:navigate href="{{route('home.login')}}" class="btn btn-primary py-2 px-4">
                             Login
                         </a>
                     </li>

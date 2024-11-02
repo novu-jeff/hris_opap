@@ -18,7 +18,7 @@
                                             <button type="button" class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Applicant Login</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <a href="{{route('register')}}" class="nav-link">Register</a>
+                                            <a href="{{route('home.register')}}" class="nav-link">Register</a>
                                         </li>
                                     </ul>     
                                     <div class="logo">

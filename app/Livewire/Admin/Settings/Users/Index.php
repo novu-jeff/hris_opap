@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Settings\Users;
 
+use App\Livewire\Admin\Hris\Index as HrisIndex;
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeInformation;
 use App\Models\JobApplicants;
@@ -26,7 +27,7 @@ class Index extends Component
         }
 
         if($this->type === 'employees') {
-            $record = EmployeeInformation::all();
+            $record = EmployeeInformation::with('personal', 'account')->get();
         }
 
         $this->records = $record;
@@ -43,6 +44,11 @@ class Index extends Component
                     'modal' => 'user_info'
                 ]);
             }
+        } else if($this->type == 'employees') {
+            session()->put('target', [
+                'id' => $id,
+            ]);
+            return redirect()->route('hris.index');
         }
     }
 
