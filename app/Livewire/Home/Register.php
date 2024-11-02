@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Home;
 
 use App\Models\ApplicantUsers;
 use Illuminate\Support\Facades\DB;
@@ -140,6 +140,6 @@ class Register extends Component
 
     public function render()
     {
-        return view('livewire.admin.register');
+        return view('livewire.home.register');
     }
 }
