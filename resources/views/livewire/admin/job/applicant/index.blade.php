@@ -344,7 +344,7 @@
                                             <input type="checkbox" class="form-check-input" {{ $selected_requirements->contains('requirement_id', $item->id) ? 'checked' : '' }}  disabled>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0 text-uppercase">{{$item->name}}</h6>
+                                            <h6 class="mt-1 mb-0 text-uppercase">{{$item->name}}</h6>
                                         </div>
                                     </div>
                                     <div class="mt-2">

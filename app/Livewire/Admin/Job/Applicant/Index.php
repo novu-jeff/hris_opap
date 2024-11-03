@@ -141,7 +141,9 @@ class Index extends Component
     public function process(int $id) {
         $model = JobApplicants::find($id);
         $current_status = $model->status;
-        
+
+        $this->selected_id = $id;  
+
         if($current_status == 'pending') {
             $this->set_interview();
         } elseif($current_status == 'interview') {
@@ -350,6 +352,7 @@ class Index extends Component
 
         } else {
 
+
             if($this->create_employee()) {
 
                 $model->job->slots -= 1;
@@ -376,7 +379,6 @@ class Index extends Component
 
     # send offer in under placement
     public function send_offer($isSaved, int $id = null) {
-
 
         if(!$isSaved) {
 
@@ -446,72 +448,101 @@ class Index extends Component
             ]);
         }
 
-        $records = JobApplicants::with('applicant', 'job', 'offer')->find($this->selected_id);
-
-        $rules = [
-            'job_offer.subject' => 'required',
-            'job_offer.body' => 'required',
-            'job_offer.attachment' => 'required|file|mimes:docx,doc,pdf',
-            'job_offer.starting_date' => 'required|after_or_equal:today',
-            'job_offer.salary' => 'required|numeric|between:' . $this->job_offer['min_salary'] . ',' . $this->job_offer['max_salary'],
-        ];
-        
-        $messages = [
-            'job_offer.subject.required' => 'The subject is required.',
-            'job_offer.body.required' => 'The body is required.',
-            'job_offer.attachment.required' => 'Please attach a document.',
-            'job_offer.attachment.file' => 'The attachment must be a file.',
-            'job_offer.attachment.mimes' => 'The attachment must be a file of type: docx, doc, or pdf.',
-            'job_offer.starting_date.required' => 'The starting date is required.',
-            'job_offer.starting_date.after_or_equal' => 'The starting date must be today or a future date.',
-            'job_offer.salary.required' => 'The salary is required.',
-            'job_offer.salary.numeric' => 'The salary must be a numeric value.',
-            'job_offer.salary.between' => 'The salary must be between ' . $this->job_offer['min_salary'] . ' and ' . $this->job_offer['max_salary'] . '.',
-        ];
-
-        $this->validate($rules, $messages);
-
-        $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
-
-        $attachment = $this->job_offer['attachment'];
-        $extension = $attachment->getClientOriginalExtension();
-        $filename = 'job_offer_' . str_replace(' ', '_', $records->job->position 
-            . '_' . time()) 
-            . '.' . $extension;
-
-        $attachment->storeAs('users/applicant/' . $folder . '/' . $records->job->slug . '/offers', strtolower($filename), 'public');
-
-        JobApplicantsOffer::insert([
-            'job_applicants_id' => $this->selected_id,
-            'subject' => $this->job_offer['subject'],
-            'body' => $this->job_offer['body'],
-            'attachment' => strtolower($filename),
-            'starting_date' => $this->job_offer['starting_date'],
-            'salary' => $this->job_offer['salary']
-        ]); 
-
-        $path = Storage::disk('public')->path('users/applicant/' . $folder. '/' . $records->job->slug .'/offers/' . strtolower($filename));
-
-        $data = [
-            'subject' => $this->job_offer['subject'],
-            'body' => $this->job_offer['body'],
-            'attachment' => $path,
-            'position' => $records->job->position,
-            'company_name' => $records->job->company_name
-        ];
-
-        Mail::to($records->applicant->email)
-            ->send(new SendJobOffer($data));
-
-        return $this->dispatch('alert', [
+        $this->dispatch('alert', [
             'id' => $this->selected_id,
-            'showAlert' => true,
-            'status' => 'success',
-            'title' => 'Yey!', 
-            'message' => 'Job offer has been sent to the applicant.',
+            'status' => 'processing',
+            'title' => 'Processing...',
+            'message' => 'Please wait while the job offer is being sent.',
             'isRemoveRowDT' => false,
-            'isReloadDT' => true,
+            'isReloadDT' => false,
         ]);
+        
+        DB::beginTransaction();
+
+        try {
+                
+            $records = JobApplicants::with('applicant', 'job', 'offer')->find($this->selected_id);
+    
+            $rules = [
+                'job_offer.subject' => 'required',
+                'job_offer.body' => 'required',
+                'job_offer.attachment' => 'required|file|mimes:docx,doc,pdf',
+                'job_offer.starting_date' => 'required|after_or_equal:today',
+                'job_offer.salary' => 'required|numeric|between:' . $this->job_offer['min_salary'] . ',' . $this->job_offer['max_salary'],
+            ];
+            
+            $messages = [
+                'job_offer.subject.required' => 'The subject is required.',
+                'job_offer.body.required' => 'The body is required.',
+                'job_offer.attachment.required' => 'Please attach a document.',
+                'job_offer.attachment.file' => 'The attachment must be a file.',
+                'job_offer.attachment.mimes' => 'The attachment must be a file of type: docx, doc, or pdf.',
+                'job_offer.starting_date.required' => 'The starting date is required.',
+                'job_offer.starting_date.after_or_equal' => 'The starting date must be today or a future date.',
+                'job_offer.salary.required' => 'The salary is required.',
+                'job_offer.salary.numeric' => 'The salary must be a numeric value.',
+                'job_offer.salary.between' => 'The salary must be between ' . $this->job_offer['min_salary'] . ' and ' . $this->job_offer['max_salary'] . '.',
+            ];
+    
+            $this->validate($rules, $messages);
+    
+            $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
+    
+            $attachment = $this->job_offer['attachment'];
+            $extension = $attachment->getClientOriginalExtension();
+            $filename = 'job_offer_' . str_replace(' ', '_', $records->job->position 
+                . '_' . time()) 
+                . '.' . $extension;
+    
+            $attachment->storeAs('users/applicant/' . $folder . '/' . $records->job->slug . '/offers', strtolower($filename), 'public');
+    
+            JobApplicantsOffer::insert([
+                'job_applicants_id' => $this->selected_id,
+                'subject' => $this->job_offer['subject'],
+                'body' => $this->job_offer['body'],
+                'attachment' => strtolower($filename),
+                'starting_date' => $this->job_offer['starting_date'],
+                'salary' => $this->job_offer['salary']
+            ]); 
+    
+            $path = Storage::disk('public')->path('users/applicant/' . $folder. '/' . $records->job->slug .'/offers/' . strtolower($filename));
+    
+            $data = [
+                'subject' => $this->job_offer['subject'],
+                'body' => $this->job_offer['body'],
+                'attachment' => $path,
+                'position' => $records->job->position,
+                'company_name' => $records->job->company_name
+            ];
+    
+            Mail::to($records->applicant->email)
+                ->send(new SendJobOffer($data));
+    
+            DB::commit();
+
+            return $this->dispatch('alert', [
+                'id' => $this->selected_id,
+                'showAlert' => true,
+                'status' => 'success',
+                'title' => 'Yey!', 
+                'message' => 'Job offer has been sent to the applicant.',
+                'isRemoveRowDT' => false,
+                'isReloadDT' => true,
+            ]);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+
+        }
+        
 
     }
 
@@ -643,12 +674,13 @@ class Index extends Component
     }
 
     public function create_employee() {
-relations: 
+
         $process = new HRISProcessingService();
         
         DB::beginTransaction();
         
         $record = JobApplicants::with('applicant', 'job')->find($this->selected_id);
+
 
         if(!$record) {
 
@@ -662,7 +694,7 @@ relations:
         }
 
         try {
-            
+
             $process->save(true, $record->user_id, $this->selected_id);
 
             $account = EmployeeAccount::where('applicant_id', $record->applicant->id)

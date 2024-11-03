@@ -74,7 +74,21 @@ Livewire.on('alert', (event) => {
                 confirmButtonText: 'GOT IT',
                 confirmButtonColor: '#143953',
             });
-        }
+        }        
+    }
+
+    if(alert.status === 'processing') {
+        alert();
+        Swal.fire({
+            title: alert.title,
+            text: alert.message,
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
     }
 });
 

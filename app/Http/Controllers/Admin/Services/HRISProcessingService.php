@@ -22,10 +22,11 @@ class HRISProcessingService extends Controller
     public function save(bool $isFirstTime = false, int $id, int $job_id, array $data = null) 
     {
 
+
         $record = ApplicantUsers::with('applied.offer')
-            ->whereHas('applied.offer', fn($query) => $query->where('id', $job_id))
+            ->whereHas('applied', fn($query) => $query->where('id', $job_id))
             ->find($id);
-        
+
         if ($isFirstTime && $record) {
 
             $data = [
@@ -55,6 +56,8 @@ class HRISProcessingService extends Controller
             $this->employee_account($record->id, $data['employee_account'], true);
             $this->employee_personal($record->id, $data['employee_personal'], true);
             $this->employee_parents($record->id, null, true);
+
+
 
         } else {
             $this->employee_information($id, $data['employee_information'], false);
