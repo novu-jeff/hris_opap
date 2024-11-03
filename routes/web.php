@@ -41,7 +41,8 @@ use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController
 */
 
 Route::get('/', [HomeController::class, 'index'])
-        ->name('home.index');
+        ->name('home.index')
+        ->middleware('applicant');
 
 Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])

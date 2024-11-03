@@ -15,6 +15,7 @@ use Livewire\Component;
 class Index extends Component
 {
 
+    public $selected_id;
     public $employees;
     public array $records;
     public object $departments;
@@ -53,6 +54,9 @@ class Index extends Component
 
 
         if(!is_null($id)) {
+
+            $this->selected_id = $id;
+
             $data = $model::with(
                 [
                     'personal', 
@@ -61,7 +65,7 @@ class Index extends Component
                     'parents',
                     'children',
                     'employment_history'
-                ])->first();
+                ])->where('id', $id)->first();
         
             $records = [
                 'employee_information' => [

@@ -13,49 +13,8 @@ class LoginController extends Controller
         return view('auth.home.login');
     }
 
-    public function store(Request $request) {
-        
-        $rules = [
-            'email' => 'required|exists:applicant_users',
-            'password' => 'required',
-        ];
-
-        $message = [
-            'email.exists' => 'The email provided does not exists.'
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $message);
-
-        if($validator->fails()) {
-            return [
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ];
-        }
-
-        if(Auth::guard('applicant')->attempt([
-            'email' => $request->email,
-            'password' => $request->password
-        ])) {
-
-            return [
-                'status' => 'success',
-                'message' => 'Login Success!',
-                'redirect' => route('home.index')
-            ];
-
-        } else {
-            return [
-                'status' => 'error',
-                'title' => 'Login Failed',
-                'message' => 'Email or Password is incorrect. Please try again.'
-            ];
-        }
-        
-    }
-
     public function logout() {
-        Auth::guard('applicants')->logout();
-        return redirect()->route('login');
+        Auth::guard('applicant')->logout();
+        return redirect()->route('home.login');
     }
 }
