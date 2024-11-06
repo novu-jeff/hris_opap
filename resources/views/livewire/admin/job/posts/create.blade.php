@@ -6,7 +6,6 @@
         <hr class="mx-3">
         <div class="card-body">
             <div class="row">
-                <!-- Position -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="position">Position <span class="text-danger">*</span></label>
                     <input type="text" wire:model="position" id="position" class="form-control text-uppercase">
@@ -15,7 +14,6 @@
                     </div>
                 </div>
 
-                <!-- Company Name -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="company_name">Company Name <span class="text-danger">*</span></label>
                     <input type="text" wire:model="company_name" id="company_name" class="form-control text-uppercase">
@@ -24,7 +22,6 @@
                     </div>
                 </div>
 
-                <!-- Location -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="location">Location <span class="text-danger">*</span></label>
                     <input type="text" wire:model="location" id="location" class="form-control text-uppercase">
@@ -33,7 +30,6 @@
                     </div>
                 </div>
 
-                <!-- Work Setup -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="setup">Work Setup <span class="text-danger">*</span></label>
                     <select wire:model="setup" id="setup" class="form-select">
@@ -47,21 +43,21 @@
                     </div>
                 </div>
 
-                <!-- Employment Type -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="type">Employment Type <span class="text-danger">*</span></label>
                     <select wire:model="type" id="type" class="form-select">
                         <option value=""> - CHOOSE - </option>
-                        <option value="full-time">Full Time</option>
+                        <option value="regular">Regular</option>
                         <option value="contractual">Contractual</option>
-                        <option value="part-time">Part Time</option>
+                        <option value="part time">Part Time</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="project base">Project Base</option>
                     </select>  
                     <div class="error-field">
                         @error('type') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
-                <!-- Available Slots -->
                 <div class="col-12 col-md-4 mb-4">
                     <label class="mb-2" for="slots">Available Slots <span class="text-danger">*</span></label>
                     <input type="number" wire:model="slot" id="slot" class="form-control"> 
@@ -70,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Minimum Salary -->
                 <div class="col-12 col-md-6 mb-4">
                     <label class="mb-2" for="min_salary">Minimum Salary <span class="text-danger">*</span></label>
                     <input type="number" wire:model="min_salary" id="min_salary" class="form-control text-uppercase">
@@ -79,7 +74,6 @@
                     </div>
                 </div>
 
-                <!-- Maximum Salary -->
                 <div class="col-12 col-md-6 mb-4">
                     <label class="mb-2" for="max_salary">Maximum Salary <span class="text-danger">*</span></label>
                     <input type="number" wire:model="max_salary" id="max_salary" class="form-control text-uppercase" value="123">
@@ -88,7 +82,6 @@
                     </div>
                 </div>
 
-                <!-- Job Description -->
                 <div class="col-12 mb-3">
                     <label class="mb-2" for="description">Job Description <span class="text-danger">*</span></label>
                     <div wire:ignore>

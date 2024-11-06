@@ -195,7 +195,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" wire:click='save_interview'>Proceed</button>
+                        <button type="button" class="btn btn-primary" wire:click='save_item'>Proceed</button>
                     </div>
                 </div>
             </div>

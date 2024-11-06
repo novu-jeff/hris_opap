@@ -56,13 +56,55 @@ class Edit extends Component
             'company_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'setup' => 'required|string|in:work from home,onsite,hybrid',
-            'type' => 'required|string|in:regular,part time,freelance,project base',
+            'type' => 'required|string|in:regular,contractual,part time,freelance,project base',
             'slot' => 'required|integer|min:1|max:100',
             'min_salary' => 'required|numeric|min:0',
             'max_salary' => 'required|numeric|min:0|gt:min_salary',
             'description' => 'required|string',
         ];
     }
+
+    public function messages() {
+        return [
+            'position.required' => 'The position field is required.',
+            'position.string' => 'The position must be a valid string.',
+            'position.max' => 'The position may not be greater than 255 characters.',
+
+            'company_name.required' => 'The company name field is required.',
+            'company_name.string' => 'The company name must be a valid string.',
+            'company_name.max' => 'The company name may not be greater than 255 characters.',
+
+            'location.required' => 'The location field is required.',
+            'location.string' => 'The location must be a valid string.',
+            'location.max' => 'The location may not be greater than 255 characters.',
+
+            'setup.required' => 'The setup field is required.',
+            'setup.string' => 'The setup must be a valid string.',
+            'setup.in' => 'The setup must be one of the following: work from home, onsite, or hybrid.',
+
+            'type.required' => 'The job type field is required.',
+            'type.string' => 'The job type must be a valid string.',
+            'type.in' => 'The job type must be one of the following: regular, contractual, part time, freelance, or project base.',
+
+            'slot.required' => 'The slot field is required.',
+            'slot.integer' => 'The slot must be an integer.',
+            'slot.min' => 'The slot must be at least 1.',
+            'slot.max' => 'The maximum slot is 100.',
+
+            'min_salary.required' => 'The minimum salary field is required.',
+            'min_salary.numeric' => 'The minimum salary must be a number.',
+            'min_salary.min' => 'The minimum salary must be at least 0.',
+
+            'max_salary.required' => 'The maximum salary field is required.',
+            'max_salary.numeric' => 'The maximum salary must be a number.',
+            'max_salary.min' => 'The maximum salary must be at least 0.',
+            'max_salary.gt' => 'The maximum salary must be greater than the minimum salary.',
+
+            'description.required' => 'The job description field is required.',
+            'description.string' => 'The job description must be a valid string.',
+        ];
+    }
+
 
     public function save() {
     

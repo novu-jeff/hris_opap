@@ -127,12 +127,11 @@ class ViewJob extends Component
     }
 
     # show records
-
     public function showRecords() {
         
         $record = JobPosts::where('slug', $this->slug)
             ->latest();
-        
+
         if($record->exists()) {
             return $this->record = $record->first();
         }

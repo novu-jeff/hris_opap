@@ -48,11 +48,6 @@ class ApplicantUsers extends Authenticatable
         return $this->hasMany(ApplicantSkills::class, 'user_id');
     }
 
-    // public function education() {
-    //     return $this->belongsTo(ApplicantEducation::class, 'user_id');
-    // }
-
-
     public function applied() {
         return $this->hasMany(JobApplicants::class, 'user_id');
     }
