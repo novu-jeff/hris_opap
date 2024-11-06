@@ -35,7 +35,7 @@
         <div class="col-12 col-md-7">
             @if (empty($interview))
                 <div class="actions d-flex justify-content-end mb-3">
-                    <button type="button" class="btn btn-primary text-uppercase" wire:click="add_item">Add Item</button>
+                    <button type="button" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium" wire:click="add_item">Add Item</button>
                 </div>
             @endif
             @if (!empty($interview))
@@ -86,10 +86,6 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                @elseif ($item['type'] == 'file')
-                                    <div class="col-12 mb-3">
-                                        <input type="file" name="file_upload" class="form-control">
-                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -134,7 +130,6 @@
                                     <option value="explanatory">Explanatory</option>
                                     <option value="checkbox">Checkbox</option>
                                     <option value="radio">Radio</option>
-                                    <option value="file">File Upload</option>
                                 </select>      
                                 <div class="error-field">
                                     @error('type') <span class="text-danger">{{ $message }}</span> @enderror
@@ -186,10 +181,6 @@
                                         @error('options') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>  
                                     <button type="button" class="btn btn-primary float-end" wire:click="add_option">Add Option</button>
-                                </div>
-                            @elseif ($type == 'file')
-                                <div class="col-12 mb-3">
-                                    <input type="file" name="file_upload" class="form-control" disabled>
                                 </div>
                             @endif
                         </div>

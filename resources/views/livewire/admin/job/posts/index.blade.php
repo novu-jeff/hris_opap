@@ -24,71 +24,54 @@
         @foreach ($records as $record)
             <div class="col-12 col-md-4 mb-4">
                 <div class="card shadow px-2">
-                    <div class="card-header border-0 bg-transparent">
-                        <div class="position-title">
-                            <h4 class="m-0 text-uppercase">{{$record->position}}</h4>
-                        </div>
-                        <div class="company-info">
-                            <p class="m-0 text-uppercase">{{$record->company_name}}</p>
-                            <p class="m-0 text-uppercase">{{$record->location}}</p>
-                        </div>
-                        <div class="date-posted">
-                            <p class="m-0">
-                                Posted {{relative_time($record->created_at, 'hours ago')}}
-                            </p>
-                        </div>
-                        <div class="actions">
-                            <div class="dropdown" wire:ignore>
-                                <button class="btn btn-transparent d-flex align-items-start justify-content-center" type="button" id="menu" data-bs-toggle="dropdown" aria-expanded="true">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="menu" data-bs-popper="static">
-                                    <li>
-                                        <a class="dropdown-item" href="{{route('job.posts.edit', ['post' => $record->id])}}">Update</a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0)" wire:click="remove(true, {{$record->id}})" class="dropdown-item">Delete</a>
-                                    </li>
-                                </ul>
+                    <a href="{{route('home.view-job', ['slug' => $record->slug])}}" class="nav-link" wire:ignore.self>
+                        <div class="card-header border-0 bg-transparent">
+                            <div class="position-title">
+                                <h4 class="m-0 text-uppercase">{{$record->position}}</h4>
+                            </div>
+                            <div class="company-info">
+                                <p class="m-0 text-uppercase">{{$record->company_name}}</p>
+                                <p class="m-0 text-uppercase">{{$record->location}}</p>
+                            </div>
+                            <div class="date-posted">
+                                <p class="m-0">
+                                    Posted {{relative_time($record->created_at, 'hours ago')}}
+                                </p>
+                            </div>
+                            <div class="actions">
+                                <div class="dropdown" wire:ignore>
+                                    <button class="btn btn-transparent d-flex align-items-start justify-content-center" type="button" id="menu" data-bs-toggle="dropdown" aria-expanded="true">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="menu" data-bs-popper="static">
+                                        <li>
+                                            <a class="dropdown-item" href="{{route('job.posts.edit', ['post' => $record->id])}}">Update</a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0)" wire:click="remove(true, {{$record->id}})" class="dropdown-item">Delete</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                     <hr class="mx-3">
-                    <div class="card-body pt-1">
-                        <div class="perks">
-                            <div>{{money_format($record->min_salary) . ' - ' . money_format($record->max_salary)}} per month</div>
-                            <div>{{$record->type}}</div>
-                            <div>{{$record->setup}}</div>
-                            <div>{{$record->slots . ' Slots'}}</div>
-                        </div>
-                        <div class="description">
-                            <small class="text-muted fst-italic fw-bold text-uppercase text-decoration-underline" style="text-underline-offset: 4px">Description</small>
-                            <div class="description-content mt-2">
-                                {!!see_more(strip_tags($record->description), 400)!!}
+                    <a href="{{route('home.view-job', ['slug' => $record->slug])}}" class="nav-link" wire:ignore.self>
+                        <div class="card-body pt-1">
+                            <div class="perks">
+                                <div>{{money_format($record->min_salary) . ' - ' . money_format($record->max_salary)}} per month</div>
+                                <div>{{$record->type}}</div>
+                                <div>{{$record->setup}}</div>
+                                <div>{{$record->slots . ' Slots'}}</div>
+                            </div>
+                            <div class="description">
+                                <small class="text-muted fst-italic fw-bold text-uppercase text-decoration-underline" style="text-underline-offset: 4px">Description</small>
+                                <div class="description-content mt-2 pb-4">
+                                    {!!see_more(strip_tags($record->description), 400)!!}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <hr class="mx-3">
-                    <div class="card-footer bg-transparent border-0">
-                        <div class="d-flex justify-content-between align-items-center gap-4 pb-3">
-                            <div>
-                                <i class="fa-solid fa-user-group"></i>
-                                <span class="ms-1">1</span>
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-user-clock"></i>
-                                <span class="ms-1">1</span>
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-user-xmark"></i>
-                                <span class="ms-1">3</span>
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-user-check"></i>
-                                <span class="ms-1">3</span>
-                            </div>
-                        </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         @endforeach
