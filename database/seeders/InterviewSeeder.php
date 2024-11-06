@@ -308,6 +308,16 @@ class InterviewSeeder extends Seeder
                         'response_type' => 'simple'
                     ]
                 ],
+            ],
+            [
+                'name' => 'Test Interview',
+                'description' => 'Sample Interview.',
+                'item' => [
+                    [
+                        'question' => 'What\'s life after death?',
+                        'response_type' => 'simple'
+                    ],
+                ],
             ]
         ];
                 

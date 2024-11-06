@@ -461,13 +461,20 @@
                                         </button>
                                     @endif
                                     @if (in_array($status, ['pending', 'interview', 'placement', 'onboarding']))
-                                        <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
-                                            <i class="fa-solid fa-arrow-right"></i>
-                                        </button>   
+                                        @if($status == 'interview' && $record->isInterviewResponded || $status == 'placement' && $record->isSignedJobOffer )
+                                            <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-arrow-right"></i>
+                                            </button>  
+                                        @elseif($status == 'onboarding')
+                                            <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-arrow-right"></i>
+                                            </button>  
+                                        @endif
+                                         
                                     @else
-                                    <button wire:click="set_action('delete', {{$record->id}})" class="btn btn-danger mx-1">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>           
+                                        <button wire:click="set_action('delete', {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>           
                                     @endif
                                 </td>
                             </tr>

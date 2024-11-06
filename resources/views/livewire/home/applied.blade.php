@@ -122,7 +122,7 @@
                                         {{$record->status}}
                                         @if ($record->status != 'hired')
                                             <div class="actions">
-                                                <button class="btn btn-outline-primary d-block my-2 px-5 py-3" wire:click='withdraw({{$record->id}})'>Withdraw Application</button>
+                                                <button class="btn btn-outline-primary d-block my-2 px-5 py-3" wire:click='withdraw({{$record_info->id}})'>Withdraw Application</button>
                                             </div>
                                         @else
                                             <div class="actions">

@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.job.posts.create');
+        @livewire('admin.job.posts.create')
     </div>
 </div>
 @endsection

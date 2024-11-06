@@ -79,7 +79,7 @@ class Edit extends Component
         $this->options = array_values($this->options);
     }
 
-    public function save_interview() {
+    public function save_item() {
 
         $this->validate([
             'question' => 'required|string|max:255',

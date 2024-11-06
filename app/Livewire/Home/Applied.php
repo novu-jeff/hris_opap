@@ -119,6 +119,7 @@ class Applied extends Component
 
     # trigger withdrawing of application
     public function withdraw($id, bool $withdraw = false) {
+
         if(!$withdraw) {
             $this->dispatch('notice', [
                 'id' => $id,
@@ -129,7 +130,8 @@ class Applied extends Component
             
             try {
 
-                $record = JobApplicants::find($id);
+                $record = JobApplicants::where('user_id', $this->user_id)
+                    ->where('job_id', $id);
 
                 if($record) {
                     $record->delete();

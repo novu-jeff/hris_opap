@@ -37,6 +37,7 @@ use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 
 use App\Http\Controllers\Home\SettingsController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,7 +77,7 @@ Route::middleware(['applicant'])->group(function() {
         ->name('home.applied');
     Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.view-job')
-        ->withoutMiddleware(['applicant']);
+        ->middleware(Auth::guard('applicant')->check() ? ['applicant'] : []);
     Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.applied.view-job');
     Route::get('search/{search?}', [HomeController::class, 'index'])

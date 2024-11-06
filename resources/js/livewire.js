@@ -61,6 +61,10 @@ Livewire.on('alert', (event) => {
             if (result.isConfirmed && alert.isReloadDT) {
                 reloadDT();
             }
+
+            if (alert.hasOwnProperty('redirect') && alert.redirect !== '') {
+                location.href = alert.redirect;
+            }
         });
 
     } else {

@@ -47,10 +47,9 @@ class Create extends Component
         $this->options = array_values($this->options);
     }
 
-    public function save_interview() {
-
+    public function save_item() {
         $this->validate([
-            'question' => 'required|string|max:255',
+            'question' => 'required|unique:job_interview_items,question|string|max:255',
             'type' => 'required|string|in:simple,explanatory,checkbox,radio,file',
             'options' => 'required_if:type,checkbox,radio|array',
             'options.*' => 'required|string|max:255'
@@ -92,7 +91,7 @@ class Create extends Component
     public function save() {
 
         $this->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|unique:job_interview,name|string|max:255',
             'description' => 'required',
             'interview' => 'required|array'
         ], [
