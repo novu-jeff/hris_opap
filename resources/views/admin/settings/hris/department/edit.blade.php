@@ -10,7 +10,7 @@
             <p>Modify or update</p>
         </div>
         <div class="actions">
-            <a href="{{route('department-center.index')}}"class="btn btn-primary">Go Back</a>
+            <a href="{{route('department-center.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
     <div class="mt-3">

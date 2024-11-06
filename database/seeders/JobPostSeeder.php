@@ -38,7 +38,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 5,
             ],
             [
                 'position' => 'Frontend Developer',
@@ -65,7 +65,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 10,
             ],
             [
                 'position' => 'Data Scientist',
@@ -92,7 +92,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 13,
             ],
             [
                 'position' => 'Graphic Designer',
@@ -119,7 +119,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 20,
             ],
             [
                 'position' => 'Project Manager',
@@ -146,7 +146,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 10,
             ],
             [
                 'position' => 'Web Developer',
@@ -173,7 +173,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 12,
             ],
             [
                 'position' => 'SEO Specialist',
@@ -200,7 +200,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 4,
             ],
             [
                 'position' => 'Content Writer',
@@ -227,7 +227,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 6,
             ],
             [
                 'position' => 'UX/UI Designer',
@@ -254,7 +254,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 9,
             ],
             [
                 'position' => 'Network Administrator',
@@ -281,7 +281,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 12,
             ],
             [
                 'position' => 'Database Administrator',
@@ -308,7 +308,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 15,
             ],
             [
                 'position' => 'Cloud Engineer',
@@ -335,7 +335,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 11,
             ],
             [
                 'position' => 'DevOps Engineer',
@@ -362,7 +362,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 8,
             ],
             [
                 'position' => 'Cybersecurity Analyst',
@@ -389,7 +389,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 2,
             ],
             [
                 'position' => 'Mobile App Developer',
@@ -416,7 +416,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 4,
             ],
             [
                 'position' => 'Artificial Intelligence Engineer',
@@ -443,7 +443,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 7,
             ],
             [
                 'position' => 'Frontend Developer',
@@ -470,7 +470,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 6,
             ],
             [
                 'position' => 'Backend Developer',
@@ -497,7 +497,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 3,
             ],
             [
                 'position' => 'Game Developer',
@@ -524,7 +524,7 @@ class JobPostSeeder extends Seeder
                                           </ul>
                                       </li>
                                   </ul>',
-                'slots' => 100,
+                'slots' => 6,
             ],
         ];
         

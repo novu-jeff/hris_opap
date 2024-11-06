@@ -14,7 +14,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h3>{{ (isset($records['user']) ? ucwords($records['user']['personal']->firstname . ' ' . $records['user']['personal']->lastname) : '')}}</h3>
-                            <p>{{ (isset($records['user']) ? ucwords($records['user']['positions']->name) : '')}}</p>
+                            <p>{{ (isset($records['user']) ? ucwords($records['user']['positions']->name ?? 'Unassigned') : '')}}</p>
                         </div>
                     </div>
                 </div>
