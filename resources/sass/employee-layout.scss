@@ -50,3 +50,65 @@ table {
         margin-bottom: 10px; 
     }
   }
+
+.announcements {
+
+  .card {
+    min-height: 550px !important;
+  }
+
+  h5 {
+    text-transform: uppercase;
+    font-weight: 600;
+  }   
+
+  p {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .title {
+    h1 {
+      font-weight: 600;
+    }
+    h5 {
+      font-size: 14px;
+    }
+  }
+
+  .banner {
+    width: 100%;
+    height: 400px;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: inherit;
+      border-radius: 30px;
+    }
+  }
+
+}
+
+
+
+.text-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clamp-1 {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.clamp-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}

@@ -18,7 +18,7 @@
     <title>{{$title}}</title>
     @livewireScripts
     @livewireStyles
-    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/admin-layout.scss'])
+    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/admin-layout.scss', 'resources/sass/chat.scss'])
 </head>
 <body>
     <div id="admin-app">

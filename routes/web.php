@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
 use App\Http\Controllers\Admin\Job\InterviewController;
 use App\Http\Controllers\Admin\Job\PostController;
 use App\Http\Controllers\Admin\Job\RequirementsController;
+use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
+use App\Http\Controllers\Admin\RequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
@@ -26,8 +29,14 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
-use App\Http\Controllers\Employee\LeaveController;
+use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
+use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
+use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
+use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
+use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
+
+use App\Http\Controllers\Home\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,7 +124,26 @@ Route::prefix('job')->group(function() {
 Route::resource('hris', HRISController::class)
     ->names('hris');
 
+Route::prefix('ess')->group(function() {
+    Route::get('leave', [LeaveController::class, 'index'])
+        ->name('ess.leave');
+    Route::prefix('announcements')->group(function() {
+        Route::get('/', [AnnouncementController::class, 'index'])
+            ->name('ess.announcements.index');
+        Route::get('apply', [AnnouncementController::class, 'create'])
+            ->name('ess.announcements.create');
+        Route::get('edit/{id}', [AnnouncementController::class, 'edit'])
+            ->name('ess.announcements.edit');
+    });
+
+    Route::prefix('request-status')->group(function() {
+        Route::get('{id?}', [RequestStatusController::class, 'index'])
+            ->name('ess.request-status');
+    });
+});
+
 Route::prefix('settings')->group( function() {
+
     Route::prefix('hris')->group( function() {
 
         Route::prefix('location-management')->group( function() {
@@ -145,10 +173,12 @@ Route::prefix('settings')->group( function() {
             ->names('violation');
 
     });
+
     Route::prefix('users')->group(function() {
         Route::get('{type}', [UserController::class, 'index'])
             ->name('users.index');
     });
+    
 });
 
 Route::prefix('employee')->group(function() {
@@ -157,20 +187,37 @@ Route::prefix('employee')->group(function() {
             ->name('employee.login');
         Route::post('/', [EmployeeLoginController::class, 'store'])
             ->name('login');
+        Route::any('logout', [EmployeeLoginController::class, 'logout'])
+            ->name('employee.logout');
     });
 
     Route::middleware('employee')->group(function() {
         Route::get('dashboard', [DashboardController::class, 'index'])
             ->name('employee.dashboard');
+        
         Route::prefix('leave')->group(function() {
 
-            Route::get('/', [LeaveController::class, 'index'])
+            Route::get('/', [EmployeeLeaveController::class, 'index'])
                 ->name('employee.leave');
-            Route::get('apply', [LeaveController::class, 'create'])
+            Route::get('apply', [EmployeeLeaveController::class, 'create'])
                 ->name('employee.leave.apply');
-            Route::get('edit/{id}', [LeaveController::class, 'edit'])
+            Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
         });
+
+        Route::get('directory', [EmployeeDirectoryController::class, 'index'])
+            ->name('employee.directory');
+        
+        Route::get('team', [EmployeeTeamController::class, 'index'])
+            ->name('employee.team');
+
+        Route::get('request-status', [EmployeeRequestStatusController::class, 'index'])
+            ->name('employee.request-status');
+
+        Route::get('announcements', [EmployeeAnnouncementController::class, 'index'])
+            ->name('employee.announcements.index');
+        Route::get('announcements/{id}', [EmployeeAnnouncementController::class, 'view'])
+            ->name('employee.announcements.view');
 
         Route::get('profile', [EmployeeProfileController::class, 'index'])
             ->name('employee.profile');

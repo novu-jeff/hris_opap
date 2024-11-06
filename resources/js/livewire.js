@@ -134,3 +134,12 @@ Livewire.on('hideModal', function(data) {
         console.error('Modal with ID ' + data[0].modal + ' not found.');
     }
 });
+
+Livewire.on('showLatest', function() {
+    setTimeout(() => {
+        $('.modal-body').animate({
+            scrollTop: $('.modal-body')[0].scrollHeight * 100
+        }, 1); 
+    }, 100);
+});
+

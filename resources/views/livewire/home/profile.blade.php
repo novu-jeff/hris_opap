@@ -27,6 +27,7 @@
                     <div class="d-flex align-items-start">
                         <div class="nav flex-column nav-pills w-100 " id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <button class="nav-link text-start {{$activeTab == 'profile' ? 'active' : ''}}" wire:click.prevent="setActiveTab('profile')" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">My Profile</button>
+                            <button class="nav-link text-start {{$activeTab == 'settings' ? 'active' : ''}}" wire:click.prevent="setActiveTab('settings')" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="true">Settings</button>
                             <button class="nav-link text-start d-flex gap-1 {{$activeTab == 'interview' ? 'active' : ''}}" wire:click.prevent="setActiveTab('interview')" id="v-pills-interview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-interview" type="button" role="tab" aria-controls="v-pills-interview" aria-selected="false">
                                 <div class="position-relative">
                                     Interview
@@ -206,7 +207,7 @@
                                                             </p>
                                                         </div>
                                                         <div class="actions mt-4 d-flex gap-3 justify-content-start">
-                                                            <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">Employee Login</button>
+                                                            <a href="{{route('employee.login')}}" class="btn btn-outline-primary d-flex align-items-center gap-2 text-uppercase px-4 py-3 fw-bold">Employee Login</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -218,6 +219,25 @@
                                     @endif
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div wire:ignore.self class="tab-pane fade {{$activeTab == 'settings' ? 'show active' : ''}}" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">
+                    <div class="card px-3 pt-4 pb-5 profile-content">
+                        <div class="card-header bg-transparent border-0">
+                            <div>
+                                <h4>Settings</h4>
+                                <p>
+                                    Manage your preferences and account settings to tailor your experience. Adjust your personal information, privacy options, and notification settings for a seamless and secure experience.
+                                </p>
+                            </div>
+                            <div class="actions text-uppercase mt-3">
+                                <button class="btn btn-outline-primary text-uppercase fw-bold px-5 py-3" data-bs-toggle="modal" data-bs-target="#change-password-modal">Change Password</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="card-body">
+                          
                         </div>
                     </div>
                 </div>
@@ -421,6 +441,9 @@
         </div>
         <div>
             @livewire('home.modals.update-profile-skills')
+        </div>
+        <div>
+            @livewire('home.modals.change-password')
         </div>
     </div>
 

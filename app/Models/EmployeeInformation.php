@@ -28,6 +28,14 @@ class EmployeeInformation extends Model
     ];
     public $timestamps = false;
 
+    public function branch() {
+        return $this->hasOne(Branches::class, 'id', 'branch_id');
+    }
+
+    public function department() {
+        return $this->hasOne(DepartmentCenters::class, 'id', 'department_id');
+    }
+
     public function account() {
         return $this->hasOne(EmployeeAccount::class, 'employee_id');
     }
@@ -52,6 +60,13 @@ class EmployeeInformation extends Model
         return $this->hasMany(EmployeeEmploymentHistory::class, 'employee_id');
     }
 
+    public function positions() {
+        return $this->hasOne(Positions::class, 'id', 'position_id');
+    }
+
+    public function messages() {
+        return $this->hasMany(Message::class, 'from_id', 'id');
+    }
 
 
 }
