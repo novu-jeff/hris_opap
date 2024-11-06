@@ -79,8 +79,9 @@
                                     <div class="card-body pt-1 pb-5">
                                         <div class="perks">
                                             <div>{{money_format($record->min_salary) . ' - ' . money_format($record->max_salary)}} per month</div>
-                                            <div>{{str_replace('-', ' ', $record->type)}}</div>
-                                            <div>{{str_replace('-', ' ', $record->setup)}}</div>
+                                            <div>{{$record->type}}</div>
+                                            <div>{{$record->setup}}</div>
+                                            <div>{{$record->slots . ' slots'}}</div>
                                         </div>
                                         <div class="description">
                                             <small class="text-muted fst-italic fw-bold text-uppercase text-decoration-underline" style="text-underline-offset: 4px">Description</small>

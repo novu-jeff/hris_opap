@@ -10,7 +10,7 @@
             </div>
             <div class="flex-grow-1 ms-3">
                 <h3>{{ucwords($employee->personal->firstname . ' ' . $employee->personal->lastname)}}</h3>
-                <p>{{ucwords($employee->positions->name)}}</p>
+                <p>{{ucwords($employee->positions->name ?? 'Unassigned')}}</p>
             </div>
             <div wire:ignore.self>
                 @if($employee['unseen_count'] > 0)
