@@ -109,13 +109,6 @@
                                                                     @enderror
                                                                 </div>
                                                             </div>
-                                                        @elseif ($item['response_type'] == 'file')
-                                                            <div class="col-12 mb-3">
-                                                                <input type="file" wire:model="answer.{{$item->id}}" name="file_upload" class="form-control">
-                                                            </div>
-                                                            <div class="error-field mt-2 ms-5">
-                                                                @error('answer.' . $item->id) <span class="text-danger">{{ $message }}</span> @enderror
-                                                            </div>
                                                         @endif
                                                     </div>
                                                 </div>
