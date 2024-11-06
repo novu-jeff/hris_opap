@@ -21,4 +21,12 @@ class EmployeeLeave extends Model
         'consumed_hours'
     ];
 
+    public function employment() {
+        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_id');
+    }
+
+    public function employee() {
+        return $this->hasOne(EmployeePersonal::class, 'employee_id', 'employee_id');
+    }
+
 }

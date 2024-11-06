@@ -32,9 +32,12 @@ if(!function_exists('relative_time')) {
             $relativeTime = $diffInDays . ' day' . ($diffInDays > 1 ? 's' : '') . ' ago';
         } elseif ($diffInHours > 0) {
             $relativeTime = $diffInHours . ' hour' . ($diffInHours > 1 ? 's' : '') . ' ago';
-        } else {
+        } elseif ($diffInMinutes > 0) {
             $relativeTime = $diffInMinutes . ' minute' . ($diffInMinutes > 1 ? 's' : '') . ' ago';
+        } else {
+            $relativeTime = 'now';
         }
+        
 
         return $relativeTime;
     }
@@ -124,7 +127,9 @@ if(!function_exists('format_date')) {
                 return Carbon::parse($date)->toFormattedDateString();
             case 'day_date_string':
                 return Carbon::parse($date)->toFormattedDayDateString();
-            case 'age':
+            case 'day_date_time_string':
+                return Carbon::parse($date)->format('D, M, Y g:i A'); 
+                case 'age':
                 return Carbon::parse($date)->age;
 
         }

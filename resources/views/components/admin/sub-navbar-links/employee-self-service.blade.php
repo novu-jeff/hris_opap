@@ -4,9 +4,8 @@
         Employee Self Service
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Module 1</a></li>
-        <li><a class="dropdown-item" href="#">Module 2</a></li>
-        <li><a class="dropdown-item" href="#">Module 3</a></li>
-        <li><a class="dropdown-item" href="#">Module 4</a></li>
+        <li><a class="dropdown-item" href="{{route('ess.leave')}}">Leave Applications</a></li>
+        <li><a class="dropdown-item" href="{{route('ess.announcements.index')}}">Announcements</a></li>
+        <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
     </ul>
 </li>

@@ -10,7 +10,6 @@ use Livewire\Component;
 class Create extends Component
 {
 
-    protected $listeners = ['ckeditor'];
     public $position;
     public $company_name;
     public $location;
@@ -20,6 +19,9 @@ class Create extends Component
     public $min_salary;
     public $max_salary;
     public $description;
+
+    protected $listeners = ['ckeditor'];
+
 
     public function ckeditor($data) {
         $this->description = $data;

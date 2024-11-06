@@ -15,20 +15,22 @@
                     <tr data-id="{{$record->id}}">
                         <td>#{{format_id($record->id, 6)}}</td>
                         <td>
-                            @if ($record->status == 'approved')
-                                <div class="alert alert-success text-uppercase text-center fw-medium mb-0">Leave Granted</div>
+                            @if ($record->status == 'granted')
+                                <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Leave Granted</div>
                             @elseif ($record->status == 'rejected')
-                                <div class="alert alert-danger text-uppercase text-center fw-medium mb-0">Leave Denied</div>
+                                <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Leave Denied</div>
                             @elseif($record->status === 'pending')
-                                <div class="alert alert-info text-uppercase text-center fw-medium mb-0">Waiting for approval</div>
+                                <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">Waiting for approval</div>
                             @endif
                         </td>
                         <td>{{$record->type}}</td>
                         <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
                         <td>
-                            <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
+                            @if($record->status === 'pending')
+                                <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                            @endif
                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                 <i class="fa-solid fa-trash"></i>
                             </button>

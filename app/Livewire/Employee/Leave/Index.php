@@ -19,7 +19,7 @@ class Index extends Component
     }
 
     public function loadRecords() {
-        $user_id = Auth::user()->id;
+        $user_id = Auth::user()->employee_id;
         $records = EmployeeLeave::where('employee_id', $user_id)
             ->get();
         
