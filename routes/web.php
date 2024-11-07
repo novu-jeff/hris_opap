@@ -52,7 +52,7 @@ use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'index'])
         ->name('home.index')
-        ->middleware('applicant');
+        ->middleware(Auth::guard('applicant')->check() ? ['applicant'] : []);
 
 Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])
