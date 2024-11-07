@@ -465,7 +465,7 @@
                                             <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
                                                 <i class="fa-solid fa-arrow-right"></i>
                                             </button>  
-                                        @elseif($status == 'onboarding')
+                                        @elseif($status == 'onboarding' || $status == 'pending')
                                             <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
                                                 <i class="fa-solid fa-arrow-right"></i>
                                             </button>  
