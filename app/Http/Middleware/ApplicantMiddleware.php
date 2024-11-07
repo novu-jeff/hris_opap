@@ -14,11 +14,11 @@ class ApplicantMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, $type = null): Response
     {
 
         if (!Auth::guard('applicant')->check() && 
-            $request->route()->getName() !== 'login') {
+            $request->route()->getName() !== 'login' && $type !== 'guest') {
             return redirect('login');
         }
 
