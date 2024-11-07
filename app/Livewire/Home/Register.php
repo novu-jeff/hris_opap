@@ -21,8 +21,8 @@ class Register extends Component
         return [
             'fields.personal.firstname' => 'required',
             'fields.personal.lastname' => 'required',
-            'fields.personal.phone_no' => 'required|unique:applicant_users,phone_no|regex:/^\+63 \(\d{3}\) \d{3}-\d{5}$/',
-            'fields.personal.tel_no' => 'nullable|required_with:fields.personal.phone_no|regex:/^\(\d{2}\) \d{4} \d{5}$/|unique:applicant_users,tel_no',
+            'fields.personal.phone_no' => 'required|unique:applicant_users,phone_no|regex:/^09\d{9}$/',
+            'fields.personal.tel_no' => 'nullable|required_with:fields.personal.tel_no|regex:/\d{9}$/|unique:applicant_users,tel_no',
             'fields.personal.sex' => 'required|in:male,female,not to say',
             'fields.personal.birthday' => 'required|date|before:today -18 years',
             'fields.personal.civil_status' => 'required|in:single,married,seperated',
@@ -43,9 +43,9 @@ class Register extends Component
             'fields.personal.phone_no.required' => 'Mobile number is required.',
             'fields.personal.phone_no.numeric' => 'Mobile number must be a number.',
             'fields.personal.phone_no.unique' => 'Mobile number is already registered.',
-            'fields.personal.phone_no.regex' => 'Phone number must follow the format +63 (XXX) XXX-XXXX.',
+            'fields.personal.phone_no.regex' => 'Phone number must follow the format 09 (XXX) XXX-XXXX.',
             'fields.personal.tel_no.required_with' => 'Telephone number is required.',
-            'fields.personal.tel_no.regex' => 'Telephone number must follow the format (00) 0000 0000.',
+            'fields.personal.tel_no.regex' => 'Telephone number must follow the format 00 0000 0000.',
             'fields.personal.tel_no.unique' => 'Provided Telephone number already registered.',
             'fields.personal.sex.required' => 'Please select your gender.',
             'fields.personal.sex.in' => 'Please choose a valid option for gender.',
@@ -69,6 +69,8 @@ class Register extends Component
         ];
         
     }
+
+  
 
     public function register() {
         
