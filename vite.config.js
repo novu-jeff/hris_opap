@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/sass/chat.scss',
                 'resources/sass/admin-layout.scss',
                 'resources/sass/home-layout.scss',
+                'resources/sass/employee-layout.scss',
                 'resources/js/app.js'
             ],
             refresh: true,
