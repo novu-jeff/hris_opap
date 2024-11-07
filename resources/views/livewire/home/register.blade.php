@@ -44,7 +44,7 @@
                         
                         <div class="col-12 col-md-6 mb-3">
                             <label for="phone_no" class="mb-2">Mobile No. <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="fields.personal.phone_no" id="phone_no" class="form-control text-uppercase">
+                            <input type="number" wire:model="fields.personal.phone_no" id="phone_no" class="form-control text-uppercase">
                             <div class="error-field">
                                 @error('fields.personal.phone_no') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
@@ -172,3 +172,4 @@
         </div>
     </div>
 </form>
+

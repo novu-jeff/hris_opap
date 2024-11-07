@@ -30,20 +30,3 @@
         </div>
     </div>
 @endsection
-
-@section('scripts')
-    <script>
-       $(function() {
-            const phoneMask = new IMask($('#phone_no')[0], {
-                mask: '+63 (000) 000-0000',
-                lazy: false 
-            });
-
-            const telMask = new IMask($('#tel_no')[0], {
-                mask: '(00) 0000 0000',
-                lazy: false 
-            });
-        });
-
-    </script>
-@endsection
