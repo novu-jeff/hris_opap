@@ -4,20 +4,6 @@
             <img src="{{asset('img/logo.png')}}" alt="logo">
         </a>
         <div class="d-flex align-items-center gap-5 pt-3">
-            {{-- <ul class="navbar-nav">
-                <div class="close-icon d-lg-none">
-                    <i class="fa-solid fa-xmark"></i>
-                </div>
-                <li class="nav-item">
-                    <a href="{{route('employee.leave')}}" class="nav-link">Leave Application</a>
-                </li>
-                <li class="nav-item">
-                    <a href="" class="nav-link">Payslip</a>
-                </li>
-                <li class="nav-item">
-                    <a href="" class="nav-link">Talk HR</a>
-                </li>
-            </ul> --}}
             @if (Auth::guard('employee')->user())
                 @php
                     $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);
@@ -28,7 +14,6 @@
                     }}" alt="Profile Image">
                     <div class="email">{{ trimEmail(Auth::guard('employee')->user()->email ?? 'Guest')}}</div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{{route('employee.profile')}}" wire:navigate>Profile</a></li>
                         <li>
                             <a class="dropdown-item" href="{{ route('home.logout') }}"
                                 onclick="event.preventDefault();

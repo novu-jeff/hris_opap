@@ -8,6 +8,7 @@ use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeLeave;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ClockInOutController extends Controller
@@ -16,15 +17,14 @@ class ClockInOutController extends Controller
      * Display a listing of the resource.
      */
 
-    public $user_id;
-
-    public function __construct() {
-        $this->user_id = 1;
-    }
 
     public function index()
     {
-        $records = EmployeeClockInOut::where('employee_id', $this->user_id)->get();
+
+        $user_id = Auth::user()->employee_id;
+
+        $records = EmployeeClockInOut::where('employee_id', $user_id)->get();
+        
         return response([
             'status' => 'success',
             'stats' => [
@@ -39,11 +39,15 @@ class ClockInOutController extends Controller
      */
     
      public function store(Request $request) {
+
+
+        $user_id = Auth::user()->employee_id;
+
         $today = Carbon::today();
 
         $action = $request->get('action');
     
-        $existingRecord = EmployeeClockInOut::where('employee_id', $this->user_id)
+        $existingRecord = EmployeeClockInOut::where('employee_id', $user_id)
                 ->whereDate('created_at', $today)
                 ->first();
     
@@ -66,7 +70,7 @@ class ClockInOutController extends Controller
             $timestamp = Carbon::now();
     
             EmployeeClockInOut::create([
-                'employee_id' => $this->user_id,
+                'employee_id' => $user_id,
                 'clock_in' => $timestamp
             ]);
     

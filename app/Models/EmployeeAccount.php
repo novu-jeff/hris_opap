@@ -16,7 +16,9 @@ class EmployeeAccount extends Authenticatable
         'employee_id',
         'applicant_id',
         'email',
-        'password'
+        'password',
+        'isLoggedIn',
+        'token'
     ];
     public $timestamps = false;
 

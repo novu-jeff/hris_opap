@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LeaveController as ApiLeaveController;
 use App\Http\Controllers\Api\DirectoryController as ApiDirectoryController;
 use App\Http\Controllers\Api\TeamController as ApiTeamController;
 use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\RequestStatusController as ApiRequestStatusController;
 
 use Illuminate\Http\Request;
@@ -22,32 +23,37 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('/')->group(function() {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('check_if_logged_in', [AuthController::class, 'check_if_logged_in']);
+    Route::middleware(['auth:sanctum', 'api_employee'])
+        ->any('logout', [AuthController::class, 'logout']);
 });
 
-Route::prefix('leave')->group(function() {
-    Route::get('/', [ApiLeaveController::class, 'index']);
-    Route::get('/{id}', [ApiLeaveController::class, 'show']);
-    Route::post('/', [ApiLeaveController::class, 'store']);
-    Route::post('/{id}/edit', [ApiLeaveController::class, 'update']);
-    Route::post('/{id}/delete', [ApiLeaveController::class, 'destroy']);
-});
+Route::middleware(['auth:sanctum', 'api_employee'])->group(function() {
 
-Route::prefix('clock-in-out')->group(function() {
-    Route::get('/', [ApiClockInOutController::class, 'index']);
-    Route::post('/', [ApiClockInOutController::class, 'store']);
-});
+    Route::prefix('leave')->group(function() {
+        Route::get('/', [ApiLeaveController::class, 'index']);
+        Route::get('/{id}', [ApiLeaveController::class, 'show']);
+        Route::post('/', [ApiLeaveController::class, 'store']);
+        Route::post('/{id}/edit', [ApiLeaveController::class, 'update']);
+        Route::post('/{id}/delete', [ApiLeaveController::class, 'destroy']);
+    });
 
-Route::get('directory', [ApiDirectoryController::class, 'index']);
-Route::get('team', [ApiTeamController::class, 'index']);
-Route::get('announcements', [ApiAnnouncementController::class, 'index']);
+    Route::prefix('clock-in-out')->group(function() {
+        Route::get('/', [ApiClockInOutController::class, 'index']);
+        Route::post('/', [ApiClockInOutController::class, 'store']);
+    });
 
-Route::prefix('request-status')->group(function() {
-    Route::get('/', [ApiRequestStatusController::class, 'loadRecords']);
-    Route::post('/first-time', [ApiRequestStatusController::class, 'isFirstTime']);
-    Route::post('/make-seen', [ApiRequestStatusController::class, 'makeSeen']);
-    Route::post('/send-message', [ApiRequestStatusController::class, 'sendMessage']);
-    Route::post('/preview-attachments', [ApiRequestStatusController::class, 'updatedAttachments']);
-    Route::get('/download/{messageId}/{attachmentId}', [ApiRequestStatusController::class, 'download']);
+    Route::get('directory', [ApiDirectoryController::class, 'index']);
+    Route::get('team', [ApiTeamController::class, 'index']);
+    Route::get('announcements', [ApiAnnouncementController::class, 'index']);
+
+    Route::prefix('request-status')->group(function() {
+        Route::get('/', [ApiRequestStatusController::class, 'loadRecords']);
+        Route::post('/first-time', [ApiRequestStatusController::class, 'isFirstTime']);
+        Route::post('/make-seen', [ApiRequestStatusController::class, 'makeSeen']);
+        Route::post('/send-message', [ApiRequestStatusController::class, 'sendMessage']);
+        Route::get('/download/{messageId}/{attachmentId}', [ApiRequestStatusController::class, 'download']);
+    });
 });

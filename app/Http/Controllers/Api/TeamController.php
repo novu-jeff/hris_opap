@@ -10,15 +10,12 @@ use Illuminate\Support\Facades\Auth;
 class TeamController extends Controller
 {
 
-    public $user_id;
-
-    public function __construct() {
-        $this->user_id = 1;
-    }
 
     public function index() {
 
-        $user = EmployeeInformation::find($this->user_id);
+        $user_id = Auth::user()->employee_id;
+
+        $user = EmployeeInformation::find($user_id);
 
         $branch_id = $user->branch_id;
         $department_id = $user->department_id;
