@@ -30,6 +30,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
+use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
@@ -205,6 +206,9 @@ Route::prefix('employee')->group(function() {
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
         });
+
+        Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
+            ->name('employee.clock');
 
         Route::get('directory', [EmployeeDirectoryController::class, 'index'])
             ->name('employee.directory');

@@ -5,8 +5,8 @@
                 <div class="modal-dialog-scrollable">
                     <div class="modal-content">
                         <div class="chat-header px-3 py-2 border-bottom">
-                            <div class="msg-search p-2">
-                                <h5 class="mb-0 text-uppercase fw-bold">All Employees</h5>
+                            <div class="msg-search d-block p-2 text-center">
+                                <h5 class="mb-0 fw-medium text-center">All Employees</h5>
                             </div>
                         </div>
                         <div class="modal-body mt-3">

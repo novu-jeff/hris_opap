@@ -30,7 +30,7 @@ class Chatlist extends Component
 
         if(is_null($id)) {
             $this->dispatch('selected', $id)->to(Chatbox::class);
-            $id = $this->employees->first()->id;
+            $id = $this->employees->first()->id ?? null;
         } 
 
         $this->selected_id = $id;

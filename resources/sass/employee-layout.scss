@@ -112,3 +112,26 @@ table {
   -webkit-line-clamp: 3;
   line-clamp: 3;
 }
+
+.clockinout {
+
+  margin-top: 80px;
+
+  .card {
+      width: 350px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      border-radius: 30px !important;
+      cursor: pointer;
+      
+      i {
+        font-size: 80px;
+      }
+
+      font-size: 30px;
+      font-weight: 700;
+
+  }
+
+}
