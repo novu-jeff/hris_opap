@@ -106,7 +106,7 @@ class Apply extends Component
                     'from' => $from->format('Y-m-d'),
                     'to' => $to->format('Y-m-d'),
                     'measurement' => 'full day',
-                    'consumed_hourse' => $consumed_hours 
+                    'consumed_hours' => $consumed_hours 
                 ]);
 
                 if(is_null($this->record_id)) {
