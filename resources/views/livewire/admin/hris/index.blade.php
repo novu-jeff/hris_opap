@@ -61,8 +61,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body py-4 px-4">
-                    <input type="file" wire:model="file" id="file" class="form-control mb-1">
-                    <small class="text-muted fw-bold text-uppercase">Note: only files xlsx or xls are allowed.</small>
+                    <label class="mb-2" for="file">File Upload</label>
+                    <input type="file" wire:model="file" id="file" class="form-control">
+                    <div class="mt-2 text-muted fw-bold text-uppercase d-flex justify-content-between align-items-center" style="font-size: 13px">
+                        <p>Note: only files xlsx or xls are allowed.</small>
+                        <p><a href="{{asset('templates/HRIS TEMPLATE UPLOAD.xlsx')}}" class="nav-link text-decoration-underline">Download Template</a></p>
+                    </div>
                     @if($upload_preview)
                         <hr class="my-3">
                         <div class="table-responsive">
