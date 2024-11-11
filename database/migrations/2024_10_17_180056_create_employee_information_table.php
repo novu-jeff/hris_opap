@@ -64,6 +64,7 @@ return new class extends Migration
                 ->constrained('employee_information')
                 ->onCascade('delete');
             $table->foreignId('applicant_id')
+                ->nullable()
                 ->constrained('applicant_users');
             $table->string('email')
                 ->unique();

@@ -53,8 +53,102 @@
         </div>
     </div>
 
+    <div class="modal fade" wire:ignore.self id="upload_employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Upload Employee</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 px-4">
+                    <input type="file" wire:model="file" id="file" class="form-control mb-1">
+                    <small class="text-muted fw-bold text-uppercase">Note: only files xlsx or xls are allowed.</small>
+                    @if($upload_preview)
+                        <hr class="my-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Suffix</th>
+                                        <th>Birthdate</th>
+                                        <th>Age</th>
+                                        <th>Civil Status</th>
+                                        <th>Gender</th>
+                                        <th>Nationality</th>
+                                        <th>Email</th>
+                                        <th>Password</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($upload_preview[0] as $index => $user)
+                                        <tr>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.0" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.1" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.2" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.3" class="form-control" style="width: 250px"/></td>
+                                            <td>
+                                                <select wire:model="upload_preview.0.{{ $index }}.4" class="form-control" style="width: 250px">
+                                                    <option value=""> - Choose - </option>
+                                                    <option value="jr">Jr.</option>
+                                                    <option value="sr">Sr.</option>
+                                                    <option value="I">I</option>
+                                                    <option value="II">II</option>
+                                                    <option value="III">III</option>
+                                                    <option value="IV">IV</option>
+                                                    <option value="V">V</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.5" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.6" class="form-control" style="width: 250px"/></td>
+                                            <td>
+                                                <select wire:model="upload_preview.0.{{ $index }}.7" class="form-select" style="width: 250px">
+                                                    <option value=""> - Choose -  Status</option>
+                                                    <option value="single">Single</option>
+                                                    <option value="married">Married</option>
+                                                    <option value="divorced">Divorced</option>
+                                                    <option value="separated">Separated</option>
+                                                    <option value="widowed">Widowed</option>
+                                                    <option value="annulled">Annulled</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select wire:model="upload_preview.0.{{ $index }}.8" class="form-select" style="width: 250px">
+                                                    <option value=""> - Choose - </option>
+                                                    <option value="male">Male</option>
+                                                    <option value="female">Female</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select wire:model="upload_preview.0.{{ $index }}.9" class="form-select" style="width: 250px">
+                                                    <option value=""> - Choose - </option>
+                                                    <option value="filipino">Filipino</option>
+                                                    <option value="dual_citizenship">Dual Citizenship</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="email" wire:model="upload_preview.0.{{ $index }}.10" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.11" class="form-control text-lowercase" style="width: 250px"/></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>                
+                @if($upload_preview)
+                    <div class="modal-footer d-flex justify-content-end">
+                        <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="upload_file">Import</button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    
     <div class="d-flex justify-content-end mb-5 gap-3">
-        <button class="btn btn-outline-primary px-5 py-3 text-uppercase" wire:click="">Upload Employees</button>
+        <button class="btn btn-outline-primary px-5 py-3 text-uppercase" wire:click="uploadRecords">Upload Employees</button>
         <button class="btn btn-primary px-5 py-3 text-uppercase" wire:click="loadRecords">Choose Employee</button>
     </div>
 

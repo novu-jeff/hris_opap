@@ -5,15 +5,22 @@ namespace App\Livewire\Admin\Hris;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Models\Branches;
 use App\Models\DepartmentCenters;
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
+use App\Models\EmployeePersonal;
 use App\Models\Positions;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Index extends Component
 {
+
+    use WithFileUploads;
 
     public $selected_id;
     public $employees;
@@ -24,6 +31,8 @@ class Index extends Component
     public bool $isDualCitizenship = false;
     public array $countries;
     public string $activeTab = 'details';
+    public $file;
+    public $upload_preview;
     public $activeAccordion;
 
     protected $listeners = ['loadRecords'];
@@ -222,6 +231,12 @@ class Index extends Component
     
         $this->records[$type][] = $fields[$type];
     }
+
+    public function uploadRecords() {
+        $this->dispatch('showModal', [
+            'modal' => 'upload_employee'
+        ]);
+    }
     
     public function removeRecord($tab, $type, $index) {
         $this->activeTab = $tab;
@@ -275,8 +290,7 @@ class Index extends Component
         ];
     }
 
-    public function messages(): array
-    {
+    public function messages() {
         return [
             'records.employee_account.email.required' => 'Account email is required.',
             'records.employee_personal.firstname.required' => 'The first name field is required.',
@@ -367,6 +381,7 @@ class Index extends Component
         DB::beginTransaction();
 
         try {
+
             $process = new HRISProcessingService;
             $process->save(false, $id, $this->selected_id, $this->records);
             DB::commit();
@@ -390,6 +405,100 @@ class Index extends Component
             ]);
         }
 
+    }
+
+    public function updated($propertyName)
+    {
+        if ($propertyName === 'file') {
+    
+            $this->upload_preview = [];
+            
+            $file = $this->file;
+    
+            if ($file instanceof \Illuminate\Http\UploadedFile) {
+
+                $extension = strtolower($file->getClientOriginalExtension());
+            
+                if (in_array($extension, ['xls', 'xlsx'])) {
+            
+                    try {
+                        $data = Excel::toArray([], $file, null, \Maatwebsite\Excel\Excel::XLSX)[0];
+            
+                        $dataWithoutHeader = array_slice($data, 1);
+                        $dataWithoutEmptyRows = array_filter($dataWithoutHeader, function ($row) {
+                            return !empty(array_filter($row));
+                        });
+            
+                        $this->upload_preview[] = $dataWithoutEmptyRows;
+            
+                    } catch (\Exception $e) {
+                        $this->addError('file', 'There was an error reading the Excel file.');
+                    }
+            
+                } else {
+                    $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
+                }
+            } else {
+                $this->validate();
+            }
+
+            $this->file = [];
+
+        }
+    }
+
+    public function upload_file() {
+
+        DB::beginTransaction();
+
+        try {
+
+            foreach ($this->upload_preview[0] as $user) {
+
+                $employeeInformation = EmployeeInformation::create([
+                    'biometrics_id' => $user[0] ?? null, 
+                    'date_hired' => $user[1] ?? null,
+                ]);
+            
+                EmployeePersonal::create([
+                    'employee_id' => $employeeInformation->id,
+                    'firstname' => !empty($user[2]) ? strtolower($user[2]) : null,
+                    'lastname' => !empty($user[3]) ? strtolower($user[3]) : null,
+                    'suffix' => !empty($user[4]) ? strtolower($user[4]) : null,
+                    'birthdate' => $user[5] ?? null, 
+                    'age' => $user[6] ?? null,
+                    'civil_status' => !empty($user[7]) ? strtolower($user[7]) : null,
+                    'gender' => !empty($user[8]) ? strtolower($user[8]) : null,
+                    'citizenship' => !empty($user[9]) ? strtolower($user[9]) : null,
+                ]);
+            
+                EmployeeAccount::create([
+                    'employee_id' => $employeeInformation->id,
+                    'email' => !empty($user[10]) ? strtolower($user[10]) : null,
+                    'password' => !empty($user[11]) ? bcrypt($user[11]) : null, 
+                ]);
+            }
+    
+            DB::commit();
+           
+            return$this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!', 
+                'isRemoveRowDT' => false,
+                'isReloadDT' => false,
+                'message' => count($this->upload_preview[0]) . ' employee/s has been added.' 
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'isRemoveRowDT' => true,
+                'showAlert' => true,
+                'message' => 'Error: ' . $e->getMessage() 
+            ]);
+        }
     }
 
     public function render()
