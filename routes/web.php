@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\ClockInOutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
@@ -129,6 +130,10 @@ Route::resource('hris', HRISController::class)
 Route::prefix('ess')->group(function() {
     Route::get('leave', [LeaveController::class, 'index'])
         ->name('ess.leave');
+
+    Route::get('clock-in-out', [ClockInOutController::class, 'index'])
+        ->name('ess.clock-in-out');
+
     Route::prefix('announcements')->group(function() {
         Route::get('/', [AnnouncementController::class, 'index'])
             ->name('ess.announcements.index');
