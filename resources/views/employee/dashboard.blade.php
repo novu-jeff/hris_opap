@@ -18,7 +18,7 @@
                     <p>Leave Application</p>
                 </div>
             </a>
-            <a href="" class="nav-link">
+            <a href="{{route('employee.clock')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/clockinout.png')}}" alt="leave" class="w-100">
                     <p>Clock In/Out</p>
