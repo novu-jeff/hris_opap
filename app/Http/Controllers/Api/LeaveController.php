@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeLeave;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class LeaveController extends Controller
@@ -16,13 +17,12 @@ class LeaveController extends Controller
 
     public $user_id;
 
-    public function __construct() {
-        $this->user_id = 1;
-    }
-
     public function index()
     {
-        $records = EmployeeLeave::where('employee_id', $this->user_id)->get();
+        
+        $user_id = Auth::user()->employee_id;
+
+        $records = EmployeeLeave::where('employee_id', $user_id)->get();
         return response([
             'status' => 'success',
             'stats' => [

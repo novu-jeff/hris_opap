@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class RequestStatusController extends Controller
 {
@@ -17,13 +18,13 @@ class RequestStatusController extends Controller
     public $attachments = [];
     public $preview_attachments;
 
-    public function __construct() {
-        $this->user = Auth::user()->load('personal')->personal;
-    }
 
     public function loadRecords() {
+
+        $user = Auth::user()->load('personal')->personal;
+
         $sent = Message::with('attachments')
-            ->where('from_id', $this->user->employee_id)
+            ->where('from_id', $user->employee_id)
             ->where('from_role', 'employee')
             ->where('to_id', 0)
             ->where('to_role', 'admin')
@@ -32,7 +33,7 @@ class RequestStatusController extends Controller
         $received = Message::with('attachments')
             ->where('from_id', 0)
             ->where('from_role', 'admin')
-            ->where('to_id', $this->user->employee_id)
+            ->where('to_id', $user->employee_id)
             ->where('to_role', 'employee')
             ->get();
 
@@ -46,12 +47,15 @@ class RequestStatusController extends Controller
     }
 
     public function isFirstTime() {
-        $record = Message::where('from_id', $this->user->employee_id)
-            ->orWhere('to_id', $this->user->employee_id)
+
+        $user = Auth::user()->load('personal')->personal;
+
+        $record = Message::where('from_id', $user->employee_id)
+            ->orWhere('to_id', $user->employee_id)
             ->count();
 
         if ($record <= 0) {
-            $name = ucwords($this->user->firstname . ' ' . $this->user->lastname);
+            $name = ucwords($this->user->firstname . ' ' . $user->lastname);
             $messages = [
                 'Hello ' . $name,
                 'I\'m Juan Dela Cruz from the HR department. I just wanted to check in and see if there\'s anything we can assist you with. If you have any questions or need support, feel free to reach out. We\'re here to help!'
@@ -61,7 +65,7 @@ class RequestStatusController extends Controller
                 Message::create([
                     'from_id' => 0,
                     'from_role' => 'admin',
-                    'to_id' => $this->user->employee_id,
+                    'to_id' => $user->employee_id,
                     'to_role' => 'employee',
                     'message' => $message,
                     'created_at' => Carbon::now(),
@@ -74,8 +78,11 @@ class RequestStatusController extends Controller
     }
 
     public function makeSeen() {
+
+        $user = Auth::user()->load('personal')->personal;
+
         Message::where('from_id', 0)
-            ->where('to_id', $this->user->employee_id)
+            ->where('to_id', $user->employee_id)
             ->update([
                 'isSeen' => true,
                 'seen_timestamp' => Carbon::now()
@@ -85,20 +92,20 @@ class RequestStatusController extends Controller
     }
 
     public function updatedAttachments(Request $request) {
-        $this->attachments = $request->file('attachments', []);
-        $this->preview_attachments = [];
+        $attachments = $request->file('attachments', []);
+        $preview_attachments = [];
 
         foreach ($this->attachments as $attachment) {
             $extension = strtolower($attachment->getClientOriginalExtension());
             if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                $this->preview_attachments[] = [
+                $preview_attachments[] = [
                     'type' => 'image',
                     'url' => $attachment->temporaryUrl(),
                 ];
             } elseif ($extension === 'pdf') {
                 $filename = $attachment->store('public/temp');
                 $url = Storage::url($filename);
-                $this->preview_attachments[] = [
+                $preview_attachments[] = [
                     'type' => 'pdf',
                     'url' => $url,
                 ];
@@ -107,68 +114,84 @@ class RequestStatusController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'preview_attachments' => $this->preview_attachments
+            'preview_attachments' => $preview_attachments
         ]);
     }
 
-    public function sendMessage(Request $request) {
-        $validated = $request->validate([
+    public function sendMessage(Request $request)
+    {
+        $user = Auth::user()->load('personal')->personal;
+
+        // Define validation rules
+        $rules = [
             'message' => 'required_without:attachments',
             'attachments' => 'required_without:message|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:2048',
-        ]);
+        ];
 
-        $message = Message::create([
-            'from_id' => $this->user->employee_id,
-            'from_role' => 'employee',
-            'to_id' => 0,
-            'to_role' => 'admin',
-            'message' => $request->message ?? null,
-        ]);
+        // Validate the request with custom error handling
+        $validator = Validator::make($request->all(), $rules);
 
-        foreach ($validated['attachments'] ?? [] as $index => $attachment) {
-            $extension = $attachment->getClientOriginalExtension();
-            $original_filename = $attachment->getClientOriginalName();
-            $new_filename = time() . '_' . $message->id . '_' . $index . '.' . $extension;
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
-            $attachment->storeAs('messages', strtolower($new_filename), 'public');
+            $validated = $validator->validated();
 
-            MessageAttachments::create([
-                'message_id' => $message->id,
-                'original' => $original_filename,
-                'attachment' => $new_filename
+            // Create the message
+            $message = Message::create([
+                'from_id' => $user->employee_id,
+                'from_role' => 'employee',
+                'to_id' => 0,
+                'to_role' => 'admin',
+                'message' => $request->message ?? null,
+            ]);
+
+            // Handle attachments
+            foreach ($validated['attachments'] ?? [] as $index => $attachment) {
+                $extension = $attachment->getClientOriginalExtension();
+                $original_filename = $attachment->getClientOriginalName();
+                $new_filename = time() . '_' . $message->id . '_' . $index . '.' . $extension;
+
+                $attachment->storeAs('messages', strtolower($new_filename), 'public');
+
+                MessageAttachments::insert([
+                    'message_id' => $message->id,
+                    'original' => $original_filename,
+                    'attachment' => $new_filename
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Message sent successfully.'
             ]);
         }
 
-        $this->loadRecords();
+        public function download($messageId, $attachmentId) {
+            $record = MessageAttachments::where('message_id', $messageId)
+                ->where('id', $attachmentId)
+                ->first();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Message sent successfully.'
-        ]);
-    }
+            if (is_null($record)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Attachment does not exist'
+                ], 404);
+            }
 
-    public function download($messageId, $attachmentId) {
-        $record = MessageAttachments::where('message_id', $messageId)
-            ->where('id', $attachmentId)
-            ->first();
+            $path = 'messages/' . $record->attachment;
 
-        if (is_null($record)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Attachment does not exist'
-            ], 404);
+            if (!Storage::disk('public')->exists($path)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Attachment does not exist'
+                ], 404);
+            }
+
+            return response()->download(Storage::disk('public')->path($path), $record->original);
         }
-
-        $path = 'messages/' . $record->attachment;
-
-        if (!Storage::disk('public')->exists($path)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Attachment does not exist'
-            ], 404);
-        }
-
-        return response()->download(Storage::disk('public')->path($path), $record->original);
     }
-}

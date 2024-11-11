@@ -53,7 +53,8 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-end mb-5">
+    <div class="d-flex justify-content-end mb-5 gap-3">
+        <button class="btn btn-outline-primary px-5 py-3 text-uppercase" wire:click="">Upload Employees</button>
         <button class="btn btn-primary px-5 py-3 text-uppercase" wire:click="loadRecords">Choose Employee</button>
     </div>
 
