@@ -69,6 +69,10 @@ return new class extends Migration
                 ->unique();
             $table->string('password')
                 ->nullable();
+            $table->boolean('isLoggedIn')
+                ->default(false);
+            $table->string('token')
+                ->nullable();
         });
 
         Schema::create('employee_personal', function(Blueprint $table) {

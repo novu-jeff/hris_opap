@@ -1,21 +1,15 @@
 <?php
 
-namespace App\Livewire\Employee;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\EmployeeInformation;
-use Livewire\Component;
+use Illuminate\Http\Request;
 
-class Directory extends Component
+class DirectoryController extends Controller
 {
-
-    public $records;
-
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-
+    public function index() {
+        
         $records = EmployeeInformation::with('branch', 'department', 'positions', 'personal', 'account')->get();
 
         $sortedRecords = $records->sort(function ($a, $b) {
@@ -90,13 +84,9 @@ class Directory extends Component
 
         $nestedArray = array_values($nestedArray);
         
-        $this->records = $nestedArray;
-
-    }
-
-
-    public function render()
-    {
-        return view('livewire.employee.directory');
+        return response()->json([
+            'status' => true,
+            'data' => $nestedArray
+        ]);
     }
 }

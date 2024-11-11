@@ -19,4 +19,5 @@ class Index extends Component
     {
         return view('livewire.admin.ess.clock-in-out.index');
     }
+    
 }

@@ -26,7 +26,6 @@ class Announcements extends Component
             }
 
             return $this->records = $records;
-
         }
 
         return $this->records = $records::all();
