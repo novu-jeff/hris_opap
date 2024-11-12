@@ -273,7 +273,7 @@ class Index extends Component
             'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
-            'records.employee_personal.mobile_number' => 'regex:/^09\d{9}$/',
+            'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
             'records.employee_personal.email' => 'nullable|email',
 
 

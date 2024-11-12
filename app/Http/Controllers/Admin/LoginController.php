@@ -27,10 +27,9 @@ class LoginController extends Controller
         $validator = Validator::make($request->all(), $rules, $message);
 
         if($validator->fails()) {
-            return [
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ];
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($validator);
         }
 
         if(Auth::attempt([
@@ -38,18 +37,11 @@ class LoginController extends Controller
             'password' => $request->password
         ])) {
 
-            return [
-                'status' => 'success',
-                'message' => 'Login Success!',
-                'redirect' => route('dashboard.index')
-            ];
+            return redirect()->route('admin.dashboard');
 
         } else {
-            return [
-                'status' => 'error',
-                'title' => 'Login Failed',
-                'message' => 'Email or Password is incorrect. Please try again.'
-            ];
+            return redirect()->back()
+                ->with(['error' => 'Invalid email or password']);
         }
         
     }

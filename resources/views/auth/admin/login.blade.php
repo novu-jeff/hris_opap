@@ -3,11 +3,11 @@
 ])
 
 @section('content')
-    <div class="login">
-        <div class="row d-flex justify-content-center align-items-center py-5">
+    <div class="login d-flex justify-content-center align-items-center">
+        <div class="row py-5 d-flex justify-content-center align-items-center w-100">
             <div class="col-12 col-md-5">
                 <div class="container">
-                    <form id="submit-form">
+                    <form method="POST" action="{{route('admin.login')}}">
                         @method('POST')
                         @csrf
                         <div class="card shadow p-3">
@@ -28,19 +28,22 @@
                             </div>
                             <hr class="my-2">
                             <div class="card-body">
-                                <div class="tab-content" id="pills-tabContent">
-                                    <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="pills-login" tabindex="0">
-                                        <div class="row">
-                                            <div class="col-12 mb-3">
-                                                <label for="email" class="mb-2">Email <span class="text-danger">*</span></label>
-                                                <input type="text" name="email" id="email" class="form-control">
-                                                <div class="error-field"></div>
-                                            </div>
-                                            <div class="col-12 mb-3">
-                                                <label for="password" class="mb-2">Password <span class="text-danger">*</span></label>
-                                                <input type="password" name="password" id="password" class="form-control">
-                                                <div class="error-field"></div>
-                                            </div>
+                                <div class="row">
+                                    @if (session()->has('error'))
+                                        <div class="alert alert-danger mb-3 text-uppercase fw-medium text-center fs-6">{{session('error')}}</div>
+                                    @endif
+                                    <div class="col-12 mb-3">
+                                        <label for="email" class="mb-2">Email <span class="text-danger">*</span></label>
+                                        <input type="text" name="email" id="email" class="form-control">
+                                        <div class="error-field mt-1">
+                                            @error('email') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label for="password" class="mb-2">Password <span class="text-danger">*</span></label>
+                                        <input type="password" name="password" id="password" class="form-control">
+                                        <div class="error-field mt-1">
+                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -54,17 +57,4 @@
             </div>
         </div>
     </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(function() {
-        $('#submit-form').submit(function(e) {
-            e.preventDefault();
-            const url = '{{route('admin.login')}}';
-            const data = new FormData($(this)[0]);
-            post(false, url, data);
-        });
-    });
-</script>
 @endsection
