@@ -7,7 +7,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!-- HRIS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{route('admin.dashboard')}}">
                         <i class="fa-solid fa-house"></i>
                         Dashboard
                     </a>

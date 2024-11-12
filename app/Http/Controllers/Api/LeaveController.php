@@ -41,6 +41,9 @@ class LeaveController extends Controller
     
      public function store(Request $request)
      {
+
+        $user_id = Auth::user()->employee_id;
+        
         $validator = Validator::make($request->all(), $this->rules());
          
         if ($validator->fails()) {
@@ -56,7 +59,7 @@ class LeaveController extends Controller
             $consumed_hours = $from->diffInHours($to);
     
             $model = EmployeeLeave::class;
-            $pending = $model::where('employee_id', $this->user_id)
+            $pending = $model::where('employee_id', $user_id)
                 ->where('status', false)
                 ->count();
     
@@ -70,7 +73,7 @@ class LeaveController extends Controller
             }
     
             $model::create([
-                'employee_id' => $this->user_id,
+                'employee_id' => $user_id,
                 'type' => $request->type,
                 'reason' => $request->reason,
                 'from' => $from->format('Y-m-d'),
@@ -106,7 +109,9 @@ class LeaveController extends Controller
      */
     public function show(string $id)
     {
-        $records = EmployeeLeave::where('employee_id', $this->user_id)
+        $user_id = Auth::user()->employee_id;
+
+        $records = EmployeeLeave::where('employee_id', $user_id)
             ->where('id', $id)
             ->first();
 
@@ -122,6 +127,8 @@ class LeaveController extends Controller
      */
     public function update(Request $request, int $id)
     {
+
+        $user_id = Auth::user()->employee_id;
 
         $validator = Validator::make($request->all(), $this->rules());
          
@@ -147,9 +154,9 @@ class LeaveController extends Controller
                 ], 500); 
             }
 
-            $model::where('employee_id', $this->user_id)
+            $model::where('employee_id', $user_id)
                 ->where('id', $id)->update([
-                    'employee_id' => $this->user_id,
+                    'employee_id' => $user_id,
                     'type' => $request->type,
                     'reason' => $request->reason,
                     'from' => $from->format('Y-m-d'),
@@ -176,7 +183,10 @@ class LeaveController extends Controller
      */
     public function destroy(int $id)
     {
-        $record = EmployeeLeave::where('employee_id', $this->user_id)
+
+        $user_id = Auth::user()->employee_id;
+
+        $record = EmployeeLeave::where('employee_id', $user_id)
             ->find($id);
 
         if($record) {       

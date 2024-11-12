@@ -3,26 +3,22 @@
         <a class="navbar-brand" href="{{ url('/') }}">
             {{ config('app.name', 'Laravel') }}
         </a>
-        <div class="d-flex align-items-center">
+        <div class="dropdown ms-3 d-none d-md-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown" style="cursor: pointer">
             <img class="profile-img" src="https://tse4.mm.bing.net/th?id=OIP.XcrLeJQyO0375j0Q8WA0kQHaE8&pid=Api&P=0&h=180" alt="Profile Image">
-            <div class="email">{{ Auth::user()->email ?? 'test@gmail.com'}}</div>
-            <div class="dropdown ms-3">
-                <button class="drop-button d-flex align-items-center justify-content-center dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li>
-                        <a class="dropdown-item" href="{{ route('admin.logout') }}"
-                            onclick="event.preventDefault();
-                                        document.getElementById('logout-form').submit();">
-                            {{ __('Logout') }}
-                        </a>
+            <div class="email">{{ Auth::user()->email ?? 'Guest'}}</div>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li>
+                    <a class="dropdown-item" href="{{ route('home.logout') }}"
+                        onclick="event.preventDefault();
+                                    document.getElementById('logout-form').submit();">
+                        {{ __('Logout') }}
+                    </a>
 
-                        <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </li>
-                </ul>
-            </div>  
-        </div>        
+                    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                </li>
+            </ul>
+        </div>    
     </div>
 </nav>

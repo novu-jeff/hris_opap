@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
@@ -103,89 +104,96 @@ Route::prefix('admin')->group(function() {
         ->name('admin.login');
     Route::any('logout', [AdminLoginController::class, 'logout'])
         ->name('admin.logout');
-});
 
-Route::prefix('job')->group(function() {
+
+    Route::middleware(['auth'])->group(function() {
+
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])
+            ->name('admin.dashboard');
+
+        Route::prefix('job')->group(function() {
     
-    # Job Posts Routes
-    Route::resource('posts', PostController::class)->names('job.posts');
-    Route::resource('interviews', InterviewController::class)->names('job.interview');
-    Route::resource('requirements', RequirementsController::class)->names('job.requirements');
-    
-    // Route::resource('applicants/{status}', ApplicantController::class)->names('job.applicants');
-
-    Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
-    Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
-    Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
-    Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])->name('job.applicants.show');
-    Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])->name('job.applicants.edit');
-    Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])->name('job.applicants.update');
-    Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])->name('job.applicants.destroy');
-
-});
-
-Route::resource('hris', HRISController::class)
-    ->names('hris');
-
-Route::prefix('ess')->group(function() {
-    Route::get('leave', [LeaveController::class, 'index'])
-        ->name('ess.leave');
-
-    Route::get('clock-in-out', [ClockInOutController::class, 'index'])
-        ->name('ess.clock-in-out');
-
-    Route::prefix('announcements')->group(function() {
-        Route::get('/', [AnnouncementController::class, 'index'])
-            ->name('ess.announcements.index');
-        Route::get('apply', [AnnouncementController::class, 'create'])
-            ->name('ess.announcements.create');
-        Route::get('edit/{id}', [AnnouncementController::class, 'edit'])
-            ->name('ess.announcements.edit');
-    });
-
-    Route::prefix('request-status')->group(function() {
-        Route::get('{id?}', [RequestStatusController::class, 'index'])
-            ->name('ess.request-status');
-    });
-});
-
-Route::prefix('settings')->group( function() {
-
-    Route::prefix('hris')->group( function() {
-
-        Route::prefix('location-management')->group( function() {
-            Route::resource('/branch', BranchController::class)
-                ->names('branch');
-
-            Route::resource('/cost-center', CostCenterController::class)
-                ->names('cost-center');
-
-            Route::resource('/department-center', DepartmentCenterController::class)
-                ->names('department-center');
+            Route::resource('posts', PostController::class)->names('job.posts');
+            Route::resource('interviews', InterviewController::class)->names('job.interview');
+            Route::resource('requirements', RequirementsController::class)->names('job.requirements');
+            
+            // Route::resource('applicants/{status}', ApplicantController::class)->names('job.applicants');
+        
+            Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
+            Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
+            Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
+            Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])->name('job.applicants.show');
+            Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])->name('job.applicants.edit');
+            Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])->name('job.applicants.update');
+            Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])->name('job.applicants.destroy');
+        
         });
-
-        Route::resource('bank-information', BankInformationController::class)
-            ->names('bank-information');    
-
-        Route::resource('batch-configuration', BatchConfigurationController::class)
-            ->names('batch-configuration');           
-
-        Route::resource('employee-status', EmployeeStatusController::class)
-            ->names('employee-status');
-
-        Route::resource('position', PositionController::class)
-            ->names('position');
-
-        Route::resource('violation', ViolationController::class)
-            ->names('violation');
-
+        
+        Route::resource('hris', HRISController::class)
+            ->names('hris');
+        
+        Route::prefix('ess')->group(function() {
+            Route::get('leave', [LeaveController::class, 'index'])
+                ->name('ess.leave');
+        
+            Route::get('clock-in-out', [ClockInOutController::class, 'index'])
+                ->name('ess.clock-in-out');
+        
+            Route::prefix('announcements')->group(function() {
+                Route::get('/', [AnnouncementController::class, 'index'])
+                    ->name('ess.announcements.index');
+                Route::get('apply', [AnnouncementController::class, 'create'])
+                    ->name('ess.announcements.create');
+                Route::get('edit/{id}', [AnnouncementController::class, 'edit'])
+                    ->name('ess.announcements.edit');
+            });
+        
+            Route::prefix('request-status')->group(function() {
+                Route::get('{id?}', [RequestStatusController::class, 'index'])
+                    ->name('ess.request-status');
+            });
+        });
+        
+        Route::prefix('settings')->group( function() {
+        
+            Route::prefix('hris')->group( function() {
+        
+                Route::prefix('location-management')->group( function() {
+                    Route::resource('/branch', BranchController::class)
+                        ->names('branch');
+        
+                    Route::resource('/cost-center', CostCenterController::class)
+                        ->names('cost-center');
+        
+                    Route::resource('/department-center', DepartmentCenterController::class)
+                        ->names('department-center');
+                });
+        
+                Route::resource('bank-information', BankInformationController::class)
+                    ->names('bank-information');    
+        
+                Route::resource('batch-configuration', BatchConfigurationController::class)
+                    ->names('batch-configuration');           
+        
+                Route::resource('employee-status', EmployeeStatusController::class)
+                    ->names('employee-status');
+        
+                Route::resource('position', PositionController::class)
+                    ->names('position');
+        
+                Route::resource('violation', ViolationController::class)
+                    ->names('violation');
+        
+            });
+        
+            Route::prefix('users')->group(function() {
+                Route::get('{type}', [UserController::class, 'index'])
+                    ->name('users.index');
+            });
+            
+        });
     });
 
-    Route::prefix('users')->group(function() {
-        Route::get('{type}', [UserController::class, 'index'])
-            ->name('users.index');
-    });
-    
 });
 
 Route::prefix('employee')->group(function() {
@@ -193,7 +201,7 @@ Route::prefix('employee')->group(function() {
         Route::get('/', [EmployeeLoginController::class, 'index'])
             ->name('employee.login');
         Route::post('/', [EmployeeLoginController::class, 'store'])
-            ->name('login');
+            ->name('employee.login');
         Route::any('logout', [EmployeeLoginController::class, 'logout'])
             ->name('employee.logout');
     });
