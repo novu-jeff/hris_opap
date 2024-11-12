@@ -6,6 +6,7 @@ use App\Livewire\Admin\Hris\Index as HrisIndex;
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeInformation;
 use App\Models\JobApplicants;
+use App\Models\User;
 use Livewire\Component;
 
 class Index extends Component
@@ -28,6 +29,10 @@ class Index extends Component
 
         if($this->type === 'employees') {
             $record = EmployeeInformation::with('personal', 'account')->get();
+        }
+
+        if($this->type === 'admin') {
+            $record = User::all();
         }
 
         $this->records = $record;
