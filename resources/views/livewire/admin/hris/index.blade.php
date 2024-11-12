@@ -65,7 +65,7 @@
                     <input type="file" wire:model="file" id="file" class="form-control">
                     <div class="mt-2 text-muted fw-bold text-uppercase d-flex justify-content-between align-items-center" style="font-size: 13px">
                         <p>Note: only files xlsx or xls are allowed.</small>
-                        <p><a href="{{asset('templates/HRIS TEMPLATE UPLOAD.xlsx')}}" class="nav-link text-decoration-underline">Download Template</a></p>
+                        <p><a href="{{asset('templates/HRIS TEMPLATE.xlsx')}}" class="nav-link text-decoration-underline">Download Template</a></p>
                     </div>
                     @error('file') <span class="text-danger">{{ $message }}</span> @enderror
                     @if($upload_preview)
