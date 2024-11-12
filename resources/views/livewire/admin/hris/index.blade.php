@@ -3,7 +3,7 @@
     {{-- Employee Records --}}
 
     <div class="modal fade" wire:ignore.self id="select_employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Choose Employee</h1>
@@ -14,7 +14,7 @@
                         <table class="table table-bordered w-100">
                             <thead>
                                 <tr>
-                                    <th>Profile</th>
+                                    <th></th>
                                     <th>Employee ID</th>
                                     <th>Biometrics ID</th>
                                     <th>Full Name</th>
@@ -26,8 +26,8 @@
                                 @if (!empty($employees)) 
                                     @forelse($employees as $key => $item)
                                         <tr>
-                                            <td>
-                                                <img src="{{
+                                            <td class="text-center">
+                                                <img style="width: 50px; height: 50px;" src="{{
                                                     $item->personal->profile ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
                                                 }}">
                                             </td>
@@ -54,7 +54,7 @@
     </div>
 
     <div class="modal fade" wire:ignore.self id="upload_employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Upload Employee</h1>
@@ -67,50 +67,57 @@
                         <p>Note: only files xlsx or xls are allowed.</small>
                         <p><a href="{{asset('templates/HRIS TEMPLATE UPLOAD.xlsx')}}" class="nav-link text-decoration-underline">Download Template</a></p>
                     </div>
+                    @error('file') <span class="text-danger">{{ $message }}</span> @enderror
                     @if($upload_preview)
                         <hr class="my-3">
                         <div class="table-responsive">
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Date</th>
-                                        <th>First Name</th>
+                                        <th>Company Name</th>
+                                        <th>Employee No</th>
                                         <th>Last Name</th>
-                                        <th>Suffix</th>
+                                        <th>First Name</th>
+                                        <th>Middle Name</th>
+                                        <th>Address</th>
+                                        <th>Sex</th>
+                                        <th>Civil Status</th>
                                         <th>Birthdate</th>
                                         <th>Age</th>
-                                        <th>Civil Status</th>
-                                        <th>Gender</th>
-                                        <th>Nationality</th>
+                                        <th>Pag-IBIG No.</th>
+                                        <th>SSS No.</th>
+                                        <th>PhilHealth No.</th>
+                                        <th>TIN No.</th>
+                                        <th>Bank Account No.</th>
+                                        <th>Date Hired</th>
+                                        <th>Position</th>
+                                        <th>Department</th>
+                                        <th>Employment Status</th>
                                         <th>Email</th>
-                                        <th>Password</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($upload_preview[0] as $index => $user)
                                         <tr>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.0" class="form-control" style="width: 250px"/></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.1" class="form-control" style="width: 250px"/></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.2" class="form-control" style="width: 250px"/></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.3" class="form-control" style="width: 250px"/></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.0" class="form-control" style="width: 250px" /></td> <!-- Company Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.1" class="form-control" style="width: 250px" /></td> <!-- Employee No -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.2" class="form-control" style="width: 250px" /></td> <!-- Last Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.3" class="form-control" style="width: 250px" /></td> <!-- First Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.4" class="form-control" style="width: 250px" /></td> <!-- Middle Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.5" class="form-control" style="width: 250px" /></td> <!-- Address -->
+                            
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.4" class="form-control" style="width: 250px">
-                                                    <option value=""> - Choose - </option>
-                                                    <option value="jr">Jr.</option>
-                                                    <option value="sr">Sr.</option>
-                                                    <option value="I">I</option>
-                                                    <option value="II">II</option>
-                                                    <option value="III">III</option>
-                                                    <option value="IV">IV</option>
-                                                    <option value="V">V</option>
+                                                <select wire:model="upload_preview.0.{{ $index }}.6" class="form-select" style="width: 250px">
+                                                    <option value="">- Choose -</option>
+                                                    <option value="male">Male</option>
+                                                    <option value="female">Female</option>
                                                 </select>
                                             </td>
-                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.5" class="form-control" style="width: 250px"/></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.6" class="form-control" style="width: 250px"/></td>
+                            
                                             <td>
                                                 <select wire:model="upload_preview.0.{{ $index }}.7" class="form-select" style="width: 250px">
-                                                    <option value=""> - Choose -  Status</option>
+                                                    <option value="">- Choose -</option>
                                                     <option value="single">Single</option>
                                                     <option value="married">Married</option>
                                                     <option value="divorced">Divorced</option>
@@ -119,26 +126,37 @@
                                                     <option value="annulled">Annulled</option>
                                                 </select>
                                             </td>
+                            
+                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.8" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.9" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.10" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.11" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.12" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.13" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.14" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.15" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.16" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.17" class="form-control" style="width: 250px" /></td> 
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.8" class="form-select" style="width: 250px">
-                                                    <option value=""> - Choose - </option>
-                                                    <option value="male">Male</option>
-                                                    <option value="female">Female</option>
+                                                <select wire:model="upload_preview.0.{{ $index }}.18" class="form-select" style="width: 250px">
+                                                    <option value="">- Choose -</option>
+                                                    <option value=""> - CHOOSE - </option>
+                                                    <option value="freelance">Freelance</option>
+                                                    <option value="part time">Part Time</option>
+                                                    <option value="contractual">Contractual</option>
+                                                    <option value="project based">Project Based</option>
+                                                    <option value="regular">Regular</option>
+                                                    <option value="probationary">Probitionary</option>
                                                 </select>
                                             </td>
+                                            <td><input type="email" wire:model="upload_preview.0.{{ $index }}.19" class="form-control" style="width: 250px" /></td> 
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.9" class="form-select" style="width: 250px">
-                                                    <option value=""> - Choose - </option>
-                                                    <option value="filipino">Filipino</option>
-                                                    <option value="dual_citizenship">Dual Citizenship</option>
-                                                </select>
+                                                <button class="btn btn-danger" wire:click="remove_upload({{$index}})">Remove</button>
                                             </td>
-                                            <td><input type="email" wire:model="upload_preview.0.{{ $index }}.10" class="form-control" style="width: 250px"/></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.11" class="form-control text-lowercase" style="width: 250px"/></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
+                            </table>  
                         </div>
                     @endif
                 </div>                
@@ -190,8 +208,15 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-3">
+                            <label class="mb-2" for="employee_no">Employee No.</label>
+                            <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">
+                            <div class="error-field">
+                                @error('records.employee_information.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="biometrics_id">Biometrics ID</label>
-                            <input type="text" wire:model="records.employee_information.biometrics_id" id="records.employee_information.biometrics_id" class="form-control restricted" readonly>
+                            <input type="number" wire:model="records.employee_information.biometrics_id" id="records.employee_information.biometrics_id" class="form-control">
                             <div class="error-field">
                                 @error('records.employee_information.biometrics_id') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
@@ -258,6 +283,7 @@
                                 <option value="contractual">Contractual</option>
                                 <option value="project based">Project Based</option>
                                 <option value="regular">Regular</option>
+                                <option value="probationary">Probationary</option>
                             </select>
                             <div class="error-field">
                                 @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
@@ -331,7 +357,7 @@
                         </li>
                     </ul>
                     <div class="tab-content" id="pills-tabContent">
-                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
+                        <div class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
                             <div class="row mt-3">
                                 <div class="col-12 mb-4">
                                     <div class="accordion" id="accordionTabPersonal">
@@ -341,7 +367,7 @@
                                                     Personal Information
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-personal" class="accordion-collapse collapse show" data-bs-parent="#accordionTabPersonal">
+                                            <div id="flush-personal" class="accordion-collapse collapse  {{$activeAccordion === 'personal' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-3 mb-3">
@@ -465,7 +491,7 @@
                                                     Address
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-address" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div id="flush-address" class="accordion-collapse collapse {{$activeAccordion === 'address' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-12 mb-3">
@@ -523,7 +549,7 @@
                                                     Contact Information
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-contact" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div id="flush-contact" class="accordion-collapse collapse {{$activeAccordion === 'contact' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-4 mb-3">
@@ -557,7 +583,7 @@
                                                     Appearance
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-appearance" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div id="flush-appearance" class="accordion-collapse collapse {{$activeAccordion === 'appearance' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-6 mb-3">
@@ -591,7 +617,7 @@
                                                     Identification Numbers
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-benefits" class="accordion-collapse collapse" data-bs-parent="#accordionTabPersonal">
+                                            <div id="flush-benefits" class="accordion-collapse collapse  {{$activeAccordion === 'identification' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabPersonal">
                                                 <div class="accordion-body">
                                                     <div class="row">
                                                         <div class="col-12 col-md-4 mb-3">
@@ -637,7 +663,7 @@
                                 </div>              
                             </div>
                         </div>
-                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'family' ? 'active show' : ''}} " id="pills-family" role="tabpanel" aria-labelledby="pills-family-tab" tabindex="0">
+                        <div class="tab-pane fade {{$activeTab == 'family' ? 'active show' : ''}} " id="pills-family" role="tabpanel" aria-labelledby="pills-family-tab" tabindex="0">
                             <div class="row mt-3">
                                 <div class="col-12 mb-4">
                                     <div class="accordion" id="accordionTabFamily">
@@ -647,7 +673,7 @@
                                                     Parents Details
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-parents" class="accordion-collapse {{$activeAccordion == 'parents' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
+                                            <div id="flush-parents" class="accordion-collapse {{$activeAccordion == 'parents' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
                                                 <div class="accordion-body">
                                                     <div class="row">
 
@@ -791,7 +817,7 @@
                                                     Children Details
                                                 </button>
                                             </h2>
-                                            <div wire:ignore.self id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
+                                            <div id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
                                                 <div class="accordion-body mt-4">
                                                     <div class="d-flex justify-content-end mb-4">
                                                         <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('family', 'employee_children', 'children')">Add Record</button>
@@ -855,7 +881,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'education' ? 'active show' : ''}} " id="pills-education" role="tabpanel" aria-labelledby="pills-education-tab" tabindex="0">
+                        <div class="tab-pane fade {{$activeTab == 'education' ? 'active show' : ''}} " id="pills-education" role="tabpanel" aria-labelledby="pills-education-tab" tabindex="0">
 
                             <div class="d-flex justify-content-end mb-4">
                                 <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('education', 'employee_education')">Add Record</button>
@@ -932,7 +958,7 @@
                             @endif
 
                         </div>
-                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'history' ? 'active show' : ''}}" id="pills-history" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
+                        <div class="tab-pane fade {{$activeTab == 'history' ? 'active show' : ''}}" id="pills-history" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                             
                             <div class="d-flex justify-content-end mb-4">
                                 <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('history', 'employee_employment_history')">Add Record</button>
@@ -1030,12 +1056,12 @@
                             @endif
 
                         </div>
-                        <div wire:ignore.self class="tab-pane fade {{$activeTab == 'account' ? 'active show' : ''}} " id="pills-account" role="tabpanel" aria-labelledby="pills-account-tab" tabindex="0">
+                        <div class="tab-pane fade {{$activeTab == 'account' ? 'active show' : ''}} " id="pills-account" role="tabpanel" aria-labelledby="pills-account-tab" tabindex="0">
                             <div class="mt-3">
                                 <div class="row">
                                     <div class="col-12 col-md-12 mb-3">
                                         <label class="mb-2" for="records.employee_account.email">Email ID</label>
-                                        <input type="email" wire:model="records.employee_account.email" id="records.employee_account.email" class="form-control">
+                                        <input type="email" wire:model="records.employee_account.email" id="records.employee_account.email" class="form-control restricted" readonly>
                                         <div class="error-field">
                                             @error('records.employee_account.email') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
@@ -1048,10 +1074,10 @@
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-12 mb-3">
-                                        <label class="mb-2" for="records.employee_account.password">Confirm Password</label>
-                                        <input type="text" wire:model="records.employee_account.password" id="records.employee_account.password" class="form-control">
+                                        <label class="mb-2" for="records.employee_account.confirm_password">Confirm Password</label>
+                                        <input type="text" wire:model="records.employee_account.confirm_password" id="records.employee_account.confirm_password" class="form-control">
                                         <div class="error-field">
-                                            @error('records.employee_account.password') <span class="text-danger">{{ $message }}</span> @enderror
+                                            @error('records.employee_account.confirm_password') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                 </div>

@@ -14,6 +14,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class HRISProcessingService extends Controller
@@ -61,7 +62,7 @@ class HRISProcessingService extends Controller
 
         } else {
             $this->employee_information($id, $data['employee_information'], false);
-            // $this->employee_account($id, $data['employee_account'], false);
+            $this->employee_account($id, $data['employee_account'], false);
             
             $this->employee_personal($id, $data['employee_personal'], false);            
             $this->employee_parents($id, $data['employee_parents'], false);
@@ -92,6 +93,8 @@ class HRISProcessingService extends Controller
             'branch_id' => $data['branch_id'],
             'department_id' => $data['department_id'],
             'position_id' => $data['position_id'],
+            'biometrics_id' => $data['biometrics_id'],
+            'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
             'type' => $data['type'],
             'status' => $data['status'],
@@ -125,10 +128,12 @@ class HRISProcessingService extends Controller
 
         $record = EmployeeAccount::where('employee_id', $id);
 
-        return $record->update([
-            'email' => $data['email'],
-            'password' => $data['password'],
-        ]);
+        if(isset($data['password'])) {
+            return $record->update([
+                'password' => Hash::make($data['password']),
+            ]);
+        }
+        
     }
 
     public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {

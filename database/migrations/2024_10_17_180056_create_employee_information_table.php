@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('employee_information', function (Blueprint $table) {
             $table->id();
-            $table->string('biometrics_id');
+            $table->string('company_name');
+            $table->string('employee_no')
+                ->nullable();
+            $table->string('biometrics_id')
+                ->nullable();
             $table->foreignId('branch_id')
                 ->nullable()
                 ->constrained('branches');
@@ -31,7 +35,8 @@ return new class extends Migration
                     'part time',
                     'contractual',
                     'project based',
-                    'regular'
+                    'regular',
+                    'probationary'
                 ])
                 ->nullable();
             $table->enum('status', [
@@ -54,6 +59,8 @@ return new class extends Migration
                 ->default(0)
                 ->nullable();
             $table->string('payroll_account_number')
+                ->nullable();
+            $table->string('bank_account_no')
                 ->nullable();
             $table->timestamps();
         });
