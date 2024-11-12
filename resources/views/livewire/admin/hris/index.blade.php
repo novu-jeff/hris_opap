@@ -1068,14 +1068,14 @@
                                     </div>
                                     <div class="col-12 col-md-12 mb-3">
                                         <label class="mb-2" for="records.employee_account.password">Password</label>
-                                        <input type="text" wire:model="records.employee_account.password" id="records.employee_account.password" class="form-control">
+                                        <input type="password" wire:model="records.employee_account.password" id="records.employee_account.password" class="form-control">
                                         <div class="error-field">
                                             @error('records.employee_account.password') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-12 mb-3">
                                         <label class="mb-2" for="records.employee_account.confirm_password">Confirm Password</label>
-                                        <input type="text" wire:model="records.employee_account.confirm_password" id="records.employee_account.confirm_password" class="form-control">
+                                        <input type="password" wire:model="records.employee_account.confirm_password" id="records.employee_account.confirm_password" class="form-control">
                                         <div class="error-field">
                                             @error('records.employee_account.confirm_password') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
