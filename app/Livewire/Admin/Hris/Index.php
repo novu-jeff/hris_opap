@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Hris;
 
+use App\Helper\Generate;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
+use App\Mail\SendExistingEmployeeAccount;
 use App\Models\Branches;
 use App\Models\DepartmentCenters;
 use App\Models\EmployeeAccount;
@@ -11,8 +13,11 @@ use App\Models\EmployeePersonal;
 use App\Models\Positions;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -50,7 +55,8 @@ class Index extends Component
     }
 
     public function mount() {
-        $this->loadCountries();
+        // $this->loadRecords(47);
+        // $this->loadCountries();
     }
 
     public function loadRecords(int $id = null) {
@@ -63,7 +69,7 @@ class Index extends Component
 
 
         if(!is_null($id)) {
-
+            
             $this->selected_id = $id;
 
             $data = $model::with(
@@ -80,6 +86,7 @@ class Index extends Component
                 'employee_information' => [
                     'id'  => $data->id,
                     'employee_id'  => format_id($data->id, 6),
+                    'employee_no'  => $data->employee_no,
                     'biometrics_id' => $data->biometrics_id ?? null,
                     'department_id' => $data->department_id ?? null,
                     'branch_id' => $data->branch_id ?? null,
@@ -247,14 +254,17 @@ class Index extends Component
         }
     }
 
-    protected function rules(int $id) {
+    protected function rules(int $id = null) {
         return [
-            'records.employee_account.email' => [
-                'required',
-                'email',
-                // Rule::unique('employee_account', 'email')
-                //     ->ignore($id), 
-            ],
+            'records.employee_information.type' => 'nullable|in:freelance,part time,contractual,project based,regular,probationary',
+            'records.employee_information.status' => 'nullable|in:active,inactive',
+            'records.employee_information.position_id' => 'nullable|exists:positions,id',
+            'records.employee_information.branch_id' => 'nullable|exists:branches,id',
+            'records.employee_information.department_id' => 'nullable|exists:department_centers,id',
+            'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.employee_no' => 'nullable',
+            'records.employee_information.biometrics_id' => 'nullable|numeric',
+            
             'records.employee_personal.firstname' => 'required|string|max:255',
             'records.employee_personal.lastname' => 'required|string|max:255',
             'records.employee_personal.suffix' => 'nullable|in:jr,sr,I,II,III,IV,V',
@@ -264,7 +274,7 @@ class Index extends Component
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
             'records.employee_personal.mobile_number' => 'regex:/^09\d{9}$/',
-            'records.employee_personal.email' => 'email',
+            'records.employee_personal.email' => 'nullable|email',
 
 
             'records.employee_children.*.firstname' => 'required|string|max:255',
@@ -287,79 +297,59 @@ class Index extends Component
             'records.employee_employment_history.*.from_year' => 'required|date',
             'records.employee_employment_history.*.to_year' => 'required|date|after_or_equal:records.employee_employment_history.*.from_year',
 
+            'records.employee_account.password' => 'nullable|min:8|same:records.employee_account.confirm_password',
+            'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
+
         ];
     }
 
     public function messages() {
         return [
-            'records.employee_account.email.required' => 'Account email is required.',
-            'records.employee_personal.firstname.required' => 'The first name field is required.',
-            'records.employee_personal.lastname.required' => 'The last name field is required.', 
-            
-            'records.employee_personal.suffix.in' => 'The suffix is invalid',
+            'records.employee_information.type.in' => 'The employment type must be one of the following: freelance, part time, contractual, project based, regular, or probationary.',
+            'records.employee_information.status.in' => 'The status must be either active or inactive.',
+            'records.employee_information.position_id.exists' => 'The selected position does not exist.',
+            'records.employee_information.branch_id.exists' => 'The selected branch does not exist.',
+            'records.employee_information.department_id.exists' => 'The selected department does not exist.',
+            'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
 
+            'records.employee_personal.firstname.required' => 'The first name is required.',
+            'records.employee_personal.lastname.required' => 'The last name is required.',
+            'records.employee_personal.suffix.in' => 'The suffix must be one of the following: jr, sr, I, II, III, IV, or V.',
+            'records.employee_personal.civil_status.in' => 'The civil status must be one of the following: single, married, divorced, separated, widowed, or annulled.',
+            'records.employee_personal.sex.in' => 'The sex must be either male or female.',
+            'records.employee_personal.citizenship_type.required_with' => 'The citizenship type is required when citizenship is provided.',
+            'records.employee_personal.country.required_if' => 'The country is required when citizenship is dual citizenship.',
 
-            'records.employee_personal.country.required_if' => 'The country field is required for dual citizenships.',
+            'records.employee_personal.mobile_number.regex' => 'The mobile number format is invalid. It should start with 09 and be followed by 9 digits.',
+            'records.employee_personal.email.email' => 'The email must be a valid email address.',
 
-            'records.employee_children.*.firstname.required' => 'The first name is required.',
-            'records.employee_children.*.firstname.string' => 'The first name must be a valid string.',
-            'records.employee_children.*.firstname.max' => 'The first name may not exceed 255 characters.',
-            
-            'records.employee_children.*.middlename.string' => 'The middle name must be a valid string.',
-            'records.employee_children.*.middlename.max' => 'The middle name may not exceed 255 characters.',
-            
-            'records.employee_children.*.lastname.required' => 'The last name is required.',
-            'records.employee_children.*.lastname.string' => 'The last name must be a valid string.',
-            'records.employee_children.*.lastname.max' => 'The last name may not exceed 255 characters.',
-            
-            'records.employee_children.*.birthdate.required' => 'The birthdate is required.',
+            'records.employee_children.*.firstname.required' => 'Each child must have a first name.',
+            'records.employee_children.*.middlename.string' => 'The middle name must be a string.',
+            'records.employee_children.*.lastname.required' => 'Each child must have a last name.',
+            'records.employee_children.*.birthdate.required' => 'The birthdate is required for each child.',
             'records.employee_children.*.birthdate.date' => 'The birthdate must be a valid date.',
 
             'records.employee_education.*.level.required' => 'The education level is required.',
-            'records.employee_education.*.level.string' => 'The education level must be a valid string.',
-            
             'records.employee_education.*.school_name.required' => 'The school name is required.',
-            'records.employee_education.*.school_name.string' => 'The school name must be a valid string.',
-            'records.employee_education.*.school_name.max' => 'The school name may not exceed 255 characters.',
-            
-            'records.employee_education.*.course.required' => 'The course is required.',
-            'records.employee_education.*.course.string' => 'The course must be a valid string.',
-            'records.employee_education.*.course.max' => 'The course may not exceed 255 characters.',
-            
+            'records.employee_education.*.course.required' => 'The course name is required.',
             'records.employee_education.*.from_year.required' => 'The start year is required.',
-            'records.employee_education.*.from_year.date' => 'The start year must be a valid date.',
-            
             'records.employee_education.*.to_year.required' => 'The end year is required.',
-            'records.employee_education.*.to_year.date' => 'The end year must be a valid date.',
-        
-            'records.employee_employment_history.*.position.required' => 'The position is required.',
-            'records.employee_employment_history.*.position.string' => 'The position must be a valid string.',
-            'records.employee_employment_history.*.position.max' => 'The position may not exceed 255 characters.',
+            'records.employee_education.*.to_year.after_or_equal' => 'The end year must be the same or after the start year.',
 
-            'records.employee_employment_history.*.department.required' => 'The department is required.',
-            'records.employee_employment_history.*.department.string' => 'The department must be a valid string.',
-            'records.employee_employment_history.*.department.max' => 'The department may not exceed 255 characters.',
-
-            'records.employee_employment_history.*.company_name.required' => 'The company name is required.',
-            'records.employee_employment_history.*.company_name.string' => 'The company name must be a valid string.',
-            'records.employee_employment_history.*.company_name.max' => 'The company name may not exceed 255 characters.',
-
+            'records.employee_employment_history.*.position.required' => 'The position is required for each employment history entry.',
+            'records.employee_employment_history.*.department.required' => 'The department is required for each employment history entry.',
+            'records.employee_employment_history.*.company_name.required' => 'The company name is required for each employment history entry.',
             'records.employee_employment_history.*.monthly_salary.required' => 'The monthly salary is required.',
-            'records.employee_employment_history.*.monthly_salary.numeric' => 'The monthly salary must be a valid number.',
-            'records.employee_employment_history.*.monthly_salary.min' => 'The monthly salary must be at least 0.',
-
+            'records.employee_employment_history.*.monthly_salary.numeric' => 'The monthly salary must be a number.',
             'records.employee_employment_history.*.employment_status.required' => 'The employment status is required.',
-            'records.employee_employment_history.*.employment_status.string' => 'The employment status must be a valid string.',
-
-            'records.employee_employment_history.*.isGovernment.required' => 'The government status is required.',
-            'records.employee_employment_history.*.isGovernment.string' => 'The government status must be a valid string.',
-
+            'records.employee_employment_history.*.isGovernment.required' => 'The field indicating government employment is required.',
             'records.employee_employment_history.*.from_year.required' => 'The start date is required.',
-            'records.employee_employment_history.*.from_year.date' => 'The start date must be a valid date.',
-
             'records.employee_employment_history.*.to_year.required' => 'The end date is required.',
-            'records.employee_employment_history.*.to_year.date' => 'The end date must be a valid date.',
-            'records.employee_employment_history.*.to_year.after_or_equal' => 'The end date must be on or after the start date.',
+            'records.employee_employment_history.*.to_year.after_or_equal' => 'The end date must be on or after the start date for each employment history entry.',
+            'records.employee_account.password.max' => 'The password must be at least 8 characters.',
+            'records.employee_account.password.same' => 'The password and confirmation password must match.',
+            'records.employee_account.confirm_password.required_with' => 'The confirm password field is required.',
+            'records.employee_account.confirm_password.max' => 'The confirm password must be at least 8 characters.',
         ];
     }
 
@@ -376,8 +366,13 @@ class Index extends Component
             ]);
         }
 
-        $this->validate($this->rules($id));
-        
+        try {
+            $this->validate($this->rules($id));
+        } catch (ValidationException $e) {
+            $this->setErrorActiveTabAccordions($e->validator->errors()->keys());
+            throw $e; 
+        }
+                
         DB::beginTransaction();
 
         try {
@@ -407,10 +402,13 @@ class Index extends Component
 
     }
 
-    public function updated($propertyName)
-    {
+    public function updated($propertyName) {
+
+
         if ($propertyName === 'file') {
     
+            $this->resetErrorBag('file');
+
             $this->upload_preview = [];
             
             $file = $this->file;
@@ -422,15 +420,28 @@ class Index extends Component
                 if (in_array($extension, ['xls', 'xlsx'])) {
             
                     try {
+
                         $data = Excel::toArray([], $file, null, \Maatwebsite\Excel\Excel::XLSX)[0];
-            
-                        $dataWithoutHeader = array_slice($data, 1);
-                        $dataWithoutEmptyRows = array_filter($dataWithoutHeader, function ($row) {
-                            return !empty(array_filter($row));
-                        });
-            
-                        $this->upload_preview[] = $dataWithoutEmptyRows;
-            
+
+                        $this->upload_preview[] = array_map(function ($row) {
+                            return array_map(function ($cell, $key) use ($row) {
+                                if ($key === 8 || $key === 15) {
+                                    if (is_numeric($cell)) {
+                                        try {
+                                            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cell);
+                                            return $date->format('Y-m-d'); 
+                                        } catch (\Exception $e) {
+                                            return $cell;  
+                                        }
+                                    }
+                                }
+                        
+                                return is_string($cell) ? strtolower($cell) : $cell;
+                            }, $row, array_keys($row));
+                        }, array_filter(array_slice($data, 1), function ($row) {
+                            return !empty(array_filter($row)); 
+                        }));
+
                     } catch (\Exception $e) {
                         $this->addError('file', 'There was an error reading the Excel file.');
                     }
@@ -438,11 +449,9 @@ class Index extends Component
                 } else {
                     $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
                 }
-            } else {
-                $this->validate();
             }
 
-            $this->file = [];
+            $this->file = null;
 
         }
     }
@@ -453,41 +462,67 @@ class Index extends Component
 
         try {
 
+
             foreach ($this->upload_preview[0] as $user) {
 
+                $positionName = strtolower($user[16] ?? '');
+                $departmentName = strtolower($user[17] ?? '');
+            
+                $position = Positions::firstOrCreate(['name' => $positionName]);
+                $department = DepartmentCenters::firstOrCreate(['name' => $departmentName, 'cost_center_id' => 1]);
+            
                 $employeeInformation = EmployeeInformation::create([
-                    'biometrics_id' => $user[0] ?? null, 
-                    'date_hired' => $user[1] ?? null,
+                    'company_name' => $user[0] ?? null,
+                    'employee_no' => $user[1] ?? null,
+                    'type' => $user[18] ?? null,
+                    'date_hired' => $user[15] ?? null,
+                    'bank_account_no' => $user[14] ?? null,
+                    'position_id' => $position->id,
+                    'department_id' => $department->id,
                 ]);
             
-                EmployeePersonal::create([
+                $employeePersonal = EmployeePersonal::create([
                     'employee_id' => $employeeInformation->id,
-                    'firstname' => !empty($user[2]) ? strtolower($user[2]) : null,
-                    'lastname' => !empty($user[3]) ? strtolower($user[3]) : null,
-                    'suffix' => !empty($user[4]) ? strtolower($user[4]) : null,
-                    'birthdate' => $user[5] ?? null, 
-                    'age' => $user[6] ?? null,
+                    'email' => !empty($user[19]) ? strtolower($user[19]) : null,
+                    'firstname' => !empty($user[3]) ? strtolower($user[3]) : null,
+                    'middlename' => !empty($user[4]) ? strtolower($user[4]) : null,
+                    'lastname' => !empty($user[2]) ? strtolower($user[2]) : null,
+                    'birthday' => $user[8] ?? null,
+                    'age' => $user[9] ?? null,
+                    'sex' => !empty($user[6]) ? strtolower($user[6]) : null,
                     'civil_status' => !empty($user[7]) ? strtolower($user[7]) : null,
-                    'gender' => !empty($user[8]) ? strtolower($user[8]) : null,
-                    'citizenship' => !empty($user[9]) ? strtolower($user[9]) : null,
+                    'present_address' => $user[5] ?? null,
+                    'sss_no' => $user[11] ?? null,
+                    'pagibig_no' => $user[10] ?? null,
+                    'philhealth_no' => $user[12] ?? null,
+                    'tin_no' => $user[13] ?? null,
                 ]);
+                        
+                $email = app('App\Helper\Generate')->email($employeeInformation->id, $employeePersonal->firstname, $employeePersonal->lastname);
+                $password = app('App\Helper\Generate')->password();
             
                 EmployeeAccount::create([
                     'employee_id' => $employeeInformation->id,
-                    'email' => !empty($user[10]) ? strtolower($user[10]) : null,
-                    'password' => !empty($user[11]) ? bcrypt($user[11]) : null, 
+                    'email' => $email,
+                    'password' => $password['hashed'],
                 ]);
+            
             }
-    
+            
             DB::commit();
            
-            return$this->dispatch('alert', [
+            $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
                 'message' => count($this->upload_preview[0]) . ' employee/s has been added.' 
             ]);
+
+            $this->reset('upload_preview', 'file');
+
+            return;
+
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -499,6 +534,124 @@ class Index extends Component
                 'message' => 'Error: ' . $e->getMessage() 
             ]);
         }
+    }
+
+    public function remove_upload($index) {
+        if (isset($this->upload_preview[0][$index])) {
+            unset($this->upload_preview[0][$index]);            
+            $this->upload_preview[0] = array_values($this->upload_preview[0]);
+        }
+    }
+
+    public function setErrorActiveTabAccordions(array $errorKeys) {
+        foreach ($errorKeys as $key) {
+            $parts = explode('.', $key);
+            
+            if (isset($parts[1])) {
+                switch ($parts[1]) {
+                    case 'employee_personal':
+                        $this->activeTab = 'details';
+    
+                        $accordion = [
+                            'personal' => [
+                                'firstname',
+                                'lastname',
+                                'middlename',
+                                'suffix',
+                                'birthday',
+                                'civil_status',
+                                'sex',
+                                'citizenship',
+                                'citizenship_type'
+                            ],
+                            'address' => [
+                                'present_address',
+                                'present_province',
+                                'present_city',
+                                'permanent_address',
+                                'permanent_province',
+                                'permanent_city'
+                            ],
+                            'contact' => [
+                                'mobile_number',
+                                'tel_no',
+                                'company_email'
+                            ],
+                            'appearance' => [
+                                'height',
+                                'weight',
+                                'blood_type'
+                            ],
+                            'identification' => [
+                                'gsis_no',
+                                'pagibig_no',
+                                'philhealth_no',
+                                'sss_no',
+                                'tin_no'
+                            ]
+                        ];
+    
+                        $lastKey = end($parts); // Get the last part of the error key
+                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
+                        
+                        return;
+    
+                    case 'employee_children':
+                        $this->activeTab = 'family';
+    
+                        $accordion = [
+                            'parents' => [
+                                'spouse_surname',
+                                'spouse_firstname',
+                                'spouse_middlename',
+                                'spouse_suffix',
+                                'spouse_occupation',
+                                'spouse_business_name_employer',
+                                'spouse_business_address',
+                                'spouse_contact_no',
+                                'father_surname',
+                                'father_firstname',
+                                'father_middlename',
+                                'father_suffix',
+                                'mother_surname',
+                                'mother_firstname',
+                                'mother_middlename',
+                            ],
+                            'children' => [
+                                'firstname',
+                                'lastname',
+                                'middlename',
+                                'birthdate'
+                            ]
+                        ];
+    
+                        $lastKey = end($parts);
+                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
+                        return;
+    
+                    case 'employee_education':
+                        $this->activeTab = 'education';
+                        return;
+    
+                    case 'employee_employment_history':
+                        $this->activeTab = 'history';
+                        return;
+    
+                    case 'employee_account':
+                        $this->activeTab = 'account';
+                        return;
+                }
+            }
+        }
+    }
+
+    private function findAccordionKey(string $key, array $accordion) {
+        foreach ($accordion as $accordionKey => $fields) {
+            if (in_array($key, $fields)) {
+                return $accordionKey;
+            }
+        }
+        return null;
     }
 
     public function render()

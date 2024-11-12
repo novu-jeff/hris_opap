@@ -13,6 +13,7 @@ class EmployeeInformation extends Model
 
     protected $fillable = [
         'biometrics_id',
+        'employee_no',
         'department_id',
         'branch_id',
         'position_id',
@@ -24,6 +25,8 @@ class EmployeeInformation extends Model
         'leave_credits',
         'monthly_rate',
         'daily_rate',
+        'company_name',
+        'bank_account_no',
         'payroll_account_number',
     ];
     public $timestamps = false;
