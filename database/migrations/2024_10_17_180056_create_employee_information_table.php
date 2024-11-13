@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('employee_information', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name');
+            $table->string('company_name')
+                ->nullable();
             $table->string('employee_no')
                 ->nullable();
             $table->string('biometrics_id')

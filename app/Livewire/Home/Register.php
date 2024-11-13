@@ -43,7 +43,7 @@ class Register extends Component
             'fields.personal.phone_no.required' => 'Mobile number is required.',
             'fields.personal.phone_no.numeric' => 'Mobile number must be a number.',
             'fields.personal.phone_no.unique' => 'Mobile number is already registered.',
-            'fields.personal.phone_no.regex' => 'Phone number must follow the format 09 (XXX) XXX-XXXX.',
+            'fields.personal.phone_no.regex' => 'Phone number must be start with 09 and must have 11 digits.',
             'fields.personal.tel_no.required_with' => 'Telephone number is required.',
             'fields.personal.tel_no.regex' => 'Telephone number must follow the format 00 0000 0000.',
             'fields.personal.tel_no.unique' => 'Provided Telephone number already registered.',

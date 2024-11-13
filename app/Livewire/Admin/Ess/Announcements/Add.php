@@ -92,6 +92,7 @@ class Add extends Component
 
     public function rules() {
         return [
+            'banner' => 'required|image|mimes:jpg,jpeg,png,gif',
             'title' => 'required',
             'content' => 'required',
         ];
