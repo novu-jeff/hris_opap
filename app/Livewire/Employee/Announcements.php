@@ -28,7 +28,7 @@ class Announcements extends Component
             return $this->records = $records;
         }
 
-        return $this->records = $records::all();
+        return $this->records = $records::latest()->get();
     }
 
     public function render()

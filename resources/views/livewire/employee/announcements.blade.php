@@ -4,7 +4,9 @@
             @forelse ($records as $item)
                 <div class="col-md-4 mb-4">
                     <div class="card shadow">
-                        <img src="{{$item->banner === 'default.jpg' ? asset('img/announcement.jpg') : Storage::url('public/announcements/' . $records->banner)}}" class="card-img-top" alt="News Image">
+                        <div class="banner">
+                            <img src="{{$item->banner === 'default.jpg' ? asset('img/announcement.jpg') : Storage::url('public/announcements/' . $item->banner)}}" class="card-img-top" alt="News Image">
+                        </div>
                         <div class="card-body p-4">
                             <h5 class="card-title text-clamp clamp-2">{{$item->title}}</h5>
                             <small class="fw-bold text-uppercase text-muted">Posted: {{relative_time($item->created_at)}}</small>
