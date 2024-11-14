@@ -147,10 +147,19 @@
             canvas.height = video.videoHeight;
         });
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => {
-                video.srcObject = stream;
-            });
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                })
+                .catch((err) => {
+                    console.error("Error accessing camera: ", err);
+                    alert("Camera access was denied or not supported.");
+                });
+        } else {
+            console.error("getUserMedia not supported.");
+            alert("Your browser does not support camera access.");
+        }
 
         Livewire.on('capture', () => {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -177,7 +186,7 @@
             }
             return false;
         }
-   });
+});
 
 </script>
 
