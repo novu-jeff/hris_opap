@@ -19,6 +19,14 @@ return new class extends Migration
                 ->nullable();
             $table->string('clock_out')
                 ->nullable();
+            $table->string('captured_image_clockin')
+                ->nullable();
+            $table->string('captured_image_clockout')
+                ->nullable();
+            $table->string('captured_location_clockin')
+                ->nullable();
+            $table->string('captured_location_clockout')
+                ->nullable();
             $table->timestamps();
         });
     }

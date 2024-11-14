@@ -13,7 +13,11 @@ class EmployeeClockInOut extends Model
     protected $fillable = [
         'employee_id',
         'clock_in',
-        'clock_out'
+        'clock_out',
+        'captured_image_clockin',
+        'captured_image_clockout',
+        'captured_location_clockin',
+        'captured_location_clockout'
     ];
 
     public function information() {
