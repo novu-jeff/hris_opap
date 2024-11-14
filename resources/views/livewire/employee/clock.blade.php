@@ -154,11 +154,19 @@
                 })
                 .catch((err) => {
                     console.error("Error accessing camera: ", err);
-                    alert("Camera access was denied or not supported.");
+                    Swal.fire({
+                        title: 'Oops',
+                        text: 'Camera access was denied or not supported.',
+                        icon: 'error',
+                    });
                 });
         } else {
             console.error("getUserMedia not supported.");
-            alert("Your browser does not support camera access.");
+            Swal.fire({
+                title: 'Oops',
+                text: 'getUserMedia not supported',
+                icon: 'error',
+            });
         }
 
         Livewire.on('capture', () => {
