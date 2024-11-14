@@ -38,23 +38,23 @@
                                     Posted {{relative_time($record->created_at, 'hours ago')}}
                                 </p>
                             </div>
-                            <div class="actions">
-                                <div class="dropdown" wire:ignore>
-                                    <button class="btn btn-transparent d-flex align-items-start justify-content-center" type="button" id="menu" data-bs-toggle="dropdown" aria-expanded="true">
-                                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="menu" data-bs-popper="static">
-                                        <li>
-                                            <a class="dropdown-item" href="{{route('job.posts.edit', ['post' => $record->id])}}">Update</a>
-                                        </li>
-                                        <li>
-                                            <a href="javascript:void(0)" wire:click="remove(true, {{$record->id}})" class="dropdown-item">Delete</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                     </a>
+                    <div class="actions">
+                        <div class="dropdown" wire:ignore>
+                            <button class="btn btn-transparent d-flex align-items-start justify-content-center" type="button" id="menu" data-bs-toggle="dropdown" aria-expanded="true">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="menu" data-bs-popper="static">
+                                <li>
+                                    <a class="dropdown-item" href="{{route('job.posts.edit', ['post' => $record->id])}}">Update</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" wire:click="remove(true, {{$record->id}})" class="dropdown-item">Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                     <hr class="mx-3">
                     <a href="{{route('home.view-job', ['slug' => $record->slug])}}" class="nav-link" wire:ignore.self>
                         <div class="card-body pt-1">

@@ -1,38 +1,57 @@
 <div>
     <div class="clockinout">
-        <div class="d-flex align-items-center justify-content-center gap-4">
-            <div class="card border-3 border-primary {{!$isClockedIn ? 'bg-primary text-white' : ''}}" wire:click="clockin">
-                <div class="card-body d-flex align-items-center">
-                    <div>
-                        <div class="d-flex justify-content-center">
-                            <i class="fa-regular fa-circle-check"></i>
-                        </div>
-                        <div class="text-center mt-3">
-                            Clock In
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card border-3 border-danger {{!$isClockedOut ? 'bg-danger text-white' : ''}}" wire:click="clockout">
-                <div class="card-body d-flex align-items-center">
-                    <div>
-                        <div class="d-flex justify-content-center">
-                            <i class="fa-regular fa-circle-xmark"></i>
-                        </div>
-                        <div class="text-center mt-3">
-                            Clock Out
+        <div class="row">
+            <div class="col-12 col-md-12 mb-3 mb-3">
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="card border-3 border-primary {{!$isClockedIn ? 'bg-primary text-white' : ''}}" wire:click="clockin">
+                            <div class="card-body d-flex align-items-center">
+                                <div>
+                                    <div class="d-flex justify-content-center">
+                                        <i class="fa-regular fa-circle-check"></i>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        Clock In
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="card border-3 bg-dark text-white" wire:click="showLogs">
-                <div class="card-body d-flex align-items-center">
-                    <div>
-                        <div class="d-flex justify-content-center">
-                            <i class="fa-regular fa-calendar-check"></i>
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="card border-3 border-danger {{!$isClockedOut ? 'bg-danger text-white' : ''}}" wire:click="clockout">
+                            <div class="card-body d-flex align-items-center">
+                                <div>
+                                    <div class="d-flex justify-content-center">
+                                        <i class="fa-regular fa-circle-xmark"></i>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        Clock Out
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-center mt-3">
-                            Clock Logs
+                    </div>
+                    <div class="col-12 col-md-4 mb-3" style="overflow: hidden">
+                        <div class="camera d-flex justify-content-center align-items-center w-100">
+                            <video id="video" autoplay></video>
+                            <canvas id="canvas" class=""></canvas>
+                            <div class="overlay">
+                                Camera Capture Display
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3 mb-3">
+                        <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs">
+                            <div class="card-body d-flex align-items-center">
+                                <div>
+                                    <div class="d-flex justify-content-center">
+                                        <i class="fa-regular fa-calendar-check"></i>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        Clock Logs
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -41,7 +60,7 @@
     </div>
 
     <div class="modal fade" wire:ignore.self id="logs_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Clock Logs</h1>
@@ -55,7 +74,9 @@
                                     <tr>
                                         <th>Date</th>
                                         <th>Clock In</th>
+                                        <th>Captured Clock In</th>
                                         <th>Clock Out</th>
+                                        <th>Captured Clock Out</th>
                                         <th>Hours Consumed</th>
                                         <th>Status</th>
                                     </tr>
@@ -65,7 +86,13 @@
                                         <tr>
                                             <td>{{ \Carbon\Carbon::parse($item->created_at)->format('M d, Y') }}</td>
                                             <td>{{ $item->clock_in ? \Carbon\Carbon::parse($item->clock_in)->format('h:i A') : 'In Progress...' }}</td>
+                                            <td>
+                                                <img src="{{ $item->captured_image_clockin ? asset('storage/clockinout/' . $item->captured_image_clockin) : 'https://placehold.co/200x100.png?text=No+Image' }}" alt="Clock In Image">
+                                            </td>
                                             <td>{{ $item->clock_out ? \Carbon\Carbon::parse($item->clock_out)->format('h:i A') : 'In Progress...' }}</td>
+                                            <td>
+                                                <img src="{{ $item->captured_image_clockout ? asset('storage/clockinout/' . $item->captured_image_clockout) : 'https://placehold.co/200x100.png?text=No+Image' }}" alt="Clock Out Image">
+                                            </td>
                                             <td>
                                                 @if ($item->clock_in && $item->clock_out)
                                                     @php
@@ -104,5 +131,54 @@
             </div>
         </div>
     </div>
-
 </div>
+
+@section('script')
+ 
+<script>
+   $(function() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        let isImageCaptured = false;
+
+        video.addEventListener('loadedmetadata', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        });
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            });
+
+        Livewire.on('capture', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            
+            const isNotBlank = hasContent(imageData);
+
+            isImageCaptured = isNotBlank;
+
+            @this.call('savePhoto', canvas.toDataURL('image/png'), isImageCaptured);
+        });
+
+        function hasContent(imageData) {
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const r = imageData.data[i];     
+                const g = imageData.data[i + 1];
+                const b = imageData.data[i + 2]; 
+                const a = imageData.data[i + 3];
+
+                if (a > 0 && (r > 0 || g > 0 || b > 0)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+   });
+
+</script>
+
+@endsection

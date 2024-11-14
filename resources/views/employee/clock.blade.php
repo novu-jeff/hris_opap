@@ -18,6 +18,7 @@
         </div>
     </div>
     <div class="mt-3">
+        <small class="text-uppercase fw-bold">Note: Please make sure to enable your browser's camera</small>
         @livewire('employee.clock')
     </div>
 </div>

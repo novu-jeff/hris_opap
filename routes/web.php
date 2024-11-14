@@ -56,6 +56,9 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/', [HomeController::class, 'index'])
         ->name('home.index')
         ->middleware('applicant:guest');
+Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
+    ->name('home.view-job')
+    ->middleware('applicant:guest');
 
 Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])
@@ -78,9 +81,6 @@ Route::prefix('register')->group(function() {
 Route::middleware(['applicant'])->group(function() {
     Route::get('applied', [AppliedController::class, 'index'])
         ->name('home.applied');
-    Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
-        ->name('home.view-job')
-        ->middleware(Auth::guard('applicant')->check() ? ['applicant'] : []);
     Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.applied.view-job');
     Route::get('search/{search?}', [HomeController::class, 'index'])
