@@ -112,12 +112,14 @@ class Interview extends Component
                 if(is_array($answers)) {
                     foreach($answers as $answer_id => $answer) {
                         InterviewItemsResponses::insert([
+                            'user_id' => $this->user_id,
                             'interview_item_id' => $interview_item_id,
                             'answer' => $answer_id
                         ]);
                     }
                 } else {
                     InterviewItemsResponses::create([
+                        'user_id' => $this->user_id,
                         'interview_item_id' => $interview_item_id,
                         'answer' => $answers
                     ]);

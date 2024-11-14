@@ -196,11 +196,11 @@
                                                     <div class="row mt-3">
                                                         @if ($item['response_type'] == 'simple')
                                                             <div class="col-12 mb-3">
-                                                                <input type="text" class="form-control text-uppercase restricted" value="{{ $item['answers'][0]['answer'] ?? '' }}" placeholder="Your Answer" readonly>
+                                                                <input type="text" class="form-control text-uppercase restricted" value="{{ $item['answers'][0]['answer'] ?? '' }}" placeholder="Applicant's Answer" readonly>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'explanatory')
                                                             <div class="col-12 mb-3">
-                                                                <textarea class="form-control text-uppercase restricted" rows="5" placeholder="Your Answer" readonly>{{ $item['answers'][0]['answer'] ?? '' }}</textarea>
+                                                                <textarea class="form-control text-uppercase restricted" rows="5" placeholder="Applicant's Answer" readonly>{{ $item['answers'][0]['answer'] ?? '' }}</textarea>
                                                             </div>
                                                         @elseif ($item['response_type'] == 'checkbox')
                                                             <div class="col-12 mb-3">

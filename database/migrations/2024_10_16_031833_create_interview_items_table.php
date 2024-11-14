@@ -31,6 +31,9 @@ return new class extends Migration
 
         Schema::create('job_interview_items_responses', function(Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')
+                ->constrained('applicant_users')
+                ->onDelete('cascade');
             $table->foreignId('interview_item_id')
                 ->constrained('job_interview_items')
                 ->onDelete('cascade');
