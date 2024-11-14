@@ -11,6 +11,7 @@ class InterviewItemsResponses extends Model
 
     protected $table = 'job_interview_items_responses';
     protected $fillable = [
+        'user_id',
         'interview_item_id',
         'answer'
     ];
