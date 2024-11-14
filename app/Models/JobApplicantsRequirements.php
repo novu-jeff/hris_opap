@@ -17,4 +17,8 @@ class JobApplicantsRequirements extends Model
 
     public $timestamps = false;
 
+    public function applicant() {
+        return $this->hasOne(JobApplicants::class, 'id', 'job_applicants_id');
+    }
+
 }

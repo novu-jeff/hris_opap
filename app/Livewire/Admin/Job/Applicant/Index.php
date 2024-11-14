@@ -100,32 +100,41 @@ class Index extends Component
 
     public function download_requirement(int $id) {
         
-        $record = JobApplicants::with(['job', 'requirements' => function($query) use ($id) {
-                $query->where('id', $id);
-            }])->first(); 
+        $record = JobApplicantsRequirements::with('applicant.applicant', 'applicant.job')
+            ->where('id', $id)
+            ->first();
 
-            if(is_null($record)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'message' => 'Requirement does not exists'
-                ]);
-            }
+        if (is_null($record)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Requirement does not exist'
+            ]);
+        }
 
-            $folder = strtolower($record->applicant->firstname . '_' . $record->applicant->lastname . '_' . $record->applicant->id);
-            $path = 'users/applicant/' . $folder . '/' . $record->job->slug .'/requirements/' . $record->requirements[0]->attachment;
-            
-            if(!Storage::disk('public')->exists($path)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'message' => 'Requirement file does not exists'
-                ]);
-            } 
+        // Define folder structure based on nested applicant details
+        $folder = strtolower(
+            $record->applicant['applicant']['firstname'] . '_' . 
+            $record->applicant['applicant']['lastname'] . '_' . 
+            $record->applicant['applicant']['id']
+        );
 
-            return response()->download(Storage::disk('public')->path($path));
+        // Define the file path based on the job slug and requirement attachment
+        $path = 'users/applicant/' . $folder . '/' . $record->applicant['job']['slug'] . '/requirements/' . $record->attachment;
+
+        if (!Storage::disk('public')->exists($path)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Requirement file does not exist'
+            ]);
+        }
+
+        return response()->download(Storage::disk('public')->path($path));
+
+        
     }
 
     public function set_action(string $action, int $id) {
