@@ -49,6 +49,7 @@ class ClockInOutController extends Controller
              'user_id' => $user_id,
              'action' => $action,
              'date' => $today,
+             'request' => $request->all()
          ]);
      
          try {
