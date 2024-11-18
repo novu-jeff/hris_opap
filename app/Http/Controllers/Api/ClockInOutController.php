@@ -140,8 +140,6 @@ class ClockInOutController extends Controller
          if (!$image->isValid()) {
              return null;
          }
-
-         dd($image);
      
          $imageName = Auth::user()->employee_id . '_' . time() . '.' . $image->getClientOriginalExtension();
      
