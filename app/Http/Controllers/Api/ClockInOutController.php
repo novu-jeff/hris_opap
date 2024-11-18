@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ClockInOutController extends Controller
 {
@@ -138,22 +139,44 @@ class ClockInOutController extends Controller
 
     public function savePhoto($capture_image, $isImageCaptured)
     {
+        // Start logging
+        Log::info('savePhoto method called.', ['isImageCaptured' => $isImageCaptured]);
+    
         if (!$isImageCaptured || !$capture_image) {
+            Log::warning('Image capture failed. No image captured or isImageCaptured is false.', [
+                'isImageCaptured' => $isImageCaptured,
+                'capture_image' => $capture_image,
+            ]);
             return null;
         }
-
+    
         // Ensure that the uploaded file is an image
         if (!$capture_image->isValid() || !$capture_image->isFile()) {
+            Log::error('Invalid file upload.', [
+                'isValid' => $capture_image->isValid(),
+                'isFile' => $capture_image->isFile(),
+                'fileInfo' => $capture_image,
+            ]);
             return null; // Return null if the uploaded file is invalid
         }
-
-        // Define the image name and storage path
-        $imageName = Auth::user()->employee_id . '_' . time() . '.' . $capture_image->getClientOriginalExtension();
-
-        // Store the image in the 'public/clockinout' directory
-        $capture_image->storeAs('public/clockinout', $imageName);
-
-        return $imageName; // Return the saved image name
+    
+        try {
+            // Define the image name and storage path
+            $imageName = Auth::user()->employee_id . '_' . time() . '.' . $capture_image->getClientOriginalExtension();
+            Log::info('Image name generated.', ['imageName' => $imageName]);
+    
+            // Store the image in the 'public/clockinout' directory
+            $capture_image->storeAs('public/clockinout', $imageName);
+            Log::info('Image successfully stored.', ['path' => 'public/clockinout/' . $imageName]);
+    
+            return $imageName; // Return the saved image name
+        } catch (\Exception $e) {
+            Log::error('Error saving the image.', [
+                'exceptionMessage' => $e->getMessage(),
+                'exceptionTrace' => $e->getTraceAsString(),
+            ]);
+            return null;
+        }
     }
 
     public function saveLocation()
@@ -167,18 +190,17 @@ class ClockInOutController extends Controller
         // Check if the response is successful
         if ($response->successful()) {
             $locationData = $response->json();
-
-            // Check if we're in a local environment or if 'loc' is present
-            if (isset($locationData['bogon']) && $locationData['bogon']) {
-                return 'Running in local environment';
-            } elseif (isset($locationData['loc'])) {
+    
+            if (!$locationData) {
+                return 'running in local environment';
+            }
+    
+            if (!empty($locationData['loc'])) {
                 $location = explode(',', $locationData['loc']);
                 $latitude = $location[0];
                 $longitude = $location[1];
-
-                return $latitude . ' ' . $longitude;
-            } else {
-                return 'Location data not available for this IP.';
+    
+                return "{$latitude}, {$longitude}";
             }
         }
 
