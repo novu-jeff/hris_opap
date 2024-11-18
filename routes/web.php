@@ -87,7 +87,7 @@ Route::middleware(['applicant'])->group(function() {
         ->name('home.search');
     Route::resource('profile', ProfileController::class)
         ->names('home.profile');
-    Route::get('interview/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
+    Route::get('assessment/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
         ->name('interview-respond');
     Route::get('job/offer/upload/signed/{job_id}', [HomeInterviewController::class, 'offer'])
         ->name('upload-signed-offer');
@@ -114,7 +114,7 @@ Route::prefix('admin')->group(function() {
         Route::prefix('job')->group(function() {
     
             Route::resource('posts', PostController::class)->names('job.posts');
-            Route::resource('interviews', InterviewController::class)->names('job.interview');
+            Route::resource('assessments', InterviewController::class)->names('job.interview');
             Route::resource('requirements', RequirementsController::class)->names('job.requirements');
             
             // Route::resource('applicants/{status}', ApplicantController::class)->names('job.applicants');
