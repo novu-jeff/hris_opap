@@ -60,7 +60,10 @@ class ClockInOutController extends Controller
         }
      
         // Decode and save the photo
-        $imageName = $this->savePhoto($request->capture_image, true);
+
+        $image = $request->file('capture_image');
+
+        $imageName = $this->savePhoto($image, true);
     
         if (!$imageName) {
             return response()->json([
