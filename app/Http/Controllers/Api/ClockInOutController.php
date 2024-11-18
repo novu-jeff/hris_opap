@@ -50,7 +50,7 @@ class ClockInOutController extends Controller
             // Validate action and captured data
             $request->validate([
                 'action' => 'required|in:clockin,clockout',
-                'capture_image' => 'required|string', // Expecting base64 image string
+                'capture_image' => 'required|image|mimes:jpg,jpeg,png', // Expecting base64 image string
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
