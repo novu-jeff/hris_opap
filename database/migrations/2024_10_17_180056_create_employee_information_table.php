@@ -121,6 +121,7 @@ return new class extends Migration
             $table->enum('sex', [
                     'male',
                     'female',
+                    'not to say'
                 ])
                 ->nullable();
             $table->enum('citizenship', 
@@ -144,7 +145,6 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('permanent_city')
                 ->nullable();
-            
             $table->string('mobile_number')
                 ->nullable();
             $table->string('tel_no')

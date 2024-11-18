@@ -4,8 +4,6 @@
         Recruitment
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{route('job.requirements.index')}}">Requirements</a></li>
-        <li><a class="dropdown-item" href="{{route('job.interview.index')}}#">Interview</a></li>
         <li><a class="dropdown-item" href="{{route('job.posts.index')}}">Job Posting</a></li>
         <li><a class="dropdown-item" href="{{route('job.applicants.index', ['status' => 'pending'])}}">Applicants</a></li>
     </ul>

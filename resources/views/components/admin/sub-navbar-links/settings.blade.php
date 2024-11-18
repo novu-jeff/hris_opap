@@ -7,6 +7,15 @@
         <li><a class="dropdown-item" href="#">Company Settings</a></li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Recruitment
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{route('job.interview.index')}}#">Interview</a></li>
+                <li><a class="dropdown-item" href="{{route('job.requirements.index')}}">Requirements</a></li>
+            </ul>
+        </li>
+        <li class="nav-item dropstart">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 User Management
             </a>
             <ul class="dropdown-menu">
