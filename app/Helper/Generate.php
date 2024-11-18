@@ -44,20 +44,24 @@ class Generate {
         return $email;
     }
 
-    public function password(int $length = 8) {
-        
+    public function password(int $length = 8, int $cost = 10) {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
         $password = ''; 
-
+    
+        // Generate random password
         for ($i = 0; $i < $length; $i++) {
             $password .= $characters[random_int(0, strlen($characters) - 1)];
         }
-
+    
+        // Hash the password with a custom cost
+        $hashedPassword = Hash::make($password, [
+            'cost' => $cost,  // Set the cost parameter
+        ]);
+    
         return [
             'plain' => $password,
-            'hashed' => Hash::make($password)
+            'hashed' => $hashedPassword,
         ];
-
     }
 
 }

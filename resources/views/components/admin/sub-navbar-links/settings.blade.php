@@ -10,7 +10,7 @@
                 Recruitment
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{route('job.interview.index')}}#">Interview</a></li>
+                <li><a class="dropdown-item" href="{{route('job.interview.index')}}#">Assessment</a></li>
                 <li><a class="dropdown-item" href="{{route('job.requirements.index')}}">Requirements</a></li>
             </ul>
         </li>

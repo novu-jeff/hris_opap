@@ -67,6 +67,9 @@
                         <p>Note: only files xlsx or xls are allowed.</small>
                         <p><a href="{{asset('templates/HRIS TEMPLATE.xlsx')}}" class="nav-link text-decoration-underline">Download Template</a></p>
                     </div>
+                    <div wire:loading wire:target="file" class="mt-2 text-center text-muted">
+                        <p>Please Wait... <i class="fa-solid fa-spinner fa-spin"></i></p>
+                    </div>
                     @error('file') <span class="text-danger">{{ $message }}</span> @enderror
                     @if($upload_preview)
                         <hr class="my-3">
@@ -162,7 +165,12 @@
                 </div>                
                 @if($upload_preview)
                     <div class="modal-footer d-flex justify-content-end">
-                        <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="upload_file">Import</button>
+                        <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
+                                wire:click="upload_file"
+                                wire:loading.attr="disabled">
+                            <span wire:loading.remove>Upload File</span>
+                            <span wire:loading>Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
+                        </button>
                     </div>
                 @endif
             </div>

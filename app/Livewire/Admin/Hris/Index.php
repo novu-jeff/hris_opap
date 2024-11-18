@@ -29,6 +29,8 @@ class Index extends Component
 
     public $selected_id;
     public $employees;
+    public $isParsing;
+    public bool $isUploading = false;
     public array $records;
     public object $departments;
     public object $branches;
@@ -399,142 +401,191 @@ class Index extends Component
                 'message' => 'Error: ' . $e->getMessage() 
             ]);
         }
-
     }
 
-    public function updated($propertyName) {
 
-
-        if ($propertyName === 'file') {
+    public function updatedFile()
+    {
     
+        if ($this->file) {
+
             $this->resetErrorBag('file');
-
             $this->upload_preview = [];
-            
             $file = $this->file;
-    
+
             if ($file instanceof \Illuminate\Http\UploadedFile) {
-
                 $extension = strtolower($file->getClientOriginalExtension());
-            
-                if (in_array($extension, ['xls', 'xlsx'])) {
-            
-                    try {
 
+                if (in_array($extension, ['xls', 'xlsx'])) {
+                    try {
                         $data = Excel::toArray([], $file, null, \Maatwebsite\Excel\Excel::XLSX)[0];
 
                         $this->upload_preview[] = array_map(function ($row) {
-                            return array_map(function ($cell, $key) use ($row) {
-                                if ($key === 8 || $key === 15) {
+                            return array_map(function ($cell, $key) {
+                                if (in_array($key, [8, 15])) {
                                     if (is_numeric($cell)) {
                                         try {
                                             $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cell);
                                             return $date->format('Y-m-d'); 
                                         } catch (\Exception $e) {
-                                            return $cell;  
+                                            return $cell; // Fallback to original cell value
                                         }
                                     }
                                 }
-                        
+
                                 return is_string($cell) ? strtolower($cell) : $cell;
                             }, $row, array_keys($row));
                         }, array_filter(array_slice($data, 1), function ($row) {
                             return !empty(array_filter($row)); 
                         }));
 
+                        $this->isParsing = false;
                     } catch (\Exception $e) {
                         $this->addError('file', 'There was an error reading the Excel file.');
+                        $this->isParsing = false; 
                     }
-            
                 } else {
                     $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
                 }
             }
 
             $this->file = null;
-
+        } else {
+            $this->isParsing = true;
         }
+
+
     }
 
-    public function upload_file() {
+
+    public function upload_file()
+    {
+        $this->isUploading = true;
 
         DB::beginTransaction();
-
+    
         try {
-
-
+            // Define mappings for better readability
             foreach ($this->upload_preview[0] as $user) {
-
-                $positionName = strtolower($user[16] ?? '');
-                $departmentName = strtolower($user[17] ?? '');
-            
-                $position = Positions::firstOrCreate(['name' => $positionName]);
-                $department = DepartmentCenters::firstOrCreate(['name' => $departmentName, 'cost_center_id' => 1]);
-            
-                $employeeInformation = EmployeeInformation::create([
-                    'company_name' => $user[0] ?? null,
-                    'employee_no' => $user[1] ?? null,
-                    'type' => $user[18] ?? null,
-                    'date_hired' => $user[15] ?? null,
-                    'bank_account_no' => $user[14] ?? null,
-                    'position_id' => $position->id,
-                    'department_id' => $department->id,
+                $user = $this->sanitizeUser($user);
+    
+                // Create or fetch related data
+                $position = Positions::firstOrCreate(['name' => strtolower($user['position'])]);
+                $department = DepartmentCenters::firstOrCreate([
+                    'name' => strtolower($user['department']),
+                    'cost_center_id' => 1
                 ]);
-            
-                $employeePersonal = EmployeePersonal::create([
-                    'employee_id' => $employeeInformation->id,
-                    'email' => !empty($user[19]) ? strtolower($user[19]) : null,
-                    'firstname' => !empty($user[3]) ? strtolower($user[3]) : null,
-                    'middlename' => !empty($user[4]) ? strtolower($user[4]) : null,
-                    'lastname' => !empty($user[2]) ? strtolower($user[2]) : null,
-                    'birthday' => $user[8] ?? null,
-                    'age' => $user[9] ?? null,
-                    'sex' => !empty($user[6]) ? strtolower($user[6]) : null,
-                    'civil_status' => !empty($user[7]) ? strtolower($user[7]) : null,
-                    'present_address' => $user[5] ?? null,
-                    'sss_no' => $user[11] ?? null,
-                    'pagibig_no' => $user[10] ?? null,
-                    'philhealth_no' => $user[12] ?? null,
-                    'tin_no' => $user[13] ?? null,
-                ]);
-                        
+    
+                // Create Employee Information
+                $employeeInformation = $this->createEmployeeInformation($user, $position->id, $department->id);
+    
+                // Create Employee Personal Information
+                $employeePersonal = $this->createEmployeePersonal($user, $employeeInformation->id);
+    
+                // Generate and Create Employee Account
                 $email = app('App\Helper\Generate')->email($employeeInformation->id, $employeePersonal->firstname, $employeePersonal->lastname);
                 $password = app('App\Helper\Generate')->password();
-            
+    
                 EmployeeAccount::create([
                     'employee_id' => $employeeInformation->id,
                     'email' => $email,
                     'password' => $password['hashed'],
                 ]);
-            
             }
-            
+    
+            // Commit database changes after all records are processed
             DB::commit();
-           
+    
+            // Dispatch success message to frontend
             $this->dispatch('alert', [
                 'status' => 'success',
-                'title' => 'Success!', 
+                'title' => 'Success!',
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
-                'message' => count($this->upload_preview[0]) . ' employee/s has been added.' 
+                'message' => count($this->upload_preview[0]) . ' employee/s has been added.'
             ]);
-
+    
+            // Reset variables after upload
             $this->reset('upload_preview', 'file');
-
-            return;
-
-
         } catch (\Exception $e) {
+            // Rollback database changes if any error occurs
             DB::rollBack();
-            return $this->dispatch('alert', [
+    
+            // Log the error
+            logger()->error('Error uploading file: ' . $e->getMessage());
+    
+            // Dispatch error message to frontend
+            $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops!', 
+                'title' => 'Oops!',
                 'isRemoveRowDT' => true,
                 'showAlert' => true,
-                'message' => 'Error: ' . $e->getMessage() 
+                'message' => 'Error: ' . $e->getMessage()
             ]);
         }
+    
+        // Set isUploading to false after upload process is complete (either success or failure)
+        $this->isUploading = false;
+        
     }
+    
+    
+    private function sanitizeUser(array $user): array {
+        return [
+            'company_name' => $user[0] ?? null,
+            'employee_no' => $user[1] ?? null,
+            'lastname' => strtolower($user[2] ?? ''),
+            'firstname' => strtolower($user[3] ?? ''),
+            'middlename' => strtolower($user[4] ?? ''),
+            'present_address' => $user[5] ?? null,
+            'sex' => strtolower($user[6] ?? ''),
+            'civil_status' => strtolower($user[7] ?? ''),
+            'birthday' => $user[8] ?? null,
+            'age' => $user[9] ?? null,
+            'pagibig_no' => $user[10] ?? null,
+            'sss_no' => $user[11] ?? null,
+            'philhealth_no' => $user[12] ?? null,
+            'tin_no' => $user[13] ?? null,
+            'bank_account_no' => $user[14] ?? null,
+            'date_hired' => $user[15] ?? null,
+            'position' => $user[16] ?? '',
+            'department' => $user[17] ?? '',
+            'type' => $user[18] ?? null,
+            'email' => strtolower($user[19] ?? ''),
+        ];
+    }
+    
+    private function createEmployeeInformation(array $user, int $positionId, int $departmentId): EmployeeInformation {
+        return EmployeeInformation::create([
+            'company_name' => $user['company_name'],
+            'employee_no' => $user['employee_no'],
+            'type' => $user['type'],
+            'date_hired' => $user['date_hired'],
+            'bank_account_no' => $user['bank_account_no'],
+            'position_id' => $positionId,
+            'department_id' => $departmentId,
+        ]);
+    }
+    
+    private function createEmployeePersonal(array $user, int $employeeId): EmployeePersonal {
+        return EmployeePersonal::create([
+            'employee_id' => $employeeId,
+            'email' => $user['email'],
+            'firstname' => $user['firstname'],
+            'middlename' => $user['middlename'],
+            'lastname' => $user['lastname'],
+            'birthday' => $user['birthday'],
+            'age' => $user['age'],
+            'sex' => $user['sex'],
+            'civil_status' => $user['civil_status'],
+            'present_address' => $user['present_address'],
+            'sss_no' => $user['sss_no'],
+            'pagibig_no' => $user['pagibig_no'],
+            'philhealth_no' => $user['philhealth_no'],
+            'tin_no' => $user['tin_no'],
+        ]);
+    }
+    
 
     public function remove_upload($index) {
         if (isset($this->upload_preview[0][$index])) {
