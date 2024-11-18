@@ -159,7 +159,7 @@ class ClockInOutController extends Controller
         if ($response->successful()) {
             $locationData = $response->json();
     
-            if (env('APP_ENV') === 'local') {
+            if ($locationData) {
                 return 'running in local environment';
             }
     
