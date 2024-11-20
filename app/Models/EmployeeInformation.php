@@ -19,7 +19,7 @@ class EmployeeInformation extends Model
         'position_id',
         'date_hired',
         'date_resignation',
-        'type',
+        'job_category_id',
         'status',
         'salary_method',
         'leave_credits',

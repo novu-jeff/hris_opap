@@ -12,7 +12,7 @@
                     <tr data-id="{{$record->id}}">
                         <td>{{$record->name}}</td>
                         <td>
-                            <a href="{{route('job.interview.edit', ['interview' => $record->id])}}" class="btn btn-primary mx-1">
+                            <a href="{{route('job.interview.edit', ['assessment' => $record->id])}}" class="btn btn-primary mx-1">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </a>
                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">

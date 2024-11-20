@@ -5,17 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Positions extends Model
+class OtherDeductions extends Model
 {
     use HasFactory;
 
-    protected $table = 'positions';
+    protected $table = 'other_deductions';
     protected $fillable = [
         'code',
         'name',
-        'salary_grade',
-        'salary',
-        'isActive'
+        'frequency',
+        'eligible',
     ];
 
 }

@@ -6,10 +6,11 @@ use App\Helper\Generate;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Mail\SendExistingEmployeeAccount;
 use App\Models\Branches;
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
+use App\Models\JobCategory;
 use App\Models\Positions;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,7 @@ class Index extends Component
     public $file;
     public $upload_preview;
     public $activeAccordion;
+    public $jobCategories;
 
     protected $listeners = ['loadRecords'];
 
@@ -57,7 +59,7 @@ class Index extends Component
     }
 
     public function mount() {
-        // $this->loadRecords(47);
+        // $this->loadRecords(1);
         // $this->loadCountries();
     }
 
@@ -66,8 +68,9 @@ class Index extends Component
         $model = EmployeeInformation::class;
 
         $this->branches = Branches::all();
-        $this->departments = DepartmentCenters::all();
+        $this->departments = Departments::all();
         $this->positions = Positions::all();
+        $this->jobCategories = JobCategory::all();
 
 
         if(!is_null($id)) {
@@ -95,7 +98,7 @@ class Index extends Component
                     'position_id' => $data->position_id ?? null,
                     'date_hired' => $data->date_hired ?? null,
                     'date_resignation' => $data->date_resignation ?? null,
-                    'type' => $data->type ?? null,
+                    'type' => $data->job_category_id ?? null,
                     'status' => $data->status ?? null,
                     'salary_method' => $data->salary_method ?? null,
                     'leave_credits' => $data->leave_credits ?? null,
@@ -200,6 +203,7 @@ class Index extends Component
     public function select_change(string $property) {
         
         if($property == 'citizenship') {
+            $this->setActiveAccordion('personal');
             if($this->records['employee_personal']['citizenship'] == 'dual_citizenship') {
                 $this->isDualCitizenship = true;
             } else {
@@ -245,6 +249,7 @@ class Index extends Component
         $this->dispatch('showModal', [
             'modal' => 'upload_employee'
         ]);
+        $this->jobCategories = JobCategory::all();
     }
     
     public function removeRecord($tab, $type, $index) {
@@ -258,11 +263,11 @@ class Index extends Component
 
     protected function rules(int $id = null) {
         return [
-            'records.employee_information.type' => 'nullable|in:freelance,part time,contractual,project based,regular,probationary',
+            'records.employee_information.type' => 'nullable|exists:job_categories,id',
             'records.employee_information.status' => 'nullable|in:active,inactive',
             'records.employee_information.position_id' => 'nullable|exists:positions,id',
             'records.employee_information.branch_id' => 'nullable|exists:branches,id',
-            'records.employee_information.department_id' => 'nullable|exists:department_centers,id',
+            'records.employee_information.department_id' => 'nullable|exists:departments,id',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
             'records.employee_information.employee_no' => 'nullable',
             'records.employee_information.biometrics_id' => 'nullable|numeric',
@@ -307,7 +312,7 @@ class Index extends Component
 
     public function messages() {
         return [
-            'records.employee_information.type.in' => 'The employment type must be one of the following: freelance, part time, contractual, project based, regular, or probationary.',
+            'records.employee_information.type.in' => 'The selected employment type does not exists.',
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
             'records.employee_information.branch_id.exists' => 'The selected branch does not exist.',
@@ -422,13 +427,13 @@ class Index extends Component
 
                         $this->upload_preview[] = array_map(function ($row) {
                             return array_map(function ($cell, $key) {
-                                if (in_array($key, [8, 15])) {
+                                if (in_array($key, [7, 14])) {
                                     if (is_numeric($cell)) {
                                         try {
                                             $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cell);
                                             return $date->format('Y-m-d'); 
                                         } catch (\Exception $e) {
-                                            return $cell; // Fallback to original cell value
+                                            return $cell; 
                                         }
                                     }
                                 }
@@ -454,12 +459,10 @@ class Index extends Component
             $this->isParsing = true;
         }
 
-
     }
 
 
-    public function upload_file()
-    {
+    public function upload_file() {
         $this->isUploading = true;
 
         DB::beginTransaction();
@@ -471,7 +474,7 @@ class Index extends Component
     
                 // Create or fetch related data
                 $position = Positions::firstOrCreate(['name' => strtolower($user['position'])]);
-                $department = DepartmentCenters::firstOrCreate([
+                $department = Departments::firstOrCreate([
                     'name' => strtolower($user['department']),
                     'cost_center_id' => 1
                 ]);
@@ -532,34 +535,36 @@ class Index extends Component
     
     private function sanitizeUser(array $user): array {
         return [
-            'company_name' => $user[0] ?? null,
-            'employee_no' => $user[1] ?? null,
-            'lastname' => strtolower($user[2] ?? ''),
-            'firstname' => strtolower($user[3] ?? ''),
-            'middlename' => strtolower($user[4] ?? ''),
-            'present_address' => $user[5] ?? null,
-            'sex' => strtolower($user[6] ?? ''),
-            'civil_status' => strtolower($user[7] ?? ''),
-            'birthday' => $user[8] ?? null,
-            'age' => $user[9] ?? null,
-            'pagibig_no' => $user[10] ?? null,
-            'sss_no' => $user[11] ?? null,
-            'philhealth_no' => $user[12] ?? null,
-            'tin_no' => $user[13] ?? null,
-            'bank_account_no' => $user[14] ?? null,
-            'date_hired' => $user[15] ?? null,
-            'position' => $user[16] ?? '',
-            'department' => $user[17] ?? '',
-            'type' => $user[18] ?? null,
-            'email' => strtolower($user[19] ?? ''),
+            'employee_no' => $user[0] ?? null,
+            'lastname' => strtolower($user[1] ?? ''),
+            'firstname' => strtolower($user[2] ?? ''),
+            'middlename' => strtolower($user[3] ?? ''),
+            'present_address' => $user[4] ?? null,
+            'sex' => strtolower($user[5] ?? ''),
+            'civil_status' => strtolower($user[6] ?? ''),
+            'birthday' => $user[7] ?? null,
+            'age' => $user[8] ?? null,
+            'pagibig_no' => $user[9] ?? null,
+            'sss_no' => $user[10] ?? null,
+            'philhealth_no' => $user[11] ?? null,
+            'tin_no' => $user[12] ?? null,
+            'bank_account_no' => $user[13] ?? null,
+            'date_hired' => $user[14] ?? null,
+            'position' => $user[15] ?? '',
+            'department' => $user[16] ?? '',
+            'type' => $user[17] ?? null,
+            'email' => strtolower($user[18] ?? ''),
         ];
     }
     
     private function createEmployeeInformation(array $user, int $positionId, int $departmentId): EmployeeInformation {
+        
+
+        $category_id = JobCategory::where('name', $user['type'])->first()->id;
+
         return EmployeeInformation::create([
-            'company_name' => $user['company_name'],
             'employee_no' => $user['employee_no'],
-            'type' => $user['type'],
+            'job_category_id' => $category_id,
             'date_hired' => $user['date_hired'],
             'bank_account_no' => $user['bank_account_no'],
             'position_id' => $positionId,
@@ -586,7 +591,6 @@ class Index extends Component
         ]);
     }
     
-
     public function remove_upload($index) {
         if (isset($this->upload_preview[0][$index])) {
             unset($this->upload_preview[0][$index]);            
@@ -703,6 +707,10 @@ class Index extends Component
             }
         }
         return null;
+    }
+
+    public function close_upload_employee() {
+        $this->reset('upload_preview', 'file');
     }
 
     public function render()

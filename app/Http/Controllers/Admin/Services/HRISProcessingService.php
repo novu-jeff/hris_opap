@@ -96,7 +96,7 @@ class HRISProcessingService extends Controller
             'biometrics_id' => $data['biometrics_id'],
             'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
-            'type' => $data['type'],
+            'job_category_id' => $data['type'],
             'status' => $data['status'],
             'salary_method' => $data['salary_method'],
             'leave_credits' => $data['leave_credits'],

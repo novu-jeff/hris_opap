@@ -24,22 +24,16 @@ return new class extends Migration
                 ->constrained('branches');
             $table->foreignId('department_id')
                 ->nullable()
-                ->constrained('department_centers');
+                ->constrained('departments');
             $table->foreignId('position_id')
                 ->nullable()
                 ->constrained('positions');
             $table->string('date_hired');
             $table->string('date_resignation')
                 ->nullable();
-            $table->enum('type', [
-                    'freelance',
-                    'part time',
-                    'contractual',
-                    'project based',
-                    'regular',
-                    'probationary'
-                ])
-                ->nullable();
+            $table->foreignId('job_category_id')
+                ->nullable()
+                ->constrained('job_categories');
             $table->enum('status', [
                     'active',
                     'inactive'
@@ -331,17 +325,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
-        Schema::create('employee_time_in_out', function(Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')
-                ->constrained('employee_information')
-                ->onCascade('delete');
-            $table->string('time_in');
-            $table->string('time_out');
-            $table->string('total_hours');
-        });
-
     }
 
     /**
@@ -351,7 +334,6 @@ return new class extends Migration
     {
 
         Schema::dropIfExists('employee_leave');
-        Schema::dropIfExists('employee_time_in_out');
         Schema::dropIfExists('employee_employment_history');
         Schema::dropIfExists('employee_education');
         Schema::dropIfExists('employee_children');

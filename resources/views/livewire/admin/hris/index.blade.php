@@ -58,7 +58,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Upload Employee</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:click="close_upload_employee" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body py-4 px-4">
                     <label class="mb-2" for="file">File Upload</label>
@@ -77,7 +77,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th>Company Name</th>
                                         <th>Employee No</th>
                                         <th>Last Name</th>
                                         <th>First Name</th>
@@ -103,23 +102,20 @@
                                 <tbody>
                                     @foreach ($upload_preview[0] as $index => $user)
                                         <tr>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.0" class="form-control" style="width: 250px" /></td> <!-- Company Name -->
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.1" class="form-control" style="width: 250px" /></td> <!-- Employee No -->
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.2" class="form-control" style="width: 250px" /></td> <!-- Last Name -->
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.3" class="form-control" style="width: 250px" /></td> <!-- First Name -->
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.4" class="form-control" style="width: 250px" /></td> <!-- Middle Name -->
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.5" class="form-control" style="width: 250px" /></td> <!-- Address -->
-                            
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.0" class="form-control" style="width: 250px" /></td> <!-- Employee No -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.1" class="form-control" style="width: 250px" /></td> <!-- Last Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.2" class="form-control" style="width: 250px" /></td> <!-- First Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.3" class="form-control" style="width: 250px" /></td> <!-- Middle Name -->
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.4" class="form-control" style="width: 250px" /></td> <!-- Address -->
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.6" class="form-select" style="width: 250px">
+                                                <select wire:model="upload_preview.0.{{ $index }}.5" class="form-select" style="width: 250px">
                                                     <option value="">- Choose -</option>
                                                     <option value="male">Male</option>
                                                     <option value="female">Female</option>
                                                 </select>
                                             </td>
-                            
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.7" class="form-select" style="width: 250px">
+                                                <select wire:model="upload_preview.0.{{ $index }}.6" class="form-select" style="width: 250px">
                                                     <option value="">- Choose -</option>
                                                     <option value="single">Single</option>
                                                     <option value="married">Married</option>
@@ -129,37 +125,32 @@
                                                     <option value="annulled">Annulled</option>
                                                 </select>
                                             </td>
-                            
-                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.8" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.7" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.8" class="form-control" style="width: 250px" /></td> 
                                             <td><input type="text" wire:model="upload_preview.0.{{ $index }}.9" class="form-control" style="width: 250px" /></td> 
                                             <td><input type="text" wire:model="upload_preview.0.{{ $index }}.10" class="form-control" style="width: 250px" /></td> 
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.11" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.11" class="form-control" style="width: 250px" /></td>
                                             <td><input type="text" wire:model="upload_preview.0.{{ $index }}.12" class="form-control" style="width: 250px" /></td>
                                             <td><input type="text" wire:model="upload_preview.0.{{ $index }}.13" class="form-control" style="width: 250px" /></td>
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.14" class="form-control" style="width: 250px" /></td>
-                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.15" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="date" wire:model="upload_preview.0.{{ $index }}.14" class="form-control" style="width: 250px" /></td>
+                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.15" class="form-control" style="width: 250px" /></td> 
                                             <td><input type="text" wire:model="upload_preview.0.{{ $index }}.16" class="form-control" style="width: 250px" /></td> 
-                                            <td><input type="text" wire:model="upload_preview.0.{{ $index }}.17" class="form-control" style="width: 250px" /></td> 
                                             <td>
-                                                <select wire:model="upload_preview.0.{{ $index }}.18" class="form-select" style="width: 250px">
+                                                <select wire:model="upload_preview.0.{{ $index }}.17" class="form-select" style="width: 250px">
                                                     <option value="">- Choose -</option>
-                                                    <option value=""> - CHOOSE - </option>
-                                                    <option value="freelance">Freelance</option>
-                                                    <option value="part time">Part Time</option>
-                                                    <option value="contractual">Contractual</option>
-                                                    <option value="project based">Project Based</option>
-                                                    <option value="regular">Regular</option>
-                                                    <option value="probationary">Probitionary</option>
+                                                    @foreach ($jobCategories as $category)
+                                                        <option value="{{strtolower($category->name)}}">{{$category->name}}</option>
+                                                    @endforeach
                                                 </select>
                                             </td>
-                                            <td><input type="email" wire:model="upload_preview.0.{{ $index }}.19" class="form-control" style="width: 250px" /></td> 
+                                            <td><input type="email" wire:model="upload_preview.0.{{ $index }}.18" class="form-control" style="width: 250px" /></td> 
                                             <td>
                                                 <button class="btn btn-danger" wire:click="remove_upload({{$index}})">Remove</button>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
-                            </table>  
+                            </table>                             
                         </div>
                     @endif
                 </div>                
@@ -286,12 +277,9 @@
                             <label class="mb-2" for="type">Employment Type</label>
                             <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
                                 <option value=""> - CHOOSE - </option>
-                                <option value="freelance">Freelance</option>
-                                <option value="part time">Part Time</option>
-                                <option value="contractual">Contractual</option>
-                                <option value="project based">Project Based</option>
-                                <option value="regular">Regular</option>
-                                <option value="probationary">Probationary</option>
+                                @foreach ($jobCategories as $category)
+                                    <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
+                                @endforeach
                             </select>
                             <div class="error-field">
                                 @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
