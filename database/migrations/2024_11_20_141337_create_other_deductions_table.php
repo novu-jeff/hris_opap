@@ -11,11 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('branches', function (Blueprint $table) {
+        Schema::create('other_deductions', function (Blueprint $table) {
             $table->id();
             $table->string('code');
             $table->string('name');
-            $table->boolean('isActive')->default(true);
+            $table->enum('frequency', [
+                'bi_monthly',
+                'monthly'
+            ]);
+            $table->string('month_frequency')
+                ->nullable();
+            $table->foreignId('eligible')
+                ->constrained('job_categories');
             $table->timestamps();
         });
     }
@@ -25,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('branches');
+        Schema::dropIfExists('other_deductions');
     }
 };

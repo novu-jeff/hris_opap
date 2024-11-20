@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Department;
 
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use Livewire\Component;
 
 class Index extends Component
@@ -11,7 +11,7 @@ class Index extends Component
     public object $records;
 
     public function mount() {
-        $this->records = DepartmentCenters::with('cost_center')->get();
+        $this->records = Departments::with('cost_center')->get();
     }
 
     public function render()
