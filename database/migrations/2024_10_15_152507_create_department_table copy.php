@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cost_center_id')->constrained();
             $table->string('code')
                 ->nullable();
             $table->string('name');
-            $table->boolean('isActive')->default(true);
             $table->timestamps();
         });
     }

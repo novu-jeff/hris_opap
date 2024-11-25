@@ -11,7 +11,7 @@ class EmployeeEducation extends Model
 
     protected $table = 'employee_education';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'level',
         'school_name',
         'course',

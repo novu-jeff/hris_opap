@@ -15,11 +15,15 @@ class OtherEarnings extends Model
         'name',
         'amount_basis',
         'amount',
+        'frequency_basis',
         'frequency',
-        'month_frequency',
         'eligible',
         'isTaxable',
         'forcasted',
+        'duration',
+        'count',
+        'context',
+        'date'
     ];
 
 }

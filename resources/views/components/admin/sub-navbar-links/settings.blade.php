@@ -35,14 +35,25 @@
                         Location Management
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branch</a></li>
-                        <li><a class="dropdown-item" href="{{route('cost-center.index')}}">Cost Center</a></li>
-                        <li><a class="dropdown-item" href="{{route('department-center.index')}}">Department Center</a></li>
+                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branches</a></li>
+                        <li><a class="dropdown-item" href="{{route('department.index')}}">Departments</a></li>
+                        <li><a class="dropdown-item" href="{{route('section.index')}}">Sections</a></li>
                     </ul>
                 </li>
                 <li><a class="dropdown-item" href="{{route('employee-status.index')}}">Employee Status</a></li>
                 <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
                 <li><a class="dropdown-item" href="{{route('violation.index')}}">Violations</a></li>
+                <li><a class="dropdown-item" href="{{route('leave.index')}}">Leaves</a></li>
+                <li class="nav-item dropstart">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Billings
+                    </a>
+                    <ul class="dropdown-menu">
+                        <a class="dropdown-item" href="{{route('gsis.index')}}">GSIS Billings</a>
+                    </ul>
+                </li>
+                <li><a class="dropdown-item" href="{{route('other-earnings.index')}}">Other Earnings</a></li>
+                <li><a class="dropdown-item" href="{{route('other-deductions.index')}}">Other Deductions</a></li>
             </ul>
         </li>
 

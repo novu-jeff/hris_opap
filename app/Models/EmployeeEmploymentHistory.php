@@ -11,7 +11,7 @@ class EmployeeEmploymentHistory extends Model
 
     protected $table = 'employee_employment_history';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'position',
         'department',
         'company_name',

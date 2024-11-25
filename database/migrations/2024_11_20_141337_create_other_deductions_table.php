@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('other_deductions', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
+            $table->string('code')
+                ->nullable();
             $table->string('name');
             $table->enum('frequency', [
                 'bi_monthly',
@@ -21,8 +22,7 @@ return new class extends Migration
             ]);
             $table->string('month_frequency')
                 ->nullable();
-            $table->foreignId('eligible')
-                ->constrained('job_categories');
+            $table->string('eligible');
             $table->timestamps();
         });
     }

@@ -12,7 +12,9 @@ class LeaveType extends Model
     protected $table = 'leave_types';
     protected $fillable = [
         'code',
-        'description'
+        'name',
+        'credits',
+        'isCummulative'
     ];
 
 }

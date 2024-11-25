@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('department_id')
-                ->constrained('departments')
-                ->onDelete('cascade');
-            $table->string('code');
+            $table->string('code')
+                ->nullable();
             $table->string('name');
+            $table->foreignId('branch_id')
+                ->constrained('branches');
+            $table->foreignId('department_id')
+                ->constrained('departments');
             $table->timestamps();
         });
     }
