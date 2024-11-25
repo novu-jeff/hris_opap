@@ -4,9 +4,9 @@
 
 @section('content')
 <div class="container pb-5">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>HRIS • Employee Records</h1>
+            <h1>Employee Records</h1>
             <p></p>
         </div>
     </div>

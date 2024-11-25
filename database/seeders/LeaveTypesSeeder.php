@@ -14,12 +14,12 @@ class LeaveTypesSeeder extends Seeder
     public function run(): void
     {
         $leave_types = [
-            ['code' => 'VL', 'name' => 'Vacation Leave'],
-            ['code' => 'SL', 'name' => 'Sick Leave'],
-            ['code' => 'SPL', 'name' => 'Special Privilege Leave'],
-            ['code' => 'ML', 'name' => 'Maternity Leave'],
-            ['code' => 'PL', 'name' => 'Paternity Leave'],
-            ['code' => 'SOLO', 'name' => 'Solo Parent Leave'],
+            ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 10, 'isCummulative' => true],
+            ['code' => 'SL', 'name' => 'Sick Leave' , 'credits' => 10, 'isCummulative' => true],
+            ['code' => 'SPL', 'name' => 'Special Privilege Leave' , 'credits' => 3, 'isCummulative' => false],
+            ['code' => 'ML', 'name' => 'Maternity Leave' , 'credits' => 105, 'isCummulative' => false],
+            ['code' => 'PL', 'name' => 'Paternity Leave' , 'credits' => 7, 'isCummulative' => false],
+            ['code' => 'SOLO', 'name' => 'Solo Parent Leave' , 'credits' => 7, 'isCummulative' => false],
         ];
 
         foreach ($leave_types as $leave_type) {

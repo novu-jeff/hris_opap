@@ -1,5 +1,5 @@
 <div class="card border-0 mt-3">
-    <div class="card-body p-0">
+    <div class="card-body p-0" wire:ignore>
         <table class="table w-100">
             <thead>
                 <tr>
@@ -10,14 +10,14 @@
             </thead>                
             <tbody>
                 @foreach($records as $record)
-                    <tr>
+                    <tr data-id="{{$record->id}}">
                         <td>{{$record->name}}</td>
                         <td>{{$record->code}}</td>
                         <td>
                             <a href="{{route('cost-center.edit', ['cost_center' => $record->id])}}" class="btn btn-primary mx-1">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </a>
-                            <button class="btn btn-danger mx-1">
+                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>

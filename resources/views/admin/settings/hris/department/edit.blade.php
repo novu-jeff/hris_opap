@@ -1,16 +1,16 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Edit Department Center'
+    'title' => 'HRIS | Edit Department (Program / Cluster)'
     ])
 
 @section('content')
 <div class="container pb-5">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Edit Department Center Information</h1>
+            <h1>Edit Department (Program / Cluster)</h1>
             <p>Modify or update</p>
         </div>
         <div class="actions">
-            <a href="{{route('department-center.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <a href="{{route('department.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
     <div class="mt-3">

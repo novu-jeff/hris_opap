@@ -20,23 +20,38 @@ return new class extends Migration
                 'basic_salary',
                 'percentage',
             ]);
-            $table->float('amount');
-            $table->enum('frequency', [
+            $table->float('amount')
+                ->nullable();
+            $table->enum('frequency_basis', [
                 'monthly',
                 'yearly',
                 'month_picked'
             ]);
-            $table->string('month_frequency')
+            $table->string('frequency')
                 ->nullable();
-            $table->foreignId('eligible')
-                ->constrained('job_categories');
+            $table->string('eligible');
             $table->boolean('isTaxable')
                 ->default(false);
             $table->float('forcasted')
                 ->default(0)
                 ->nullable();
+            $table->enum('duration', [
+                'days',
+                'months',
+                'years'
+            ])->nullable();
+            $table->integer('count')->nullable();
+            $table->enum('context', [
+                'from',
+                'prior_to',
+                'subsequent_to'
+            ])->nullable();
+            $table->string('date')
+                ->nullable();
             $table->timestamps();
         });
+
+
     }
 
     /**

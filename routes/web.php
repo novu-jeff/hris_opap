@@ -9,17 +9,21 @@ use App\Http\Controllers\Admin\Job\ApplicantController;
 use App\Http\Controllers\Admin\Job\InterviewController;
 use App\Http\Controllers\Admin\Job\PostController;
 use App\Http\Controllers\Admin\Job\RequirementsController;
-use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\RequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
 use App\Http\Controllers\Admin\Settings\HRIS\CostCenterController;
-use App\Http\Controllers\Admin\Settings\HRIS\DepartmentCenterController;
+use App\Http\Controllers\Admin\Settings\HRIS\DepartmentController;
 use App\Http\Controllers\Admin\Settings\HRIS\EmployeeStatusController;
+use App\Http\Controllers\Admin\Settings\HRIS\GSISController;
 use App\Http\Controllers\Admin\Settings\HRIS\PositionController;
 use App\Http\Controllers\Admin\Settings\HRIS\ViolationController;
+use App\Http\Controllers\Admin\Settings\HRIS\OtherDeductionsController;
+use App\Http\Controllers\Admin\Settings\HRIS\OtherEarningsController;
+use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
+use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -130,7 +134,11 @@ Route::prefix('admin')->group(function() {
         });
         
         Route::resource('hris', HRISController::class)
+            ->only(['index'])
             ->names('hris');
+
+        Route::get('hris/manual', [HRISController::class, 'manual'])
+            ->name('hris.manual');
         
         Route::prefix('ess')->group(function() {
             Route::get('leave', [LeaveController::class, 'index'])
@@ -165,8 +173,11 @@ Route::prefix('admin')->group(function() {
                     Route::resource('/cost-center', CostCenterController::class)
                         ->names('cost-center');
         
-                    Route::resource('/department-center', DepartmentCenterController::class)
-                        ->names('department-center');
+                    Route::resource('/department', DepartmentController::class)
+                        ->names('department');
+
+                    Route::resource('/section', SectionController::class)
+                        ->names('section');
                 });
         
                 Route::resource('bank-information', BankInformationController::class)
@@ -183,6 +194,18 @@ Route::prefix('admin')->group(function() {
         
                 Route::resource('violation', ViolationController::class)
                     ->names('violation');
+                
+                Route::resource('leave', LeaveController::class)
+                    ->names('leave');
+
+                Route::resource('gsis', GSISController::class)
+                    ->names('gsis');
+
+                Route::resource('other-earnings', OtherEarningsController::class)
+                    ->names('other-earnings');
+
+                Route::resource('other-deductions', OtherDeductionsController::class)
+                    ->names('other-deductions');
         
             });
         

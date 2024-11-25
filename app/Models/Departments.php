@@ -12,7 +12,6 @@ class Departments extends Model
     protected $table = 'departments';
     protected $fillable = [
         'name',
-        'cost_center_id',
         'code',
         'isActive'
     ];

@@ -12,10 +12,9 @@ class EmployeeInformation extends Model
     protected $table = 'employee_information';
 
     protected $fillable = [
-        'biometrics_id',
         'employee_no',
-        'department_id',
-        'branch_id',
+        'biometrics_id',
+        'section_id',
         'position_id',
         'date_hired',
         'date_resignation',
@@ -36,31 +35,47 @@ class EmployeeInformation extends Model
     }
 
     public function department() {
-        return $this->hasOne(DepartmentCenters::class, 'id', 'department_id');
+        return $this->hasOne(Departments::class, 'id', 'department_id');
     }
 
     public function account() {
-        return $this->hasOne(EmployeeAccount::class, 'employee_id');
+        return $this->hasOne(EmployeeAccount::class, 'employee_no', 'employee_no');
     }
 
     public function personal() {
-        return $this->hasOne(EmployeePersonal::class, 'employee_id');
+        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
 
     public function education() {
-        return $this->hasMany(EmployeeEducation::class, 'employee_id');
+        return $this->hasMany(EmployeeEducation::class, 'employee_no', 'employee_no');
     }
 
     public function parents() {
-        return $this->hasOne(EmployeeParents::class, 'employee_id');
+        return $this->hasOne(EmployeeParents::class, 'employee_no', 'employee_no');
     }
 
     public function children() {
-        return $this->hasMany(EmployeeChildren::class, 'employee_id');
+        return $this->hasMany(EmployeeChildren::class, 'employee_no', 'employee_no');
     }
 
     public function employment_history() {
-        return $this->hasMany(EmployeeEmploymentHistory::class, 'employee_id');
+        return $this->hasMany(EmployeeEmploymentHistory::class, 'employee_no', 'employee_no');
+    }
+
+    public function civil_service() {
+        return $this->hasMany(EmployeeCivilService::class, 'employee_no', 'employee_no');
+    }
+
+    public function trainings() {
+        return $this->hasMany(EmployeeTrainings::class, 'employee_no', 'employee_no');
+    }
+
+    public function others() {
+        return $this->hasMany(EmployeeOtherWorks::class, 'employee_no', 'employee_no');
+    }
+
+    public function skills() {
+        return $this->hasMany(EmployeeSkillsHobbies::class, 'employee_no', 'employee_no');
     }
 
     public function positions() {
@@ -70,6 +85,7 @@ class EmployeeInformation extends Model
     public function messages() {
         return $this->hasMany(Message::class, 'from_id', 'id');
     }
+
 
 
 }
