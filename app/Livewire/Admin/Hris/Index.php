@@ -52,8 +52,6 @@ class Index extends Component
 
     protected $listeners = ['loadRecords', 'remove'];
 
-   
-
     public function mount() {
 
         if(Session::has('target')) {
