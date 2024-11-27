@@ -19,6 +19,7 @@ use App\Models\Sections;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -384,6 +385,8 @@ class Index extends Component
             // Load the Excel file to an array
             $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
     
+            $this->validateUploaded($spreadsheet, $sheetNames);
+
             $results = [];
 
             foreach ($sheetsData as $index => $sheet) {
@@ -541,6 +544,66 @@ class Index extends Component
             $this->isUploading = false;
         }
     }
+
+    public function validateUploaded($spreadsheet, $sheetNames) {
+
+        $expectedSheets = [
+            'employee information' => ['employee no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'monthly salary', 'job category', 'email'],
+            'family background' => ['employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename', 'spouse suffix', 'spouse occupation', 'spouse business name', 'spouse business address', 'spouse contact no', 'father surname', 'father firstname', 'father middlename', 'father suffix', 'mother surname', 'mother firstname', 'mother middlename'],
+            'children' => ['employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'],
+            'education' => ['employee no.', 'level', 'school name', 'course', 'from year', 'to year'],
+            'employment history' => ['employee no.', 'position', 'department', 'company name', 'monthly salary', 'employment status', 'is government?', 'from year', 'to year'],
+            'civil service' => ['employee no.', 'certification', 'rating', 'date exam', 'place exam', 'license no', 'date validity'],
+            'trainings' => ['employee no.', 'type', 'name', 'date from', 'date to', 'consumed hours', 'sponsored by'],
+            'other works' => ['employee no.', 'organization', 'address', 'date from', 'date to', 'consumed hours', 'position'],
+            'skills' => ['employee no.', 'skill / hobbies name', 'recognition', 'organization'],
+            'options' => ['job categories', 'bool', 'civil status', 'sex', 'departments']
+        ];
+    
+        foreach ($sheetNames as $sheetName) {
+    
+            $sheetNameLower = strtolower($sheetName);  
+    
+            if (array_key_exists($sheetNameLower, $expectedSheets)) {
+                $sheetData = $spreadsheet->getSheetByName($sheetName)->toArray();
+                
+                // Remove null values from each row without removing the entire row
+                $sheetData = array_map(function($row) {
+                    return array_filter($row, function($value) {
+                        return $value !== null;  // Keep only non-null values
+                    });
+                }, $sheetData);
+            
+                // Check if the sheet data has rows and extract the first row for header
+                if (empty($sheetData)) {
+                    throw new \Exception("Sheet '{$sheetName}' is empty.");
+                }
+            
+                $header = $sheetData[0];
+            
+                // Trim spaces and convert the header values to lowercase for comparison
+                $headerLower = array_map(function($item) {
+                    return strtolower(trim($item)); // Remove leading/trailing spaces and convert to lowercase
+                }, $header);
+            
+                // Ensure the expected header also has trimmed values
+                $expectedHeader = array_map('strtolower', array_map('trim', $expectedSheets[$sheetNameLower]));
+            
+                if ($headerLower !== $expectedHeader) {
+                    Log::error("Invalid header in sheet '{$sheetName}'. Expected: " . implode(', ', $expectedHeader) . ". Found: " . implode(', ', $headerLower));
+                    throw new \Exception("Uploaded file contains invalid format");
+                }
+            } else {
+                Log::error("Unexpected sheet '{$sheetName}' found in the file.");
+                throw new \Exception("Uploaded file contains invalid format");
+            }
+            
+        }
+    
+        return true;
+    }
+    
+    
     
     private function sanitizeUser(array $user): array {
         return [
