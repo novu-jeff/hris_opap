@@ -11,7 +11,7 @@ class EmployeePersonal extends Model
 
     protected $table = 'employee_personal';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'profile',
         'firstname',
         'middlename',
@@ -44,5 +44,9 @@ class EmployeePersonal extends Model
     ];
 
     public $timestamps = false;
+    
+    public function gsis_item() {
+        return $this->hasOne(GSISBillingItems::class, 'bp_no', 'gsis_no');
+    }
 
 }

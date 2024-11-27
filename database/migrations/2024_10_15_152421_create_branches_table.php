@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('code');
-            $table->boolean('isActive')->default(true);
+            $table->string('name');
             $table->timestamps();
         });
     }

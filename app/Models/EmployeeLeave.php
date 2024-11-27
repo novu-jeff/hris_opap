@@ -11,7 +11,7 @@ class EmployeeLeave extends Model
 
     protected $table = 'employee_leave';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'status',
         'type',
         'reason',

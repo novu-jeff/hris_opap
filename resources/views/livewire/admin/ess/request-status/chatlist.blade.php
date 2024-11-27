@@ -1,6 +1,6 @@
 <div class="chat-list" wire:poll="loadRecords">
     @forelse ($employees as $employee)
-        <a href="javascript:void(0)" wire:click="select({{$employee->id}})" class="d-flex align-items-center {{$selected_id === $employee->id ? 'selected' : ''}}">
+        <a href="javascript:void(0)" wire:click="select({{$employee->employee_no}})" class="d-flex align-items-center {{$selected_id === $employee->employee_no ? 'selected' : ''}}">
             <div class="flex-shrink-0">
                 <img src="
                    {{ isset($records['user']) && $records['user']['personal']['profile']

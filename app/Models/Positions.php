@@ -11,7 +11,10 @@ class Positions extends Model
 
     protected $table = 'positions';
     protected $fillable = [
+        'code',
         'name',
+        'salary_grade',
+        'salary',
         'isActive'
     ];
 

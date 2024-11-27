@@ -8,11 +8,15 @@ use App\Mail\SendEmployeeAccount;
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
+use App\Models\EmployeeCivilService;
 use App\Models\EmployeeEducation;
 use App\Models\EmployeeEmploymentHistory;
 use App\Models\EmployeeInformation;
+use App\Models\EmployeeOtherWorks;
 use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
+use App\Models\EmployeeSkillsHobbies;
+use App\Models\EmployeeTrainings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -23,11 +27,10 @@ class HRISProcessingService extends Controller
     public function save(bool $isFirstTime = false, int $id, int $job_id, array $data = null) 
     {
 
-
         $record = ApplicantUsers::with('applied.offer')
             ->whereHas('applied', fn($query) => $query->where('id', $job_id))
             ->find($id);
-
+        
         if ($isFirstTime && $record) {
 
             $data = [
@@ -54,11 +57,9 @@ class HRISProcessingService extends Controller
             ];
 
             $record = $this->employee_information($id, $data , true);            
-            $this->employee_account($record->id, $data['employee_account'], true);
-            $this->employee_personal($record->id, $data['employee_personal'], true);
-            $this->employee_parents($record->id, null, true);
-
-
+            $this->employee_account($record->employee_no, $data['employee_account'], true);
+            $this->employee_personal($record->employee_no, $data['employee_personal'], true);
+            $this->employee_parents($record->employee_no, null, true);
 
         } else {
             $this->employee_information($id, $data['employee_information'], false);
@@ -69,6 +70,11 @@ class HRISProcessingService extends Controller
             $this->employee_children($id, $data['employee_children']);
             $this->employee_education($id, $data['employee_education']);
             $this->employee_employment_history($id, $data['employee_employment_history']);
+            
+            $this->employee_civil_service($id, $data['employee_civil_service']);
+            $this->employee_trainings($id, $data['employee_trainings']);
+            $this->employee_others($id, $data['employee_others']);
+            $this->employee_skills($id, $data['employee_skills']);
         }
     }
 
@@ -76,27 +82,26 @@ class HRISProcessingService extends Controller
         
         if ($isFirstTime) {
 
-            $generate = new Generate;
-
+            $employee_no = EmployeeInformation::max('employee_no') + 1;
+            
             $record = EmployeeInformation::create([
-                'biometrics_id' => $generate->biometrics(),
+                'employee_no' => $employee_no,
                 'monthly_rate' => $data['employee_information']['salary'],
-                'date_hired' => Carbon::now()->format('d F, Y'),
+                'date_hired' => Carbon::now()->format('Y-m-d'),
             ]);
 
             return $record;
         }
 
-        $record = EmployeeInformation::find($id);
+        $record = EmployeeInformation::where('employee_no', $id);
 
         return $record->update([
-            'branch_id' => $data['branch_id'],
-            'department_id' => $data['department_id'],
+            'section_id' => $data['section_id'],
             'position_id' => $data['position_id'],
             'biometrics_id' => $data['biometrics_id'],
             'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
-            'type' => $data['type'],
+            'job_category_id' => $data['type'],
             'status' => $data['status'],
             'salary_method' => $data['salary_method'],
             'leave_credits' => $data['leave_credits'],
@@ -118,7 +123,7 @@ class HRISProcessingService extends Controller
             $email = $generate->email($id, $firstname, $lastname);
 
             $record = EmployeeAccount::create([
-                'employee_id' => $id,
+                'employee_no' => $id,
                 'applicant_id' => $applicant_id,
                 'email' => $email,
             ]);
@@ -126,7 +131,7 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
-        $record = EmployeeAccount::where('employee_id', $id);
+        $record = EmployeeAccount::where('employee_no', $id);
 
         if(isset($data['password'])) {
             return $record->update([
@@ -139,6 +144,7 @@ class HRISProcessingService extends Controller
     public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {
         
         $template = [
+            'employee_no' => $id,
             'profile' => !empty($data['profile']) ? $data['profile'] : null,
             'firstname' => !empty($data['firstname']) ? $data['firstname'] : null,
             'middlename' => !empty($data['middlename']) ? $data['middlename'] : null,
@@ -175,7 +181,7 @@ class HRISProcessingService extends Controller
             return EmployeePersonal::create($template);
         }
 
-        $record = EmployeePersonal::where('employee_id', $id);
+        $record = EmployeePersonal::where('employee_no', $id);
         return $record->update($template);
     }
 
@@ -183,11 +189,11 @@ class HRISProcessingService extends Controller
 
         if($isFirstTime) {
             return EmployeeParents::create([
-                'employee_id' => $id
+                'employee_no' => $id,
             ]);
         } 
 
-        $record = EmployeeParents::where('employee_id', $id);
+        $record = EmployeeParents::where('employee_no', $id);
 
         return $record->update([
             'spouse_surname' => $data['spouse_surname'],
@@ -211,13 +217,13 @@ class HRISProcessingService extends Controller
 
     public function employee_children(int $id, array $data) {
 
-        $record = EmployeeChildren::where('employee_id', $id);
+        $record = EmployeeChildren::where('employee_no', $id);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_id' => $id,
+                    'employee_no' => $id,
                     'firstname' => $value['firstname'],
                     'middlename' => $value['middlename'],
                     'lastname' => $value['lastname'],
@@ -230,13 +236,13 @@ class HRISProcessingService extends Controller
 
     public function employee_education(int $id, array $data) {
 
-        $record = EmployeeEducation::where('employee_id', $id);
+        $record = EmployeeEducation::where('employee_no', $id);
         $record->delete();
     
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_id' => $id,
+                    'employee_no' => $id,
                     'level' => $value['level'],
                     'school_name' => $value['school_name'],
                     'course' => $value['course'],
@@ -250,13 +256,13 @@ class HRISProcessingService extends Controller
 
     public function employee_employment_history(int $id, array $data) {
 
-        $record = EmployeeEmploymentHistory::where('employee_id', $id);
+        $record = EmployeeEmploymentHistory::where('employee_no', $id);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_id' => $id,
+                    'employee_no' => $id,
                     'position' => $value['position'],
                     'department' => $value['department'],
                     'company_name' => $value['company_name'],
@@ -269,6 +275,83 @@ class HRISProcessingService extends Controller
             } 
         }
 
+    }
+
+    public function employee_civil_service(int $id, array $data) {
+
+        $record = EmployeeCivilService::where('employee_no', $id);
+        $record->delete();
+        
+        if(!empty($data)) {
+            foreach($data as $value) {
+                $record->insert([
+                    'employee_no' => $id,
+                    'certification' => $value['certification'],
+                    'rating' => $value['rating'],
+                    'date_exam' => $value['date_exam'],
+                    'place_exam' => $value['place_exam'],
+                    'license_no' => $value['license_no'],
+                    'date_validaity' => $value['date_validaity'],
+                ]);
+            } 
+        }
+    }
+
+    public function employee_trainings(int $id, array $data) {
+
+        $record = EmployeeTrainings::where('employee_no', $id);
+        $record->delete();
+        
+        if(!empty($data)) {
+            foreach($data as $value) {
+                $record->insert([
+                    'employee_no' => $id,
+                    'type' => $value['type'],
+                    'name' => $value['name'],
+                    'date_from' => $value['date_from'],
+                    'date_to' => $value['date_to'],
+                    'consumed_hours' => $value['consumed_hours'],
+                    'sponsored_by' => $value['sponsored_by'],
+                ]);
+            } 
+        }
+    }
+
+    public function employee_others(int $id, array $data) {
+
+        $record = EmployeeOtherWorks::where('employee_no', $id);
+        $record->delete();
+        
+        if(!empty($data)) {
+            foreach($data as $value) {
+                $record->insert([
+                    'employee_no' => $id,
+                    'organization' => $value['organization'],
+                    'address' => $value['address'],
+                    'date_from' => $value['date_from'],
+                    'date_to' => $value['date_to'],
+                    'consumed_hours' => $value['consumed_hours'],
+                    'position' => $value['position'],
+                ]);
+            } 
+        }
+    }
+
+    public function employee_skills(int $id, array $data) {
+
+        $record = EmployeeSkillsHobbies::where('employee_no', $id);
+        $record->delete();
+        
+        if(!empty($data)) {
+            foreach($data as $value) {
+                $record->insert([
+                    'employee_no' => $id,
+                    'name' => $value['name'],
+                    'recognition' => $value['recognition'],
+                    'organization' => $value['organization'],
+                ]);
+            } 
+        }
     }
 
 }

@@ -460,6 +460,11 @@
                                             <i class="fa-solid fa-list-check"></i>
                                         </button>
                                     @endif
+                                    @if($status == 'hired') 
+                                        <button wire:click="set_action('navigate', '{{$record->id}}')" class="btn btn-primary">
+                                            <i class="fa-solid fa-briefcase"></i>
+                                        </button>
+                                    @endif
                                     @if (in_array($status, ['pending', 'interview', 'placement', 'onboarding']))
                                         @if($status == 'interview' && $record->isInterviewResponded || $status == 'placement' && $record->isSignedJobOffer )
                                             <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
@@ -470,7 +475,6 @@
                                                 <i class="fa-solid fa-arrow-right"></i>
                                             </button>  
                                         @endif
-                                         
                                     @else
                                         <button wire:click="set_action('delete', {{$record->id}})" class="btn btn-danger mx-1">
                                             <i class="fa-solid fa-trash"></i>

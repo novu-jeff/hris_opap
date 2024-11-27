@@ -37,7 +37,7 @@ class Chatbox extends Component
 
     public function loadRecords(int $id = null) {
         $user = EmployeeInformation::with('personal', 'positions')
-                    ->when($id, fn($query) => $query->where('id', $id))
+                    ->when($id, fn($query) => $query->where('employee_no', $id))
                     ->first();
     
         if (!$user) {
@@ -45,7 +45,7 @@ class Chatbox extends Component
             return;
         }
     
-        $id = $user->id;
+        $id = $user->employee_no;
     
         $sent = Message::with('attachments')
             ->where(['from_id' => 0, 'from_role' => 'admin', 'to_id' => $id, 'to_role' => 'employee'])
@@ -113,9 +113,8 @@ class Chatbox extends Component
     }
      
     public function isFirstTime(int $id) {
-
         $model = Message::class;
-        $user = EmployeePersonal::where('employee_id', $id)->first();
+        $user = EmployeePersonal::where('employee_no', $id)->first();
         $record = $model::where('from_id', $id)
             ->orWhere('to_id', $id)
             ->count();
@@ -135,7 +134,7 @@ class Chatbox extends Component
                 Message::insert([
                     'from_id' => 0,
                     'from_role' => 'admin',
-                    'to_id' => $user->employee_id,
+                    'to_id' => $user->employee_no,
                     'to_role' => 'employee',
                     'message' => $message[0] ?? null,
                     'created_at' => Carbon::now(),

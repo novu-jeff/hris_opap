@@ -25,5 +25,12 @@ $(document).on('livewire:poll', function() {
     reinitializeDataTable();
 })
 
-$('.select-2').select2();
-$('.selectpicker').selectpicker();
+
+$(function() {
+    $('.select-2').select2();
+    $('.select-2').on('change', function() {
+        var field = $(this).attr('id');
+        var value = $(this).val(); 
+        Livewire.dispatch('populateField', [field, value]);
+    });
+});

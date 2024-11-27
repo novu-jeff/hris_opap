@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('account_number');
-            $table->foreignId('department_center_id')->constrained();
+            $table->foreignId('department_id')
+                ->constrained('departments')
+                ->onDelete('cascade');
             $table->boolean('isActive')->default(true);
             $table->timestamps();
         });
