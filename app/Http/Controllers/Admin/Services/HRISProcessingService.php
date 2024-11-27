@@ -57,9 +57,9 @@ class HRISProcessingService extends Controller
             ];
 
             $record = $this->employee_information($id, $data , true);            
-            $this->employee_account($record->id, $data['employee_account'], true);
-            $this->employee_personal($record->id, $data['employee_personal'], true);
-            $this->employee_parents($record->id, null, true);
+            $this->employee_account($record->employee_no, $data['employee_account'], true);
+            $this->employee_personal($record->employee_no, $data['employee_personal'], true);
+            $this->employee_parents($record->employee_no, null, true);
 
         } else {
             $this->employee_information($id, $data['employee_information'], false);
@@ -82,12 +82,12 @@ class HRISProcessingService extends Controller
         
         if ($isFirstTime) {
 
-            $generate = new Generate;
-
+            $employee_no = EmployeeInformation::max('employee_no') + 1;
+            
             $record = EmployeeInformation::create([
-                'biometrics_id' => $generate->biometrics(),
+                'employee_no' => $employee_no,
                 'monthly_rate' => $data['employee_information']['salary'],
-                'date_hired' => Carbon::now()->format('d F, Y'),
+                'date_hired' => Carbon::now()->format('Y-m-d'),
             ]);
 
             return $record;
@@ -144,6 +144,7 @@ class HRISProcessingService extends Controller
     public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {
         
         $template = [
+            'employee_no' => $id,
             'profile' => !empty($data['profile']) ? $data['profile'] : null,
             'firstname' => !empty($data['firstname']) ? $data['firstname'] : null,
             'middlename' => !empty($data['middlename']) ? $data['middlename'] : null,
@@ -188,7 +189,7 @@ class HRISProcessingService extends Controller
 
         if($isFirstTime) {
             return EmployeeParents::create([
-                'employee_id' => $id
+                'employee_no' => $id,
             ]);
         } 
 

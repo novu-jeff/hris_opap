@@ -24,6 +24,9 @@ class Index extends Component
     public $upload_preview;
     public $records;
     public $items;
+    public $selected_id;
+
+    protected $listeners = ['remove'];
 
     public function mount() {
         $this->loadRecords();   
@@ -127,7 +130,7 @@ class Index extends Component
             $actualHeaders = array_map('trim', $sheet[4] ?? []); 
         
             if ($actualHeaders !== $expectedHeaders) {
-                throw new \Exception('Invalid imported file, format does not match to the expected.');
+                throw new \Exception('Invalid imported file, format does not match to what\'s expected.');
             }
 
             $billingMonth = Carbon::createFromFormat('m/Y', $sheet[2][1])->format('m/Y');
@@ -146,7 +149,7 @@ class Index extends Component
             // Determine success message
             $message = 'GSIS Billing for month ' . $billingMonth . ' was ' . ($gsisBilling->wasRecentlyCreated ? 'added' : 'updated') . ' successfully.';
 
-            // Process items starting from the 6th row (index 5) onward
+            // Process items starting from the 6th row (index 5) 
             foreach (array_slice($sheet, 5) as $row) {
                 $bpNo = $row[0] ?? null;
                 $crnNo = $row[7] ?? null;
@@ -192,6 +195,8 @@ class Index extends Component
                     ['gsis_billing_id' => $gsisBilling->id, 'bp_no' => $bpNo, 'crn_no' => $crnNo],
                     $data
                 );
+
+                $this->loadRecords();
             }
 
                     
@@ -202,6 +207,7 @@ class Index extends Component
                 'title' => 'Success!',
                 'showAlert' => true,
                 'message' => $message,
+                'redirect' => route('gsis.index')
             ]);
         
         } catch (\Exception $e) {
@@ -233,6 +239,48 @@ class Index extends Component
         $this->items = $records;
         $this->records = [];
 
+    }
+
+    public function remove(bool $isNotify = true, int $id = null) {
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'The action cannot be undone or reverted!';
+            $action = 'remove';
+
+            $this->selected_id = $id;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = GSISBilling::find($this->selected_id);
+                
+            if($record) {
+                
+                $record->delete();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!',
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'GSIS Billing for ' . strtoupper($record->billing_month) . ' deleted successfully.' 
+                ]);
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists' 
+                ]);
+            }
+        }
     }
 
     public function render()

@@ -49,7 +49,7 @@
                                                 <i class="fa-solid fa-xmark"></i>
                                             </button>
                                         </div>
-                                        <div class="col-12 mb-3" wire:ignore>
+                                        <div class="col-12 mb-3" wire:ignore.self>
                                             <select wire:model="responses.{{$index}}.type" id="responses.type" class="form-select">
                                                 <option value=""> - CHOOSE - </option>
                                                 @foreach ($requirements as $requirement)
@@ -57,7 +57,9 @@
                                                 @endforeach
                                             </select>
                                             <div class="error-field mt-3">
-                                                @error('responses.' . $index . '.type') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('responses.' . $index . '.type') 
+                                                    <span class="text-danger">{{ $message }}</span> 
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-12 mb-3">
@@ -70,7 +72,11 @@
                                                 @endif
                                             @endif
                                             <div class="error-field mt-3">
-                                                @error('responses.' . $index . '.document') <span class="text-danger">{{ $message }}</span> @enderror
+                                                <div class="error-field mt-3">
+                                                    @error('responses.' . $index . '.document') 
+                                                        <span class="text-danger">{{ $message }}</span> 
+                                                    @enderror
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

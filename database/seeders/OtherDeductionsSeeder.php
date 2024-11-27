@@ -20,6 +20,7 @@ class OtherDeductionsSeeder extends Seeder
                 'name' => 'GSIS Contribution',
                 'frequency' => 'monthly',
                 'month_frequency' => null,
+                'source' => 'file_upload',
                 'eligible' => 1,
             ],
             [
@@ -27,6 +28,7 @@ class OtherDeductionsSeeder extends Seeder
                 'name' => 'DBP Savings',
                 'frequency' => 'monthly',
                 'month_frequency' => null,
+                'source' => 'entry',
                 'eligible' => 1,
             ],
             [
@@ -34,6 +36,7 @@ class OtherDeductionsSeeder extends Seeder
                 'name' => 'Unlad Kawani',
                 'frequency' => 'monthly',
                 'month_frequency' => null,
+                'source' => 'entry',
                 'eligible' => 1,
             ],
             [
@@ -41,6 +44,7 @@ class OtherDeductionsSeeder extends Seeder
                 'name' => 'PAGIBIG LOANS',
                 'frequency' => 'monthly',
                 'month_frequency' => null,
+                'source' => 'entry',
                 'eligible' => 1,
             ],
             [
@@ -48,6 +52,7 @@ class OtherDeductionsSeeder extends Seeder
                 'name' => 'Unliquidated Cash Advances',
                 'frequency' => 'bi_monthly',
                 'month_frequency' => null,
+                'source' => 'entry',
                 'eligible' => 1,
             ],
         ];

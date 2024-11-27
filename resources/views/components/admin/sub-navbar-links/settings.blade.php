@@ -4,7 +4,7 @@
         Settings
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Company Settings</a></li>
+        <li><a class="dropdown-item" href="#">Company Information</a></li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Recruitment
@@ -25,11 +25,9 @@
         </li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                HRIS Settings
+                HRIS
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
-                <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li>
                 <li class="nav-item dropstart">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Location Management
@@ -40,23 +38,26 @@
                         <li><a class="dropdown-item" href="{{route('section.index')}}">Sections</a></li>
                     </ul>
                 </li>
+                <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
+                <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li>
                 <li><a class="dropdown-item" href="{{route('employee-status.index')}}">Employee Status</a></li>
                 <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
                 <li><a class="dropdown-item" href="{{route('violation.index')}}">Violations</a></li>
                 <li><a class="dropdown-item" href="{{route('leave.index')}}">Leaves</a></li>
-                <li class="nav-item dropstart">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Billings
-                    </a>
-                    <ul class="dropdown-menu">
-                        <a class="dropdown-item" href="{{route('gsis.index')}}">GSIS Billings</a>
-                    </ul>
-                </li>
-                <li><a class="dropdown-item" href="{{route('other-earnings.index')}}">Other Earnings</a></li>
-                <li><a class="dropdown-item" href="{{route('other-deductions.index')}}">Other Deductions</a></li>
+                <li><a class="dropdown-item" href="{{route('gsis.index')}}">GSIS Billings</a></li>
+                <li><a class="dropdown-item" href="{{route('other-earnings.index')}}">Earnings</a></li>
+                <li><a class="dropdown-item" href="{{route('other-deductions.index')}}">Deductions</a></li>
             </ul>
         </li>
-
+        <li class="nav-item dropstart">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Timekeeping
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Shift Schedule</a></li>
+                <li><a class="dropdown-item" href="#">Employee Schedule</a></li>
+            </ul>
+        </li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Payroll
@@ -67,16 +68,6 @@
                 <li><a class="dropdown-item" href="#">Deduction</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Period</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Configuration</a></li>
-            </ul>
-        </li>
-
-        <li class="nav-item dropstart">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Timekeeping Settings
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Shift Schedule</a></li>
-                <li><a class="dropdown-item" href="#">Employee Schedule</a></li>
             </ul>
         </li>
     </ul>

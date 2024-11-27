@@ -23,6 +23,10 @@ return new class extends Migration
             $table->string('month_frequency')
                 ->nullable();
             $table->string('eligible');
+            $table->enum('source', [
+                'entry',
+                'file_upload',
+            ]);
             $table->timestamps();
         });
     }

@@ -15,6 +15,7 @@ class OtherDeductions extends Model
         'name',
         'frequency',
         'eligible',
+        'origin'
     ];
 
 }

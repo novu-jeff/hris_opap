@@ -82,6 +82,8 @@ class EmployeeInformation extends Model
         return $this->hasOne(Positions::class, 'id', 'position_id');
     }
 
+   
+
     public function messages() {
         return $this->hasMany(Message::class, 'from_id', 'id');
     }

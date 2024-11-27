@@ -46,5 +46,9 @@ class GSISBillingItems extends Model
     ];
 
     public $timestamps = false;
+
+    public function gsis() {
+        return $this->hasOne(GSISBilling::class, 'id', 'gsis_billing_id');
+    }
     
 }

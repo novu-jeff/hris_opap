@@ -1203,7 +1203,14 @@
                 </div>
             </div>
             <div class="card-footer d-flex justify-content-end bg-transparent border-0">
-                <button type="submit" class="btn btn-primary py-3 px-5 my-3 text-uppercase fw-bold">Save</button>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">Save</button>
+                    <div class="mt-3 pb-5">
+                        @if ($errors->any())
+                            <small class="text-danger">There's an error upon submitting, please review your form.</small>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </form> 

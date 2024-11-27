@@ -54,7 +54,6 @@ Livewire.on('alert', (event) => {
             confirmButtonText: 'GOT IT',
             confirmButtonColor: '#143953',
         }).then((result) => {
-            console.log(result);
             if (result.isConfirmed && alert.isRemoveRowDT) {
                 removeRowDT(alert.id);
             }
