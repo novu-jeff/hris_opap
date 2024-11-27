@@ -465,13 +465,15 @@ class Manual extends Component
 
             DB::commit();
 
-            return$this->dispatch('alert', [
+            $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
                 'message' => 'Employee #' . $record->employee_no . ' records successfully.' 
             ]);
+
+            $this->reset('records');
 
         } catch (\Exception $e) {
             DB::rollBack();

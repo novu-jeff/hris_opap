@@ -39,6 +39,10 @@ class Create extends Component
             $this->fields['eligible'] = $value;
         }
 
+        if($field == 'source') {
+            $this->fields['source'] = $value;
+        }
+
         $this->dispatch('reinitializeSelect');
 
     }
@@ -48,6 +52,7 @@ class Create extends Component
             'fields.name' => 'required|string|max:255',
             'fields.frequency' => 'required|in:bi_monthly,monthly',
             'fields.eligible' => 'required|array|min:1',
+            'fields.source' => 'required|in:entry,file_upload'
         ];
     }
 
@@ -81,6 +86,7 @@ class Create extends Component
                 'name' => $this->fields['name'],
                 'frequency' => $this->fields['frequency'],
                 'eligible' => implode(',', $this->fields['eligible']),
+                'source' => $this->fields['source']
             ]);
             
 

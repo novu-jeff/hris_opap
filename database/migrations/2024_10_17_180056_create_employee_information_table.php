@@ -320,6 +320,18 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('employee_deduction', function(Blueprint $table) {
+            $table->id();
+            $table->string('employee_no')
+                ->constrained('employee_information')
+                ->onDelete('cascade');
+            $table->foreignId('deduction_id')
+                ->constrained('other_deductions')
+                ->onDelete('cascade');
+            $table->float('amount');
+            $table->timestamps();
+        });
+
     }
 
     /**
@@ -328,6 +340,7 @@ return new class extends Migration
     public function down(): void
     {
 
+        Schema::dropIfExists('employee_deduction');
         Schema::dropIfExists('employee_leave');
         Schema::dropIfExists('employee_skills_hobbies');
         Schema::dropIfExists('employee_other_works');

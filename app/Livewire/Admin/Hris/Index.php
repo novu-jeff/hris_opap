@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Helper\Generate;
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
-use App\Http\Controllers\Admin\Services\OtherEligibilityService;
+use App\Http\Controllers\Admin\Services\OtherServices;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Imports\EmployeeImports;
 use App\Models\Branches;
@@ -51,24 +51,23 @@ class Index extends Component
 
     protected $listeners = ['loadRecords', 'remove'];
 
-    public function boot() {
+   
+
+    public function mount() {
+
         if(Session::has('target')) {
             $data = session('target');
             if(array_key_exists('id', $data)) {
-                $this->loadRecords($data['id']);
+                return $this->loadRecords($data['id']);
             }
-            
-            session()->forget('target');
-
+        
+        } else {
+            $this->loadRecords();
         }
     }
 
-    public function mount() {
-        $this->loadRecords();
-        // $this->loadCountries();
-    }
-
     public function loadRecords(int $employee_no = null) {
+
         $model = EmployeeInformation::class;
 
         $this->sections = Sections::all();
@@ -76,18 +75,20 @@ class Index extends Component
         $this->jobCategories = JobCategory::all();
 
         if (!is_null($employee_no)) {
+            
             // When a specific employee is selected
             $this->selected_id = $employee_no;
 
             // Fetch related earnings and deductions
-            $inst = new OtherEligibilityService();
+            $inst = new OtherServices();
+
             $earnings = $inst->earnings($employee_no);
             $deductions = $inst->deductions($employee_no);
 
             // Fetch employee data
             $data = $model::with([
                 'department',
-                'personal',
+                'personal.gsis_item.gsis',
                 'account',
                 'education',
                 'parents',
@@ -183,8 +184,10 @@ class Index extends Component
                 'employee_others' =>  $data->others->isNotEmpty() ? $data->others->toArray() : [],
                 'employee_skills' =>  $data->skills->isNotEmpty() ? $data->skills->toArray() : [],
 
+                'employee_gsis' => $data->personal->gsis_item ? $data->personal->gsis_item->toArray() : [],
                 'other_earnings' => $earnings ?? [],
                 'other_deductions' => $deductions ?? [],
+                
             ];
 
             if(!is_null($data->section_id)) {
@@ -192,10 +195,15 @@ class Index extends Component
             } 
             
             $this->employees = [];
+
+            return;
+            
         } else {
-            // When no specific employee is selected, load all employees with basic details
             $this->employees = $model::with('personal')->get();
             $this->records = [];
+
+            return;
+
         }
     }
 
@@ -212,6 +220,18 @@ class Index extends Component
         return $this->countries = $countries;
     }
     
+    public function view(int $id) {
+        Session::put('target', [
+            'id' => $id,
+        ]);
+        return redirect()->route('hris.index'); 
+    }
+
+    public function go_back() {
+        session()->forget('target');
+        return redirect()->route('hris.index');
+    }
+
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
     }

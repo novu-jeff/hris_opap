@@ -18,9 +18,16 @@ use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\JobCategory;
 use App\Models\Positions;
+use Carbon\Carbon;
 
 class EmployeeUploadService extends Controller
 {
+
+    private function transformDate($value) {
+        return is_numeric($value) 
+            ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d') 
+            : $value;
+    }    
 
     public function uploadEmployeeInformation($data) {
 
@@ -62,7 +69,7 @@ class EmployeeUploadService extends Controller
             $employeeInfo = EmployeeInformation::updateOrCreate(
                 ['employee_no' => $employeeData[0]],
                 [
-                    'date_hired' => $employeeData[15],
+                    'date_hired' => $this->transformDate($employeeData[15]),
                     'department_id' => null,
                     'position_id' => $position->id,
                     'job_category_id' => $jobCategory?->id,
@@ -96,7 +103,7 @@ class EmployeeUploadService extends Controller
                     'present_address' => $employeeData[4],
                     'sex' => strtolower($employeeData[5]),
                     'civil_status' => strtolower($employeeData[6]),
-                    'birthday' => $employeeData[7],
+                    'birthday' => $this->transformDate($employeeData[7]),
                     'age' => $employeeData[8],
                     'gsis_no' => $employeeData[9],
                     'pagibig_no' => $employeeData[10],
@@ -413,16 +420,16 @@ class EmployeeUploadService extends Controller
                 [
                     'employee_no' => $csData[0],
                     'certification' => $csData[1],
-                    'date_exam' => $csData[3],
+                    'date_exam' => $this->transformDate($csData[3]),
                 ], 
                 [
                     'employee_no' => $csData[0],
                     'certification' => $csData[1],
                     'rating' => $csData[2],
-                    'date_exam' => $csData[3],
+                    'date_exam' => $this->transformDate($csData[3]),
                     'place_exam' => $csData[4],
                     'license_no' => $csData[5],
-                    'date_validity' => $csData[6],
+                    'date_validity' => $this->transformDate($csData[6]),
                 ]
             );
     
@@ -433,10 +440,10 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $csData[0],
                     'certification' => $csData[1],
                     'rating' => $csData[2],
-                    'date_exam' => $csData[3],
+                    'date_exam' => $this->transformDate($csData[3]),
                     'place_exam' => $csData[4],
                     'license_no' => $csData[5],
-                    'date_validity' => $csData[6],
+                    'date_validity' => $this->transformDate($csData[6]),
                 ];
             } else {
                 $result['updated']['total']++;
@@ -444,10 +451,10 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $csData[0],
                     'certification' => $csData[1],
                     'rating' => $csData[2],
-                    'date_exam' => $csData[3],
+                    'date_exam' => $this->transformDate($csData[3]),
                     'place_exam' => $csData[4],
                     'license_no' => $csData[5],
-                    'date_validity' => $csData[6],
+                    'date_validity' => $this->transformDate($csData[6]),
                 ];
             }
         }
@@ -480,15 +487,15 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $trainingData[0],
                     'type' => $trainingData[1],
                     'name' => $trainingData[2],
-                    'date_from' => $trainingData[3],
-                    'date_to' => $trainingData[4],
+                    'date_from' => $this->transformDate($trainingData[3]),
+                    'date_to' => $this->transformDate($trainingData[4]),
                 ], 
                 [
                     'employee_no' => $trainingData[0],
                     'type' => $trainingData[1],
                     'name' => $trainingData[2],
-                    'date_from' => $trainingData[3],
-                    'date_to' => $trainingData[4],
+                    'date_from' => $this->transformDate($trainingData[3]),
+                    'date_to' => $this->transformDate($trainingData[4]),
                     'consumed_hours' => $trainingData[5],
                     'sponsored_by' => $trainingData[6],
                 ]
@@ -501,8 +508,8 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $trainingData[0],
                     'type' => $trainingData[1],
                     'name' => $trainingData[2],
-                    'date_from' => $trainingData[3],
-                    'date_to' => $trainingData[4],
+                    'date_from' => $this->transformDate($trainingData[3]),
+                    'date_to' => $this->transformDate($trainingData[4]),
                     'consumed_hours' => $trainingData[5],
                     'sponsored_by' => $trainingData[6],
                 ];
@@ -512,8 +519,8 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $trainingData[0],
                     'type' => $trainingData[1],
                     'name' => $trainingData[2],
-                    'date_from' => $trainingData[3],
-                    'date_to' => $trainingData[4],
+                    'date_from' => $this->transformDate($trainingData[3]),
+                    'date_to' => $this->transformDate($trainingData[4]),
                     'consumed_hours' => $trainingData[5],
                     'sponsored_by' => $trainingData[6],
                 ];
@@ -548,15 +555,15 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $workData[0],
                     'organization' => $workData[1],
                     'address' => $workData[2],
-                    'date_from' => $workData[3],
-                    'date_to' => $workData[4],
+                    'date_from' => $this->transformDate($workData[3]),
+                    'date_to' => $this->transformDate($workData[4]),
                 ], 
                 [
                     'employee_no' => $workData[0],
                     'organization' => $workData[1],
                     'address' => $workData[2],
-                    'date_from' => $workData[3],
-                    'date_to' => $workData[4],
+                    'date_from' => $this->transformDate($workData[3]),
+                    'date_to' => $this->transformDate($workData[4]),
                     'consumed_hours' => $workData[5],
                     'position' => $workData[6],
                 ]
@@ -569,8 +576,8 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $workData[0],
                     'organization' => $workData[1],
                     'address' => $workData[2],
-                    'date_from' => $workData[3],
-                    'date_to' => $workData[4],
+                    'date_from' => $this->transformDate($workData[3]),
+                    'date_to' => $this->transformDate($workData[4]),
                     'consumed_hours' => $workData[5],
                     'position' => $workData[6],
                 ];
@@ -580,8 +587,8 @@ class EmployeeUploadService extends Controller
                     'employee_no' => $workData[0],
                     'organization' => $workData[1],
                     'address' => $workData[2],
-                    'date_from' => $workData[3],
-                    'date_to' => $workData[4],
+                    'date_from' => $this->transformDate($workData[3]),
+                    'date_to' => $this->transformDate($workData[4]),
                     'consumed_hours' => $workData[5],
                     'position' => $workData[6],
                 ];

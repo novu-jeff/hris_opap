@@ -16,6 +16,7 @@ use App\Models\JobRequirements;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
@@ -150,6 +151,11 @@ class Index extends Component
                 case 'delete':
                     $this->delete($id);
                     break;
+                case 'navigate':
+                    $this->navigate($id);
+                    break;
+                default: 
+                    return redirect()->route('job.applicants.index');
             }
         }
     }
@@ -386,7 +392,7 @@ class Index extends Component
                     'status' => 'success',
                     'title' => 'Success!', 
                     'isRemoveRowDT' => true,
-                    'message' => 'Applicant has been hired!.' 
+                    'message' => 'Applicant has been hired!' 
                 ]);
             }
         }
@@ -680,9 +686,27 @@ class Index extends Component
         }
     
     }
+
+    public function navigate(int $id) {
+        
+        $employee = EmployeeAccount::where('applicant_id', $id)->first();
+
+        if(!$employee) {
+            return redirect()->route('job_applicants.index');
+        }
+
+        $employee_no = $employee->employee_no;
+
+        Session::put('target', [
+            'id' => $employee_no,
+        ]);
+
+        return redirect()->route('hris.index');
+
+    }
     
     public function validate_action(string $action) {
-        $allowed = ['process', 'rejected', 'delete'];
+        $allowed = ['process', 'rejected', 'delete', 'navigate'];
         if(in_array($action, $allowed)) {
             return true;
         }

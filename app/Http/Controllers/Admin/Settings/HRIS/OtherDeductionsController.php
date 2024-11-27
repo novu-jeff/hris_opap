@@ -31,6 +31,4 @@ class OtherDeductionsController extends Controller
     {
         return view('admin.settings.hris.deductions.edit', compact('id'));
     }
-
-
 }

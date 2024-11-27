@@ -31,14 +31,14 @@ class RequestStatus extends Component
     }
 
     public function loadRecords() {
-        $sent = Message::with('attachments')->where('from_id', $this->user->employee_id)
+        $sent = Message::with('attachments')->where('from_id', $this->user->employee_no)
             ->where('from_role', 'employee')
             ->where('to_id', 0)
             ->where('to_role', 'admin')
             ->get();
         $received = Message::with('attachments')->where('from_id', 0)
             ->where('from_role', 'admin')
-            ->where('to_id', $this->user->employee_id)
+            ->where('to_id', $this->user->employee_no)
             ->where('to_role', 'employee')
             ->get();
 
@@ -52,8 +52,8 @@ class RequestStatus extends Component
     public function isFirstTime() {
 
         $model = Message::class;
-        $record = $model::where('from_id', $this->user->employee_id)
-            ->orWhere('to_id', $this->user->employee_id)
+        $record = $model::where('from_id', $this->user->employee_no)
+            ->orWhere('to_id', $this->user->employee_no)
             ->count();
 
         if($record <= 0) {
@@ -71,7 +71,7 @@ class RequestStatus extends Component
                 Message::insert([
                     'from_id' => 0,
                     'from_role' => 'admin',
-                    'to_id' => $this->user->employee_id,
+                    'to_id' => $this->user->employee_no,
                     'to_role' => 'employee',
                     'message' => $message[0] ?? null,
                     'created_at' => Carbon::now(),
@@ -132,7 +132,7 @@ class RequestStatus extends Component
 
     public function makeSeen() {
         return Message::where('from_id', 0)
-            ->where('to_id', $this->user->employee_id)
+            ->where('to_id', $this->user->employee_no)
             ->update([
             'isSeen' => true,
             'seen_timestamp' => Carbon::now()
@@ -173,7 +173,7 @@ class RequestStatus extends Component
         $this->validate();
 
         $message = Message::create([
-            'from_id' => $this->user->employee_id,
+            'from_id' => $this->user->employee_no,
             'from_role' => 'employee',
             'to_id' => '0',
             'to_role' => 'admin',

@@ -36,22 +36,16 @@ class Edit extends Component
         }
 
         if($records->amount_basis === 'entry' || $records->amount_basis === 'percentage') {
-            $this->hasAmount = true;
-        } else {
-            $this->hasAmount = false;
-        }
+            $this->hasAmount = true ?? false;
+        } 
 
         if($records->frequency_basis == 'month_picked') {
-            $this->hasMonthPicked = true;
-        } else {
-            $this->hasMonthPicked = false;
-        }
+            $this->hasMonthPicked = true ?? false;
+        } 
 
         if(!is_null($records->duration)) {
-            $this->hasParameter = true;
-        } else {
-            $this->hasParameter = false;
-        }
+            $this->hasParameter = 'yes' ?? 'no';
+        } 
 
         $this->fields = [
             'name' => $records->name,
@@ -62,7 +56,8 @@ class Edit extends Component
             'frequency' => explode(',', $records->frequency),
             'eligible' => explode(',', $records->eligible), 
             'is_taxable' => $records->isTaxable ? 'yes' : 'no',
-            'is_forecasted' => $records->forcasted ? 'yes' : 'no', 
+            'is_forecasted' => $records->forcasted ? 'yes' : 'no',
+            'has_parameter' => $records->duration ? 'yes' : 'no', 
             'duration' => $records->duration ?? null,
             'count' => $records->count ?? null, 
             'context' => $records->context ?? null,

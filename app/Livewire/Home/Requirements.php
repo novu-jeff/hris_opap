@@ -67,7 +67,6 @@ class Requirements extends Component
         } else {
             $this->responses = [];
         }
-
     }
 
     public function loadRequirements(bool $isMount = false) {
@@ -148,38 +147,46 @@ class Requirements extends Component
                             'url' => $url,
                         ];
                     }
-                } else {    
-                    $this->validate();
                 }
             }
         }
     }
 
     protected function rules() {
-        $rules = [
+        return [
             'responses' => 'required|array',
             'responses.*.type' => 'required|exists:job_requirements,id',
+            'responses.*.document' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    if ($value && !is_file($value)) {  // Check if it's not a file
+                        return; // If not a file, skip file-related validation rules
+                    }
+                    
+                    // Apply file validation only if it's a file
+                    return validator()->make(
+                        ['document' => $value],
+                        [
+                            'document' => 'file|mimes:jpg,jpeg,png,doc,docx,docs,pdf|max:2048',
+                        ]
+                    )->validate();
+                }
+            ],
         ];
+    }    
     
-        foreach ($this->responses as $index => $response) {
-            if (is_null($response['document'])) {
-                $rules['responses.' . $index . '.document'] = 'required|file|mimes:jpg,jpeg,png,doc,docx,docs,pdf';
-            } 
-        }
-    
-        return $rules;
-    }
-    
-    protected $messages = [
-        'responses.required' => 'The response is required.',
+    protected function messages() {
+        return [
+            'responses.required' => 'The response is required.',
         
-        'responses.*.type.required' => 'Requirement type is required.',
-        'responses.*.type.exists' => 'Requirement type does not exists',
+            'responses.*.type.required' => 'Requirement type is required.',
+            'responses.*.type.exists' => 'Requirement type does not exists',
 
-        'responses.*.document.required' => 'Requirement document is required.',
-        'responses.*.document.file' => 'Requirement document is invalid.',
-        'responses.*.document.mimes' => 'Requirement document only accepts: jpg, jpeg, png, doc, docx, docs, pdf.',
-    ];
+            'responses.*.document.required' => 'Requirement document is required.',
+            'responses.*.document.file' => 'Requirement document is invalid.',
+            'responses.*.document.mimes' => 'Requirement document only accepts: jpg, jpeg, png, doc, docx, docs, pdf.',
+        ];
+    }
     
     public function save(bool $isNotify = true) {
 
@@ -190,9 +197,11 @@ class Requirements extends Component
                 'action' => 'save'
             ]);
         }
+
+        $this->validate();
         
-       DB::beginTransaction();
-       
+        DB::beginTransaction();
+        
         try {
 
             foreach ($this->responses as $index => $response) {
@@ -241,12 +250,7 @@ class Requirements extends Component
                 }
             }
             
-            
-
             DB::commit();
-
-
-            $this->reset('responses');
 
             $this->loadRecords();
 
