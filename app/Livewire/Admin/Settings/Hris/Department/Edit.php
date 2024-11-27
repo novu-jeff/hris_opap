@@ -2,8 +2,7 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Department;
 
-use App\Models\CostCenters;
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -21,17 +20,15 @@ class Edit extends Component
 
     public function loadRecords(int $id) {
 
-        $records = DepartmentCenters::find($id);
+        $records = Departments::find($id);
 
         if(!$records) {
             return redirect()->route('department-center.index');
         }
 
-        $this->cost_centers = CostCenters::all();
-
         return $this->fields = [
+            'code' => $records->code,
             'name' => $records->name,
-            'cost_center' => $records->cost_center_id,
         ];
     }
 
@@ -43,10 +40,10 @@ class Edit extends Component
 
         try {
 
-            DepartmentCenters::where('id', $this->id)
+            Departments::where('id', $this->id)
                 ->update([
+                    'code' => $this->fields['code'],
                     'name' => $this->fields['name'],
-                    'cost_center_id' => $this->fields['cost_center'],
             ]);
 
             DB::commit();
@@ -77,20 +74,19 @@ class Edit extends Component
         return [
             'fields.name' => [
                 'required',
-                Rule::unique('department_centers', 'name')
+                Rule::unique('departments', 'name')
                     ->ignore($this->id)
             ],
-            'fields.cost_center' => 'required|exists:cost_centers,id',
+            'fields.code' => 'required',
         ];
     }
 
     public function messages() {
         return [
-            'fields.name.required' => 'The cost department name is required.',
-            'fields.name.unique' => 'The cost department name is already taken.',
+            'fields.name.required' => 'The department name is required.',
+            'fields.name.unique' => 'The department name is already taken.',
     
-            'fields.cost_center.required' => 'The cost center is required.',
-            'fields.code.exists' => 'The cost center does not exists.',
+            'fields.code.required' => 'The department code is required.',
     
         ];
     }

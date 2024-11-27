@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('department_centers', function (Blueprint $table) {
+        Schema::create('leave_types', function (Blueprint $table) {
             $table->id();
+            $table->string('code');
             $table->string('name');
-            $table->foreignId('cost_center_id')->constrained();
-            $table->boolean('isActive')->default(true);
+            $table->integer('credits');
+            $table->boolean('isCummulative');
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('department_centers');
+        Schema::dropIfExists('leave_types');
     }
 };

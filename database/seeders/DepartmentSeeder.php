@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use Illuminate\Database\Seeder;
 
 class DepartmentSeeder extends Seeder
@@ -13,13 +13,20 @@ class DepartmentSeeder extends Seeder
     public function run(): void
     {
         $departments = [
-            ['name' => 'Department 1', 'cost_center_id' => 1],
-            ['name' => 'Department 2', 'cost_center_id' => 1],
+            ['code' => 'P1', 'name' => 'Program 1'],
+            ['code' => 'P2', 'name' => 'Program 2'],
+            ['code' => 'P3', 'name' => 'Program 3'],
+            ['code' => 'P4', 'name' => 'Program 4'],
+            ['code' => 'P5', 'name' => 'Program 5'],
+            ['code' => 'P6', 'name' => 'Program 6'],
+            ['code' => 'P7', 'name' => 'Program 7'],
+            ['code' => 'P8', 'name' => 'Program 8'],
+            ['code' => 'EO', 'name' => 'Executive Offices']
         ];
-    
+
         foreach ($departments as $department) {
-            DepartmentCenters::updateOrCreate(
-                ['name' => $department['name'], 'cost_center_id' => $department['cost_center_id']], // Fixed key
+            Departments::updateOrCreate(
+                ['code' => $department['code'], 'name' => $department['name']],
                 $department
             );
         }

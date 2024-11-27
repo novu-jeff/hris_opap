@@ -12,6 +12,7 @@ if(!function_exists('money_format')) {
 
 if(!function_exists('relative_time')) {
     function relative_time(string $date) {
+        
         $date = Carbon::parse($date);
 
         $now = Carbon::now();
@@ -38,10 +39,45 @@ if(!function_exists('relative_time')) {
             $relativeTime = 'now';
         }
         
-
         return $relativeTime;
     }
 }
+
+if (!function_exists('relative_time_duration')) {
+    function relative_time_duration(string $date): string
+    {
+        // Parse the given date and get the current date
+        $date = Carbon::parse($date);  
+        $now = Carbon::now(); 
+        
+        // Calculate the difference in years, months, and days
+        $diffInYears = $now->diffInYears($date);
+        $diffInMonths = $now->diffInMonths($date) % 12;
+        $dateAfterYearsAndMonths = $date->copy()->addYears($diffInYears)->addMonths($diffInMonths);
+        $diffInDays = $now->diffInDays($dateAfterYearsAndMonths);
+
+        $output = '';
+
+        // Append years to the output if any
+        if ($diffInYears > 0) {
+            $output .= $diffInYears . ' year' . ($diffInYears > 1 ? 's' : '');
+        }
+
+        // Append months to the output if any
+        if ($diffInMonths > 0) {
+            $output .= ($output ? ', ' : '') . $diffInMonths . ' month' . ($diffInMonths > 1 ? 's' : '');
+        }
+
+        // Append days to the output if the duration is less than a year but greater than zero days
+        if ($diffInYears === 0 && $diffInDays > 0) {
+            $output .= ($output ? ', ' : '') . $diffInDays . ' day' . ($diffInDays > 1 ? 's' : '');
+        }
+
+        // Return the output or fallback to 'less than a day' if the time difference is negligible
+        return $output ?: 'less than a day'; 
+    }
+}
+
 
 if(!function_exists('see_more')) {
     function see_more($text, $lengthAllowed = null) {

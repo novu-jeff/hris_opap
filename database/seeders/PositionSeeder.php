@@ -12,17 +12,18 @@ class PositionSeeder extends Seeder
      */
     public function run(): void
     {
+
         $positions = [
-            ['name' => 'Software Engineer'],
-            ['name' => 'Project Manager'],
-            ['name' => 'Data Analyst'],
-            ['name' => 'System Administrator'],
-            ['name' => 'UI/UX Designer']
+            ['code' => 'SWE', 'name' => 'Software Engineer'],
+            ['code' => 'PM', 'name' => 'Project Manager'],
+            ['code' => 'DA', 'name' => 'Data Analyst'],
+            ['code' => 'SYSADM', 'name' => 'System Administrator'],
+            ['code' => 'UIUX', 'name' => 'UI/UX Designer'],
         ];
 
         foreach ($positions as $position) {
             Positions::updateOrCreate(
-                ['name' => $position['name']], 
+                ['code' => $position['code'], 'name' => $position['name']], 
                 $position
             );
         }

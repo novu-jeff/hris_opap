@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\LeaveType;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -22,9 +23,13 @@ class DatabaseSeeder extends Seeder
             ViolationSeeder::class,
             SkillListSeeder::class,
             BranchSeeder::class,
-            CostCenterSeeder::class,
             DepartmentSeeder::class,
-            AnnouncementSeeder::class
+            SectionSeeder::class,
+            AnnouncementSeeder::class,
+            JobCategoriesSeeder::class,
+            LeaveTypesSeeder::class,
+            OtherEarningsSeeder::class,
+            OtherDeductionsSeeder::class
         ]);
     }
 }

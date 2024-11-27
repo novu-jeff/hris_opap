@@ -147,3 +147,28 @@ Livewire.on('showLatest', function() {
     }, 100);
 });
 
+
+Livewire.on('reinitializeSelect', function() {
+    $(function() {
+        $('.select-2').select2();
+        $('.select-2').on('change', function() {
+            var field = $(this).attr('id');
+            var value = $(this).val(); 
+            Livewire.dispatch('populateField', [field, value]);
+        });
+    });
+});
+
+Livewire.on('reinitializeDataTable', function() {
+    $(function() {
+        setTimeout(() => {
+            reinitializeDataTable();
+        }, 2000);
+    });
+});
+
+Livewire.on('select2:init', () => {
+    $('.select-2').select2();
+});
+
+

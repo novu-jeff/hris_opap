@@ -3,18 +3,29 @@
 namespace App\Livewire\Admin\Settings\Hris\Department;
 
 use App\Models\CostCenters;
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Create extends Component
 {
 
-    public $cost_centers;
     public array $fields;
 
-    public function mount()  {
-        $this->cost_centers = CostCenters::all();
+    protected function rules() {
+        return [
+            'fields.name' => 'required|unique:departments,name',
+            'fields.code' => 'required',
+        ];
+    }
+
+    public function messages() {
+        return [
+            'fields.name.required' => 'The department name is required.',
+            'fields.name.unique' => 'The department name is already taken.',
+    
+            'fields.code.required' => 'The department  code is required.',
+        ];
     }
 
     public function save() {
@@ -25,9 +36,9 @@ class Create extends Component
 
         try {
 
-            DepartmentCenters::create([
+            Departments::create([
+                'code' => $this->fields['code'],
                 'name' => $this->fields['name'],
-                'cost_center_id' => $this->fields['cost_center'],
             ]);
 
             DB::commit();
@@ -53,24 +64,6 @@ class Create extends Component
             ]);
         }
 
-    }
-
-    protected function rules() {
-        return [
-            'fields.name' => 'required|unique:department_centers,name',
-            'fields.cost_center' => 'required|exists:cost_centers,id',
-        ];
-    }
-
-    public function messages() {
-        return [
-            'fields.name.required' => 'The cost center name is required.',
-            'fields.name.unique' => 'The cost center name is already taken.',
-    
-            'fields.cost_center.required' => 'The cost center code is required.',
-            'fields.code.exists' => 'The cost center does not exists.',
-
-        ];
     }
 
     public function render()
