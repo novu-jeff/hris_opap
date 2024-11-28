@@ -26,7 +26,7 @@ class Generate {
         return $date->format('Ymd') . $date->timestamp;
     }
 
-    public function email(int $id, string $firstname, string $lastname) {
+    public function email(string $employee_no, string $firstname, string $lastname) {
         $suffix = trim(env('COMPANY_DOMAIN'));
         $emailPrefix = strtolower(trim(str_replace(' ', '.', "{$firstname}.{$lastname}")));
         

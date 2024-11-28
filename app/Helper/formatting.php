@@ -44,8 +44,11 @@ if(!function_exists('relative_time')) {
 }
 
 if (!function_exists('relative_time_duration')) {
+    
     function relative_time_duration(string $date): string
     {
+
+        $date = format_date($date, 'carbon_date');  
         // Parse the given date and get the current date
         $date = Carbon::parse($date);  
         $now = Carbon::now(); 
@@ -156,21 +159,45 @@ if(!function_exists('format_name')) {
     }
 }
 
-if(!function_exists('format_date')) {
+if (!function_exists('format_date')) {
     function format_date($date, $option) {
-        switch($option) {
-            case 'date_string':
-                return Carbon::parse($date)->toFormattedDateString();
-            case 'day_date_string':
-                return Carbon::parse($date)->toFormattedDayDateString();
-            case 'day_date_time_string':
-                return Carbon::parse($date)->format('D, M, Y g:i A'); 
-                case 'age':
-                return Carbon::parse($date)->age;
+        // Try to detect the input format
+        try {
+            // Normalize the date format to YYYY-MM-DD if needed
+            // If the input date is in `d/m/Y` format (e.g., 30/7/2021), convert it to `Y-m-d` format
+            if (preg_match('/\d{1,2}\/\d{1,2}\/\d{4}/', $date)) {
+                // Convert d/m/Y to Y-m-d
+                $date = Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
+            } 
+            // If the date is in `m/d/Y` format (e.g., 07/30/2021), convert it to `Y-m-d` format
+            elseif (preg_match('/\d{1,2}\/\d{1,2}\/\d{2,4}/', $date)) {
+                $date = Carbon::createFromFormat('m/d/Y', $date)->format('Y-m-d');
+            }
 
+            // Parse the normalized date
+            $carbonDate = Carbon::parse($date);
+
+            // Return the formatted result based on the provided option
+            switch ($option) {
+                case 'date_string': // E.g., Jul 30, 2021
+                    return $carbonDate->toFormattedDateString();
+                case 'day_date_string': // E.g., Friday, Jul 30, 2021
+                    return $carbonDate->toFormattedDayDateString();
+                case 'day_date_time_string': // E.g., Fri, Jul, 2021 12:00 AM
+                    return $carbonDate->format('D, M, Y g:i A');
+                case 'age': // Calculates age based on the date
+                    return $carbonDate->age;
+                case 'carbon_date':
+                    return $carbonDate;
+                default:
+                    throw new Exception("Invalid format option provided.");
+            }
+        } catch (\Exception $e) {
+            return "Error: " . $e->getMessage();
         }
     }
 }
+
 
 if(!function_exists('format_id')) {
     function format_id($id, $length) {
