@@ -27,7 +27,7 @@
                                                 <li>
                                                     {{ $inserted['message'] }}
                                                     <span class="ms-2">
-                                                        <a href="javascript:void(0)" class="text-decoration-underline text-primary" wire:click="loadRecords({{ $inserted['employee_no'] }})">View</a>
+                                                        <a href="javascript:void(0)" class="text-decoration-underline text-primary" wire:click="view('{{ $inserted['employee_no'] }}')">View</a>
                                                     </span>
                                                 </li>
                                             @endforeach
@@ -42,7 +42,7 @@
                                                 <li>
                                                     {{ $updated['message'] }}
                                                     <span class="ms-2">
-                                                        <a href="javascript:void(0)" class="text-decoration-underline text-primary" wire:click="loadRecords({{ $updated['employee_no'] }})">View</a>
+                                                        <a href="javascript:void(0)" class="text-decoration-underline text-primary" wire:click="view('{{ $updated['employee_no'] }}')">View</a>
                                                     </span>
                                                 </li>
                                             @endforeach
@@ -1414,7 +1414,7 @@
             </form>   
         @else
             <div class="table-responsive" wire:ignore>
-                <table class="table table-striped w-100">
+                <table class="table table-striped w-100" wire:ignore.self>
                     <thead>
                         <tr>
                             <th></th>
@@ -1439,12 +1439,13 @@
                                     <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
                                     <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
                                     <td>
-                                        <button class="btn btn-primary" wire:click="view({{$item->employee_no}})">
+                                        <button class="btn btn-primary" wire:click="view('{{ $item->employee_no }}')">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
-                                        <button wire:click="remove(true, {{$item->employee_no}})" class="btn btn-danger mx-1">
+                                        <button wire:click="remove(true, '{{ $item->employee_no }}')" class="btn btn-danger mx-1">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
+                                        
                                     </td>
                                 </tr>                            
                             @endforeach
