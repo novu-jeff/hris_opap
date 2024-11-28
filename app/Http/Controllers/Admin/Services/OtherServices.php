@@ -12,14 +12,15 @@ use Exception;
 class OtherServices extends Controller
 {
 
-    public function earnings(int $id) {
+    public function earnings(string $employee_no) {
         // Fetch employee details
-        $emp = EmployeeInformation::where('employee_no', $id)->first();
+        $emp = EmployeeInformation::where('employee_no', $employee_no)->first();
         if (!$emp) {
-            throw new Exception("Employee not found.");
+            session()->forget('target');
+            return redirect()->route('hris.index');
         }
 
-        $dateHired = Carbon::parse($emp->date_hired); // Parse the hire date
+        $dateHired = format_date($emp->date_hired, 'carbon_date');
         $empJobCategory = $emp->job_category_id;
         $otherEarnings = OtherEarnings::all();
         $result = [];
@@ -97,9 +98,9 @@ class OtherServices extends Controller
         return $result;
     }
 
-    public function deductions(int $id) {
+    public function deductions(string $employee_no) {
         
-        $otherDeductions = EmployeeDeductions::with('deduction')->where('employee_no', $id)->get();
+        $otherDeductions = EmployeeDeductions::with('deduction')->where('employee_no', $employee_no)->get();
         
         return $otherDeductions ?? [];
     

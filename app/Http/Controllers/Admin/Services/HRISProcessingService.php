@@ -24,12 +24,12 @@ use Illuminate\Support\Facades\Mail;
 class HRISProcessingService extends Controller
 {
 
-    public function save(bool $isFirstTime = false, int $id, int $job_id, array $data = null) 
-    {
+    public function save(bool $isFirstTime = false, string $employee_no, string $job_id = null, array $data = null) 
+    {    
 
         $record = ApplicantUsers::with('applied.offer')
             ->whereHas('applied', fn($query) => $query->where('id', $job_id))
-            ->find($id);
+            ->find($employee_no);
         
         if ($isFirstTime && $record) {
 
@@ -56,29 +56,29 @@ class HRISProcessingService extends Controller
                 ],
             ];
 
-            $record = $this->employee_information($id, $data , true);            
+            $record = $this->employee_information($employee_no, $data , true);            
             $this->employee_account($record->employee_no, $data['employee_account'], true);
             $this->employee_personal($record->employee_no, $data['employee_personal'], true);
             $this->employee_parents($record->employee_no, null, true);
 
         } else {
-            $this->employee_information($id, $data['employee_information'], false);
-            $this->employee_account($id, $data['employee_account'], false);
+            $this->employee_information($employee_no, $data['employee_information'], false);
+            $this->employee_account($employee_no, $data['employee_account'], false);
             
-            $this->employee_personal($id, $data['employee_personal'], false);            
-            $this->employee_parents($id, $data['employee_parents'], false);
-            $this->employee_children($id, $data['employee_children']);
-            $this->employee_education($id, $data['employee_education']);
-            $this->employee_employment_history($id, $data['employee_employment_history']);
+            $this->employee_personal($employee_no, $data['employee_personal'], false);            
+            $this->employee_parents($employee_no, $data['employee_parents'], false);
+            $this->employee_children($employee_no, $data['employee_children']);
+            $this->employee_education($employee_no, $data['employee_education']);
+            $this->employee_employment_history($employee_no, $data['employee_employment_history']);
             
-            $this->employee_civil_service($id, $data['employee_civil_service']);
-            $this->employee_trainings($id, $data['employee_trainings']);
-            $this->employee_others($id, $data['employee_others']);
-            $this->employee_skills($id, $data['employee_skills']);
+            $this->employee_civil_service($employee_no, $data['employee_civil_service']);
+            $this->employee_trainings($employee_no, $data['employee_trainings']);
+            $this->employee_others($employee_no, $data['employee_others']);
+            $this->employee_skills($employee_no, $data['employee_skills']);
         }
     }
 
-    public function employee_information(int $id, array $data, bool $isFirstTime = false)  {
+    public function employee_information(string $employee_no, array $data, bool $isFirstTime = false)  {
         
         if ($isFirstTime) {
 
@@ -93,7 +93,7 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
-        $record = EmployeeInformation::where('employee_no', $id);
+        $record = EmployeeInformation::where('employee_no', $employee_no);
 
         return $record->update([
             'section_id' => $data['section_id'],
@@ -110,7 +110,7 @@ class HRISProcessingService extends Controller
         ]);
     }
 
-    public function employee_account(int $id, array $data, bool $isFirstTime = false)  {
+    public function employee_account(string $employee_no, array $data, bool $isFirstTime = false)  {
         
         if ($isFirstTime) {
 
@@ -120,10 +120,10 @@ class HRISProcessingService extends Controller
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
 
-            $email = $generate->email($id, $firstname, $lastname);
+            $email = $generate->email($employee_no, $firstname, $lastname);
 
             $record = EmployeeAccount::create([
-                'employee_no' => $id,
+                'employee_no' => $employee_no,
                 'applicant_id' => $applicant_id,
                 'email' => $email,
             ]);
@@ -131,7 +131,7 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
-        $record = EmployeeAccount::where('employee_no', $id);
+        $record = EmployeeAccount::where('employee_no', $employee_no);
 
         if(isset($data['password'])) {
             return $record->update([
@@ -141,10 +141,10 @@ class HRISProcessingService extends Controller
         
     }
 
-    public function employee_personal(int $id, array $data, bool $isFirstTime = false)  {
+    public function employee_personal(string $employee_no, array $data, bool $isFirstTime = false)  {
         
         $template = [
-            'employee_no' => $id,
+            'employee_no' => $employee_no,
             'profile' => !empty($data['profile']) ? $data['profile'] : null,
             'firstname' => !empty($data['firstname']) ? $data['firstname'] : null,
             'middlename' => !empty($data['middlename']) ? $data['middlename'] : null,
@@ -177,23 +177,23 @@ class HRISProcessingService extends Controller
         
 
         if ($isFirstTime) {
-            $template['employee_id'] = $id;
+            $template['employee_id'] = $employee_no;
             return EmployeePersonal::create($template);
         }
 
-        $record = EmployeePersonal::where('employee_no', $id);
+        $record = EmployeePersonal::where('employee_no', $employee_no);
         return $record->update($template);
     }
 
-    public function employee_parents(int $id, array $data = null, bool $isFirstTime = false) {
+    public function employee_parents(string $employee_no, array $data = null, bool $isFirstTime = false) {
 
         if($isFirstTime) {
             return EmployeeParents::create([
-                'employee_no' => $id,
+                'employee_no' => $employee_no,
             ]);
         } 
 
-        $record = EmployeeParents::where('employee_no', $id);
+        $record = EmployeeParents::where('employee_no', $employee_no);
 
         return $record->update([
             'spouse_surname' => $data['spouse_surname'],
@@ -215,15 +215,15 @@ class HRISProcessingService extends Controller
 
     }
 
-    public function employee_children(int $id, array $data) {
+    public function employee_children(string $employee_no, array $data) {
 
-        $record = EmployeeChildren::where('employee_no', $id);
+        $record = EmployeeChildren::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'firstname' => $value['firstname'],
                     'middlename' => $value['middlename'],
                     'lastname' => $value['lastname'],
@@ -234,15 +234,15 @@ class HRISProcessingService extends Controller
 
     }
 
-    public function employee_education(int $id, array $data) {
+    public function employee_education(string $employee_no, array $data) {
 
-        $record = EmployeeEducation::where('employee_no', $id);
+        $record = EmployeeEducation::where('employee_no', $employee_no);
         $record->delete();
     
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'level' => $value['level'],
                     'school_name' => $value['school_name'],
                     'course' => $value['course'],
@@ -254,15 +254,15 @@ class HRISProcessingService extends Controller
 
     }
 
-    public function employee_employment_history(int $id, array $data) {
+    public function employee_employment_history(string $employee_no, array $data) {
 
-        $record = EmployeeEmploymentHistory::where('employee_no', $id);
+        $record = EmployeeEmploymentHistory::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'position' => $value['position'],
                     'department' => $value['department'],
                     'company_name' => $value['company_name'],
@@ -277,15 +277,15 @@ class HRISProcessingService extends Controller
 
     }
 
-    public function employee_civil_service(int $id, array $data) {
+    public function employee_civil_service(string $employee_no, array $data) {
 
-        $record = EmployeeCivilService::where('employee_no', $id);
+        $record = EmployeeCivilService::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'certification' => $value['certification'],
                     'rating' => $value['rating'],
                     'date_exam' => $value['date_exam'],
@@ -297,15 +297,15 @@ class HRISProcessingService extends Controller
         }
     }
 
-    public function employee_trainings(int $id, array $data) {
+    public function employee_trainings(string $employee_no, array $data) {
 
-        $record = EmployeeTrainings::where('employee_no', $id);
+        $record = EmployeeTrainings::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'type' => $value['type'],
                     'name' => $value['name'],
                     'date_from' => $value['date_from'],
@@ -317,15 +317,15 @@ class HRISProcessingService extends Controller
         }
     }
 
-    public function employee_others(int $id, array $data) {
+    public function employee_others(string $employee_no, array $data) {
 
-        $record = EmployeeOtherWorks::where('employee_no', $id);
+        $record = EmployeeOtherWorks::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'organization' => $value['organization'],
                     'address' => $value['address'],
                     'date_from' => $value['date_from'],
@@ -337,15 +337,15 @@ class HRISProcessingService extends Controller
         }
     }
 
-    public function employee_skills(int $id, array $data) {
+    public function employee_skills(string $employee_no, array $data) {
 
-        $record = EmployeeSkillsHobbies::where('employee_no', $id);
+        $record = EmployeeSkillsHobbies::where('employee_no', $employee_no);
         $record->delete();
         
         if(!empty($data)) {
             foreach($data as $value) {
                 $record->insert([
-                    'employee_no' => $id,
+                    'employee_no' => $employee_no,
                     'name' => $value['name'],
                     'recognition' => $value['recognition'],
                     'organization' => $value['organization'],

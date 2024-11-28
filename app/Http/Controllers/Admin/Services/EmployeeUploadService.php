@@ -18,15 +18,17 @@ use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\JobCategory;
 use App\Models\Positions;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeeUploadService extends Controller
 {
 
     private function transformDate($value) {
-        return is_numeric($value) 
-            ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d') 
-            : $value;
+        if(is_numeric($value)) {
+            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+        } else {
+            return format_date($value, 'carbon_date')->format('Y-m-d');
+        }
     }    
 
     public function uploadEmployeeInformation($data) {
@@ -57,10 +59,13 @@ class EmployeeUploadService extends Controller
         foreach ($data as $employeeData) {
 
             // Handle Position
-            $position = Positions::firstOrCreate(
-                ['name' => $employeeData[16]],
-                ['code' => $employeeData[16]]
-            );
+
+            if(!empty($employeeData[16])) {
+                $position = Positions::firstOrCreate(
+                    ['name' => $employeeData[16]],
+                    ['code' => $employeeData[16]]
+                );
+            }
     
             // Handle Job Category (optional)
             $jobCategory = JobCategory::where('name', $employeeData[18])->first();
@@ -71,8 +76,8 @@ class EmployeeUploadService extends Controller
                 [
                     'date_hired' => $this->transformDate($employeeData[15]),
                     'department_id' => null,
-                    'position_id' => $position->id,
-                    'job_category_id' => $jobCategory?->id,
+                    'position_id' => $position->id ?? null,
+                    'job_category_id' => $jobCategory?->id ?? null,
                     'bank_account_no' => $employeeData[14],
                     'monthly_rate' => $employeeData[17]
                 ]
@@ -104,7 +109,7 @@ class EmployeeUploadService extends Controller
                     'sex' => strtolower($employeeData[5]),
                     'civil_status' => strtolower($employeeData[6]),
                     'birthday' => $this->transformDate($employeeData[7]),
-                    'age' => $employeeData[8],
+                    'age' => is_numeric($employeeData[8]) ? $employeeData[8] : null,
                     'gsis_no' => $employeeData[9],
                     'pagibig_no' => $employeeData[10],
                     'philhealth_no' => $employeeData[11],
@@ -657,21 +662,24 @@ class EmployeeUploadService extends Controller
     }  
     
     private function createAccount($employeeNo, $firstName, $lastName) {
-        // Check if an account already exists for this employee
-        $existingAccount = EmployeeAccount::where('employee_no', $employeeNo)->first();
-    
-        if (!$existingAccount) {
-            // Create the new account if it doesn't exist
 
-            $generate = new Generate;
-            $email = $generate->email($employeeNo, $firstName, $lastName);
+        set_time_limit(0);
+        
+        $generate = new Generate;
+        $email = $generate->email($employeeNo, $firstName, $lastName);
 
-            EmployeeAccount::create([
-                'employee_no' => $employeeNo,
+        $hash = password_hash('password', PASSWORD_BCRYPT, [
+            'cost' => 10,
+        ]);
+
+        EmployeeAccount::updateOrCreate(
+            ['employee_no' => $employeeNo],
+            [
                 'email' => $email,
-                'password' => bcrypt('password'), 
-            ]);
-        }
+                'password' => $hash
+            ]
+        );
     }
+
 
 }

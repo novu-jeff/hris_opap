@@ -65,7 +65,7 @@ class Index extends Component
         }
     }
 
-    public function loadRecords(int $employee_no = null) {
+    public function loadRecords(string $employee_no = null) {
 
         $model = EmployeeInformation::class;
 
@@ -103,6 +103,8 @@ class Index extends Component
             if (!$data) {
                 $this->records = [];
                 $this->dispatch('reinitializeDataTable');
+
+                session()->forget('target');
                 return;
             }
 
@@ -200,9 +202,7 @@ class Index extends Component
         } else {
             $this->employees = $model::with('personal')->get();
             $this->records = [];
-
-            return;
-
+            return ;
         }
     }
 
@@ -219,9 +219,9 @@ class Index extends Component
         return $this->countries = $countries;
     }
     
-    public function view(int $id) {
+    public function view(string $employee_no) {
         Session::put('target', [
-            'id' => $id,
+            'id' => $employee_no,
         ]);
         return redirect()->route('hris.index'); 
     }
@@ -266,6 +266,7 @@ class Index extends Component
     }
 
     public function uploadRecords() {
+        $this->reset('upload_preview', 'file');
         $this->dispatch('showModal', [
             'modal' => 'upload_employee'
         ]);
@@ -320,6 +321,8 @@ class Index extends Component
 
     public function close_upload_employee() {
         $this->reset('upload_preview', 'file');
+        sleep(1);
+        return redirect()->route('hris.index');
     }
 
     public function updatedFile() {
@@ -393,7 +396,8 @@ class Index extends Component
             
                 // Filter out empty rows
                 $sheet = array_filter($sheet, function ($row) {
-                    return !empty(array_filter($row, fn($value) => $value !== null && $value !== ''));
+                    return isset($row[0]) && !empty($row[0]) && 
+                           !empty(array_filter($row, fn($value) => $value !== null && $value !== ''));
                 });
             
                 // Reset array keys
@@ -522,6 +526,7 @@ class Index extends Component
             ]);
 
             $this->loadRecords();
+            $this->dispatch('reinitializeDataTable');
 
         } catch (\Exception $e) {
             
@@ -603,63 +608,63 @@ class Index extends Component
     
     
     
-    private function sanitizeUser(array $user): array {
-        return [
-            'employee_no' => $user[0] ?? null,
-            'lastname' => strtolower($user[1] ?? ''),
-            'firstname' => strtolower($user[2] ?? ''),
-            'middlename' => strtolower($user[3] ?? ''),
-            'present_address' => $user[4] ?? null,
-            'sex' => strtolower($user[5] ?? ''),
-            'civil_status' => strtolower($user[6] ?? ''),
-            'birthday' => $user[7] ?? null,
-            'age' => $user[8] ?? null,
-            'pagibig_no' => $user[9] ?? null,
-            'sss_no' => $user[10] ?? null,
-            'philhealth_no' => $user[11] ?? null,
-            'tin_no' => $user[12] ?? null,
-            'bank_account_no' => $user[13] ?? null,
-            'date_hired' => $user[14] ?? null,
-            'position' => $user[15] ?? '',
-            'department' => $user[16] ?? '',
-            'type' => $user[17] ?? null,
-            'email' => strtolower($user[18] ?? ''),
-        ];
-    }
+    // private function sanitizeUser(array $user): array {
+    //     return [
+    //         'employee_no' => $user[0] ?? null,
+    //         'lastname' => strtolower($user[1] ?? ''),
+    //         'firstname' => strtolower($user[2] ?? ''),
+    //         'middlename' => strtolower($user[3] ?? ''),
+    //         'present_address' => $user[4] ?? null,
+    //         'sex' => strtolower($user[5] ?? ''),
+    //         'civil_status' => strtolower($user[6] ?? ''),
+    //         'birthday' => $user[7] ?? null,
+    //         'age' => $user[8] ?? null,
+    //         'pagibig_no' => $user[9] ?? null,
+    //         'sss_no' => $user[10] ?? null,
+    //         'philhealth_no' => $user[11] ?? null,
+    //         'tin_no' => $user[12] ?? null,
+    //         'bank_account_no' => $user[13] ?? null,
+    //         'date_hired' => $user[14] ?? null,
+    //         'position' => $user[15] ?? '',
+    //         'department' => $user[16] ?? '',
+    //         'type' => $user[17] ?? null,
+    //         'email' => strtolower($user[18] ?? ''),
+    //     ];
+    // }
     
-    private function createEmployeeInformation(array $user, int $positionId, int $departmentId): EmployeeInformation {
+    // private function createEmployeeInformation(array $user, int $positionId, int $departmentId): EmployeeInformation {
         
 
-        $category_id = JobCategory::where('name', $user['type'])->first()->id;
+    //     $category_id = JobCategory::where('name', $user['type'])->first()->id;
 
-        return EmployeeInformation::create([
-            'employee_no' => $user['employee_no'],
-            'job_category_id' => $category_id,
-            'date_hired' => $user['date_hired'],
-            'bank_account_no' => $user['bank_account_no'],
-            'position_id' => $positionId,
-            'department_id' => $departmentId,
-        ]);
-    }
+    //     return EmployeeInformation::create([
+    //         'employee_no' => $user['employee_no'],
+    //         'job_category_id' => $category_id,
+    //         'date_hired' => $user['date_hired'],
+    //         'bank_account_no' => $user['bank_account_no'],
+    //         'position_id' => $positionId,
+    //         'department_id' => $departmentId,
+    //     ]);
+    // }
     
-    private function createEmployeePersonal(array $user, int $employeeId): EmployeePersonal {
-        return EmployeePersonal::create([
-            'employee_id' => $employeeId,
-            'email' => $user['email'],
-            'firstname' => $user['firstname'],
-            'middlename' => $user['middlename'],
-            'lastname' => $user['lastname'],
-            'birthday' => $user['birthday'],
-            'age' => $user['age'],
-            'sex' => $user['sex'],
-            'civil_status' => $user['civil_status'],
-            'present_address' => $user['present_address'],
-            'sss_no' => $user['sss_no'],
-            'pagibig_no' => $user['pagibig_no'],
-            'philhealth_no' => $user['philhealth_no'],
-            'tin_no' => $user['tin_no'],
-        ]);
-    }
+    // private function createEmployeePersonal(array $user, int $employeeId): EmployeePersonal {
+    //     return EmployeePersonal::create([
+    //         'employee_id' => $employeeId,
+    //         'email' => $user['email'],
+    //         'firstname' => $user['firstname'],
+    //         'middlename' => $user['middlename'],
+    //         'lastname' => $user['lastname'],
+    //         'birthday' => $user['birthday'],
+    //         'age' => $user['age'],
+    //         'sex' => $user['sex'],
+    //         'civil_status' => $user['civil_status'],
+    //         'present_address' => $user['present_address'],
+    //         'sss_no' => $user['sss_no'],
+    //         'pagibig_no' => $user['pagibig_no'],
+    //         'philhealth_no' => $user['philhealth_no'],
+    //         'tin_no' => $user['tin_no'],
+    //     ]);
+    // }
 
     public function setErrorActiveTabAccordions(array $errorKeys) {
         foreach ($errorKeys as $key) {
@@ -788,11 +793,11 @@ class Index extends Component
         return null;
     }
 
-    protected function rules(int $id = null) {
+    protected function rules(string $employee_no = null) {
         return [
             'records.employee_information.employee_no' => [
                 'required',
-                Rule::unique('employee_information', 'employee_no')->ignore($id, 'employee_no')
+                Rule::unique('employee_information', 'employee_no')->ignore($employee_no, 'employee_no')
             ],
             'records.employee_information.type' => 'nullable|exists:job_categories,id',
             'records.employee_information.status' => 'nullable|in:active,inactive',
@@ -1006,7 +1011,7 @@ class Index extends Component
         }
     }
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, string $employee_no = null) {
 
         if($isNotify) {
 
@@ -1014,7 +1019,7 @@ class Index extends Component
             $message = 'The action cannot be undone or reverted!';
             $action = 'remove';
 
-            $this->selected_id = $id;
+            $this->selected_id = $employee_no;
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
