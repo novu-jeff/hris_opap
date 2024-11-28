@@ -163,7 +163,7 @@ Livewire.on('reinitializeDataTable', function() {
     $(function() {
         setTimeout(() => {
             reinitializeDataTable();
-        }, 2000);
+        }, 1000);
     });
 });
 
