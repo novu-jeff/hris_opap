@@ -480,7 +480,7 @@ class Index extends Component
                         return [
                             'employee_no' => $employeeNo,
                             'name' => $name,
-                            'message' => "Employee # {$employeeNo} - {$name}"
+                            'message' => "Employee  {$employeeNo} - {$name}"
                         ];
                     }, $data['inserted']['data']);
                 } else {
@@ -996,7 +996,7 @@ class Index extends Component
                 'title' => 'Success!', 
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
-                'message' => 'Employee #' . $id . ' records successfully.' 
+                'message' => 'Employee ' . strtoupper($id) . ' records successfully.' 
             ]);
 
         } catch (\Exception $e) {
@@ -1053,7 +1053,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee #' . strtoupper($record->employee_no) . ' was deleted successfully' 
+                    'message' => 'Employee ' . strtoupper($record->employee_no) . ' was deleted successfully' 
                 ]);
 
             } else {
