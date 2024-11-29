@@ -46,19 +46,8 @@ class Manual extends Component
         $this->sections = Sections::all();
         $this->positions = Positions::all();
         $this->jobCategories = JobCategory::all();
-        $this->generateNextEmployeeNo();
     }
 
-    public function generateNextEmployeeNo() {
-        $latestEmployee = EmployeeInformation::latest('employee_no')->first();
-        if ($latestEmployee) {
-            $nextEmployeeNo = $latestEmployee->employee_no + 1;
-        } else {
-            $nextEmployeeNo = 01;
-        }
-
-        return  $this->records['employee_information']['employee_no'] = $nextEmployeeNo;
-    }
 
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
