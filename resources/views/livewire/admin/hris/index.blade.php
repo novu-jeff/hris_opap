@@ -1435,7 +1435,7 @@
                                                 : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
                                         }}">
                                     </td>                                            
-                                    <td>#{{$item->employee_no}}</td>
+                                    <td>{{$item->employee_no}}</td>
                                     <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
                                     <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
                                     <td>

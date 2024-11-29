@@ -470,10 +470,9 @@ class Manual extends Component
                 'title' => 'Success!', 
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
-                'message' => 'Employee #' . $record->employee_no . ' records successfully.' 
+                'message' => 'Employee #' . $record->employee_no . ' records successfully.',
+                'redirect' => route('hris.manual')
             ]);
-
-            $this->reset('records');
 
         } catch (\Exception $e) {
             DB::rollBack();
