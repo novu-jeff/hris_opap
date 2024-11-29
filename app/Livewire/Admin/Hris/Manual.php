@@ -450,8 +450,6 @@ class Manual extends Component
             $this->employee_others($record->employee_no, $this->records['employee_others'] ?? []);
             $this->employee_skills($record->employee_no, $this->records['employee_skills'] ?? []);
 
-            $this->generateNextEmployeeNo();
-
             DB::commit();
 
             $this->dispatch('alert', [
