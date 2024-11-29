@@ -492,7 +492,7 @@ class Manual extends Component
         ]);
     }
 
-    public function employee_account(int $employee_no, array $data) {
+    public function employee_account(string $employee_no, array $data) {
 
         $generate = new Generate;
 
@@ -509,7 +509,7 @@ class Manual extends Component
 
     }
 
-    public function employee_personal(int $employee_no, array $data) {
+    public function employee_personal(string $employee_no, array $data) {
         return EmployeePersonal::create([
             'employee_no' => $employee_no,
             'profile' => $data['profile'] ?? null,
@@ -543,7 +543,7 @@ class Manual extends Component
         ]);        
     }
 
-    public function employee_parents(int $employee_no, array $data) {
+    public function employee_parents(string $employee_no, array $data) {
         return EmployeeParents::create([
             'employee_no' => $employee_no,
             'spouse_surname' => $data['spouse_surname'] ?? null,
@@ -564,7 +564,7 @@ class Manual extends Component
         ]);
     }
 
-    public function employee_children(int $employee_no, array $data) {
+    public function employee_children(string $employee_no, array $data) {
         $model = EmployeeChildren::class;
         if(!empty($data)) {
             foreach($data as $value) {
@@ -579,7 +579,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_education(int $employee_no, array $data) {
+    public function employee_education(string $employee_no, array $data) {
         $model = EmployeeEducation::class;
         if(!empty($data)) {
             foreach($data as $value) {
@@ -595,7 +595,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_employment_history(int $employee_no, array $data) {
+    public function employee_employment_history(string $employee_no, array $data) {
         $model = EmployeeEmploymentHistory::class;
         if(!empty($data)) {
             foreach($data as $value) {
@@ -614,7 +614,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_civil_service(int $employee_no, array $data) {
+    public function employee_civil_service(string $employee_no, array $data) {
         $model = EmployeeCivilService::class;
         if(!empty($data)) {
             foreach($data as $value) {
@@ -631,7 +631,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_trainings(int $employee_no, array $data) {
+    public function employee_trainings(string $employee_no, array $data) {
         $model = EmployeeTrainings::class;
         
         if(!empty($data)) {
@@ -649,7 +649,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_others(int $employee_no, array $data) {
+    public function employee_others(string $employee_no, array $data) {
         $model = EmployeeOtherWorks::class;
  
         if(!empty($data)) {
@@ -667,7 +667,7 @@ class Manual extends Component
         }
     }
 
-    public function employee_skills(int $employee_no, array $data) {
+    public function employee_skills(string $employee_no, array $data) {
         $model = EmployeeSkillsHobbies::class;
         
         if(!empty($data)) {
