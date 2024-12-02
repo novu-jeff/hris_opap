@@ -14,7 +14,7 @@
         <tbody>
             @foreach($records as $log)
                 <tr>
-                    <td>#{{ format_id($log->information->id, 6) }}</td>
+                    <td>{{ $log->information->employee_no }}</td>
                     <td>{{ $log->information->biometrics_id }}</td>
                     <td>{{ $log->information->personal->firstname . ' ' . $log->information->personal->lastname }}</td> 
                     <td>{{ \Carbon\Carbon::parse($log->clock_in)->format('h:i A') }}</td>
