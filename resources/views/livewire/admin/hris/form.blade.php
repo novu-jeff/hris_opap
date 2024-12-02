@@ -172,17 +172,21 @@
                     </div>
                     <div class="card-body px-4">
                         <ul class="list-unstyled">
-                            @foreach ($records['other_earnings'] as $item)
-                                <li class="d-flex align-items-center gap-3 mb-2">
-                                    <span>
-                                        {{ strtoupper($item['code']) }} - {{ ucwords($item['name']) }}
-                                        @if ($item['isEligible'])
-                                            <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
-                                        @endif
-                                    </span>
-                                    <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" aria-hidden="true"></i>
-                                </li>
-                            @endforeach
+                            @if (count($records['other_earnings']) > 0)
+                                @foreach ($records['other_earnings'] as $item)
+                                    <li class="d-flex align-items-center gap-3 mb-2">
+                                        <span>
+                                            {{ strtoupper($item['code']) }} - {{ ucwords($item['name']) }}
+                                            @if ($item['isEligible'])
+                                                <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
+                                            @endif
+                                        </span>
+                                        <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" aria-hidden="true"></i>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li>No other earnings found.</li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -222,7 +226,7 @@
                             @endif
                         
                             @if(!$hasDeductions && !$hasGsis)
-                                <li class="text-muted text-uppercase">No deductions available.</li>
+                                <li class="text-muted text-uppercase">No other deductions found.</li>
                             @endif
                         </ul>
                                             
