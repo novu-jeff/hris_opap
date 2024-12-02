@@ -11,6 +11,23 @@ class Create extends Component
 
     public array $fields;
 
+    protected function rules() {
+        return [
+            'fields.name' => 'required|unique:branches,name',
+            'fields.code' => 'required|unique:branches,code',
+        ];
+    }
+
+    public function messages() {
+        return [
+            'fields.name.required' => 'The branch name is required.',
+            'fields.name.unique' => 'The branch name is already taken.',
+    
+            'fields.code.required' => 'The branch code is required.',
+            'fields.code.unique' => 'The branch code is already taken.',
+        ];
+    }
+
     public function save() {
         
         $this->validate();
@@ -47,23 +64,6 @@ class Create extends Component
             ]);
         }
 
-    }
-
-    protected function rules() {
-        return [
-            'fields.name' => 'required|unique:branches,name',
-            'fields.code' => 'required|unique:branches,code',
-        ];
-    }
-
-    public function messages() {
-        return [
-            'fields.name.required' => 'The branch name is required.',
-            'fields.name.unique' => 'The branch name is already taken.',
-    
-            'fields.code.required' => 'The branch code is required.',
-            'fields.code.unique' => 'The branch code is already taken.',
-        ];
     }
 
     public function render()

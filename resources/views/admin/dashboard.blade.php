@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | User Management'
+    'title' => 'HRIS | Dashboard'
 ])
 
 @section('content')
@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="mt-3">
-        
+        @livewire('admin.dashboard.index')
     </div>
 </div>
 @endsection

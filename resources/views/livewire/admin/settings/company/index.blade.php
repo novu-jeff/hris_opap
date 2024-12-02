@@ -23,10 +23,22 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="fields.phone_no">Phone No. <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="fields.phone_no" id="fields.phone_no" class="form-control text-uppercase">
+                            <label class="mb-2" for="fields.contact">Contact No. <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="fields.contact" id="fields.contact" class="form-control text-uppercase">
                             <div class="error-field">
-                                @error('fields.phone_no') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('fields.contact') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="fields.type">Company / Business Type <span class="text-danger">*</span></label>
+                            <select wire:model="fields.type" id="type" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                @foreach($types as $type)test 
+                                    <option value="{{$type->id}}">{{$type->name}}</option>
+                                @endforeach
+                            </select>
+                            <div class="error-field">
+                                @error('fields.type') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
