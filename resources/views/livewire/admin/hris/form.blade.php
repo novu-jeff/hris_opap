@@ -185,7 +185,7 @@
                                     </li>
                                 @endforeach
                             @else
-                                <li>No other earnings found.</li>
+                             <li class="text-muted text-uppercase">No other earnings found.</li>
                             @endif
                         </ul>
                     </div>
