@@ -34,6 +34,14 @@ class EmployeeInformation extends Model
         return $this->hasOne(Sections::class, 'id', 'section_id');
     }
 
+    public function branch() {
+        return $this->hasOne(Branches::class, 'id', 'branch_id');
+    }
+
+    public function department() {
+        return $this->hasOne(Departments::class, 'id', 'department_id');
+    }
+
     public function account() {
         return $this->hasOne(EmployeeAccount::class, 'employee_no', 'employee_no');
     }
