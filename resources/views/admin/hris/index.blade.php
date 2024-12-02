@@ -11,7 +11,11 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.hris.index')
+        @if(!isset($employee_no))
+            @livewire('admin.hris.index')
+        @else
+            @livewire('admin.hris.form', ['employee_no' => $employee_no])
+        @endif
     </div>
 </div>
 @endsection

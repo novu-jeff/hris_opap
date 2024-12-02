@@ -161,9 +161,7 @@ Livewire.on('reinitializeSelect', function() {
 
 Livewire.on('reinitializeDataTable', function() {
     $(function() {
-        setTimeout(() => {
-            reinitializeDataTable();
-        }, 1000);
+        reinitializeDataTable();
     });
 });
 

@@ -17,28 +17,27 @@ class Team extends Component
 
     public function loadRecords() {
 
-        $user_id = Auth::user()->employee_id;
-        $user = EmployeeInformation::find($user_id);
+        $user_id = Auth::user()->employee_no;
+
+        $user = EmployeeInformation::where('employee_no', $user_id)->first();
 
         if(!$user) {
             return redirect()->route('employee.dashboard');
         }
 
-        $branch_id = $user->branch_id;
-        $department_id = $user->department_id;
+        $branch_id = $user->section_id->branch_id ?? null;
+        $department_id = $user->section_id->department_id ?? null;
 
-        $records = EmployeeInformation::with('branch', 'department', 'positions', 'personal', 'account')
-            ->where('branch_id', $branch_id)
-            ->where('department_id', $department_id)->get();
+        $records = EmployeeInformation::with('section', 'positions', 'personal', 'account')->get();
 
         $groupedRecords = [
             'branch' => [
                 'branch_id' => $branch_id,
-                'branch_name' => $records->first()->branch->name ?? 'Unknown Branch',
+                'branch_name' => $records->first()->section->branch->name ?? 'Unknown Branch',
             ],
             'department' => [
                 'department_id' => $department_id,
-                'department_name' => $records->first()->department->name ?? 'Unknown Department',
+                'department_name' => $records->first()->section->department->name ?? 'Unknown Department',
             ],
             'positions' => []
         ];

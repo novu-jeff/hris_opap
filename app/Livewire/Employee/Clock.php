@@ -29,12 +29,17 @@ class Clock extends Component
 
     public function loadRecords() {
 
-        $user_id = Auth::user()->employee_id;
+        $user_id = Auth::user()->employee_no;
+
+        if(is_null($user_id)) {
+            return redirect()->route('employee.clock');
+        };
+
         $this->user_id = $user_id;
 
         $today = Carbon::today();
 
-        $records = EmployeeClockInOut::where('employee_id', $user_id)
+        $records = EmployeeClockInOut::where('employee_no', $user_id)
             ->whereDate('created_at', $today)->first();
 
         if ($records) {
@@ -92,7 +97,7 @@ class Clock extends Component
         $today = Carbon::today();
 
         if ($type == 'in') {
-            $records = EmployeeClockInOut::where('employee_id', $this->user_id)
+            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
                 ->whereDate('created_at', $today)->first();
 
             if ($records && !is_null($records->clock_in)) {
@@ -107,7 +112,7 @@ class Clock extends Component
         }
 
         if ($type == 'out') {
-            $records = EmployeeClockInOut::where('employee_id', $this->user_id)
+            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
                 ->whereDate('created_at', $today)->first();
 
             if (!$records || is_null($records->clock_in)) {
@@ -141,6 +146,10 @@ class Clock extends Component
             $locationData = $response->json();
 
             if (!$locationData) {
+                return 'running in local environment';
+            }
+
+            if(!isset($locationData['loc'])) {
                 return 'running in local environment';
             }
 
@@ -178,7 +187,7 @@ class Clock extends Component
         $location = $this->saveLocation();
         $timestamp = Carbon::now();
 
-        $record = EmployeeClockInOut::where('employee_id', $this->user_id)
+        $record = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->whereDate('created_at', Carbon::today())
             ->first();
 
@@ -192,7 +201,7 @@ class Clock extends Component
 
         } else {
             EmployeeClockInOut::create([
-                'employee_id' => $this->user_id,
+                'employee_no' => $this->user_id,
                 'clock_in' => $timestamp,
                 'captured_image_clockin' => $this->capturedImage,
                 'captured_location_clockin' => $location
@@ -212,7 +221,7 @@ class Clock extends Component
 
 
     public function showLogs() {
-        $records = EmployeeClockInOut::where('employee_id', $this->user_id)
+        $records = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->get();
 
         $this->logs = $records;

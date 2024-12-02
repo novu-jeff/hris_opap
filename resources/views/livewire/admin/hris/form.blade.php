@@ -2,19 +2,23 @@
     <div class="d-flex justify-content-end mb-5 gap-3">
         <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
     </div>
-    <form wire:submit.prevent="save">
+    <form wire:submit.prevent="save({{$records['employee_information']['id']}})">
         <div class="card mb-4 border-0">
             <div class="card-header border-0 bg-transparent">
-                <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 px-3">Employee Details</h5>
+                <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Employee Details</h5>
             </div>
             <div class="card-body px-4">
                 <div class="row my-3">
-                    <div class="col-12 mb-5">
+                    {{-- <div class="col-12 mb-5">
                         <div class="row">
-                          
+                            <div class="col-12 col-md-6">
+                                <img src="{{
+                                    $records['employee_personal']['profile'] ? Storage::url('employee/users/'.$records['employee_personal']['employee_id'].'/'.$records['employee_personal']['profile']) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                }}" style="width: 180px; height: 180px;">
+                            </div>
                         </div>
                     </div>  
-                    {{-- <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3">
                         <div class="profile">
                             <label class="mb-2" for="profile">Employee Image</label>
                             <input type="file" wire:model="profile" id="profile" class="form-control">
@@ -39,7 +43,7 @@
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="date_hired">Date Hired</label>
-                        <input type="date" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control">
+                        <input type="text" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control restricted" readonly>
                         <div class="error-field">
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
@@ -158,6 +162,72 @@
                     </div>                  
                 </div>
                 <hr class="mt-5">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card mb-4 border-0">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Other Earnings</h5>
+                    </div>
+                    <div class="card-body px-4">
+                        <ul class="list-unstyled">
+                            @foreach ($records['other_earnings'] as $item)
+                                <li class="d-flex align-items-center gap-3 mb-2">
+                                    <span>
+                                        {{ strtoupper($item['code']) }} - {{ ucwords($item['name']) }}
+                                        @if ($item['isEligible'])
+                                            <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
+                                        @endif
+                                    </span>
+                                    <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" aria-hidden="true"></i>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card mb-4 border-0">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Other Deductions</h5>
+                    </div>
+                    <div class="card-body px-4">
+                        <ul class="list-unstyled">
+                            @php
+                                $hasDeductions = !empty($records['other_deductions']) && count($records['other_deductions']) > 0;
+                                $hasGsis = !empty($records['employee_gsis']);
+                            @endphp
+                        
+                            @if($hasDeductions)
+                                @foreach ($records['other_deductions'] as $item)
+                                    <li class="d-flex align-items-center gap-3 mb-2">
+                                        <div>
+                                            <span>{{ ucwords($item->deduction->name) }}</span>
+                                            <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
+                                            <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            @endif
+                        
+                            @if($hasGsis)
+                                <li class="d-flex align-items-center gap-3 mb-2">
+                                    <div>
+                                        <span>GSIS </span>
+                                        <strong>worth ₱{{ number_format($records['employee_gsis']['ps'], 2) }}</strong>
+                                        <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
+                                    </div>
+                                </li>
+                            @endif
+                        
+                            @if(!$hasDeductions && !$hasGsis)
+                                <li class="text-muted text-uppercase">No deductions available.</li>
+                            @endif
+                        </ul>
+                                            
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card mb-4">
@@ -655,7 +725,7 @@
                                         <div id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
                                             <div class="accordion-body mt-4">
                                                 <div class="d-flex justify-content-end mb-4">
-                                                    <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('family', 'employee_children', 'children')">Add Record</button>
+                                                    <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('family', 'employee_children', 'children')">Add Record</button>
                                                 </div>
                                                 @if (!empty($records['employee_children']))
                                                     <div class="table-responsive">
@@ -719,7 +789,7 @@
                     <div class="tab-pane fade {{$activeTab == 'education' ? 'active show' : ''}} " id="pills-education" role="tabpanel" aria-labelledby="pills-education-tab" tabindex="0">
 
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('education', 'employee_education')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('education', 'employee_education')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_education']))
@@ -796,7 +866,7 @@
                     <div class="tab-pane fade {{$activeTab == 'history' ? 'active show' : ''}}" id="pills-history" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                         
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('history', 'employee_employment_history')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('history', 'employee_employment_history')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_employment_history']))
@@ -895,7 +965,7 @@
                     <div class="tab-pane fade {{$activeTab == 'civil_service' ? 'active show' : ''}}" id="pills-civil-service" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                         
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('civil_service', 'employee_civil_service')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('civil_service', 'employee_civil_service')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_civil_service']))
@@ -933,7 +1003,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.date_exam') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -945,7 +1015,7 @@
                                                     </div>
                                                 </td>                                         
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.license_no') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -970,7 +1040,7 @@
                     <div class="tab-pane fade {{$activeTab == 'trainings' ? 'active show' : ''}}" id="pills-trainings" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                         
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('trainings', 'employee_trainings')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('trainings', 'employee_trainings')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_trainings']))
@@ -1045,7 +1115,7 @@
                     <div class="tab-pane fade {{$activeTab == 'others' ? 'active show' : ''}}" id="pills-others" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                         
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('others', 'employee_others')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('others', 'employee_others')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_others']))
@@ -1083,7 +1153,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -1120,7 +1190,7 @@
                     <div class="tab-pane fade {{$activeTab == 'skills' ? 'active show' : ''}}" id="pills-skills" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                         
                         <div class="d-flex justify-content-end mb-4">
-                            <button type="button" class="btn btn-info ms-auto text-white" wire:click="addRecord('skills', 'employee_skills')">Add Record</button>
+                            <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('skills', 'employee_skills')">Add Record</button>
                         </div>
 
                         @if (!empty($records['employee_skills']))
@@ -1200,19 +1270,21 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer d-flex justify-content-end bg-transparent border-0">
-                <div class="text-end">
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                        <span wire:loading.remove>Save</span>    
-                        <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
-                    </button>
-                    <div class="mt-3 pb-5">
-                        @if ($errors->any())
-                            <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                        @endif
+            @if (!empty($records))
+                <div class="card-footer d-flex justify-content-end bg-transparent border-0">
+                    <div class="text-end">
+                        <button type="submit" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
+                            <span wire:loading.remove>Save</span>    
+                            <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
+                        </button>
+                        <div class="mt-3 pb-5">
+                            @if ($errors->any())
+                                <small class="text-danger">There's an error upon submitting, please review your form.</small>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
     </form> 
 </div>
