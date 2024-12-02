@@ -30,12 +30,8 @@ class EmployeeInformation extends Model
     ];
     public $timestamps = false;
 
-    public function branch() {
-        return $this->hasOne(Branches::class, 'id', 'branch_id');
-    }
-
-    public function department() {
-        return $this->hasOne(Departments::class, 'id', 'department_id');
+    public function section() {
+        return $this->hasOne(Sections::class, 'id', 'section_id');
     }
 
     public function account() {

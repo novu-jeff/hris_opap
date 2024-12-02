@@ -15,8 +15,4 @@ class Departments extends Model
         'code',
         'isActive'
     ];
-
-    public function cost_center() {
-        return $this->hasOne(CostCenters::class, 'id', 'cost_center_id');
-    }
 }

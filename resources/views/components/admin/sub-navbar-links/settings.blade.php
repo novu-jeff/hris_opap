@@ -4,7 +4,7 @@
         Settings
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Company Information</a></li>
+        <li><a class="dropdown-item" href="{{route('company.index')}}">Company Information</a></li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Recruitment

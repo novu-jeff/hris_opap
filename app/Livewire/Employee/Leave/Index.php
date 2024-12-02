@@ -19,8 +19,13 @@ class Index extends Component
     }
 
     public function loadRecords() {
-        $user_id = Auth::user()->employee_id;
-        $records = EmployeeLeave::where('employee_id', $user_id)
+        $user_id = Auth::user()->employee_no;
+
+        if(is_null($user_id)) {
+            return redirect()->route('employee.leave');
+        };
+
+        $records = EmployeeLeave::where('employee_no', $user_id)
             ->get();
         
         $this->records = $records;

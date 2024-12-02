@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('employee_clock_in_out', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')
-                ->constrained('employee_information');
+            $table->string('employee_no');
             $table->string('clock_in')
                 ->nullable();
             $table->string('clock_out')

@@ -11,7 +11,7 @@ class EmployeeClockInOut extends Model
 
     protected $table = 'employee_clock_in_out';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'clock_in',
         'clock_out',
         'captured_image_clockin',
@@ -21,6 +21,6 @@ class EmployeeClockInOut extends Model
     ];
 
     public function information() {
-        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_id');
+        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_no');
     }
 }

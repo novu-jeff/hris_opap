@@ -23,7 +23,7 @@ class EmployeeAccount extends Authenticatable
     public $timestamps = false;
 
     public function personal() {
-        return $this->hasOne(EmployeePersonal::class, 'employee_id', 'employee_id');
+        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
 
 }

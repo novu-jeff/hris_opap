@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Job\RequirementsController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
+use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -136,9 +137,10 @@ Route::prefix('admin')->group(function() {
         
         });
         
-        Route::resource('hris', HRISController::class)
-            ->only(['index'])
-            ->names('hris');
+        Route::get('hris', [HRISController::class, 'index'])
+            ->name('hris.index');
+        Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
+            ->name('hris.show');
 
         Route::get('hris/manual', [HRISController::class, 'manual'])
             ->name('hris.manual');
@@ -167,6 +169,9 @@ Route::prefix('admin')->group(function() {
         
         Route::prefix('settings')->group( function() {
         
+            Route::get('company-information', [CompanyInformationController::class, 'index'])
+                ->name('company.index');
+
             Route::prefix('hris')->group( function() {
         
                 Route::prefix('location-management')->group( function() {
