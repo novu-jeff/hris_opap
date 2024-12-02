@@ -37,7 +37,7 @@
                             @endphp
                             {{ $hoursConsumed }}h {{ $minutesConsumed }}m
                         @else
-                            N/A
+                            In Progress...
                         @endif
                     </td>
                     <td>{{ \Carbon\Carbon::parse($log->created_at)->format('M d, Y') }}</td> 
