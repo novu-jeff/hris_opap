@@ -11,17 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sections', function (Blueprint $table) {
+        Schema::create('company_business_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code')
+            $table->string('name')
                 ->nullable();
-            $table->string('name');
-            $table->foreignId('branch_id')
-                ->constrained('branches')
-                ->onDelete('cascade');
-            $table->foreignId('department_id')
-                ->constrained('departments')
-                ->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -31,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sections');
+        Schema::dropIfExists('company_business_types');
     }
 };

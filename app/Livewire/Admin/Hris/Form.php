@@ -436,7 +436,7 @@ class Form extends Component
             'records.employee_information.status' => 'nullable|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
             'records.employee_information.position_id' => 'nullable|exists:positions,id',
-            'records.employee_information.section_id' => 'required|exists:sections,id',
+            'records.employee_information.section_id' => 'nullable|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
             'records.employee_information.biometrics_id' => 'nullable|numeric',
@@ -506,7 +506,7 @@ class Form extends Component
         ];
     }
 
-    public function messages() {
+    protected function messages() {
         return [
             'records.employee_information.employee_no.required' => 'The employee no is required.',
             'records.employee_information.employee_no.unique' => 'The employee no is already taken.',

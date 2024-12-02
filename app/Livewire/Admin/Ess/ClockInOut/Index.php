@@ -11,7 +11,9 @@ class Index extends Component
     public $records;
 
     public function mount() {
-        $records = EmployeeClockInOut::with('information.personal')->get();
+        $records = EmployeeClockInOut::with('information.personal')
+            ->orderBy('created_at', 'asc') 
+            ->get();
         $this->records = $records;
     }
 

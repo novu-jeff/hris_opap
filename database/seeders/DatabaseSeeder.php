@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $product = env('APP_PRODUCT');
+
         $this->call([
             AdminAccountSeeder::class,
             RequirementSeeder::class,
@@ -21,15 +24,20 @@ class DatabaseSeeder extends Seeder
             JobPostSeeder::class,
             PositionSeeder::class,
             ViolationSeeder::class,
-            SkillListSeeder::class,
-            BranchSeeder::class,
-            DepartmentSeeder::class,
-            SectionSeeder::class,
+            SkillListSeeder::class,   
             AnnouncementSeeder::class,
             JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
-            OtherEarningsSeeder::class,
-            OtherDeductionsSeeder::class
         ]);
+
+        if($product == 'opap') {
+            $this->call([
+                BranchSeeder::class,
+                DepartmentSeeder::class,
+                SectionSeeder::class,
+                OtherEarningsSeeder::class,
+                OtherDeductionsSeeder::class
+            ]);
+        }
     }
 }
