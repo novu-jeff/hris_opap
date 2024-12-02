@@ -21,6 +21,6 @@ class EmployeeClockInOut extends Model
     ];
 
     public function information() {
-        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_no');
+        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
     }
 }
