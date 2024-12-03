@@ -13,12 +13,12 @@ class BankInformations extends Model
     protected $fillable = [
         'name',
         'account_number',
-        'department_center_id',
+        'department_id',
         'isActive'
     ];
 
-    public function department_center() {
-        return $this->hasOne(DepartmentCenters::class, 'id', 'department_center_id');
+    public function departments() {
+        return $this->hasOne(Departments::class, 'id', 'department_id');
     }
 
 }

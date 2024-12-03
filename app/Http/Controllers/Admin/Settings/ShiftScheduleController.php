@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Settings\HRIS;
+namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ViolationController extends Controller
+class ShiftScheduleController extends Controller
 {
-    /**
+     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('admin.settings.hris.violation.index');
+        return view('admin.settings.shift-schedule.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class ViolationController extends Controller
      */
     public function create()
     {
-        return view('admin.settings.hris.violation.create');
+        return view('admin.settings.shift-schedule.create');
     }
 
     /**
@@ -29,6 +29,6 @@ class ViolationController extends Controller
 
     public function edit(int $id)
     {
-        return view('admin.settings.hris.violation.edit', compact('id'));
+        return view('admin.settings.shift-schedule.edit', compact('id'));
     }
 }

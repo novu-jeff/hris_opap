@@ -11,6 +11,20 @@ class Create extends Component
 
     public array $fields;
 
+    protected function rules() {
+        return [
+            'fields.name' => 'required|unique:violations,name',
+        ];
+    }
+
+    public function messages() {
+        return [
+            'fields.name.required' => 'The violation name is required.',
+            'fields.name.unique' => 'The violation name is already taken.',
+        ];
+    }
+
+
     public function save() {
         
         $this->validate();
@@ -46,19 +60,6 @@ class Create extends Component
             ]);
         }
 
-    }
-
-    protected function rules() {
-        return [
-            'fields.name' => 'required|unique:violations,name',
-        ];
-    }
-
-    public function messages() {
-        return [
-            'fields.name.required' => 'The violation name is required.',
-            'fields.name.unique' => 'The violation name is already taken.',
-        ];
     }
 
     public function render()

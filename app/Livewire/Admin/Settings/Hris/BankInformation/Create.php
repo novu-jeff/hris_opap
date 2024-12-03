@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Settings\Hris\BankInformation;
 
 use App\Models\BankInformations;
-use App\Models\DepartmentCenters;
+use App\Models\Departments;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -14,7 +14,7 @@ class Create extends Component
     public array $fields;
 
     public function mount() {
-        $this->departments = DepartmentCenters::all();
+        $this->departments = Departments::all();
     }
 
     public function save() {
@@ -28,7 +28,7 @@ class Create extends Component
             BankInformations::create([
                 'name' => $this->fields['name'],
                 'account_number' => $this->fields['account_number'],
-                'department_center_id' => $this->fields['department'],
+                'department_id' => $this->fields['department'],
             ]);
 
             DB::commit();

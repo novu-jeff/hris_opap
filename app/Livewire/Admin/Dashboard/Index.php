@@ -25,31 +25,26 @@ class Index extends Component
 
     public function loadRecords()
     {
-
         $recruitmentCounts = JobApplicants::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
-            ->pluck('total', 'status');
+            ->pluck('total', 'status')->toArray();
 
         $employeeCounts = EmployeeInformation::groupBy('job_category_id')
             ->select('job_category_id', DB::raw('count(*) as total'))
-            ->pluck('total', 'job_category_id');
-    
+            ->pluck('total', 'job_category_id')->toArray();
+
         $leaveCounts = EmployeeLeave::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
-            ->pluck('total', 'status');
+            ->pluck('total', 'status')->toArray();
 
-        $earnings = OtherEarnings::all()->toArray() ?? [];
-        $deductions = OtherDeductions::all()->toArray() ?? [];
+        $earnings = OtherEarnings::all();
+        $deductions = OtherDeductions::all();
 
         $gsis_billing = GSISBilling::with('items')
             ->orderBy('billing_month', 'desc')
             ->first();
 
-        $gsis_billing = $gsis_billing ? $gsis_billing->toArray() : [];
-
-        $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today()) 
-            ->get();
-
+        $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today())->get();
 
         $this->stats = [
             'recruitment' => [
@@ -67,8 +62,8 @@ class Index extends Component
             ],
             'clockinout' => [
                 'clockin' => $clockinout->whereNotNull('clock_in')->count(),
-                'inprogress' => $clockinout->whereNotNull('clock_in')->whereNull('clock_out')->count(), // Clocked in but not clocked out
-                'clockout' => $clockinout->whereNotNull('clock_out')->count(), 
+                'inprogress' => $clockinout->whereNotNull('clock_in')->whereNull('clock_out')->count(),
+                'clockout' => $clockinout->whereNotNull('clock_out')->count(),
             ],
             'leave' => [
                 'pending' => $leaveCounts['pending'] ?? 0,
@@ -77,10 +72,10 @@ class Index extends Component
             ],
             'earnings' => $earnings,
             'deductions' => $deductions,
-            'gsis_billing' => $gsis_billing
+            'gsis_billing' => $gsis_billing ? $gsis_billing->toArray() : [],
         ];
-
-    }    
+    }
+   
 
     public function render()
     {
