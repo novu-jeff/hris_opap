@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
             AnnouncementSeeder::class,
             JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
+            CompanyBusinessTypeSeeder::class,
+            CompanyInformationSeeder::class
         ]);
 
         if($product == 'opap') {
@@ -36,7 +38,8 @@ class DatabaseSeeder extends Seeder
                 DepartmentSeeder::class,
                 SectionSeeder::class,
                 OtherEarningsSeeder::class,
-                OtherDeductionsSeeder::class
+                OtherDeductionsSeeder::class,
+                ShiftScheduleSeeder::class
             ]);
         }
     }

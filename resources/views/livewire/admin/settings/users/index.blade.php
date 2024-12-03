@@ -249,9 +249,9 @@
                                         <td>{{$record->date_hired}}</td>
                                     @endif
                                     <td>
-                                        <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
+                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->id])}}" class="btn btn-success mx-1">
                                             <i class="fa-solid fa-person"></i>
-                                        </button>
+                                        </a>
                                         <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>  

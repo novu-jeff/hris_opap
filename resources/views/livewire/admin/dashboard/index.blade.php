@@ -184,14 +184,16 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>BP No</th>
-                                                <th>Description</th> <!-- Add more headers as needed -->
+                                                <th>CRN No</th>
+                                                <th>Amount</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($stats['gsis_billing']['items'] as $billing)
                                                 <tr>
-                                                    <td>{{ $billing['bp_no'] }}</td>
-                                                    <td>{{ $billing['description'] ?? 'N/A' }}</td> <!-- Example column -->
+                                                    <td>{{ $billing['bp_no'] ?? 'N/A' }}</td>
+                                                    <td>{{ $billing['crn_no'] ?? 'N/A' }}</td> 
+                                                    <td>₱{{ number_format($billing['ps'], 2) ?? 'N/A' }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>

@@ -2,28 +2,13 @@
 
 namespace App\Livewire\Admin\Hris;
 
-use App\Helper\Generate;
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
-use App\Http\Controllers\Admin\Services\OtherServices;
-use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Imports\EmployeeImports;
-use App\Models\Branches;
-use App\Models\Departments;
-use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
-use App\Models\JobCategory;
-use App\Models\OtherEarnings;
-use App\Models\Positions;
-use App\Models\Sections;
-use Carbon\Carbon;
-use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -62,12 +47,12 @@ class Index extends Component
     }
 
     public function close_upload_employee() {
+        $this->dispatch('reinitializeDataTable');
         $this->reset('upload_preview', 'file');
     }
 
     public function updatedFile() {
         if ($this->file) {
-            $this->resetErrorBag('file');
             $this->upload_preview;
             $file = $this->file;
 
@@ -78,6 +63,7 @@ class Index extends Component
                     try {
 
                         $files = Storage::files('public/temp/files');
+
                         Storage::delete($files); 
 
                         $fileName = uniqid() . '.' . $extension;
@@ -101,6 +87,9 @@ class Index extends Component
         } else {
             $this->isParsing = true;
         }
+
+        $this->dispatch('reinitializeDataTable');
+
     }
 
     public function upload_file() {

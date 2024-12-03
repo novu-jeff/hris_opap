@@ -39,7 +39,7 @@
                     </ul>
                 </li>
                 <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
-                <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li>
+                {{-- <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li> --}}
                 <li><a class="dropdown-item" href="{{route('employee-status.index')}}">Employee Status</a></li>
                 <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
                 <li><a class="dropdown-item" href="{{route('violation.index')}}">Violations</a></li>
@@ -54,7 +54,7 @@
                 Timekeeping
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Shift Schedule</a></li>
+                <li><a class="dropdown-item" href="{{route('shift-schedule.index')}}">Shift Schedule</a></li>
                 <li><a class="dropdown-item" href="#">Employee Schedule</a></li>
             </ul>
         </li>

@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\Job\RequirementsController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
-use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -28,6 +27,8 @@ use App\Http\Controllers\Admin\Settings\HRIS\OtherDeductionsController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherEarningsController;
 use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
+use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
+use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -160,7 +161,7 @@ Route::prefix('admin')->group(function() {
                 Route::get('edit/{id}', [ESSAnnouncementController::class, 'edit'])
                     ->name('ess.announcements.edit');
             });
-        
+            
             Route::prefix('request-status')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
@@ -221,6 +222,9 @@ Route::prefix('admin')->group(function() {
                 Route::post('employee/deductions/{id}', [DeductionController::class, 'create'])
                     ->name('deductions.create');
         
+                Route::resource('shift-schedule', ShiftScheduleController::class)
+                    ->names('shift-schedule');
+
             });
         
             Route::prefix('users')->group(function() {

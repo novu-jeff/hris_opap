@@ -136,7 +136,6 @@
                 </thead>
                 <tbody>
                     @if ($lazy)
-                        <!-- Skeleton Rows -->
                         @for ($i = 0; $i < 10; $i++)
                             <tr>
                                 <td class="text-center">
@@ -158,7 +157,6 @@
                         @endfor
                     @else
                         @if (!empty($employees))
-                            <!-- Loaded Employee Rows -->
                             @foreach($employees as $key => $item)
                                 <tr data-id="{{$item->employee_no}}">
                                     <td class="text-center">
@@ -186,8 +184,6 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Skeleton CSS -->
         <style>
             .skeleton {
                 background-color: #e0e0e0;
