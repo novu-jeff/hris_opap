@@ -29,9 +29,11 @@ class DatabaseSeeder extends Seeder
             JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
-            CompanyInformationSeeder::class
+            CompanyInformationSeeder::class,
+            ShiftScheduleSeeder::class
         ]);
 
+        
         if($product == 'opap') {
             $this->call([
                 BranchSeeder::class,
@@ -39,7 +41,6 @@ class DatabaseSeeder extends Seeder
                 SectionSeeder::class,
                 OtherEarningsSeeder::class,
                 OtherDeductionsSeeder::class,
-                ShiftScheduleSeeder::class
             ]);
         }
     }
