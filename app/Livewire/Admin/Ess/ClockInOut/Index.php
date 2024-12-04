@@ -18,6 +18,7 @@ class Index extends Component
             ->groupBy(function ($record) {
                 return Carbon::parse($record->created_at)->format('F d, Y'); // Group by date
             })
+            ->sortKeysDesc() // Sort dates in descending order
             ->map(function ($group, $date) {
                 // Calculate totals
                 $totalClockIn = $group->count();
@@ -54,8 +55,9 @@ class Index extends Component
                     })->values()->toArray(),
                 ];
             })->values()->toArray();
-        
+
         $this->records = $records;
+
     
     }
 
