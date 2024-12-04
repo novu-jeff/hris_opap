@@ -56,10 +56,7 @@ class Index extends Component
                 ];
             })->values()->toArray();
 
-        dd($records);
-
         $this->records = $records;
-
     
     }
 
