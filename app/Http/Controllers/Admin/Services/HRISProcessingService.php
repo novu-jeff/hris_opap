@@ -53,6 +53,7 @@ class HRISProcessingService extends Controller
                     'sex' => $record->sex,
                     'mobile_number' => $record->phone_no,
                     'tel_no' => $record->tel_no,
+                    'email' => $record->email
                 ],
             ];
 

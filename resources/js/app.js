@@ -5,6 +5,7 @@ import {
     reinitializeDataTable, 
     copy_link, 
     ckeditor, 
+    formatTime,
 }
 from './helpers';
 
@@ -14,6 +15,7 @@ window._delete = _delete;
 window.ckeditor = ckeditor;
 window.copy_link = copy_link;
 window.reinitializeDataTable = reinitializeDataTable;
+window.formatTime = formatTime;
 
 reinitializeDataTable();
 

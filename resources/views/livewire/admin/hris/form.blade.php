@@ -1269,6 +1269,16 @@
                                         @error('records.employee_account.confirm_password') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
+                                <div class="col-12 col-md-12 mb-3">
+                                    <label class="mb-2" for="records.employee_account.notify_user">Notify User</label>
+                                    <input type="checkbox" wire:model="records.employee_account.notify_user" id="records.employee_account.notify_user" class="form-check-input ms-1">
+                                    <p class="text-uppercase fw-bold text-muted" style="font-size:10px">By Checking this, we will send a notification to the employee's email associated with their username and password.</p>
+                                    <div class="error-field">
+                                        @error('records.employee_account.notify_user') 
+                                            <span class="text-danger">{{ $message }}</span> 
+                                        @enderror
+                                    </div>
+                                </div>                                
                             </div>
                         </div>
                     </div>

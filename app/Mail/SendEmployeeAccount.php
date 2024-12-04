@@ -28,8 +28,15 @@ class SendEmployeeAccount extends Mailable
      */
     public function envelope(): Envelope
     {
+
+        if($this->data['is_newly_hired']) {
+            $subject = 'Congratulations!';
+        } else {
+            $subject = 'HRIS | Account Credential';
+        }
+
         return new Envelope(
-            subject: 'Congratulation!',
+            subject: $subject,
         );
     }
 

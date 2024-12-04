@@ -44,6 +44,9 @@ class Index extends Component
                             'captured_image_clockout' => $record->captured_image_clockout,
                             'captured_location_clockin' => $record->captured_location_clockin,
                             'captured_location_clockout' => $record->captured_location_clockout,
+                            'isLate' => $record->isLate,
+                            'isHalfDay' => $record->isHalfDay,
+                            'isUnderTime' => $record->isUnderTime,
                             'created_at' => $record->created_at,
                             'updated_at' => $record->updated_at,
                             'information' => $record->information->toArray(),
@@ -51,9 +54,7 @@ class Index extends Component
                     })->values()->toArray(),
                 ];
             })->values()->toArray();
-            
-        // dd($records);
-
+        
         $this->records = $records;
     
     }

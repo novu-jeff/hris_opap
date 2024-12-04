@@ -17,7 +17,10 @@ class EmployeeClockInOut extends Model
         'captured_image_clockin',
         'captured_image_clockout',
         'captured_location_clockin',
-        'captured_location_clockout'
+        'captured_location_clockout',
+        'isLate',
+        'isHalfDay',
+        'isUnderTime'
     ];
 
     public function information() {

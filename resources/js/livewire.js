@@ -70,7 +70,7 @@ Livewire.on('alert', (event) => {
     } else {
         if (alert.showAlert === true) {
             Swal.fire({
-                icon: "error",
+                icon: alert.status,
                 title: alert.title,
                 html: alert.message,
                 allowOutsideClick: false,

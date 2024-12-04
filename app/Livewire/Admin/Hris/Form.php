@@ -4,12 +4,16 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Http\Controllers\Admin\Services\OtherServices;
+use App\Mail\SendEmployeeAccount;
+use App\Models\CompanyInformation;
 use App\Models\EmployeeInformation;
+use App\Models\EmployeePersonal;
 use App\Models\JobCategory;
 use App\Models\Positions;
 use App\Models\Sections;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -159,7 +163,7 @@ class Form extends Component
             'permanent_city' => $personal->permanent_city ?? null,
             'mobile_number' => $personal->mobile_number ?? null,
             'tel_no' => $personal->tel_no ?? null,
-            'company_email' => $personal->company_email ?? null,
+            'email' => $personal->email ?? null,
             'height' => $personal->height ?? null,
             'weight' => $personal->weight ?? null,
             'blood_type' => $personal->blood_type ?? null,
@@ -587,10 +591,10 @@ class Form extends Component
             'records.employee_skills.*.recognition.required' => 'The recognition field is required for each skill record.',
             'records.employee_skills.*.organization.required' => 'The organization field is required for each skill record.',  
             
-            'records.employee_account.password.max' => 'The password must be at least 8 characters.',
+            'records.employee_account.password.min' => 'The password must be at least 8 characters.',
             'records.employee_account.password.same' => 'The password and confirmation password must match.',
-            'records.employee_account.confirm_password.required_with' => 'The confirm password field is required.',
-            'records.employee_account.confirm_password.max' => 'The confirm password must be at least 8 characters.',
+            'records.employee_account.confirm_password.required_with' => 'The confirmation password is required when password is provided.',
+            'records.employee_account.confirm_password.min' => 'The confirmation password must be at least 8 characters.',
         ];
     }
 
@@ -622,6 +626,38 @@ class Form extends Component
 
             $process = new HRISProcessingService;
             $process->save(false, $id, $id, $this->records);
+
+            if($this->records['employee_account'] 
+                && isset($this->records['employee_account']['notify_user'])
+                && $this->records['employee_account']['notify_user']
+                && !empty($this->records['employee_account']['password'])) {
+                    
+                    $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $id)
+                        ->first();
+
+                    if(!$record || is_null($record->personal->email)) {
+                        return $this->dispatch('alert', [
+                            'status' => 'error',
+                            'title' => 'Oops!', 
+                            'isRemoveRowDT' => false,
+                            'showAlert' => true,
+                            'message' => 'Unable to notify this employee, his/her email address is invalid or empty. Please update it first!'
+                        ]);
+                    }
+
+                    $data = [
+                        'is_newly_hired' => false,
+                        'employee_no' => $record->employee_no,
+                        'email' => $record->account->email,
+                        'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
+                        'password' => $this->records['employee_account']['password']
+                    ];
+                    
+
+                    Mail::to($record->personal->email)->send(new SendEmployeeAccount($data));
+
+            }
+
             DB::commit();
 
             return$this->dispatch('alert', [

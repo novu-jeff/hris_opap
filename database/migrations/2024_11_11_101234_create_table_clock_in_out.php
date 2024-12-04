@@ -26,6 +26,12 @@ return new class extends Migration
                 ->nullable();
             $table->string('captured_location_clockout')
                 ->nullable();
+            $table->boolean('isLate')
+                ->default(false);
+            $table->boolean('isHalfDay')
+                ->default(false);
+            $table->boolean('isUnderTime')
+                ->default(false);
             $table->timestamps();
         });
     }
