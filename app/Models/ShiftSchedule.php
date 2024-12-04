@@ -20,5 +20,5 @@ class ShiftSchedule extends Model
         'is_late_strict',
         'is_strict_undertime',
     ];
-
+    
 }

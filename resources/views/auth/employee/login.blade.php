@@ -30,10 +30,10 @@
                             <div class="card-body">
                                 <div class="row">
                                     @if (session()->has('error'))
-                                        <div class="alert alert-danger mb-3 text-uppercase fw-medium text-center fs-6">{{session('error')}}</div>
+                                        <div class="alert alert-danger mb-4 text-uppercase fw-bold text-center" style="font-size:12px">{{session('error')}}</div>
                                     @endif
                                     <div class="col-12 mb-3">
-                                        <label for="email" class="mb-2">Email <span class="text-danger">*</span></label>
+                                        <label for="email" class="mb-2">Login <span class="text-danger">*</span></label>
                                         <input type="text" name="email" id="email" class="form-control" value="{{old('email')}}">
                                         <div class="error-field mt-1">
                                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror

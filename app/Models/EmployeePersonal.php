@@ -32,7 +32,7 @@ class EmployeePersonal extends Model
         'permanent_city',
         'mobile_number',
         'tel_no',
-        'company_email',
+        'email',
         'height',
         'weight',
         'blood_type',

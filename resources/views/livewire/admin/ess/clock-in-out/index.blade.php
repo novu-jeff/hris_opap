@@ -88,12 +88,21 @@
                                     <div>
                                         <strong>Employee Information:</strong>
                                         <ul class="my-3">
-                                            <li>Employee No: <u>${record.employee_no}</u></li>
-                                            <li>Employee Name: <u>${record.information?.personal.firstname + ' ' + record.information?.personal.lastname}</u></li>
-                                            <li>Biometrics ID: <u>${record.information?.biometrics_id ?? 'N/A'}</u></li>
-                                            <li>Hours Consumed: <u>${consumedHours}</u></li>
-                                            <li>Clock In Location: <u>${record.captured_location_clockin ?? 'N/A'}</u></li>
-                                            <li>Clock Out Location: <u>${record.captured_location_clockout ?? 'In progress...'}</u></li>    
+                                            <li>Employee No: <strong><u>${record.employee_no}</u></strong></li>
+                                            <li>Employee Name: <strong><u>${record.information?.personal.firstname + ' ' + record.information?.personal.lastname}</u></strong></li>
+                                            <li>Biometrics ID: <strong><u>${record.information?.biometrics_id ?? 'N/A'}</u></strong></li>
+                                        </ul>
+                                        <hr>
+                                        <strong>Employee Clock In & Out</strong>
+                                        <ul class="my-3"> 
+                                            <li>Is Late?: <strong><u>${record.isLate ? 'yes' : 'no'}</u></strong></li>
+                                            <li>Is Half Day? : <strong><u>${record.isHalfDay ? 'yes' : 'no'}</u></strong></li>
+                                            <li>Is Under Time?: <strong><u>${record.isUnderTime ? 'yes' : 'no'}</u></strong></li>
+                                            <li>Hours Consumed: <strong><u>${consumedHours}</u></strong></li>
+                                            <li>Clock In Time: <strong><u>${formatTime(clockIn)}</u></strong></li>
+                                            <li>Clock Out Time: <strong><u>${formatTime(clockOut)}</u></strong></li>
+                                            <li>Clock In Location: <strong><u>${record.captured_location_clockin ?? 'N/A'}</u></strong></li>
+                                            <li>Clock Out Location: <strong><u>${record.captured_location_clockout ?? 'In progress...'}</u></strong></li>    
                                         </ul>
                                     </div>
                                     <div>

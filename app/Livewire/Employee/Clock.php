@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee;
 
 use App\Models\EmployeeClockInOut;
+use App\Models\ShiftSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,9 @@ class Clock extends Component
     public $capturedImage;
     public $capturedLocation;
     public $logs;
+    public $isLate = false;
+    public $isUndertime = false;
+    public $isHalfDay = false;
 
     protected $listeners = ['clockin', 'clockout'];
 
@@ -54,11 +58,40 @@ class Clock extends Component
     }
 
     public function clockin(bool $isNotify = true) {
+
         if ($this->isAlreadyInOut('in')) {
             return;
         }
 
+        $timestamp = Carbon::now();
+
+        $shift = $this->shiftSchedule();
+
+        $earliestClockIn = $shift->web_earliest_clockin;
+        $latestClockIn = $shift->web_latest_clockin;
+
+        $earliestClockInTime = Carbon::createFromFormat('H', $earliestClockIn);
+        $formattedEarliestClockIn = Carbon::createFromTime($earliestClockIn)->format('g:i A');
+        $latestClockInTime = Carbon::createFromFormat('H', $latestClockIn);
+        $formattedLatestClockIn = Carbon::createFromTime($latestClockIn)->format('g:i A');
+
+
         if ($isNotify) {
+
+            if($timestamp->greaterThan($latestClockInTime)) {
+                $title = 'Are you sure to continue?';
+                $message = 'We\'ve noticed that you\'re clocking-in later than your expected time of <strong>'.$formattedLatestClockIn.'</strong>, which may be considered and <strong>marked as late</strong>. Please make sure to clock-in on time to avoid any issues.';
+                $action = 'clockin';
+    
+                $this->isLate = true;
+
+                return $this->dispatch('showConfirmation', [
+                    'title' => $title,
+                    'message' => $message,
+                    'action' => $action
+                ]);
+            }
+
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
             $action = 'clockin';
@@ -68,21 +101,88 @@ class Clock extends Component
                 'message' => $message,
                 'action' => $action
             ]);
+
         } else {
+
+            if ($timestamp->lessThan($earliestClockInTime)) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'info',
+                    'title' => 'Please be informed!',
+                    'message' => 'Unable to clock in because the earliest allowed clock-in is <strong>' . $formattedEarliestClockIn . '<strong>.'
+                ]); 
+            } 
+
             $this->dispatch('capture');
+
         }
     }
 
     public function clockout(bool $isNotify = true) {
+
         if ($this->isAlreadyInOut('out')) {
             return;
         }
 
         if ($isNotify) {
+
+            $today = Carbon::now(); // Get the current date and time
+
+            // Fetch the employee's clock-in record for today
+            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
+                ->whereDate('created_at', $today)->first();
+            
+            // Parse the clock-in time to handle AM/PM format properly
+            $clockInTime = Carbon::parse($records->clock_in);  // Parse the clock-in time
+            
+            // Add 9 hours to the clock-in time to calculate expected clock-out time
+            $expectedClockOut = $clockInTime->copy()->addHours(9);  
+            $todayClockOutFormatted = $today->format('g:i A'); 
+                        
+            $workedTimeInMinutes = $clockInTime->diffInMinutes($today); 
+
+            $maxClockOut = Carbon::createFromTime(17, 0, 0);
+
+            if ($expectedClockOut->greaterThan($maxClockOut)) {
+                $expectedClockOutFormatted = $maxClockOut->format('g:i A'); 
+            } else {
+                $expectedClockOutFormatted = $expectedClockOut->format('g:i A'); 
+            }
+
+            // Check if the current time is before the expected clock-out time
+            if ($today->lessThan($expectedClockOut) && $workedTimeInMinutes < 480) {
+        
+                // Check for half-day condition (worked 4 hrs to 4 hrs and 30 mins)
+                if ($workedTimeInMinutes >= 240 && $workedTimeInMinutes <= 449) {
+                    $title = 'Are you sure to continue?';
+                    $message = 'We\'ve noticed that your expected clock-out time is <strong>'.$expectedClockOutFormatted.'<strong> , but you are currently clocking out at <strong>'.$todayClockOutFormatted.'</strong>. This may be considered a half-day.';
+                    $action = 'clockout';
+                    $this->isHalfDay = true;
+                } else if ($workedTimeInMinutes >= 450 && $workedTimeInMinutes <= 479){
+                    // If worked more than 4 hours but before expected clock-out time, it is considered undertime
+                    $title = 'Are you sure to continue?';
+                    $message = 'We\'ve noticed that your expected clock-out time is <strong>'.$expectedClockOutFormatted.'</strong> , but you are currently clocking out at <strong>'.$todayClockOutFormatted.'</strong>. This may be considered as undertime.';
+                    $action = 'clockout';
+                    $this->isUndertime = true;
+                } else {
+                    $title = 'Please be informed!';
+                    $message = 'Your clock-out time is too early. The suggested clock-out time for a half-day is <strong>' . $expectedClockOutFormatted . '</strong>. Please ensure you have completed your full work hours before clocking out.';
+                    $action = '';
+                }
+        
+                // Dispatch confirmation with half-day or undertime action
+                return $this->dispatch('showConfirmation', [
+                    'title' => $title,
+                    'message' => $message,
+                    'action' => $action
+                ]);
+            }
+        
+            // If the clock-out time is not less than expected, ask for confirmation without undertime or half-day
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
             $action = 'clockout';
-
+        
             return $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -91,9 +191,11 @@ class Clock extends Component
         } else {
             $this->dispatch('capture');
         }
+        
     }
 
     public function isAlreadyInOut(string $type) {
+
         $today = Carbon::today();
 
         if ($type == 'in') {
@@ -162,6 +264,7 @@ class Clock extends Component
     }
 
     public function savePhoto($imageData, $isImageCaptured) {
+        
         $this->isImageCaptured = $isImageCaptured;
 
         if (!$isImageCaptured) {
@@ -195,8 +298,11 @@ class Clock extends Component
             $record->update([
                 'clock_out' => $timestamp,
                 'captured_image_clockout' => $this->capturedImage,
-                'captured_location_clockout' => $location
+                'captured_location_clockout' => $location,
+                'isUnderTime' => $this->isUndertime,
+                'isHalfDay' => $this->isHalfDay
             ]);
+
             $this->isClockedOut = true;
 
         } else {
@@ -204,7 +310,8 @@ class Clock extends Component
                 'employee_no' => $this->user_id,
                 'clock_in' => $timestamp,
                 'captured_image_clockin' => $this->capturedImage,
-                'captured_location_clockin' => $location
+                'captured_location_clockin' => $location,
+                'isLate' => $this->isLate
             ]);
             $this->isClockedIn = true;
         }
@@ -217,6 +324,11 @@ class Clock extends Component
             'title' => 'Yey!',
             'message' => 'You\'re clocked in at ' . Carbon::parse($timestamp)->format('M d, Y h:i A')
         ]);
+    }
+
+
+    public function shiftSchedule() {
+        return ShiftSchedule::first() ?? null;
     }
 
 

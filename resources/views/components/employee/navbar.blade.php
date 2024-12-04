@@ -1,6 +1,6 @@
 <nav class="navbar py-3">
     <div class="container d-flex justify-content-lg-center justify-content-xl-between px-4">
-        <a class="navbar-brand text-uppercase" href="{{ url('/') }}">
+        <a class="navbar-brand text-uppercase" href="{{ route('employee.dashboard') }}">
             <img src="{{asset('img/logo.png')}}" alt="logo">
         </a>
         <div class="d-flex align-items-center gap-5 pt-3">
@@ -15,13 +15,13 @@
                     <div class="email">{{ trimEmail(Auth::guard('employee')->user()->email ?? 'Guest')}}</div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <li>
-                            <a class="dropdown-item" href="{{ route('home.logout') }}"
+                            <a class="dropdown-item" href="{{ route('employee.logout') }}"
                                 onclick="event.preventDefault();
                                             document.getElementById('logout-form').submit();">
                                 {{ __('Logout') }}
                             </a>
 
-                            <form id="logout-form" action="{{ route('home.logout') }}" method="POST" class="d-none">
+                            <form id="logout-form" action="{{ route('employee.logout') }}" method="POST" class="d-none">
                                 @csrf
                             </form>
                         </li>
