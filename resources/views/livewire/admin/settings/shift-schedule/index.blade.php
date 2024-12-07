@@ -86,7 +86,36 @@
                                         @error('fields.web_expected_clockout') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
-                            </div>                                               
+                            </div>   
+                            <hr class="mx-3 mb-5">
+                            <div class="header mb-4">
+                                <h5 class="text-uppercase fw-bold">Break Time Hours</h5>
+                            </div>       
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-4">
+                                    <label for="fields.break_from" class="mb-2">From <span class="text-danger">*</span></label>
+                                    <select wire:model="fields.break_from" wire:change="updateField('break_from')" class="form-select">
+                                        <option value="">- CHOOSE -</option>
+                                        <option value="11">11 AM</option>
+                                        <option value="12">12 PM</option>
+                                    </select>
+                                    <div class="error-field">
+                                        @error('fields.break_from') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-4">
+                                    <label for="fields.break_to" class="mb-2">To <span class="text-danger">*</span></label>
+                                    <select wire:model="fields.break_to" class="form-select">
+                                        <option value="">- CHOOSE -</option>
+                                        @foreach($breakToOptions as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="error-field">
+                                        @error('fields.break_to') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                            </div>                                                       
                             <hr class="mx-3 mb-5">
                             <div class="header mb-4">
                                 <h5 class="text-uppercase fw-bold">Others</h5>

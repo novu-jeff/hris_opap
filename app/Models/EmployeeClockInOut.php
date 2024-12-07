@@ -12,8 +12,12 @@ class EmployeeClockInOut extends Model
     protected $table = 'employee_clock_in_out';
     protected $fillable = [
         'employee_no',
-        'clock_in',
-        'clock_out',
+        'clock_in_am',
+        'clock_out_am',
+        'hours_consumed_am',
+        'clock_in_pm',
+        'clock_out_pm',
+        'hours_consumed_pm',
         'captured_image_clockin',
         'captured_image_clockout',
         'captured_location_clockin',

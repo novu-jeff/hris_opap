@@ -67,7 +67,7 @@
                                     <hr>
                                     <h1>{{$stats['leave']['pending']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('leave.index', ['status' => 'pending'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.leave', ['status' => 'pending'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                                 <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
@@ -75,7 +75,7 @@
                                     <hr>
                                     <h1>{{$stats['leave']['granted']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('leave.index', ['status' => 'granted'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.leave', ['status' => 'granted'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                                 <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
@@ -83,7 +83,7 @@
                                     <hr>
                                     <h1>{{$stats['leave']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('leave.index', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.leave', ['status' => 'rejected'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>

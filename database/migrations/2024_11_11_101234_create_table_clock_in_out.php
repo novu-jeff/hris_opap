@@ -14,9 +14,17 @@ return new class extends Migration
         Schema::create('employee_clock_in_out', function (Blueprint $table) {
             $table->id();
             $table->string('employee_no');
-            $table->string('clock_in')
+            $table->string('clock_in_am')
                 ->nullable();
-            $table->string('clock_out')
+            $table->string('clock_out_am')
+                ->nullable();
+            $table->string('hours_consumed_am')
+                ->nullable();
+            $table->string('clock_in_pm')
+                ->nullable();
+            $table->string('clock_out_pm')
+                ->nullable();
+            $table->string('hours_consumed_pm')
                 ->nullable();
             $table->string('captured_image_clockin')
                 ->nullable();

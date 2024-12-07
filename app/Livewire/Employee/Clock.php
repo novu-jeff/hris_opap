@@ -25,7 +25,9 @@ class Clock extends Component
     public $isUndertime = false;
     public $isHalfDay = false;
 
-    protected $listeners = ['clockin', 'clockout'];
+    public $status;
+
+    protected $listeners = ['triggerClock'];
 
     public function mount() {
         $this->loadRecords();
@@ -57,267 +59,295 @@ class Clock extends Component
         }
     }
 
-    public function clockin(bool $isNotify = true) {
-
-        if ($this->isAlreadyInOut('in')) {
-            return;
-        }
-
-        $timestamp = Carbon::now();
-
+    public function triggerClock(bool $isNotify = true)
+    {
         $shift = $this->shiftSchedule();
-
-        $earliestClockIn = $shift->web_earliest_clockin;
-        $latestClockIn = $shift->web_latest_clockin;
-
-        $earliestClockInTime = Carbon::createFromFormat('H', $earliestClockIn);
-        $formattedEarliestClockIn = Carbon::createFromTime($earliestClockIn)->format('g:i A');
-        $latestClockInTime = Carbon::createFromFormat('H', $latestClockIn);
-        $formattedLatestClockIn = Carbon::createFromTime($latestClockIn)->format('g:i A');
-
-
-        if ($isNotify) {
-
-            if($timestamp->greaterThan($latestClockInTime)) {
-                $title = 'Are you sure to continue?';
-                $message = 'We\'ve noticed that you\'re clocking-in later than your expected time of <strong>'.$formattedLatestClockIn.'</strong>, which may be considered and <strong>marked as late</strong>. Please make sure to clock-in on time to avoid any issues.';
-                $action = 'clockin';
-    
-                $this->isLate = true;
-
-                return $this->dispatch('showConfirmation', [
-                    'title' => $title,
-                    'message' => $message,
-                    'action' => $action
-                ]);
-            }
-
-            $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
-            $action = 'clockin';
-
-            return $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
-
-        } else {
-
-            if ($timestamp->lessThan($earliestClockInTime)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Please be informed!',
-                    'message' => 'Unable to clock in because the earliest allowed clock-in is <strong>' . $formattedEarliestClockIn . '<strong>.'
-                ]); 
-            } 
-
-            $this->dispatch('capture');
-
-        }
-    }
-
-    public function clockout(bool $isNotify = true) {
-
-        if ($this->isAlreadyInOut('out')) {
-            return;
-        }
-
-        if ($isNotify) {
-
-            $today = Carbon::now(); // Get the current date and time
-
-            // Fetch the employee's clock-in record for today
-            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
-                ->whereDate('created_at', $today)->first();
-            
-            // Parse the clock-in time to handle AM/PM format properly
-            $clockInTime = Carbon::parse($records->clock_in);  // Parse the clock-in time
-            
-            // Add 9 hours to the clock-in time to calculate expected clock-out time
-            $expectedClockOut = $clockInTime->copy()->addHours(9);  
-            $todayClockOutFormatted = $today->format('g:i A'); 
-                        
-            $workedTimeInMinutes = $clockInTime->diffInMinutes($today); 
-
-            $maxClockOut = Carbon::createFromTime(17, 0, 0);
-
-            if ($expectedClockOut->greaterThan($maxClockOut)) {
-                $expectedClockOutFormatted = $maxClockOut->format('g:i A'); 
-            } else {
-                $expectedClockOutFormatted = $expectedClockOut->format('g:i A'); 
-            }
-
-            // Check if the current time is before the expected clock-out time
-            if ($today->lessThan($expectedClockOut) && $workedTimeInMinutes < 480) {
         
-                // Check for half-day condition (worked 4 hrs to 4 hrs and 30 mins)
-                if ($workedTimeInMinutes >= 240 && $workedTimeInMinutes <= 449) {
-                    $title = 'Are you sure to continue?';
-                    $message = 'We\'ve noticed that your expected clock-out time is <strong>'.$expectedClockOutFormatted.'<strong> , but you are currently clocking out at <strong>'.$todayClockOutFormatted.'</strong>. This may be considered a half-day.';
-                    $action = 'clockout';
-                    $this->isHalfDay = true;
-                } else if ($workedTimeInMinutes >= 450 && $workedTimeInMinutes <= 479){
-                    // If worked more than 4 hours but before expected clock-out time, it is considered undertime
-                    $title = 'Are you sure to continue?';
-                    $message = 'We\'ve noticed that your expected clock-out time is <strong>'.$expectedClockOutFormatted.'</strong> , but you are currently clocking out at <strong>'.$todayClockOutFormatted.'</strong>. This may be considered as undertime.';
-                    $action = 'clockout';
-                    $this->isUndertime = true;
-                } else {
-                    $title = 'Please be informed!';
-                    $message = 'Your clock-out time is too early. The suggested clock-out time for a half-day is <strong>' . $expectedClockOutFormatted . '</strong>. Please ensure you have completed your full work hours before clocking out.';
-                    $action = '';
-                }
+        // Times for earliest and latest clock-in, break times
+        $earliestClockIn = Carbon::createFromTime($shift->web_earliest_clockin, 0, 0);
+        $latestClockIn = Carbon::createFromTime($shift->web_latest_clockin, 0, 0);
         
-                // Dispatch confirmation with half-day or undertime action
-                return $this->dispatch('showConfirmation', [
-                    'title' => $title,
-                    'message' => $message,
-                    'action' => $action
-                ]);
-            }
+        $breakTimeFrom = Carbon::createFromTime($shift->break_from == 12 ? 12 : $shift->break_from + 12, 0, 0);
+        $breakTimeFromFormatted = $breakTimeFrom->format('g:i A');
         
-            // If the clock-out time is not less than expected, ask for confirmation without undertime or half-day
-            $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
-            $action = 'clockout';
+        $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
+        $breakTimeToFormatted = $breakTimeTo->format('g:i A');
+
+
+
+        // Current time (timestamp)
+        $timestamp = Carbon::createFromTime(16, 0, 0);
+        $amOrPm = strtolower($timestamp->format('A')); // AM or PM
         
-            return $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
-        } else {
-            $this->dispatch('capture');
-        }
-        
-    }
-
-    public function isAlreadyInOut(string $type) {
-
-        $today = Carbon::today();
-
-        if ($type == 'in') {
-            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
-                ->whereDate('created_at', $today)->first();
-
-            if ($records && !is_null($records->clock_in)) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Oops', 
-                    'message' => 'You have already clocked in today at ' . Carbon::parse($records->clock_in)->format('M d, Y h:i A')
-                ]);
-                return true;
-            }
-        }
-
-        if ($type == 'out') {
-            $records = EmployeeClockInOut::where('employee_no', $this->user_id)
-                ->whereDate('created_at', $today)->first();
-
-            if (!$records || is_null($records->clock_in)) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Oops', 
-                    'message' => 'Unable to clock out, you must clock in first!'
-                ]);
-                return true;
-            }
-
-            if (!is_null($records->clock_out)) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Oops', 
-                    'message' => 'You have already clocked out today at ' . Carbon::parse($records->clock_out)->format('M d, Y h:i A')
-                ]);
-                return true;
-            }
-        }
-    }
-
-    public function saveLocation() {
-        $ip = request()->ip();
-        $api = env('IPINFO_API');
-        $response = Http::get("http://ipinfo.io/{$ip}/json?token={$api}");
-
-        if ($response->successful()) {
-            $locationData = $response->json();
-
-            if (!$locationData) {
-                return 'running in local environment';
-            }
-
-            if(!isset($locationData['loc'])) {
-                return 'running in local environment';
-            }
-
-            $location = explode(',', $locationData['loc']);
-            $latitude = $location[0]; 
-            $longitude = $location[1];
-
-            return $latitude . ' ' . $longitude;
-        }
-    }
-
-    public function savePhoto($imageData, $isImageCaptured) {
-        
-        $this->isImageCaptured = $isImageCaptured;
-
-        if (!$isImageCaptured) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'info',
-                'title' => 'Oops',
-                'message' => 'Unable to clock in or clock out due to the absence of a captured image. Please ensure that your browser\'s camera is enabled and positioned to capture your face clearly.'
-            ]);
-        }
-
-        $image = str_replace('data:image/png;base64,', '', $imageData);
-        $image = str_replace(' ', '+', $image);
-        $imageName = $this->user_id . '_' . time() . '.png';
-
-        $this->capturedImage = $imageName;
-        Storage::disk('public')->put('clockinout/' . $imageName, base64_decode($image));
-
-        $this->clockInProcess();
-    }
-
-    public function clockInProcess() {
-        $location = $this->saveLocation();
-        $timestamp = Carbon::now();
-
-        $record = EmployeeClockInOut::where('employee_no', $this->user_id)
-            ->whereDate('created_at', Carbon::today())
+        // Get the clock-in/out records for the current employee
+        $records = EmployeeClockInOut::where('employee_no', $this->user_id)
+            ->whereDate('created_at', $timestamp)
             ->first();
 
-        if ($record && is_null($record->clock_out)) {
-            $record->update([
-                'clock_out' => $timestamp,
-                'captured_image_clockout' => $this->capturedImage,
-                'captured_location_clockout' => $location,
-                'isUnderTime' => $this->isUndertime,
-                'isHalfDay' => $this->isHalfDay
-            ]);
+        // If notifications are enabled, show alerts accordingly
+        if ($isNotify) {
 
-            $this->isClockedOut = true;
+            // FOR CLOCK IN AM SHIFT
+            if(is_null($records)) {
 
-        } else {
-            EmployeeClockInOut::create([
-                'employee_no' => $this->user_id,
-                'clock_in' => $timestamp,
-                'captured_image_clockin' => $this->capturedImage,
-                'captured_location_clockin' => $location,
-                'isLate' => $this->isLate
-            ]);
-            $this->isClockedIn = true;
+                # Early clock in error for am shift
+                if ($timestamp->lt($earliestClockIn)) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'info',
+                        'title' => 'Please be informed!',
+                        'message' => 'Unable to clock in because the earliest allowed clock-in is <strong>' . $earliestClockIn->format('g:i A') . '</strong>.',
+                    ]);
+                }
+
+                # For late clock in for am shift
+
+                if ($timestamp->gt($latestClockIn)) {
+                    $this->isLate = true;
+                    return $this->dispatch('showConfirmation', [
+                        'title' => 'Are you sure to continue?',
+                        'message' => 'You\'re clocking-in later than your expected time of <strong>' . $latestClockIn->format('g:i A') . '</strong>. This may be considered and marked as late.',
+                        'action' => 'triggerClock',
+                    ]);
+                }
+
+                return $this->dispatch('showConfirmation', [
+                    'title' => 'Are you sure to continue?',
+                    'message' => 'The action cannot be undone or reverted!',
+                    'action' => 'triggerClock',
+                ]);
+
+            }
+
+            $clockInTime = Carbon::parse($records->clock_in_am);
+            $expectedClockOut = $clockInTime->copy()->addHours(9);  
+            $expectedClockOutMins = $expectedClockOut->diffInMinutes($timestamp);
+
+            $maxClockOut = Carbon::createFromTime(17, 0, 0);
+            
+            if($expectedClockOut->gt($maxClockOut)) {
+                $formattedExpectedClockOut = $maxClockOut->format('g:i A'); 
+            } else {
+                $formattedExpectedClockOut = $expectedClockOut->format('g:i A');
+            }
+
+            # If records has been populated
+
+            # Handle AM Validation
+
+            if($amOrPm == 'am') {
+
+                # If am shift already populated and timestamp has been altered
+
+
+                if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_out_pm) && $timestamp->lt($breakTimeTo) && !$records->isUnderTime) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Invalid Timestamp', 
+                        'message' => 'We\'ve noticed invalid timestamp and altering the handling of timekeeping!'
+                    ]);
+                }
+
+                if(is_null($records->clock_out_am) && $timestamp->lt($breakTimeFrom)) {
+                    $this->isUndertime = true;
+                    return $this->dispatch('showConfirmation', [
+                        'title' => 'Are you sure to continue?',
+                        'message' => 'You\'re attempting to break-out earlier than your expected time of <strong>' . $breakTimeFromFormatted . '</strong>, which may be considered and marked as undertime.',
+                        'action' => 'triggerClock',
+                    ]);
+                }
+
+                if(is_null($records->clock_out_am) && $timestamp->lt($expectedClockOut) && $timestamp->hour != 12) {
+                    $this->isUndertime = true;
+                    return $this->dispatch('showConfirmation', [
+                        'title' => 'Please be informed',
+                        'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                        'action' => 'triggerClock',
+                    ]);
+                }
+
+                if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm) && $timestamp->lt($breakTimeFrom)) {
+                    if($records->isUnderTime) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'info',
+                            'title' => 'Please be informed!', 
+                            'message' => 'We\'ve noticed that your break-out was earlier than expected time of <strong>' . $breakTimeFromFormatted . '</strong>. You\'re expected break-in is from <strong>' . $breakTimeFromFormatted . ' - ' . $breakTimeToFormatted . '</strong>'
+                        ]);
+                    }
+
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Please be informed!', 
+                        'message' => 'The expected break-in is from <strong>' . $breakTimeFromFormatted . ' - ' . $breakTimeToFormatted . '</strong>'
+                    ]);
+                }
+
+            }
+
+            # Handle PM Validation
+            
+            if($amOrPm == 'pm') {
+                
+                if(is_null($records->clock_out_pm) && $timestamp->lt($expectedClockOut)) {
+                    if($expectedClockOut->gt($maxClockOut) && $records->isLate) {
+                        $this->isUndertime = true;
+                        return $this->dispatch('showConfirmation', [
+                            'title' => 'Please be informed',
+                            'message' => 'We\'ve noticed that you\'re clock-in time was late, which may be considered and marked as undertime.',
+                            'action' => 'triggerClock',
+                        ]);
+                    }
+
+                    if(is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->lt($expectedClockOut) && $records->isLate) {
+                        $this->isUndertime = true;
+                        return $this->dispatch('showConfirmation', [
+                            'title' => 'Please be informed',
+                            'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                            'action' => 'triggerClock',
+                        ]);
+                    }
+
+
+                    if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm) && $timestamp->lt($expectedClockOut)) {
+                        $this->isUndertime = true;
+                        return $this->dispatch('showConfirmation', [
+                            'title' => 'Please be informed',
+                            'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                            'action' => 'triggerClock',
+                        ]);
+                    }
+
+                    if(!is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                        $this->isUndertime = true;
+                        return $this->dispatch('showConfirmation', [
+                            'title' => 'Please be informed',
+                            'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                            'action' => 'triggerClock',
+                        ]);
+                    }
+                    
+                }
+
+            }
+
+            if(is_null($records->clock_out_pm)) {
+                return $this->dispatch('showConfirmation', [
+                    'title' => 'Are you sure to continue?',
+                    'message' => 'The action cannot be undone or reverted!',
+                    'action' => 'triggerClock',
+                ]);
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'warning',
+                    'title' => 'Please be informed!',
+                    'message' => 'You have completed your work hours today. No actions available for clock-in or clock-out.',
+                ]);
+            }
+
+        }
+    
+        // If notifications are disabled, proceed to capture the clock-in
+        $this->dispatch('capture');
+    }
+    
+    
+    public function isAlreadyClockInOrOut()
+    {
+        $shift = $this->shiftSchedule();
+        $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
+        $latestClockIn = Carbon::createFromTime($shift->web_latest_clockin, 0, 0);
+
+        $timestamp = Carbon::createFromTime(16, 0, 0); // Assuming the current date is considered
+        $amOrPm = strtolower($timestamp->format('A')); // AM or PM
+        $records = EmployeeClockInOut::where('employee_no', $this->user_id)
+            ->whereDate('created_at', $timestamp)
+            ->first();
+
+        if (!$records) {
+            // If no records, perform clock-in
+            return $this->clockin($amOrPm, $records, $timestamp);
         }
 
-        $this->isImageCaptured = false;
 
+        if ($amOrPm == 'am') {
+            // If the AM clock-in exists and no AM clock-out, clock-out AM
+            if (!is_null($records->clock_in_am) && is_null($records->clock_out_am)) {
+                return $this->clockout('am', $records, $timestamp);
+            }
+    
+            // If AM clock-in is done and PM clock-in is not done yet, handle PM clock-in
+            if (!is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+                return $this->clockin('pm', $records, $timestamp);
+            }
+    
+            // If PM clock-in is already done and no PM clock-out, handle PM clock-out
+            if (!is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                return $this->clockout('pm', $records, $timestamp);
+            }
+
+            // If no clock-in yet, perform AM clock-in
+            return $this->clockin('am', $records, $timestamp);
+        } 
+        
+        // For PM clock-in/out conditions
+        elseif ($amOrPm == 'pm') {
+
+            if(!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->gt($breakTimeTo)) {
+                return $this->clockout('pm', $records, $timestamp);
+            }
+            
+            if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+                return $this->clockin('pm', $records, $timestamp);
+            }
+
+            // Ensure PM Clock-In happens only if AM Clock-Out is done and no PM Clock-In has occurred            
+            if(!is_null($records->clock_in_am) && is_null($records->clock_out_am)) {
+                if($timestamp->hour == 12) {
+                    return $this->clockout('am', $records, $timestamp);
+                } else {
+                    return $this->clockout('pm', $records, $timestamp);
+                }
+            }
+
+            if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                return $this->clockout('pm', $records, $timestamp);
+            }
+
+            if(is_null($records->clock_in_am) && is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                return $this->clockout('pm', $records, $timestamp);
+            }
+            
+        } 
+    }
+   
+    private function clockin($shift, $records, $timestamp) {
+    
+        if(!$records) {
+            // Clock in based on AM or PM shift
+            EmployeeClockInOut::create([
+                'employee_no' => $this->user_id,
+                'captured_image_clockin' => $this->capturedImage,
+                'captured_location_clockin' => 'location',
+                'isLate' => $this->isLate,
+                // Conditionally set the clock in time depending on the shift
+                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
+            ]);
+        } else {
+            // Clock in based on AM or PM shift
+            $records->update([
+                'employee_no' => $this->user_id,
+                'captured_image_clockin' => $this->capturedImage,
+                'captured_location_clockin' => 'location',
+                'isLate' => $this->isLate,
+                // Conditionally set the clock in time depending on the shift
+                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
+            ]);
+        }
+    
         $this->dispatch('alert', [
             'showAlert' => true,
             'status' => 'success',
@@ -325,12 +355,115 @@ class Clock extends Component
             'message' => 'You\'re clocked in at ' . Carbon::parse($timestamp)->format('M d, Y h:i A')
         ]);
     }
+    
+    private function clockout($shift, $records, $timestamp)
+    {
 
+        $isMinusOneHour = false;
 
+        // Determine the default columns for clock-in, clock-out, and hours consumed
+        $clockInColumn = $shift == 'am' ? 'clock_in_am' : 'clock_in_pm';
+        $clockOutColumn = $shift == 'am' ? 'clock_out_am' : 'clock_out_pm';
+        $hoursConsumedColumn = $shift == 'am' ? 'hours_consumed_am' : 'hours_consumed_pm';
+    
+        // Parse the clock-in time
+        $clockInTime = Carbon::parse($records->$clockInColumn);
+
+        $shift = $this->shiftSchedule();
+
+        // Calculate break time to handle the condition for switching to PM clock-out
+        $breakTimeFrom = Carbon::createFromTime($shift->break_from == 12 ? 12 : $shift->break_from + 12, 0, 0);
+        $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
+        
+        // Add condition for handling the clock-out logic based on break time
+        if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->gt($breakTimeTo)) {
+            // If the condition is met, update to PM clock-out column and calculate hours from AM clock-in to current time
+            $clockOutColumn = 'clock_out_pm'; // Switch to PM clock-out column
+            $hoursConsumedColumn = 'hours_consumed_pm'; // Use PM hours consumed column
+            $clockInTime = Carbon::parse($records->clock_in_am); // Use clock-in AM time for calculation
+            $isMinusOneHour = true;
+        }
+    
+        // Special case: if it's 12 PM and clock-in for AM is missing and clock-in for PM exists, update the PM clock-out
+        if ($timestamp->hour == 12 && is_null($records->clock_in_am) && is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+            // If conditions match, update the PM clock-out column instead of AM
+            $clockOutColumn = 'clock_out_pm'; // Use PM clock-out column
+            $hoursConsumedColumn = 'hours_consumed_pm'; // Use PM hours consumed column
+        }
+    
+        // Handle special case: if it's PM and AM clock-out is missing, update AM fields
+        if ($shift == 'pm' && $records->clock_out_am === null && $records->clock_in_pm == null) {
+            // If it's PM, but AM hasn't been clocked out, switch to AM clock-out fields
+            $clockOutColumn = 'clock_out_am'; // Use AM clock-out column
+            $hoursConsumedColumn = 'hours_consumed_am'; // Use AM hours consumed column
+        }
+    
+        // Calculate the minutes rendered by comparing clock-in time and the given timestamp
+        $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+
+        // If $isMinusOneHour is true, subtract 60 minutes
+        if ($isMinusOneHour) {
+            $minutesRendered -= 60; // Subtract 60 minutes if condition is true
+        }
+
+        // Check if the clock_in_pm is between breakTimeFrom and breakTimeTo
+        if ($clockInTime->between($breakTimeFrom, $breakTimeTo)) {
+            // If it is, calculate the minutes from $breakTimeTo to the timestamp
+            $minutesRendered = $breakTimeTo->diffInMinutes($timestamp);
+        }
+
+        // Ensure that the minutes rendered are not negative (in case the breaktimeTo is after the timestamp)
+        $minutesRendered = max(0, $minutesRendered);
+
+    
+        // Update the record with the calculated values
+        $records->update([
+            'employee_no' => $this->user_id,
+            $hoursConsumedColumn => $minutesRendered, // Update the correct hours consumed field
+            'captured_image_clockin' => $this->capturedImage,
+            'captured_location_clockin' => 'location',
+            'isUnderTime' => $this->isUndertime,
+            $clockOutColumn => $timestamp, // Update the correct clock-out field
+        ]);
+    
+        // Dispatch success alert
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'success',
+            'title' => 'Yey!',
+            'message' => 'You\'re clocked out at ' . $timestamp->format('M d, Y h:i A') . 
+                        '. Total minutes rendered: ' . $minutesRendered . ' minutes.',
+        ]);
+    }
+    
+    
+    public function processClock($imageData, $isImageCaptured) {
+        
+        // $this->isImageCaptured = $isImageCaptured;
+
+        // if (!$isImageCaptured) {
+        //     return $this->dispatch('alert', [
+        //         'showAlert' => true,
+        //         'status' => 'info',
+        //         'title' => 'Oops',
+        //         'message' => 'Unable to clock in or clock out due to the absence of a captured image. Please ensure that your browser\'s camera is enabled and positioned to capture your face clearly.'
+        //     ]);
+        // }
+
+        // $image = str_replace('data:image/png;base64,', '', $imageData);
+        // $image = str_replace(' ', '+', $image);
+        // $imageName = $this->user_id . '_' . time() . '.png';
+
+        // $this->capturedImage = $imageName;
+        // Storage::disk('public')->put('clockinout/' . $imageName, base64_decode($image));
+
+        $this->isAlreadyClockInOrOut();
+    }
+    
+    
     public function shiftSchedule() {
         return ShiftSchedule::first() ?? null;
     }
-
 
     public function showLogs() {
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)

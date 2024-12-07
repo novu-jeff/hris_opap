@@ -125,9 +125,7 @@ Route::prefix('admin')->group(function() {
             Route::resource('posts', PostController::class)->names('job.posts');
             Route::resource('assessments', InterviewController::class)->names('job.interview');
             Route::resource('requirements', RequirementsController::class)->names('job.requirements');
-            
-            // Route::resource('applicants/{status}', ApplicantController::class)->names('job.applicants');
-        
+                    
             Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
             Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
             Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
@@ -161,7 +159,7 @@ Route::prefix('admin')->group(function() {
                 Route::get('edit/{id}', [ESSAnnouncementController::class, 'edit'])
                     ->name('ess.announcements.edit');
             });
-            
+
             Route::prefix('request-status')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');

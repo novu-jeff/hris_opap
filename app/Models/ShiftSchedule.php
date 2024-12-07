@@ -15,10 +15,12 @@ class ShiftSchedule extends Model
         'mobile_latest_clockin',
         'web_earliest_clockin',
         'web_latest_clockin',
+        'break_from',
+        'break_to',
         'min_ot_mins',
         'max_ot_time',
         'is_late_strict',
         'is_strict_undertime',
     ];
-    
+
 }

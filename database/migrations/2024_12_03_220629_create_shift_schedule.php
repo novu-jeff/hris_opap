@@ -21,6 +21,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('web_latest_clockin')
                 ->nullable();
+            $table->string('break_from')
+                ->nullable();
+            $table->string('break_to')
+                ->nullable();
             $table->string('min_ot_mins')
                 ->nullable();
             $table->string('max_ot_time')

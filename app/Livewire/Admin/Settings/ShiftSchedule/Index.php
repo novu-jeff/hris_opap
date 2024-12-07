@@ -16,6 +16,7 @@ class Index extends Component
     public array $fields;
     public $clockinMobTimes;
     public $clockinWebTimes;
+    public $breakToOptions;
     
     public function mount() {
         $this->loadRecords();
@@ -37,10 +38,13 @@ class Index extends Component
             'max_ot_time' => $records->max_ot_time ?? null,
             'is_late_strict' => $records && $records->is_late_strict !== null ? ($records->is_late_strict ? 'yes' : 'no') : null,
             'is_strict_undertime' => $records && $records->is_strict_undertime !== null ? ($records->is_strict_undertime ? 'yes' : 'no') : null,
+            'break_from' => $records->break_from ?? null,
+            'break_to' => $records->break_to ?? null,
         ];
 
         $this->updateClockOutTimes('mobile');
         $this->updateClockOutTimes('web');
+        $this->updateBreakToOptions(); 
 
     }
     
@@ -52,8 +56,13 @@ class Index extends Component
         }
     
         if (in_array($propertyName, ['mobile_out', 'web_out'])) {
-            $type = str_replace('_out', '', $propertyName); // Extract 'mobile' or 'web'
+            $type = str_replace('_out', '', $propertyName); 
             $this->updateClockOutTimes($type);
+        }
+
+        if ($propertyName === 'break_from') {
+            $this->updateBreakToOptions();
+            $this->fields['break_to'] = null; 
         }
     }
 
@@ -109,6 +118,27 @@ class Index extends Component
         }
     }
     
+    private function updateBreakToOptions() {
+        $breakTimes = [
+            '11' => '11 AM',
+            '12' => '12 PM',
+            '13' => '1 PM',
+            '14' => '2 PM',
+        ];
+    
+        $selectedBreakFrom = $this->fields['break_from'];
+    
+        // Exclude the selected `break_from` from the available `break_to` options
+        if ($selectedBreakFrom) {
+            $this->breakToOptions = array_filter($breakTimes, function ($key) use ($selectedBreakFrom) {
+                return $key > $selectedBreakFrom;
+            }, ARRAY_FILTER_USE_KEY);
+        } else {
+            $this->breakToOptions = $breakTimes;
+        }
+    }
+    
+
     private function formatTimeToAMPM($time) {
         $hours = $time % 24;
         $period = $hours >= 12 ? 'PM' : 'AM';
@@ -136,6 +166,9 @@ class Index extends Component
             'fields.max_ot_time' => 'required|integer|gte:8|lte:12',
             'fields.is_late_strict' => 'required|in:yes,no',
             'fields.is_strict_undertime' => 'required|in:yes,no',
+
+            'fields.break_from' => 'required|integer|in:11,12', 
+            'fields.break_to' => 'required|integer|gt:fields.break_from',
         ];
     }
 
@@ -161,6 +194,14 @@ class Index extends Component
             'fields.web_latest_clockin.min' => 'Web latest clock-in must be at least 0.',
             'fields.web_latest_clockin.max' => 'Web latest clock-in must be at most 23.',
     
+            'fields.break_from.required' => 'The break start time field is required.',
+            'fields.break_from.integer' => 'The break start time must be a valid time.',
+            'fields.break_from.in' => 'The break time start field must be either 11 AM or 12 PM',
+    
+            'fields.break_to.required' => 'The break end time field is required.',
+            'fields.break_to.integer' => 'The break end time field must be a valid time.',
+            'fields.break_to.gt' => 'The break end time field is invalid',
+
             'fields.min_ot_mins.required' => 'Minimum overtime hours are required.',
             'fields.min_ot_mins.integer' => 'Minimum overtime hours must be an integer.',
     
@@ -190,10 +231,12 @@ class Index extends Component
                     'mobile_latest_clockin' => $this->fields['mobile_latest_clockin'] ?? null,
                     'web_earliest_clockin' => $this->fields['web_earliest_clockin'] ?? null,
                     'web_latest_clockin' => $this->fields['web_latest_clockin'] ?? null,
+                    'break_from' => $this->fields['break_from'] ?? null,
+                    'break_to' => $this->fields['break_to'] ?? null,
                     'min_ot_mins' => $this->fields['min_ot_mins'] ?? null,
                     'max_ot_time' => $this->fields['max_ot_time'] ?? null,
-                    'is_late_strict' => $this->fields['is_late_strict'] ?? null,
-                    'is_strict_undertime' => $this->fields['is_strict_undertime'] ?? null,
+                    'is_late_strict' => $this->fields['is_late_strict'] ? true : false,
+                    'is_strict_undertime' => $this->fields['is_strict_undertime'] ? true : false,
                 ]);
             } else {
                 // If no record exists, create a new one
@@ -202,6 +245,8 @@ class Index extends Component
                     'mobile_latest_clockin' => $this->fields['mobile_latest_clockin'] ?? null,
                     'web_earliest_clockin' => $this->fields['web_earliest_clockin'] ?? null,
                     'web_latest_clockin' => $this->fields['web_latest_clockin'] ?? null,
+                    'break_from' => $this->fields['break_from'] ?? null,
+                    'break_to' => $this->fields['break_to'] ?? null,
                     'min_ot_mins' => $this->fields['min_ot_mins'] ?? null,
                     'max_ot_time' => $this->fields['max_ot_time'] ?? null,
                     'is_late_strict' => $this->fields['is_late_strict'] ? true : false,

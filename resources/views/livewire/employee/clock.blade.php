@@ -4,7 +4,7 @@
             <div class="col-12 col-md-12 mb-3 mb-3">
                 <div class="row">
                     <div class="col-12 col-md-4 mb-3">
-                        <div class="card border-3 border-primary {{!$isClockedIn ? 'bg-primary text-white' : ''}}" wire:click="clockin">
+                        <div class="card border-3 border-primary {{!$isClockedIn ? 'bg-primary text-white' : ''}}" wire:click="triggerClock">
                             <div class="card-body d-flex align-items-center">
                                 <div>
                                     <div class="d-flex justify-content-center">
@@ -18,14 +18,14 @@
                         </div>
                     </div>
                     <div class="col-12 col-md-4 mb-3">
-                        <div class="card border-3 border-danger {{!$isClockedOut ? 'bg-danger text-white' : ''}}" wire:click="clockout">
+                        <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs">
                             <div class="card-body d-flex align-items-center">
                                 <div>
                                     <div class="d-flex justify-content-center">
-                                        <i class="fa-regular fa-circle-xmark"></i>
+                                        <i class="fa-regular fa-calendar-check"></i>
                                     </div>
                                     <div class="text-center mt-3">
-                                        Clock Out
+                                        Clock Logs
                                     </div>
                                 </div>
                             </div>
@@ -37,20 +37,6 @@
                             <canvas id="canvas" class=""></canvas>
                             <div class="overlay">
                                 Camera Capture Display
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3 mb-3">
-                        <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs">
-                            <div class="card-body d-flex align-items-center">
-                                <div>
-                                    <div class="d-flex justify-content-center">
-                                        <i class="fa-regular fa-calendar-check"></i>
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        Clock Logs
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -178,7 +164,7 @@
 
             isImageCaptured = isNotBlank;
 
-            @this.call('savePhoto', canvas.toDataURL('image/png'), isImageCaptured);
+            @this.call('processClock', canvas.toDataURL('image/png'), isImageCaptured);
         });
 
         function hasContent(imageData) {

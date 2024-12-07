@@ -36,7 +36,7 @@ class Manual extends Component
     public bool $isDualCitizenship = false;
     public array $countries;
     public string $activeTab = 'details';
-    public $activeAccordion;
+    public string $activeAccordion = 'personal';
 
     public function mount() {
         $this->loadRecords();
@@ -48,17 +48,69 @@ class Manual extends Component
         $this->jobCategories = JobCategory::all();
     }
 
+    private $tabAccordionMappings = [
+        'employee_personal' => [
+            'tab' => 'details',
+            'accordions' => [
+                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
+                'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
+                'contact' => ['mobile_number', 'tel_no', 'company_email'],
+                'appearance' => ['height', 'weight', 'blood_type'],
+                'identification' => ['gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no']
+            ]
+        ],
+        'employee_children' => [
+            'tab' => 'family',
+            'accordions' => [
+                'parents' => ['spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix', 'spouse_occupation', 'spouse_business_name_employer', 'spouse_business_address', 'spouse_contact_no', 'father_surname', 'father_firstname', 'father_middlename', 'father_suffix', 'mother_surname', 'mother_firstname', 'mother_middlename'],
+                'children' => ['firstname', 'lastname', 'middlename', 'birthdate']
+            ]
+        ],
+        'employee_education' => ['tab' => 'education'],
+        'employee_employment_history' => ['tab' => 'history'],
+        'employee_civil_service' => ['tab' => 'civil_service'],
+        'employee_trainings' => ['tab' => 'trainings'],
+        'employee_others' => ['tab' => 'others'],
+        'employee_skills' => ['tab' => 'skills'],
+        'employee_account' => ['tab' => 'account'],
+    ];
+
+    private $defaultFields = [
+        'employee_education' => [
+            'level' => '',
+            'school_name' => '',
+            'course' => '',
+            'from_year' => '',
+            'to_year' => '',
+        ],
+        'employee_employment_history' => [
+            'position' => '',
+            'department' => '',
+            'company_name' => '',
+            'monthly_salary' => '',
+            'employment_status' => '',
+            'isGovernment' => '',
+            'from_year' => '',
+            'to_year' => ''
+        ],
+        'employee_children' => [
+            'firstname' => '',
+            'middlename' => '',
+            'lastname' => '',
+            'birthdate' => '',
+        ],
+        'employee_civil_service' => [],
+        'employee_trainings' => [],
+        'employee_others' => [],
+        'employee_skills' => [],
+    ];
 
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
     }
 
     public function setActiveAccordion($accordion) {
-        if($this->activeAccordion !== $accordion) {
-            $this->activeAccordion = $accordion;
-        } else {
-            $this->activeAccordion = '';
-        }
+        $this->activeAccordion = $this->activeAccordion === $accordion ? '' : $accordion;
     }
 
     public function select_change(string $property) {
@@ -84,171 +136,41 @@ class Manual extends Component
     }
 
     public function addRecord($tab, $type, $accordion = null) {
-
         $this->activeAccordion = $accordion;
-
-        $fields = [
-            'employee_education' => [
-                'level' => '',
-                'school_name' => '',
-                'course' => '',
-                'from_year' => '',
-                'to_year' => '',
-            ],
-            'employee_employment_history' => [
-                'position' => '',
-                'department' => '',
-                'company_name' => '',
-                'monthly_salary' => '',
-                'employment_status' => '',
-                'isGovernment' => '',
-                'from_year' => '',
-                'to_year' => ''
-            ],
-            'employee_children' => [
-                'firstname' => '',
-                'middlename' => '',
-                'lastname' => '',
-                'birthdate' => '',
-            ],
-            'employee_civil_service' => [],
-            'employee_trainings' => [],
-            'employee_others' => [],
-            'employee_skills' => [],
-        ];
-    
-        $this->records[$type][] = $fields[$type];
+        if (isset($this->defaultFields[$type])) {
+            $this->records[$type][] = $this->defaultFields[$type];
+        }
     }
 
     public function removeRecord($tab, $type, $index) {
         $this->activeTab = $tab;
-        
         if (isset($this->records[$type][$index])) {
             unset($this->records[$type][$index]);
             $this->records[$type] = array_values($this->records[$type]);
         }
     }
-    
+
     public function setErrorActiveTabAccordions(array $errorKeys) {
         foreach ($errorKeys as $key) {
             $parts = explode('.', $key);
-            
-            if (isset($parts[1])) {
-                switch ($parts[1]) {
-                    case 'employee_personal':
-                        $this->activeTab = 'details';
-    
-                        $accordion = [
-                            'personal' => [
-                                'firstname',
-                                'lastname',
-                                'middlename',
-                                'suffix',
-                                'birthday',
-                                'civil_status',
-                                'sex',
-                                'citizenship',
-                                'citizenship_type'
-                            ],
-                            'address' => [
-                                'present_address',
-                                'present_province',
-                                'present_city',
-                                'permanent_address',
-                                'permanent_province',
-                                'permanent_city'
-                            ],
-                            'contact' => [
-                                'mobile_number',
-                                'tel_no',
-                                'company_email'
-                            ],
-                            'appearance' => [
-                                'height',
-                                'weight',
-                                'blood_type'
-                            ],
-                            'identification' => [
-                                'gsis_no',
-                                'pagibig_no',
-                                'philhealth_no',
-                                'sss_no',
-                                'tin_no'
-                            ]
-                        ];
-    
-                        $lastKey = end($parts); // Get the last part of the error key
-                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
-                        
-                        return;
-    
-                    case 'employee_children':
-                        $this->activeTab = 'family';
-    
-                        $accordion = [
-                            'parents' => [
-                                'spouse_surname',
-                                'spouse_firstname',
-                                'spouse_middlename',
-                                'spouse_suffix',
-                                'spouse_occupation',
-                                'spouse_business_name_employer',
-                                'spouse_business_address',
-                                'spouse_contact_no',
-                                'father_surname',
-                                'father_firstname',
-                                'father_middlename',
-                                'father_suffix',
-                                'mother_surname',
-                                'mother_firstname',
-                                'mother_middlename',
-                            ],
-                            'children' => [
-                                'firstname',
-                                'lastname',
-                                'middlename',
-                                'birthdate'
-                            ]
-                        ];
-    
-                        $lastKey = end($parts);
-                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
-                        return;
-    
-                    case 'employee_education':
-                        $this->activeTab = 'education';
-                        return;
-    
-                    case 'employee_employment_history':
-                        $this->activeTab = 'history';
-                        return;
+            $type = $parts[1] ?? null;
+            $field = end($parts);
 
-                    case 'employee_civil_service':
-                        $this->activeTab = 'civil_service';
-                        return;
+            if ($type && isset($this->tabAccordionMappings[$type])) {
+                $mapping = $this->tabAccordionMappings[$type];
+                $this->activeTab = $mapping['tab'];
 
-                    case 'employee_trainings':
-                        $this->activeTab = 'trainings';
-                        return;
-
-                    case 'employee_others':
-                        $this->activeTab = 'others';
-                        return;
-    
-                    case 'employee_skills':
-                        $this->activeTab = 'skills';
-                        return;
-
-                    case 'employee_account':
-                        $this->activeTab = 'account';
-                        return;
+                if (isset($mapping['accordions'])) {
+                    $this->activeAccordion = $this->findAccordionKey($field, $mapping['accordions']);
                 }
+
+                return; // Break after finding the first match
             }
         }
     }
 
-    private function findAccordionKey(string $key, array $accordion) {
-        foreach ($accordion as $accordionKey => $fields) {
+    private function findAccordionKey(string $key, array $accordions) {
+        foreach ($accordions as $accordionKey => $fields) {
             if (in_array($key, $fields)) {
                 return $accordionKey;
             }
@@ -623,7 +545,7 @@ class Manual extends Component
                     'date_exam' => $value['date_exam'] ?? null,
                     'place_exam' => $value['place_exam'] ?? null,
                     'license_no' => $value['license_no'] ?? null,
-                    'date_validaity' => $value['date_validaity'] ?? null,
+                    'date_validity' => $value['date_validity'] ?? null,
                 ]);
             } 
         }
