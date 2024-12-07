@@ -310,11 +310,16 @@ return new class extends Migration
             $table->string('employee_no');
             $table->string('status')
                 ->default('pending');
-            $table->string('type');
+            $table->foreignId('leave_id')
+                ->constrained('leave_types')
+                ->onDelete('cascade');
             $table->longtext('reason');
-            $table->string('from');
-            $table->string('to');
-            $table->string('measurement');
+            $table->string('from')
+                ->nullable();
+            $table->string('to')
+                ->nullable();
+            $table->string('measurement')
+                ->nullable();
             $table->string('consumed_hours')
                 ->nullable();
             $table->timestamps();

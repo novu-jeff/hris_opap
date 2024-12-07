@@ -1157,7 +1157,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -1229,7 +1229,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>

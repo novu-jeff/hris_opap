@@ -4,12 +4,34 @@ namespace App\Helper;
 
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeAccount;
+use App\Models\EmployeeInformation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Str;
 
 class Generate {
+
+    public function employee_no() {
+        $lastEmployeeNo = EmployeeInformation::where('employee_no', 'like', 'RCRT-%')
+                            ->max('employee_no');
+    
+        if (!$lastEmployeeNo) {
+            $employee_no = 1;
+        } else {
+            $employee_no = (int) str_replace('RCRT-', '', $lastEmployeeNo) + 1;
+        }
+    
+        $employeeNo = 'RCRT-' . str_pad($employee_no, 2, '0', STR_PAD_LEFT);
+    
+        while (EmployeeInformation::where('employee_no', $employeeNo)->exists()) {
+            $employee_no++;
+            $employeeNo = 'RCRT-' . str_pad($employee_no, 2, '0', STR_PAD_LEFT);
+        }
+    
+        return $employeeNo;
+    }
+    
 
     public function code(string $prefix, int $length) {
         $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';

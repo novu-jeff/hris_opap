@@ -57,7 +57,6 @@ class Index extends Component
             })->values()->toArray();
 
         $this->records = $records;
-    
     }
 
     public function render()

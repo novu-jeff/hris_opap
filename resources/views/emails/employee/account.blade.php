@@ -30,8 +30,8 @@
     
     <h4>Your Employee Account Credentials:</h4>
     <ul>
-        <li><strong>Username:</strong> {{ $data['employee_no'] }}</li>
-        <li><strong>Email:</strong> {{$data['email']}}</li>
+        <li><strong>Login (Employee No):</strong> {{ $data['employee_no'] ?? 'TBF'  }}</li>
+        <li><strong>Login (Email ID):</strong> {{$data['email']}}</li>
         <li><strong>Password:</strong> {{ $data['password'] }}</li>
     </ul>
 
