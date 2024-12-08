@@ -18,13 +18,13 @@ return new class extends Migration
                 ->nullable();
             $table->string('clock_out_am')
                 ->nullable();
-            $table->string('hours_consumed_am')
+            $table->string('mins_consumed_am')
                 ->nullable();
             $table->string('clock_in_pm')
                 ->nullable();
             $table->string('clock_out_pm')
                 ->nullable();
-            $table->string('hours_consumed_pm')
+            $table->string('mins_consumed_pm')
                 ->nullable();
             $table->string('captured_image_clockin')
                 ->nullable();
@@ -40,6 +40,12 @@ return new class extends Migration
                 ->default(false);
             $table->boolean('isUnderTime')
                 ->default(false);
+            $table->string('total_mins_consumed')
+                ->nullable();
+            $table->string('mins_ot')
+                ->nullable();
+            $table->string('overall_mins')
+                ->nullable();
             $table->timestamps();
         });
     }

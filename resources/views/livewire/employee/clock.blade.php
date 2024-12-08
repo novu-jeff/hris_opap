@@ -4,18 +4,23 @@
             <div class="col-12 col-md-12 mb-3 mb-3">
                 <div class="row">
                     <div class="col-12 col-md-4 mb-3">
-                        <div class="card border-3 border-primary {{!$isClockedIn ? 'bg-primary text-white' : ''}}" wire:click="triggerClock">
+                        <div 
+                            class="card border-3 
+                                {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
+                                {{ in_array($status, ['Break In', 'Break Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
+                                {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
+                            wire:click="triggerClock">
                             <div class="card-body d-flex align-items-center">
                                 <div>
                                     <div class="d-flex justify-content-center">
                                         <i class="fa-regular fa-circle-check"></i>
                                     </div>
                                     <div class="text-center mt-3">
-                                        Clock In
+                                        {{$status}}
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div>      
+                        </div>              
                     </div>
                     <div class="col-12 col-md-4 mb-3">
                         <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs">
@@ -46,7 +51,7 @@
     </div>
 
     <div class="modal fade" wire:ignore.self id="logs_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Clock Logs</h1>
@@ -59,48 +64,32 @@
                                 <thead>
                                     <tr>
                                         <th>Date</th>
+                                        <th>Day</th>
                                         <th>Clock In</th>
-                                        <th>Captured Clock In</th>
+                                        <th>Break Out</th>
+                                        <th>Break In</th>
                                         <th>Clock Out</th>
-                                        <th>Captured Clock Out</th>
-                                        <th>Hours Consumed</th>
+                                        <th>Regular Hours</th>
+                                        <th>OT Hours</th>
+                                        <th>Total Hours</th>
+                                        <th>Remarks</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($logs as $key => $item)
                                         <tr>
-                                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('M d, Y') }}</td>
-                                            <td>{{ $item->clock_in ? \Carbon\Carbon::parse($item->clock_in)->format('h:i A') : 'In Progress...' }}</td>
-                                            <td>
-                                                <img src="{{ $item->captured_image_clockin ? asset('storage/clockinout/' . $item->captured_image_clockin) : 'https://placehold.co/200x100.png?text=No+Image' }}" alt="Clock In Image">
-                                            </td>
-                                            <td>{{ $item->clock_out ? \Carbon\Carbon::parse($item->clock_out)->format('h:i A') : 'In Progress...' }}</td>
-                                            <td>
-                                                <img src="{{ $item->captured_image_clockout ? asset('storage/clockinout/' . $item->captured_image_clockout) : 'https://placehold.co/200x100.png?text=No+Image' }}" alt="Clock Out Image">
-                                            </td>
-                                            <td>
-                                                @if ($item->clock_in && $item->clock_out)
-                                                    @php
-                                                        $clockIn = \Carbon\Carbon::parse($item->clock_in);
-                                                        $clockOut = \Carbon\Carbon::parse($item->clock_out);
-                                                        $hoursConsumed = $clockIn->diffInHours($clockOut);
-                                                        $minutesConsumed = $clockIn->diffInMinutes($clockOut) % 60;
-                                                    @endphp
-                                                    {{ $hoursConsumed }}h {{ $minutesConsumed }}m
-                                                @else
-                                                    In Progress...
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($item->clock_in && $item->clock_out)
-                                                    <span class="badge bg-success p-3 text-uppercase fw-bold w-100" style="font-size: 11px">Completed</span>
-                                                @elseif ($item->clock_in)
-                                                    <span class="badge bg-warning p-3 text-uppercase fw-bold w-100" style="font-size: 11px">In Progress</span>
-                                                @else
-                                                    <span class="badge bg-secondary p-3 text-uppercase fw-bold w-100" style="font-size: 11px">Not Started</span>
-                                                @endif
-                                            </td>
+                                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('l') }}</td>
+                                            <td>{{ $item->clock_in_am ? \Carbon\Carbon::parse($item->clock_in_am)->format('h:i A') : '' }}</td>
+                                            <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
+                                            <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
+                                            <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
+                                            <td>{{ $item->total_mins_consumed ? sprintf('%02d:%02d', floor($item->total_mins_consumed / 60), $item->total_mins_consumed % 60) . ' HRS' : '' }}</td>
+                                            <td>{{ $item->mins_ot ? sprintf('%02d:%02d', floor($item->mins_ot / 60), $item->mins_ot % 60) . ' HRS' : '' }}</td>
+                                            <td>{{ $item->overall_mins ? sprintf('%02d:%02d', floor($item->overall_mins / 60), $item->overall_mins % 60) . ' HRS' : '' }}</td>
+                                            <td></td>
+                                            <td></td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -180,6 +169,7 @@
             }
             return false;
         }
+        
 });
 
 </script>
