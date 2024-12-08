@@ -4,8 +4,8 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Type</th>
                     <th>Date</th>
+                    <th>Time Span</th>
                     <th>Status</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
@@ -14,10 +14,10 @@
                 @foreach($records as $record)
                     <tr data-id="{{$record->id}}">
                         <td>#{{format_id($record->id, 6)}}</td>
-                        <td>{{'(' . $record->leave_type->code . ') - ' . $record->leave_type->name}}</td>
-                        <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
+                        <td>{{format_date($record->date, 'day_date_string')}}</td>
+                        <td>{{format_time($record->start_time) . ' - ' . format_time($record->end_time)}}</td>
                         <td>
-                            @if ($record->status == 'granted')
+                            @if ($record->status == 'approve')
                                 <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Leave Granted</div>
                             @elseif ($record->status == 'rejected')
                                 <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Leave Denied</div>
@@ -27,7 +27,7 @@
                         </td>
                         <td>
                             @if($record->status === 'pending')
-                                <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                <a href="{{route('employee.atro.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                             @endif

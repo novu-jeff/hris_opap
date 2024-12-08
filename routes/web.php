@@ -42,6 +42,7 @@ use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
 use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
+use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
@@ -257,6 +258,17 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
+        });
+
+        Route::prefix('authority-to-render-time')->group(function() {
+
+            Route::get('/', [EmployeeATROController::class, 'index'])
+                ->name('employee.atro');
+            Route::get('apply', [EmployeeATROController::class, 'create'])
+                ->name('employee.atro.apply');
+            Route::get('edit/{id}', [EmployeeATROController::class, 'edit'])
+                ->name('employee.atro.edit');
+                
         });
 
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])

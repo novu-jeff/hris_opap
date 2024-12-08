@@ -12,7 +12,7 @@ class LeaveController extends Controller
     {
         return view('employee.leave', [
             'action' => 'view',
-            'title' => 'All Leaves',
+            'title' => 'ESS | Leave Applications',
             'header' => 'Manage Leaves',
             'sub' => 'Track and monitor youe employment records.'
         ]);

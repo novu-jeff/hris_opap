@@ -10,7 +10,7 @@ class DirectoryController extends Controller
     public function index() {
         return view('employee.directory', [
             'action' => 'index',
-            'title' => 'Directory',
+            'title' => 'ESS | My Directory',
             'header' => 'Directory Listing',
             'sub' => 'Lists of all employees in all branches and departments'
         ]);

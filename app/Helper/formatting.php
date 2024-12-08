@@ -221,3 +221,14 @@ if (!function_exists('file_type')) {
         }
     }
 }
+
+
+if(!function_exists('format_time')) {
+    function format_time($time) {
+        try {
+            return Carbon::parse($time)->format('h:i A');
+        } catch (\Exception $e) {
+            return $time;
+        }
+    }
+}

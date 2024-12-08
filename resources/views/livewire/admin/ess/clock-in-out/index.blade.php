@@ -75,8 +75,10 @@
                             ? `{{ asset('storage/clockinout/') }}/${record.captured_image_clockout}`
                             : 'https://placehold.co/200x100.png?text=No+Image';
 
-                        const clockIn = record.clock_in ? new Date(record.clock_in) : null;
-                        const clockOut = record.clock_out ? new Date(record.clock_out) : null;
+                        const clockIn = record.clock_in_am ? new Date(record.clock_in_am) : null;
+                        const breakOut = record.clock_out_am ? new Date(record.clock_out_am) : null;
+                        const breakIn = record.clock_in_pm ? new Date(record.clock_in_pm) : null;
+                        const clockOut = record.clock_out_pm ? new Date(record.clock_out_pm) : null;
                         const consumedHours = clockIn && clockOut
                             ? `${Math.floor((clockOut - clockIn) / 3600000)}h ${Math.floor(((clockOut - clockIn) % 3600000) / 60000)}m`
                             : 'In Progress...';
@@ -84,8 +86,8 @@
                         return `
                             <div class="mb-3">
                                 <hr>
-                                <div class="d-flex gap-5">
-                                    <div>
+                                <div class="row">
+                                    <div class="col-12 col-md-8">
                                         <strong>Employee Information:</strong>
                                         <ul class="my-3">
                                             <li>Employee No: <strong><u>${record.employee_no}</u></strong></li>
@@ -94,19 +96,31 @@
                                         </ul>
                                         <hr>
                                         <strong>Employee Clock In & Out</strong>
-                                        <ul class="my-3"> 
-                                            <li>Is Late?: <strong><u>${record.isLate ? 'yes' : 'no'}</u></strong></li>
-                                            <li>Is Half Day? : <strong><u>${record.isHalfDay ? 'yes' : 'no'}</u></strong></li>
-                                            <li>Is Under Time?: <strong><u>${record.isUnderTime ? 'yes' : 'no'}</u></strong></li>
-                                            <li>Hours Consumed: <strong><u>${consumedHours}</u></strong></li>
-                                            <li>Clock In Time: <strong><u>${formatTime(clockIn)}</u></strong></li>
-                                            <li>Clock Out Time: <strong><u>${formatTime(clockOut)}</u></strong></li>
-                                            <li>Clock In Location: <strong><u>${record.captured_location_clockin ?? 'N/A'}</u></strong></li>
-                                            <li>Clock Out Location: <strong><u>${record.captured_location_clockout ?? 'In progress...'}</u></strong></li>    
-                                        </ul>
+                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                            <thead class="bg-gray-200">
+                                                <tr>
+                                                    <th class="border px-4 py-2">Clock In</th>
+                                                    <th class="border px-4 py-2">Break Out</th>
+                                                    <th class="border px-4 py-2">Break In</th>
+                                                    <th class="border px-4 py-2">Clock Out</th>
+                                                    <th class="border px-4 py-2">Is Late</th>
+                                                    <th class="border px-4 py-2">Is Under Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockIn)}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakOut)}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakIn)}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockOut)}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${record.isLate ? 'Yes' : 'No'}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${record.isUnderTime ? 'Yes' : 'No'}</u></strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div>
-                                        <div style="display: flex; gap: 30px; align-items: center;">
+                                    <div class="col-12 col-md-4">
+                                        <div>
                                             <div>
                                                 <p class="fw-bold">Captured Clock In:</p>
                                                 <img src="${clockInImage}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">

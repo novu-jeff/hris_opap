@@ -10,7 +10,7 @@ class ProfileController extends Controller
     public function index() {
         return view('employee.profile', [
             'action' => 'view',
-            'title' => 'My Profile',
+            'title' => 'ESS | My Profile',
             'header' => 'Manage my information',
             'sub' => 'Update or modify all my informations.'
         ]);
