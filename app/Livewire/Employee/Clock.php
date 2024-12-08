@@ -53,20 +53,42 @@ class Clock extends Component
 
     public function toggleStatus($records)
     {
+
+        $shift = $this->shiftSchedule();
+
+        $breakTimeFrom = Carbon::createFromTime($shift->break_from == 12 ? 12 : $shift->break_from + 12, 0, 0);
+        $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
+
+        $timestamp = Carbon::now();
+
         if(!is_null($records)) {
-            if (!is_null($records->clock_in_am) && is_null($records->clock_out_am)) {
+            if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->lte($breakTimeFrom)) {
                 $this->status = 'Break Out';
-            } elseif (is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+            } 
+
+            if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->gt($breakTimeFrom)) {
+                $this->status = 'Clock Out';
+            } 
+            
+            if (is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
                 $this->status = 'Clock In';
-            } elseif (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+            } 
+            
+            if (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
                 $this->status = 'Break In';
-            } elseif (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) 
+            } 
+            
+            if (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) 
                 && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
                 $this->status = 'Clock Out';
-            } elseif (is_null($records->clock_in_am) && is_null($records->clock_out_am) 
+            } 
+            
+            if (is_null($records->clock_in_am) && is_null($records->clock_out_am) 
                 && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
                 $this->status = 'Clock Out';
-            } else if ($records) {
+            }
+            
+            if (!is_null($records->clock_out_pm)) {
                 $this->status = 'Done';
             }
         } else {
@@ -91,7 +113,7 @@ class Clock extends Component
         $breakTimeToFormatted = $breakTimeTo->format('g:i A');
 
         // Current time (timestamp)
-        $timestamp = Carbon::createFromTime(20, 0, 0);
+        $timestamp = Carbon::now();
         $timestampFormatted = $timestamp->format('g:i A');
 
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
@@ -101,7 +123,14 @@ class Clock extends Component
             ->whereDate('created_at', $timestamp)
             ->first();
 
-        $maxClockOut = Carbon::createFromTime(17, 0, 0);
+
+        if ($records && $records->clock_in_am) {
+            $clockInTime = $records->clock_in_am;
+            $maxClockOut = Carbon::parse($clockInTime)->addHours(9);
+        } else {
+            $maxClockOut = Carbon::createFromTime(17, 0, 0);
+        }
+            
 
         // If notifications are enabled, show alerts accordingly
         if ($isNotify) {
@@ -285,7 +314,7 @@ class Clock extends Component
         $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
         $latestClockIn = Carbon::createFromTime($shift->web_latest_clockin, 0, 0);
 
-        $timestamp = Carbon::createFromTime(20, 0, 0); // Assuming the current date is considered
+        $timestamp = Carbon::now(); // Assuming the current date is considered
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->whereDate('created_at', $timestamp)
@@ -464,26 +493,40 @@ class Clock extends Component
 
         //  if employee start working pm shift only
         if ($minsAm == 0 && $minsPm > 0) {
+
             $endShift = Carbon::createFromTime(17, 0, 0); // 5:00 PM
             
-            $clockin = Carbon::parse($records->clock_in_pm);
-            $clockout = Carbon::parse($records->clock_out_pm); // Clock-out time
+            
+            if(is_null($records->clock_in_am) && is_null($records->mins_consumed_am)) {
+                $clockin = Carbon::parse($records->clock_in_pm);
+                $clockout = Carbon::parse($records->clock_out_pm); 
 
+                $regMins = $clockout->diffInMinutes($clockin);
 
-            // Regular minutes
-
-            $regMins = $clockout->diffInMinutes($clockin);
-
-            if($clockin->between($breakTimeFrom, $breakTimeFrom)) {
-                $regMins -= 60;
+                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
+                    $regMins -= 60;
+                } 
             } 
+            
+            if (!is_null($records->clock_in_am) && is_null($records->mins_consumed_am)) {
+                $clockin = Carbon::parse($records->clock_in_am);
+                $clockout = Carbon::parse($records->clock_out_pm); 
+
+                $regMins = $clockout->diffInMinutes($clockin);
+
+                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
+                    $regMins -= 60;
+                } 
+
+            }
 
             if($clockout->gt($endShift)) {
                 $regMins = $clockout->diffInMinutes($endShift);
-                if($clockin->between($breakTimeFrom, $breakTimeFrom)) {
+                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
                     $regMins += 60;
                 } 
             }
+
                         
             // Calculate overtime minutes (if any)
             $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;

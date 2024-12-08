@@ -10,7 +10,7 @@ class AnnouncementController extends Controller
     public function index() {
         return view('employee.announcements', [
             'action' => 'index',
-            'title' => 'Announcements',
+            'title' => 'ESS | Announcements',
             'header' => 'Announcements ',
             'sub' => 'Latest Happennings'
         ]);
@@ -20,7 +20,7 @@ class AnnouncementController extends Controller
         return view('employee.announcements', [
             'id' => $id,
             'action' => 'view',
-            'title' => 'Announcements',
+            'title' => 'ESS | Announcements',
             'header' => 'Announcements ',
             'sub' => 'Latest Happennings'
         ]);

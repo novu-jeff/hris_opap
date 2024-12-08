@@ -10,7 +10,7 @@ class ClockInOutController extends Controller
     public function index() {
         return view('employee.clock', [
             'action' => 'index',
-            'title' => 'Clock In or Out',
+            'title' => 'ESS | Time Keeping',
             'header' => 'Clock In or Out',
             'sub' => 'Manage your clock in and clock out for work attendance.'
         ]);

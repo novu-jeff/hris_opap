@@ -60,7 +60,7 @@
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Proceed</button>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Proceed <i class="fa-solid fa-arrow-right ms-1"></i></button>
                 </div>
             </div>
         </div>

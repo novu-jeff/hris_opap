@@ -35,19 +35,29 @@ class Apply extends Component
         $this->user_id = $user_id;
  
         if(!is_null($this->record_id)) {
-            $record = EmployeeLeave::where('id', $this->record_id)
+            $records = EmployeeLeave::where('id', $this->record_id)
                 ->where('employee_no', $user_id)
                 ->first();
         
-            if(!$record) {
+            if(!$records) {
                 return redirect()
                     ->route('employee.leave');
             }
 
-            $this->type = $record->type;
-            $this->from = $record->from;
-            $this->to = $record->to;
-            $this->reason = $record->reason;
+
+            $this->type = $records->leave_id;
+            
+            if(is_null($records->to)) {
+                $this->duration = 1;
+            } else {
+                $this->duration = 2;
+            }
+
+            $this->selectDuration();
+
+            $this->from = $records->from;
+            $this->to = $records->to;
+            $this->reason = $records->reason;
         }
 
         

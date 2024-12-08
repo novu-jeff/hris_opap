@@ -105,6 +105,6 @@ export function hideModal() {
 }
 
 export function formatTime(date) {
-    if (!date) return 'In Progress...';
+    if (!date) return '';
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 }

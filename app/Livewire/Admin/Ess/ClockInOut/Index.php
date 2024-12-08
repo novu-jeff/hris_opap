@@ -22,8 +22,8 @@ class Index extends Component
             ->map(function ($group, $date) {
                 // Calculate totals
                 $totalClockIn = $group->count();
-                $totalClockOut = $group->whereNotNull('clock_out')->count();
-                $inProgress = $group->whereNull('clock_out')->count();
+                $totalClockOut = $group->whereNotNull('clock_out_pm')->count();
+                $inProgress = $group->whereNull('clock_out_pm')->count();
 
                 // Structure the result
                 return [
@@ -39,8 +39,10 @@ class Index extends Component
                         return [
                             'id' => $record->id,
                             'employee_no' => $record->information->employee_no,
-                            'clock_in' => $record->clock_in,
-                            'clock_out' => $record->clock_out,
+                            'clock_in_am' => $record->clock_in_am,
+                            'clock_out_am' => $record->clock_out_am,
+                            'clock_in_pm' => $record->clock_in_pm,
+                            'clock_out_pm' => $record->clock_out_pm,
                             'captured_image_clockin' => $record->captured_image_clockin,
                             'captured_image_clockout' => $record->captured_image_clockout,
                             'captured_location_clockin' => $record->captured_location_clockin,
