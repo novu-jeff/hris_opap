@@ -14,17 +14,20 @@ class EmployeeClockInOut extends Model
         'employee_no',
         'clock_in_am',
         'clock_out_am',
-        'hours_consumed_am',
+        'mins_consumed_am',
         'clock_in_pm',
         'clock_out_pm',
-        'hours_consumed_pm',
+        'mins_consumed_pm',
         'captured_image_clockin',
         'captured_image_clockout',
         'captured_location_clockin',
         'captured_location_clockout',
         'isLate',
         'isHalfDay',
-        'isUnderTime'
+        'isUnderTime',
+        'total_mins_consumed',
+        'mins_ot',
+        'overall_mins'
     ];
 
     public function information() {

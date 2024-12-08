@@ -43,22 +43,39 @@ class Clock extends Component
 
         $this->user_id = $user_id;
 
-        $today = Carbon::today();
+        $timestamp = Carbon::today();
 
         $records = EmployeeClockInOut::where('employee_no', $user_id)
-            ->whereDate('created_at', $today)->first();
+            ->whereDate('created_at', $timestamp)->first();
 
-        if ($records) {
-            if (!is_null($records->clock_in)) {
-                $this->isClockedIn = true;
-            }
-        
-            if (!is_null($records->clock_out)) {
-                $this->isClockedOut = true;
-            }
-        }
+        $this->toggleStatus($records);
     }
 
+    public function toggleStatus($records)
+    {
+        if(!is_null($records)) {
+            if (!is_null($records->clock_in_am) && is_null($records->clock_out_am)) {
+                $this->status = 'Break Out';
+            } elseif (is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+                $this->status = 'Clock In';
+            } elseif (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+                $this->status = 'Break In';
+            } elseif (!is_null($records->clock_in_am) && !is_null($records->clock_out_am) 
+                && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                $this->status = 'Clock Out';
+            } elseif (is_null($records->clock_in_am) && is_null($records->clock_out_am) 
+                && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                $this->status = 'Clock Out';
+            } else if ($records) {
+                $this->status = 'Done';
+            }
+        } else {
+            $this->status = 'Clock In';
+        }
+
+    }
+
+    
     public function triggerClock(bool $isNotify = true)
     {
         $shift = $this->shiftSchedule();
@@ -73,16 +90,18 @@ class Clock extends Component
         $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
         $breakTimeToFormatted = $breakTimeTo->format('g:i A');
 
-
-
         // Current time (timestamp)
-        $timestamp = Carbon::createFromTime(16, 0, 0);
+        $timestamp = Carbon::createFromTime(20, 0, 0);
+        $timestampFormatted = $timestamp->format('g:i A');
+
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
         
         // Get the clock-in/out records for the current employee
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->whereDate('created_at', $timestamp)
             ->first();
+
+        $maxClockOut = Carbon::createFromTime(17, 0, 0);
 
         // If notifications are enabled, show alerts accordingly
         if ($isNotify) {
@@ -102,12 +121,21 @@ class Clock extends Component
 
                 # For late clock in for am shift
 
-                if ($timestamp->gt($latestClockIn)) {
+                if ($timestamp->gt($latestClockIn) && $timestamp->lt($maxClockOut)) {
                     $this->isLate = true;
                     return $this->dispatch('showConfirmation', [
                         'title' => 'Are you sure to continue?',
                         'message' => 'You\'re clocking-in later than your expected time of <strong>' . $latestClockIn->format('g:i A') . '</strong>. This may be considered and marked as late.',
                         'action' => 'triggerClock',
+                    ]);
+                }
+
+                if($timestamp->gte($maxClockOut)) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Please be informed!',
+                        'message' => 'Unable to clock-in because it\'s already ' . $timestampFormatted,
                     ]);
                 }
 
@@ -122,8 +150,6 @@ class Clock extends Component
             $clockInTime = Carbon::parse($records->clock_in_am);
             $expectedClockOut = $clockInTime->copy()->addHours(9);  
             $expectedClockOutMins = $expectedClockOut->diffInMinutes($timestamp);
-
-            $maxClockOut = Carbon::createFromTime(17, 0, 0);
             
             if($expectedClockOut->gt($maxClockOut)) {
                 $formattedExpectedClockOut = $maxClockOut->format('g:i A'); 
@@ -138,7 +164,6 @@ class Clock extends Component
             if($amOrPm == 'am') {
 
                 # If am shift already populated and timestamp has been altered
-
 
                 if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_out_pm) && $timestamp->lt($breakTimeTo) && !$records->isUnderTime) {
                     return $this->dispatch('alert', [
@@ -220,7 +245,7 @@ class Clock extends Component
                         ]);
                     }
 
-                    if(!is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+                    if(!is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm) && is_null($records->clock_out_pm) && $timestamp->hour != 12) {
                         $this->isUndertime = true;
                         return $this->dispatch('showConfirmation', [
                             'title' => 'Please be informed',
@@ -254,14 +279,13 @@ class Clock extends Component
         $this->dispatch('capture');
     }
     
-    
     public function isAlreadyClockInOrOut()
     {
         $shift = $this->shiftSchedule();
         $breakTimeTo = Carbon::createFromTime($shift->break_to + ($shift->break_to >= 1 ? 12 : 0), 0, 0);
         $latestClockIn = Carbon::createFromTime($shift->web_latest_clockin, 0, 0);
 
-        $timestamp = Carbon::createFromTime(16, 0, 0); // Assuming the current date is considered
+        $timestamp = Carbon::createFromTime(20, 0, 0); // Assuming the current date is considered
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->whereDate('created_at', $timestamp)
@@ -271,7 +295,6 @@ class Clock extends Component
             // If no records, perform clock-in
             return $this->clockin($amOrPm, $records, $timestamp);
         }
-
 
         if ($amOrPm == 'am') {
             // If the AM clock-in exists and no AM clock-out, clock-out AM
@@ -325,13 +348,15 @@ class Clock extends Component
     }
    
     private function clockin($shift, $records, $timestamp) {
-    
+
+        $location = $this->saveLocation();
+
         if(!$records) {
             // Clock in based on AM or PM shift
             EmployeeClockInOut::create([
                 'employee_no' => $this->user_id,
                 'captured_image_clockin' => $this->capturedImage,
-                'captured_location_clockin' => 'location',
+                'captured_location_clockin' => $location,
                 'isLate' => $this->isLate,
                 // Conditionally set the clock in time depending on the shift
                 $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
@@ -340,14 +365,18 @@ class Clock extends Component
             // Clock in based on AM or PM shift
             $records->update([
                 'employee_no' => $this->user_id,
-                'captured_image_clockin' => $this->capturedImage,
-                'captured_location_clockin' => 'location',
                 'isLate' => $this->isLate,
                 // Conditionally set the clock in time depending on the shift
                 $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
             ]);
         }
+
+        $records = EmployeeClockInOut::where('employee_no', $this->user_id)
+            ->whereDate('created_at', $timestamp)
+            ->first();
     
+        $this->toggleStatus($records);
+
         $this->dispatch('alert', [
             'showAlert' => true,
             'status' => 'success',
@@ -364,12 +393,14 @@ class Clock extends Component
         // Determine the default columns for clock-in, clock-out, and hours consumed
         $clockInColumn = $shift == 'am' ? 'clock_in_am' : 'clock_in_pm';
         $clockOutColumn = $shift == 'am' ? 'clock_out_am' : 'clock_out_pm';
-        $hoursConsumedColumn = $shift == 'am' ? 'hours_consumed_am' : 'hours_consumed_pm';
+        $hoursConsumedColumn = $shift == 'am' ? 'mins_consumed_am' : 'mins_consumed_pm';
     
         // Parse the clock-in time
         $clockInTime = Carbon::parse($records->$clockInColumn);
 
         $shift = $this->shiftSchedule();
+
+        $location = $this->saveLocation();
 
         // Calculate break time to handle the condition for switching to PM clock-out
         $breakTimeFrom = Carbon::createFromTime($shift->break_from == 12 ? 12 : $shift->break_from + 12, 0, 0);
@@ -379,7 +410,7 @@ class Clock extends Component
         if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->gt($breakTimeTo)) {
             // If the condition is met, update to PM clock-out column and calculate hours from AM clock-in to current time
             $clockOutColumn = 'clock_out_pm'; // Switch to PM clock-out column
-            $hoursConsumedColumn = 'hours_consumed_pm'; // Use PM hours consumed column
+            $hoursConsumedColumn = 'mins_consumed_pm'; // Use PM hours consumed column
             $clockInTime = Carbon::parse($records->clock_in_am); // Use clock-in AM time for calculation
             $isMinusOneHour = true;
         }
@@ -388,14 +419,14 @@ class Clock extends Component
         if ($timestamp->hour == 12 && is_null($records->clock_in_am) && is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
             // If conditions match, update the PM clock-out column instead of AM
             $clockOutColumn = 'clock_out_pm'; // Use PM clock-out column
-            $hoursConsumedColumn = 'hours_consumed_pm'; // Use PM hours consumed column
+            $hoursConsumedColumn = 'mins_consumed_pm'; // Use PM hours consumed column
         }
     
         // Handle special case: if it's PM and AM clock-out is missing, update AM fields
         if ($shift == 'pm' && $records->clock_out_am === null && $records->clock_in_pm == null) {
             // If it's PM, but AM hasn't been clocked out, switch to AM clock-out fields
             $clockOutColumn = 'clock_out_am'; // Use AM clock-out column
-            $hoursConsumedColumn = 'hours_consumed_am'; // Use AM hours consumed column
+            $hoursConsumedColumn = 'mins_consumed_am'; // Use AM hours consumed column
         }
     
         // Calculate the minutes rendered by comparing clock-in time and the given timestamp
@@ -407,7 +438,7 @@ class Clock extends Component
         }
 
         // Check if the clock_in_pm is between breakTimeFrom and breakTimeTo
-        if ($clockInTime->between($breakTimeFrom, $breakTimeTo)) {
+        if ($clockInTime->between($breakTimeFrom, $breakTimeTo) && $timestamp->gt($breakTimeTo)) {
             // If it is, calculate the minutes from $breakTimeTo to the timestamp
             $minutesRendered = $breakTimeTo->diffInMinutes($timestamp);
         }
@@ -415,16 +446,94 @@ class Clock extends Component
         // Ensure that the minutes rendered are not negative (in case the breaktimeTo is after the timestamp)
         $minutesRendered = max(0, $minutesRendered);
 
-    
+        
         // Update the record with the calculated values
         $records->update([
             'employee_no' => $this->user_id,
             $hoursConsumedColumn => $minutesRendered, // Update the correct hours consumed field
-            'captured_image_clockin' => $this->capturedImage,
-            'captured_location_clockin' => 'location',
+            'captured_image_clockout' => $this->capturedImage,
+            'captured_location_clockout' => $location,
             'isUnderTime' => $this->isUndertime,
             $clockOutColumn => $timestamp, // Update the correct clock-out field
         ]);
+
+        // Calculate total minutes consumed (AM and PM combined)
+        $minsAm = (int) $records->mins_consumed_am ?? 0;
+        $minsPm = (int) $records->mins_consumed_pm ?? 0;
+
+
+        //  if employee start working pm shift only
+        if ($minsAm == 0 && $minsPm > 0) {
+            $endShift = Carbon::createFromTime(17, 0, 0); // 5:00 PM
+            
+            $clockin = Carbon::parse($records->clock_in_pm);
+            $clockout = Carbon::parse($records->clock_out_pm); // Clock-out time
+
+
+            // Regular minutes
+
+            $regMins = $clockout->diffInMinutes($clockin);
+
+            if($clockin->between($breakTimeFrom, $breakTimeFrom)) {
+                $regMins -= 60;
+            } 
+
+            if($clockout->gt($endShift)) {
+                $regMins = $clockout->diffInMinutes($endShift);
+                if($clockin->between($breakTimeFrom, $breakTimeFrom)) {
+                    $regMins += 60;
+                } 
+            }
+                        
+            // Calculate overtime minutes (if any)
+            $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;
+        
+            // Calculate overall minutes (regular + overtime)
+            $overallMins = $regMins + $minsOT;
+        }
+        
+
+        //  if employee start working from am shift to afternoon
+        if($minsAm > 0 && $minsPm > 0) {
+            
+            $expectedClockOut = Carbon::parse($records->clock_in_am)->addHours(9);
+            $endShift = Carbon::createFromTime($expectedClockOut->hour, $expectedClockOut->minute, $expectedClockOut->second);
+
+            $clockin = Carbon::parse($records->clock_in_am);
+            $clockout = Carbon::parse($records->clock_out_pm); // Clock-out time
+            
+            // Regular minutes
+
+            $totalConsumedHrs= $records->mins_consumed_am + $records->mins_consumed_pm;
+
+            $workingHrs = 480;
+     
+            if($totalConsumedHrs > $workingHrs) {
+                $minsOT = $clockout->diffInMinutes($endShift);
+                $regMins = $totalConsumedHrs - $minsOT; 
+            } else {
+                $regMins = $totalConsumedHrs;
+            }
+
+            // Calculate overtime minutes (if any)
+            // $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;
+        
+            // Calculate overall minutes (regular + overtime)
+            $overallMins = $regMins + ($minsOT ?? 0);
+
+        }
+
+
+        // Update the record with calculated values
+        $records->update([
+            'employee_no' => $this->user_id,
+            'total_mins_consumed' => $regMins ?? 0, // Regular minutes
+            'mins_ot' => $minsOT ?? 0,              // Overtime minutes
+            'overall_mins' => $overallMins ?? 0,    // Total minutes including overtime
+        ]);
+        
+
+        $this->toggleStatus($records);
     
         // Dispatch success alert
         $this->dispatch('alert', [
@@ -436,30 +545,28 @@ class Clock extends Component
         ]);
     }
     
-    
     public function processClock($imageData, $isImageCaptured) {
-        
-        // $this->isImageCaptured = $isImageCaptured;
 
-        // if (!$isImageCaptured) {
-        //     return $this->dispatch('alert', [
-        //         'showAlert' => true,
-        //         'status' => 'info',
-        //         'title' => 'Oops',
-        //         'message' => 'Unable to clock in or clock out due to the absence of a captured image. Please ensure that your browser\'s camera is enabled and positioned to capture your face clearly.'
-        //     ]);
-        // }
+        $this->isImageCaptured = $isImageCaptured;
 
-        // $image = str_replace('data:image/png;base64,', '', $imageData);
-        // $image = str_replace(' ', '+', $image);
-        // $imageName = $this->user_id . '_' . time() . '.png';
+        if (!$isImageCaptured) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'info',
+                'title' => 'Oops',
+                'message' => 'Unable to clock in or clock out due to the absence of a captured image. Please ensure that your browser\'s camera is enabled and positioned to capture your face clearly.'
+            ]);
+        }
 
-        // $this->capturedImage = $imageName;
-        // Storage::disk('public')->put('clockinout/' . $imageName, base64_decode($image));
+        $image = str_replace('data:image/png;base64,', '', $imageData);
+        $image = str_replace(' ', '+', $image);
+        $imageName = $this->user_id . '_' . time() . '.png';
+
+        $this->capturedImage = $imageName;
+        Storage::disk('public')->put('clockinout/' . $imageName, base64_decode($image));
 
         $this->isAlreadyClockInOrOut();
     }
-    
     
     public function shiftSchedule() {
         return ShiftSchedule::first() ?? null;
@@ -475,6 +582,30 @@ class Clock extends Component
             'modal' => 'logs_modal'
         ]);
 
+    }
+
+    public function saveLocation() {
+        $ip = request()->ip();
+        $api = env('IPINFO_API');
+        $response = Http::get("http://ipinfo.io/{$ip}/json?token={$api}");
+
+        if ($response->successful()) {
+            $locationData = $response->json();
+
+            if (!$locationData) {
+                return 'running in local environment';
+            }
+
+            if(!isset($locationData['loc'])) {
+                return 'running in local environment';
+            }
+
+            $location = explode(',', $locationData['loc']);
+            $latitude = $location[0]; 
+            $longitude = $location[1];
+
+            return $latitude . ' ' . $longitude;
+        }
     }
 
     public function render()
