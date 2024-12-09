@@ -93,24 +93,27 @@ class Index extends Component
             $record = EmployeeLeave::with('employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
-
-            if ($record && $record->employment->leave_credits <= 0) {
+            
+            if ($record && $record->employment && (is_null($record->employment->leave_credits) || $record->employment->leave_credits <= 0)) {
                 return $this->dispatch('alert', [
                     'id' => $this->selected_id,
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Ooops', 
+                    'title' => 'Ooops',
                     'message' => 'Unable to grant leave because there\'s no leave credit left to this employee.'
                 ]);
             }
-
-            $record->employment->leave_credits -= 1;
-            $record->employment->save();
-
+            
+            // Deduct 1 leave credit and save the Employment model
+            $employment = $record->employment;
+            $employment->leave_credits -= 1;
+            $employment->save();
+            
+            // Update the EmployeeLeave record's status
             $record->update([
                 'status' => 'granted'
             ]);
-
+        
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,

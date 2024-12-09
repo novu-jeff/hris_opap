@@ -22,7 +22,7 @@ class EmployeeLeave extends Model
     ];
 
     public function employment() {
-        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_no');
+        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
     }
 
     public function employee() {

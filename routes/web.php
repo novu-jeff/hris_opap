@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
+use App\Http\Controllers\Admin\TimeKeeping\UploadController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -145,6 +146,11 @@ Route::prefix('admin')->group(function() {
         Route::get('hris/manual', [HRISController::class, 'manual'])
             ->name('hris.manual');
         
+        Route::prefix('timekeeping')->group(function() {
+            Route::get('upload', [UploadController::class, 'index'])
+                ->name('timekeeping.upload');
+        });
+
         Route::prefix('ess')->group(function() {
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
