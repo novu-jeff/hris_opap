@@ -176,7 +176,7 @@
                         <button wire:click="setActiveTab('history')" class="nav-link text-uppercase fw-bold {{$activeTab == 'history' ? 'active' : ''}}" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab" aria-controls="pills-history" aria-selected="false">Employment History</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button wire:click="setActiveTab('civil_service')" class="nav-link text-uppercase fw-bold {{$activeTab == 'civil_service' ? 'active' : ''}}" id="pills-civil-service-tab" data-bs-toggle="pill" data-bs-target="#pills-civil-service" type="button" role="tab" aria-controls="pills-civil-service" aria-selected="false">Civil Service Eligibilty</button>
+                        <button wire:click="setActiveTab('civil_service')" class="nav-link text-uppercase fw-bold {{$activeTab == 'civil_service' ? 'active' : ''}}" id="pills-civil-service-tab" data-bs-toggle="pill" data-bs-target="#pills-civil-service" type="button" role="tab" aria-controls="pills-civil-service" aria-selected="false">Civil Service Eligibility</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button wire:click="setActiveTab('trainings')" class="nav-link text-uppercase fw-bold {{$activeTab == 'trainings' ? 'active' : ''}}" id="pills-trainings-tab" data-bs-toggle="pill" data-bs-target="#pills-trainings" type="button" role="tab" aria-controls="pills-trainings" aria-selected="false">Trainings</button>

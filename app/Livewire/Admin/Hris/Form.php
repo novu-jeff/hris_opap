@@ -29,8 +29,8 @@ class Form extends Component
     public array $records;
     public $countries;
 
-    public string $activeTab = 'details';
-    public string $activeAccordion = 'personal';
+    public $activeTab = 'details';
+    public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
 
     public function mount() {
@@ -38,8 +38,7 @@ class Form extends Component
         $this->loadCountries();
     }
 
-    public function loadRecords()
-    {
+    public function loadRecords() {
         // Redirect if employee number is not provided
         if (empty($this->employee_no)) {
             return redirect()->route('hris.index');

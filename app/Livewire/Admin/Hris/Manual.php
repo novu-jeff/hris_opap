@@ -35,8 +35,8 @@ class Manual extends Component
     public object $jobCategories;
     public bool $isDualCitizenship = false;
     public array $countries;
-    public string $activeTab = 'details';
-    public string $activeAccordion = 'personal';
+    public $activeTab = 'details';
+    public $activeAccordion = 'personal';
 
     public function mount() {
         $this->loadRecords();
@@ -104,7 +104,7 @@ class Manual extends Component
         'employee_others' => [],
         'employee_skills' => [],
     ];
-
+    
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
     }

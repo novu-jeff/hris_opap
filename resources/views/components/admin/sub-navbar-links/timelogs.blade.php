@@ -4,8 +4,7 @@
         Timekeeping
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Action</a></li>
-        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Upload Logs</a></li>
         <li class="nav-item dropend">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Timelogs
