@@ -12,6 +12,13 @@ class EmployeeClockInOut extends Model
     protected $table = 'employee_clock_in_out';
     protected $fillable = [
         'employee_no',
+        'origin',
+        'biometricdtrid',
+        'bsdno',
+        'isindtr',
+        'nfcdeviceid',
+        'type',
+        'ismanual',
         'clock_in_am',
         'clock_out_am',
         'mins_consumed_am',
