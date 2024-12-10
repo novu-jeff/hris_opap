@@ -147,7 +147,9 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
-            Route::get('upload', [UploadController::class, 'index'])
+            Route::get('logs/{month?}/{year?}', [UploadController::class, 'index'])
+                ->name('timekeeping.index');
+            Route::get('upload', [UploadController::class, 'upload'])
                 ->name('timekeeping.upload');
         });
 
