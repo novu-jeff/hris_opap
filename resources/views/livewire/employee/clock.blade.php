@@ -92,9 +92,7 @@
                                             <td></td>
                                         </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="12" class="text-center fw-bold py-4">No Clock Logs</td>
-                                        </tr>
+                                        
                                     @endforelse
                                 </tbody>
                             </table>

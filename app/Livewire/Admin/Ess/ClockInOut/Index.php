@@ -38,7 +38,8 @@ class Index extends Component
                     'data' => $group->map(function ($record) {
                         return [
                             'id' => $record->id,
-                            'employee_no' => $record->information->employee_no,
+                            'origin' => $record->origin,
+                            'employee_no' => $record->information->employee_no ?? null,
                             'clock_in_am' => $record->clock_in_am,
                             'clock_out_am' => $record->clock_out_am,
                             'clock_in_pm' => $record->clock_in_pm,
@@ -52,7 +53,7 @@ class Index extends Component
                             'isUnderTime' => $record->isUnderTime,
                             'created_at' => $record->created_at,
                             'updated_at' => $record->updated_at,
-                            'information' => $record->information->toArray(),
+                            'information' => $record->information ? $record->information->toArray() : [],
                         ];
                     })->values()->toArray(),
                 ];
