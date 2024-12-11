@@ -133,7 +133,7 @@
                                 <img src="{{ asset('img/opapru-logo.png') }}" alt="Logo">
                                 <h1>DAILY TIME RECORD</h1>
                                 <h1>Office of the Presidential Adviser on the Peace Process</h1>
-                                <h1>For the month of <span class="underline">{{ $date }} </span>(FY)</h1>
+                                <h1>For the month of <span class="underline">{{ $dtrDate }} </span>(FY)</h1>
                             </div>
                             <div class="dtr-info">
                                 <div>Employee Name: <span  class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</span></div>
@@ -166,42 +166,36 @@
                                         <tr>
                                             <td>{{ \Carbon\Carbon::parse($day['date'])->format('d D') }}</td>
 
-                                            <!-- AM and PM columns -->
-                                            <td>{{ isset($day['clock_in']) ? \Carbon\Carbon::parse($day['clock_in'])->format('H:i') : ' ' }}</td>
-                                            <td>{{ ' ' }}</td>
+                                            <!-- AM -->
+                                            <td>{{ isset($day['clock_in_am']) ? \Carbon\Carbon::parse($day['clock_in_am'])->format('g:i') : ' ' }}</td>
+                                            <td>{{ isset($day['clock_out_am']) ? \Carbon\Carbon::parse($day['clock_out_am'])->format('g:i') : ' ' }}</td>
 
-                                            <!-- You can add more logic for AM/PM calculation if needed -->
-                                            <td>{{ ' ' }}</td>
-                                            <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('H:i') : ' ' }}</td>
+                                            <!-- PM -->
+                                            <td>{{ isset($day['clock_in_pm']) ? \Carbon\Carbon::parse($day['clock_in_pm'])->format('g:i') : ' ' }}</td>
+                                            <td> {{ isset($day['clock_out_pm']) ? \Carbon\Carbon::parse($day['clock_out_pm'])->format('g:i') : ' ' }}</td>
 
-                                            <!-- AUT: Calculate Hours and Mins based on clock_in/out -->
+                                            <!-- AUT: Calculate Hours and Mins-->
                                             <td>
-                                                @if (isset($day['clock_in']) && isset($day['clock_out']))
+                                                {{-- hours --}}
+                                                @if(isset($day['total_mins_consumed']))
                                                     @php
-                                                        $clockIn = \Carbon\Carbon::parse($day['clock_in']);
-                                                        $clockOut = \Carbon\Carbon::parse($day['clock_out']);
-                                                        $duration = $clockOut->diff($clockIn);
-                                                        echo $duration->format('%h'); // Hours
+                                                        $hours = str_pad(floor($day['total_mins_consumed'] / 60), 2, '0', STR_PAD_LEFT);
                                                     @endphp
-                                                @else
-                                                    
+                                                    {{ $hours }}
                                                 @endif
                                             </td>
                                             <td>
-                                                @if (isset($day['clock_in']) && isset($day['clock_out']))
+                                                {{-- minutes --}}
+                                                @if(isset($day['total_mins_consumed']))
                                                     @php
-                                                        $clockIn = \Carbon\Carbon::parse($day['clock_in']);
-                                                        $clockOut = \Carbon\Carbon::parse($day['clock_out']);
-                                                        $duration = $clockOut->diff($clockIn);
-                                                        echo $duration->format('%i'); // Minutes
+                                                        $minutes = str_pad($day['total_mins_consumed'] % 60, 2, '0', STR_PAD_LEFT);
                                                     @endphp
-                                                @else
-                                                    
+                                                    {{ $minutes }}
                                                 @endif
                                             </td>
 
                                             <!-- Remark column -->
-                                            <td>{{ '  ' }}</td> <!-- You can customize the remark logic -->
+                                            <td>{{ '  ' }}</td> 
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -249,10 +243,6 @@
                                         <td></td>
                                     </tr>
                                 </table>
-                                <p style="margin-top: 20px; font-size: 14px;">
-                                    I, CERTIFY on my honor that the above is a true and correct report of the hours of work performed,
-                                    record of which was made daily at the time of arrival and departure from office.
-                                </p>
                                 <div class="signature" style="margin-top: 30px; text-align: center;">
                                     <p style="margin: 0"><span  class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</span></p>
                                     <p>(Name and Signature of Employee)</p>

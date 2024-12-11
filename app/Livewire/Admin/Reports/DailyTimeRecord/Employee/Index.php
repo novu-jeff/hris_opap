@@ -48,8 +48,6 @@ class Index extends Component
         // Update dtrDate with the new incremented date in 'F, Y' format
         $this->dtrDate = $currentDate->format('F, Y');
     
-        Log::info('After Change Month: ' . $this->dtrDate);
-    
         // Update employee_id
         $this->employee_id = $employee_id;
     
@@ -71,11 +69,11 @@ class Index extends Component
     }
 
     public function changeDTR($id)
-    {   
-        $date = Carbon::parse($this->dtrDate); 
-    
+    {
+        $date = Carbon::createFromFormat('F, Y', $this->dtrDate);
+
         Log::info('Showing DTR for Date: ' . $this->dtrDate);
-        
+
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
 
@@ -95,8 +93,12 @@ class Index extends Component
             'employee_personal.firstname',
             'employee_personal.middlename',
             'employee_personal.lastname',
-            'employee_clock_in_out.clock_in',
-            'employee_clock_in_out.clock_out',
+            'employee_clock_in_out.clock_in_am',
+            'employee_clock_in_out.clock_out_am',
+            'employee_clock_in_out.clock_in_pm',
+            'employee_clock_in_out.clock_out_pm',
+            'employee_clock_in_out.total_mins_consumed',
+            
             'employee_clock_in_out.created_at',
             'positions.code as position_code',
             'positions.name as position_name',
@@ -106,8 +108,6 @@ class Index extends Component
         )
         ->where('employee_account.employee_no', $id)
         ->get();
-    
-
 
         $allDays = collect();
         foreach ($startDate->toPeriod($endDate) as $day) {
@@ -123,8 +123,11 @@ class Index extends Component
 
             $mappedClockData[] = [
                 'date' => $day,
-                'clock_in' => $clockData ? $clockData->clock_in : null,
-                'clock_out' => $clockData ? $clockData->clock_out : null,
+                'clock_in_am' => $clockData ? $clockData->clock_in_am : null,
+                'clock_out_am' => $clockData ? $clockData->clock_out_am : null,
+                'clock_in_pm' => $clockData ? $clockData->clock_in_pm : null,
+                'clock_out_pm' => $clockData ? $clockData->clock_out_pm : null,
+                'total_mins_consumed' => $clockData ? $clockData->total_mins_consumed : null,
             ];
         }
 
