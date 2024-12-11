@@ -22,6 +22,12 @@ class EmployeeAccount extends Authenticatable
     ];
     public $timestamps = false;
 
+    // Clock in and clock out
+    public function timekeeping()
+    {
+        return $this->hasMany(EmployeeClockInOut::class, 'employee_no', 'employee_no');
+    }
+
     public function personal() {
         return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
