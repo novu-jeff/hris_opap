@@ -1,5 +1,5 @@
 @extends('layouts.employee', [
-    'title' => 'HRIS | Employee Dashboard'
+    'title' => 'ESS | Dashboard'
 ])
 
 @section('content')
@@ -24,6 +24,12 @@
                     <p>Clock In/Out</p>
                 </div>
             </a>
+            <a href="{{route('employee.atro')}}" class="nav-link">
+                <div class="item">
+                    <img src="{{asset('/img/overtime.png')}}" alt="leave" class="w-100">
+                    <p>Authority to Render Overtime</p>
+                </div>
+            </a>
             <a href="#" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/payslip.png')}}" alt="leave" class="w-100">
@@ -39,19 +45,19 @@
             <a href="{{route('employee.directory')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/directory.png')}}" alt="leave" class="w-100">
-                    <p>Directory</p>
+                    <p>My Directory</p>
                 </div>
             </a>
             <a href="{{route('employee.team')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/team.png')}}" alt="leave" class="w-100">
-                    <p>Team</p>
+                    <p>My Team</p>
                 </div>
             </a>
             <a href="{{route('employee.announcements.index')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/announcement.png')}}" alt="leave" class="w-100">
-                    <p>Announcement</p>
+                    <p>Announcements</p>
                 </div>
             </a>
             <a href="{{route('employee.logout')}}" class="nav-link">

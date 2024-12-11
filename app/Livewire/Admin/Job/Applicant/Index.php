@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -152,7 +152,7 @@ class Index extends Component
                     $this->delete($id);
                     break;
                 case 'navigate':
-                    $this->navigate($id);
+                    $this->navigate();
                     break;
                 default: 
                     return redirect()->route('job.applicants.index');
@@ -323,6 +323,7 @@ class Index extends Component
 
     # set application to onboarding
     public function set_onboarding(bool $isNotify = true) {
+
         $model = JobApplicants::with('offer')->find($this->selected_id);
 
         if(is_null($model->offer)) {
@@ -342,11 +343,13 @@ class Index extends Component
             $action = 'set_onboarding';
             $this->notify($title, $message, $action);
         } else {
+
             $model->update([
                 'status' => 'onboarding',
             ]);
     
             $this->loadRecords();
+
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -552,17 +555,21 @@ class Index extends Component
                 'isReloadDT' => true,
             ]);
 
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
+        } catch (ValidationException $e) {
+            $validationErrors = $e->validator->errors()->all(); 
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
-                'title' => 'Oops!', 
-                'message' => 'Error: ' . $e->getMessage()
+                'title' => 'Oops!',
+                'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
             ]);
-
+        } catch (\Exception $e) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
         }
         
 
@@ -674,34 +681,33 @@ class Index extends Component
             $record->delete();
     
             $this->loadRecords();
+            
             $this->dispatch('alert', [
-                'id' => $record->id,
+                'id' => $this->selected_id,
                 'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Success!', 
                 'isRemoveRowDT' => true,
-                'message' => 'Applicantion has been deleted!.' 
+                'message' => 'Application has been deleted!.' 
             ]);
 
         }
     
     }
 
-    public function navigate(int $id) {
-        
-        $employee = EmployeeAccount::where('applicant_id', $id)->first();
+    public function navigate() {
+
+        $user_id = Auth::user()->id;
+
+        $employee = EmployeeAccount::where('applicant_id', $user_id)->first();
 
         if(!$employee) {
-            return redirect()->route('job_applicants.index');
+            return redirect()->route('job.applicants.index', ['status' => 'hired']);
         }
 
         $employee_no = $employee->employee_no;
 
-        Session::put('target', [
-            'id' => $employee_no,
-        ]);
-
-        return redirect()->route('hris.index');
+        return redirect()->route('hris.show', ['employee_no' => $employee_no]);
 
     }
     
@@ -745,8 +751,10 @@ class Index extends Component
 
             $account->password = $password['hashed'];
             $account->save();
-
+            
             $data = [
+                'is_newly_hired' => true,
+                'employee_no' => null,
                 'fullname' => $record->applicant->firstname . ' ' . $record->applicant->lastname,
                 'slug' => $record->job->slug,
                 'position' => $record->job->position,

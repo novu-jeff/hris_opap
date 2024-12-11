@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
+use App\Http\Controllers\Admin\TimeKeeping\UploadController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -43,6 +44,7 @@ use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
 use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
+use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
@@ -126,9 +128,7 @@ Route::prefix('admin')->group(function() {
             Route::resource('posts', PostController::class)->names('job.posts');
             Route::resource('assessments', InterviewController::class)->names('job.interview');
             Route::resource('requirements', RequirementsController::class)->names('job.requirements');
-            
-            // Route::resource('applicants/{status}', ApplicantController::class)->names('job.applicants');
-        
+                    
             Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
             Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
             Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
@@ -147,6 +147,13 @@ Route::prefix('admin')->group(function() {
         Route::get('hris/manual', [HRISController::class, 'manual'])
             ->name('hris.manual');
         
+        Route::prefix('timekeeping')->group(function() {
+            Route::get('logs/{month?}/{year?}', [UploadController::class, 'index'])
+                ->name('timekeeping.index');
+            Route::get('upload', [UploadController::class, 'upload'])
+                ->name('timekeeping.upload');
+        });
+
         Route::prefix('ess')->group(function() {
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
@@ -162,7 +169,7 @@ Route::prefix('admin')->group(function() {
                 Route::get('edit/{id}', [ESSAnnouncementController::class, 'edit'])
                     ->name('ess.announcements.edit');
             });
-            
+
             Route::prefix('request-status')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
@@ -270,6 +277,17 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
+        });
+
+        Route::prefix('authority-to-render-time')->group(function() {
+
+            Route::get('/', [EmployeeATROController::class, 'index'])
+                ->name('employee.atro');
+            Route::get('apply', [EmployeeATROController::class, 'create'])
+                ->name('employee.atro.apply');
+            Route::get('edit/{id}', [EmployeeATROController::class, 'edit'])
+                ->name('employee.atro.edit');
+                
         });
 
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])

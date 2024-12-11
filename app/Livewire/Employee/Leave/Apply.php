@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee\Leave;
 
 use App\Models\EmployeeLeave;
+use App\Models\LeaveType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -11,11 +12,14 @@ class Apply extends Component
 {
 
     public $type;
+    public $duration;
     public $from;
     public $to;
     public $reason;
     public $record_id;
     public $user_id;
+    public $leaveTypes;
+    public $isMoreThanOne = null;
 
     protected $listeners = ['save'];
 
@@ -25,39 +29,75 @@ class Apply extends Component
 
     public function loadRecords() {
 
-        $user_id = Auth::user()->employee_id;
+        $this->leaveTypes = LeaveType::all();
+
+        $user_id = Auth::user()->employee_no;
         $this->user_id = $user_id;
  
         if(!is_null($this->record_id)) {
-            $record = EmployeeLeave::where('id', $this->record_id)
-                ->where('employee_id', $user_id)
+            $records = EmployeeLeave::where('id', $this->record_id)
+                ->where('employee_no', $user_id)
                 ->first();
         
-            if(!$record) {
+            if(!$records) {
                 return redirect()
                     ->route('employee.leave');
             }
 
-            $this->type = $record->type;
-            $this->from = $record->from;
-            $this->to = $record->to;
-            $this->reason = $record->reason;
+
+            $this->type = $records->leave_id;
+            
+            if(is_null($records->to)) {
+                $this->duration = 1;
+            } else {
+                $this->duration = 2;
+            }
+
+            $this->selectDuration();
+
+            $this->from = $records->from;
+            $this->to = $records->to;
+            $this->reason = $records->reason;
         }
 
         
     }
 
-    public function rules() {
-        return [
-            'type' => 'required|in:casual,medical,unpaid,emergency,sick',
-            'reason' => 'required',
-            'from' => 'required|date|after:today',
-            'to' => 'required|date|after:from'
-        ];
+    public function selectDuration() {
+        if(!empty($this->duration)) {
+            if($this->duration == 2) {
+                return $this->isMoreThanOne = true;
+            } 
+    
+            return $this->isMoreThanOne = false;
+        } else {
+            return $this->isMoreThanOne = null;
+        }
     }
 
+    public function rules() {
+        $rules = [
+            'duration' => 'required',
+            'type' => 'required|exists:leave_types,id',
+            'reason' => 'required',
+            'from' => 'required|date|after:today',
+            'to' => 'required|date',
+        ];
+    
+        if ($this->isMoreThanOne) {
+            $rules['to'] = 'required|date|after:from';
+        } else {
+            $rules['to'] = 'nullable|date';
+        }
+    
+        return $rules;
+    }
+    
+
     public function message() {
-        return [];
+        return [
+            'type.exists' => 'Leave type does not exists.'
+        ];
     }
 
     public function save(bool $isNotify = true) {
@@ -78,11 +118,11 @@ class Apply extends Component
             try {
                 
                 $from = Carbon::parse($this->from);
-                $to = Carbon::parse($this->to);
-                $consumed_hours = $from->diffInHours($to);
+                $to = $this->isMoreThanOne ? Carbon::parse($this->to) : null;
+                $consumed_hours = $to ? $to->diffInHours($from) : 24;
 
                 $model = EmployeeLeave::class;
-                $pending = $model::where('employee_id', $this->user_id)
+                $pending = $model::where('employee_no', $this->user_id)
                     ->where('status', false)
                     ->count();
 
@@ -100,18 +140,18 @@ class Apply extends Component
                 $model::updateOrCreate([
                     'id' => $this->record_id,
                 ], [
-                    'employee_id' => $this->user_id,
-                    'type' => $this->type,
+                    'employee_no' => $this->user_id,
+                    'leave_id' => $this->type,
                     'reason' => $this->reason,
                     'from' => $from->format('Y-m-d'),
-                    'to' => $to->format('Y-m-d'),
+                    'to' => $to ? $to->format('Y-m-d') : null,
                     'measurement' => 'full day',
                     'consumed_hours' => $consumed_hours 
                 ]);
 
                 if(is_null($this->record_id)) {
 
-                    $this->resetExcept('user_id');
+                    $this->resetExcept('user_id', 'leaveTypes');
 
                     return $this->dispatch('alert', [
                         'showAlert' => true,

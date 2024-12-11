@@ -10,7 +10,7 @@ class RequestStatusController extends Controller
     public function index() {
         return view('employee.request-status', [
             'action' => 'index',
-            'title' => 'Request Status',
+            'title' => 'ESS | Request Status',
             'header' => 'Request Status | Talk HR',
             'sub' => 'Request any status or message any concerns.'
         ]);

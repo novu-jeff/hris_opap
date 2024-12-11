@@ -28,7 +28,8 @@ export function reinitializeDataTable() {
         $('table').DataTable().destroy();
     }
     $('table').DataTable({
-        scrollX: true
+        scrollX: true,
+        pageLength: 20 
     });
 }
 
@@ -105,6 +106,18 @@ export function hideModal() {
 }
 
 export function formatTime(date) {
-    if (!date) return 'In Progress...';
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    if (!date) return '';  // If no date is provided, return an empty string
+
+    // Check if the date is already in a string format (e.g., "06:58 AM")
+    if (typeof date === 'string' && /\d{2}:\d{2} (AM|PM)/.test(date)) {
+        return date;  // Return the string as is if it's already in the correct format
+    }
+
+    // If it's a Date object, format it
+    if (date instanceof Date) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    // In case the date is neither a string nor a Date object, return an empty string
+    return '';
 }

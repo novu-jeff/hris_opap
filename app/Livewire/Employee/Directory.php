@@ -16,15 +16,15 @@ class Directory extends Component
 
     public function loadRecords() {
 
-        $records = EmployeeInformation::with('branch', 'department', 'positions', 'personal', 'account')->get();
+        $records = EmployeeInformation::with('section.department', 'section.branch', 'positions', 'personal', 'account')->get();
 
         $sortedRecords = $records->sort(function ($a, $b) {
-            $branchA = $a->branch_id ?? PHP_INT_MAX;
-            $branchB = $b->branch_id ?? PHP_INT_MAX;
+            $branchA = $a->section->branch_id ?? PHP_INT_MAX;
+            $branchB = $b->section->branch_id ?? PHP_INT_MAX;
         
             if ($branchA === $branchB) {
-                $departmentA = $a->department_id ?? PHP_INT_MAX;
-                $departmentB = $b->department_id ?? PHP_INT_MAX;
+                $departmentA = $a->section->department_id ?? PHP_INT_MAX;
+                $departmentB = $b->section->department_id ?? PHP_INT_MAX;
         
                 if ($departmentA === $departmentB) {
                     return ($a->position_id ?? PHP_INT_MAX) <=> ($b->position_id ?? PHP_INT_MAX);
@@ -39,15 +39,25 @@ class Directory extends Component
         
         // Grouping into the nested structure
         foreach ($sortedRecords as $record) {
-            // Get branch, department, and position details
-            $branchId = $record->branch_id ?? 'No Branch';
-            $departmentId = $record->department_id ?? 'No Department';
-            $positionId = $record->position_id ?? 'No Position';
-            $positionName = $record->positions->name ?? 'Unknown Position'; 
+            // Handle null section as "Unassigned Employees"
+            if (!$record->section) {
+                if (!isset($nestedArray['unassigned'])) {
+                    $nestedArray['unassigned'] = [
+                        'group_name' => 'Unassigned Employees',
+                        'employees' => []
+                    ];
+                }
+                $nestedArray['unassigned']['employees'][] = $record->toArray();
+                continue;
+            }
         
-            // Get branch name and department name from relationships
-            $branchName = $record->branch->name ?? 'Unknown Branch';
-            $departmentName = $record->department->name ?? 'Unknown Department';
+            // Get branch, department, and section details
+            $branchId = $record->section->branch_id;
+            $branchName = $record->section->branch->name ?? 'Unknown Branch';
+            $departmentId = $record->section->department_id;
+            $departmentName = $record->section->department->name ?? 'Unknown Department';
+            $sectionId = $record->section_id;
+            $sectionName = $record->section->name ?? 'Unknown Section';
         
             // Initialize the branch if it doesn't exist
             if (!isset($nestedArray[$branchId])) {
@@ -63,34 +73,44 @@ class Directory extends Component
                 $nestedArray[$branchId]['departments'][$departmentId] = [
                     'department_id' => $departmentId,
                     'department_name' => $departmentName,
-                    'positions' => []
+                    'sections' => []
                 ];
             }
         
-            // Initialize the position if it doesn't exist
-            if (!isset($nestedArray[$branchId]['departments'][$departmentId]['positions'][$positionId])) {
-                $nestedArray[$branchId]['departments'][$departmentId]['positions'][$positionId] = [
-                    'position_id' => $positionId,
-                    'position_name' => $positionName, // Store the position name
-                    'employees' => [] // Store employees under this position
+            // Initialize the section if it doesn't exist
+            if (!isset($nestedArray[$branchId]['departments'][$departmentId]['sections'][$sectionId])) {
+                $nestedArray[$branchId]['departments'][$departmentId]['sections'][$sectionId] = [
+                    'section_id' => $sectionId,
+                    'section_name' => $sectionName,
+                    'employees' => []
                 ];
             }
         
-            // Add the full employee record to the respective position
-            $nestedArray[$branchId]['departments'][$departmentId]['positions'][$positionId]['employees'][] = $record->toArray();
+            // Add the full employee record to the respective section
+            $nestedArray[$branchId]['departments'][$departmentId]['sections'][$sectionId]['employees'][] = $record->toArray();
         }
         
         // Convert associative arrays to zero-based indexed arrays
         foreach ($nestedArray as &$branch) {
-            $branch['departments'] = array_values($branch['departments']);
-            foreach ($branch['departments'] as &$department) {
-                $department['positions'] = array_values($department['positions']);
+            if (isset($branch['departments'])) {
+                $branch['departments'] = array_values($branch['departments']);
+                foreach ($branch['departments'] as &$department) {
+                    if (isset($department['sections'])) {
+                        $department['sections'] = array_values($department['sections']);
+                    }
+                }
             }
         }
-
+        
+        if (isset($nestedArray['unassigned'])) {
+            $nestedArray['unassigned']['employees'] = array_values($nestedArray['unassigned']['employees']);
+        }
+        
+        // Re-index the outer array
         $nestedArray = array_values($nestedArray);
         
         $this->records = $nestedArray;
+        
 
     }
 

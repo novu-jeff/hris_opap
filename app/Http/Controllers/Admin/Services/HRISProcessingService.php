@@ -83,7 +83,9 @@ class HRISProcessingService extends Controller
         
         if ($isFirstTime) {
 
-            $employee_no = EmployeeInformation::max('employee_no') + 1;
+            $generate = new Generate;
+
+            $employee_no = $generate->employee_no();
             
             $record = EmployeeInformation::create([
                 'employee_no' => $employee_no,
@@ -292,7 +294,7 @@ class HRISProcessingService extends Controller
                     'date_exam' => $value['date_exam'],
                     'place_exam' => $value['place_exam'],
                     'license_no' => $value['license_no'],
-                    'date_validaity' => $value['date_validaity'],
+                    'date_validity' => $value['date_validity'],
                 ]);
             } 
         }
