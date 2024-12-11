@@ -13,10 +13,18 @@ return new class extends Migration
     {
         Schema::create('employee_clock_in_out', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_no');
-            $table->string('clock_in')
+            $table->string('employee_no');  
+            $table->string('clock_in_am')
                 ->nullable();
-            $table->string('clock_out')
+            $table->string('clock_out_am')
+                ->nullable();
+            $table->string('mins_consumed_am')
+                ->nullable();
+            $table->string('clock_in_pm')
+                ->nullable();
+            $table->string('clock_out_pm')
+                ->nullable();
+            $table->string('mins_consumed_pm')
                 ->nullable();
             $table->string('captured_image_clockin')
                 ->nullable();
@@ -32,6 +40,12 @@ return new class extends Migration
                 ->default(false);
             $table->boolean('isUnderTime')
                 ->default(false);
+            $table->string('total_mins_consumed')
+                ->nullable();
+            $table->string('mins_ot')
+                ->nullable();
+            $table->string('overall_mins')
+                ->nullable();
             $table->timestamps();
         });
     }

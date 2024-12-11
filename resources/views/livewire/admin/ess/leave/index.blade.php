@@ -10,8 +10,8 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="employee_id">Employee ID</label>
-                            <input type="text" id="employee_id" class="form-control restricted" value="#{{ isset($view_records->employee) ? format_id($view_records->employee->employee_id, 6) : '' }}" readonly>
+                            <label class="mb-2" for="employee_no">Employee No.</label>
+                            <input type="text" id="employee_no" class="form-control restricted" value="{{ isset($view_records->employee) ? ($view_records->employee->employee_no) : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
@@ -24,19 +24,25 @@
                         <div class="col-12 mb-4">
                             <hr>
                         </div>
-                        <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="type">Type</label>
-                            <input type="text" id="type" class="form-control restricted" value="{{$view_records->type ?? ''}}" readonly>
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="type">Leave Type</label>
+                            <input type="text" id="type" class="form-control restricted" value="{{$view_records->leave_type->name ?? ''}}" readonly>
                         </div>
-                        <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="from">From</label>
-                            <input type="date" id="from" class="form-control restricted" value="{{$view_records->from ?? ''}}" readonly>
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="duration">Duration</label>
+                            <input type="text" id="duration" class="form-control restricted" value="{{ isset($view_records) && $view_records->to === null ? 'One Day' : 'Two or More Days' }}" readonly>
                         </div>
-                        <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="to">To</label>
-                            <input type="date" id="to" class="form-control restricted" value="{{$view_records->to ?? ''}}" readonly>
+                        <div class="col-12 {{isset($view_records->to) ? 'col-md-6' : 'col-md-12'}} mb-4">
+                            <label class="mb-2" for="from">{{isset($view_records->to) ? 'From' : 'Leave Date'}}</label>
+                            <input type="text" id="from" class="form-control restricted" value="{{format_date($view_records->from ?? '', 'day_date_string')}}" readonly>
                         </div>
-                        <div class="col-12 col-md-4 mb-4">
+                        @if(isset($view_records->to))
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="to">To</label>
+                                <input type="text" id="to" class="form-control restricted" value="{{format_date($view_records->to ?? '', 'day_date_string')}}" readonly>
+                            </div>
+                        @endif
+                        <div class="col-12 col-md-12'}} mb-4">
                             <label class="mb-2" for="date_applied">Date Applied</label>
                             <input type="text" id="date_applied" class="form-control restricted" value="{{ isset($view_records->created_at) ? format_date($view_records->created_at, 'date_string')  : '' }}" readonly>
                         </div>

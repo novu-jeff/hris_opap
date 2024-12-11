@@ -28,6 +28,7 @@ class EmployeeInformation extends Model
         'bank_account_no',
         'payroll_account_number',
     ];
+    
     public $timestamps = false;
 
     public function section() {
@@ -85,8 +86,6 @@ class EmployeeInformation extends Model
     public function positions() {
         return $this->hasOne(Positions::class, 'id', 'position_id');
     }
-
-   
 
     public function messages() {
         return $this->hasMany(Message::class, 'from_id', 'id');

@@ -20,6 +20,8 @@ class ShiftScheduleSeeder extends Seeder
                 'mobile_latest_clockin' => 8,
                 'web_earliest_clockin' => 7,
                 'web_latest_clockin' => 9,
+                'break_from' => 12,
+                'break_to' => 1,
                 'min_ot_mins' => 120,
                 'max_ot_time' => 10,
                 'is_late_strict' => 1,

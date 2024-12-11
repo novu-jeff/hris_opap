@@ -19,47 +19,79 @@ class Team extends Component
 
         $user_id = Auth::user()->employee_no;
 
-        $user = EmployeeInformation::where('employee_no', $user_id)->first();
+        $user = EmployeeInformation::with('section.department', 'section.branch')->where('employee_no', $user_id)->first();
 
         if(!$user) {
             return redirect()->route('employee.dashboard');
         }
 
-        $branch_id = $user->section_id->branch_id ?? null;
-        $department_id = $user->section_id->department_id ?? null;
-
-        $records = EmployeeInformation::with('section', 'positions', 'personal', 'account')->get();
+        $records = EmployeeInformation::with('section.department', 'section.branch', 'positions', 'personal', 'account')->get();
 
         $groupedRecords = [
             'branch' => [
-                'branch_id' => $branch_id,
-                'branch_name' => $records->first()->section->branch->name ?? 'Unknown Branch',
+                'branch_id' => null,
+                'branch_name' => 'Unknown Branch',
             ],
             'department' => [
-                'department_id' => $department_id,
-                'department_name' => $records->first()->section->department->name ?? 'Unknown Department',
+                'department_id' => null,
+                'department_name' => 'Unknown Department',
+            ],
+            'section' => [
+                'section_id' => null,
+                'section_name' => 'Unknown Section',
             ],
             'positions' => []
         ];
         
-        foreach ($records as $record) {
-            $positionId = $record->position_id;
-            $positionName = $record->positions->name ?? 'Unknown Position';
-        
-            if (!isset($groupedRecords['positions'][$positionId])) {
-                $groupedRecords['positions'][$positionId] = [
-                    'position_id' => $positionId,
-                    'position_name' => $positionName,
-                    'employees' => []
-                ];
-            }
-        
-            $groupedRecords['positions'][$positionId]['employees'][] = $record->toArray();
+        // Initialize branch, department, and section details using the first record as a reference.
+        if ($records->isNotEmpty()) {
+            $firstRecord = $records->first();
+            $groupedRecords['branch'] = [
+                'branch_id' => $firstRecord->section->branch_id ?? null,
+                'branch_name' => $firstRecord->section->branch->name ?? 'Unknown Branch',
+            ];
+            $groupedRecords['department'] = [
+                'department_id' => $firstRecord->section->department_id ?? null,
+                'department_name' => $firstRecord->section->department->name ?? 'Unknown Department',
+            ];
+            $groupedRecords['section'] = [
+                'section_id' => $firstRecord->section->id ?? null,
+                'section_name' => $firstRecord->section->name ?? 'Unknown Section',
+            ];
         }
         
+        // Process records to group by position.
+        foreach ($records as $record) {
+            $section = $record->section;
+        
+            // Validate branch, department, and section match.
+            $isSameBranch = isset($section->branch_id) && $section->branch_id === $groupedRecords['branch']['branch_id'];
+            $isSameDepartment = isset($section->department_id) && $section->department_id === $groupedRecords['department']['department_id'];
+            $isSameSection = isset($section->id) && $section->id === $groupedRecords['section']['section_id'];
+        
+            if ($isSameBranch && $isSameDepartment && $isSameSection) {
+                // Group employees by position.
+                $positionId = $record->position_id;
+                $positionName = $record->positions->name ?? 'Unknown Position';
+        
+                if (!isset($groupedRecords['positions'][$positionId])) {
+                    $groupedRecords['positions'][$positionId] = [
+                        'position_id' => $positionId,
+                        'position_name' => $positionName,
+                        'employees' => []
+                    ];
+                }
+        
+                $groupedRecords['positions'][$positionId]['employees'][] = $record->toArray();
+            }
+        }
+        
+        // Convert position groups to a clean array structure.
         $groupedRecords['positions'] = array_values($groupedRecords['positions']);
         
-        return $this->records = $groupedRecords; 
+        // Assign grouped records to the component property.
+        $this->records = $groupedRecords;
+
     }
 
     public function render()

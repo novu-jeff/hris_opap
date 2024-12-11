@@ -12,6 +12,7 @@ use App\Models\JobCategory;
 use App\Models\Positions;
 use App\Models\Sections;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -28,23 +29,18 @@ class Form extends Component
     public array $records;
     public $countries;
 
-    public string $activeTab = 'details';
-    public $activeAccordion;
+    public $activeTab = 'details';
+    public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
-
-    public function boot() {
-        $this->loadCountries();
-    }
 
     public function mount() {
         $this->loadRecords();
+        $this->loadCountries();
     }
 
-    public function loadRecords()
-    {
-        $employee_no = $this->employee_no ?? null;
-
-        if (is_null($employee_no)) {
+    public function loadRecords() {
+        // Redirect if employee number is not provided
+        if (empty($this->employee_no)) {
             return redirect()->route('hris.index');
         }
 
@@ -54,11 +50,11 @@ class Form extends Component
         $this->jobCategories = JobCategory::all();
 
         // Fetch related earnings and deductions
-        $inst = new OtherServices();
-        $earnings = $inst->earnings($employee_no);
-        $deductions = $inst->deductions($employee_no);
+        $otherServices = new OtherServices();
+        $earnings = $otherServices->earnings($this->employee_no) ?? [];
+        $deductions = $otherServices->deductions($this->employee_no) ?? [];
 
-        // Fetch employee data
+        // Fetch employee data with relations
         $data = EmployeeInformation::with([
             'department',
             'personal.gsis_item.gsis',
@@ -71,43 +67,46 @@ class Form extends Component
             'trainings',
             'others',
             'skills'
-        ])->where('employee_no', $employee_no)->first();
+        ])->where('employee_no', $this->employee_no)->first();
 
-        // If no data is found, reset the records and return
+        // Reset records if no data is found
         if (!$data) {
             $this->records = [];
             return;
         }
 
-        // Populate records
+        // Populate employee records
         $this->records = [
             'employee_information' => $this->formatEmployeeInformation($data),
             'employee_account' => $this->formatEmployeeAccount($data),
             'employee_personal' => $this->formatEmployeePersonal($data),
-            'employee_education' => $data->education->toArray() ?? [],
+            'employee_education' => $data->education->toArray(),
             'employee_parents' => $this->formatEmployeeParents($data),
-            'employee_children' => $data->children->toArray() ?? [],
-            'employee_employment_history' => $data->employment_history->toArray() ?? [],
-            'employee_civil_service' => $data->civil_service->toArray() ?? [],
-            'employee_trainings' => $data->trainings->toArray() ?? [],
-            'employee_others' => $data->others->toArray() ?? [],
-            'employee_skills' => $data->skills->toArray() ?? [],
-            'employee_gsis' => $data->personal->gsis_item ? $data->personal->gsis_item->toArray() : [],
-            'other_earnings' => $earnings ?? [],
-            'other_deductions' => $deductions ?? [],
+            'employee_children' => $data->children->toArray(),
+            'employee_employment_history' => $data->employment_history->toArray(),
+            'employee_civil_service' => $data->civil_service->toArray(),
+            'employee_trainings' => $data->trainings->toArray(),
+            'employee_others' => $data->others->toArray(),
+            'employee_skills' => $data->skills->toArray(),
+            'employee_gsis' => $data->personal?->gsis_item?->toArray() ?? [],
+            'other_earnings' => $earnings,
+            'other_deductions' => $deductions,
         ];
 
-        // Handle section change if applicable
-        if (!is_null($data->section_id)) {
+        if ($data->section_id) {
             $this->select_change('section');
         }
+
+        if($data->personal->citizenship == 'dual_citizenship') {
+            $this->select_change('citizenship');
+        }
     }
+
 
     /**
      * Format employee information data
      */
-    protected function formatEmployeeInformation($data)
-    {
+    protected function formatEmployeeInformation($data) {
         return [
             'id' => $data->id,
             'employee_id' => format_id($data->id, 6),
@@ -130,8 +129,7 @@ class Form extends Component
     /**
      * Format employee account data
      */
-    protected function formatEmployeeAccount($data)
-    {
+    protected function formatEmployeeAccount($data) {
         return [
             'email' => $data->account->email ?? null,
         ];
@@ -140,8 +138,7 @@ class Form extends Component
     /**
      * Format employee personal data
      */
-    protected function formatEmployeePersonal($data)
-    {
+    protected function formatEmployeePersonal($data) {
         $personal = $data->personal;
         return [
             'profile' => $personal->profile ?? null,
@@ -178,8 +175,7 @@ class Form extends Component
     /**
      * Format employee parents data
      */
-    protected function formatEmployeeParents($data)
-    {
+    protected function formatEmployeeParents($data) {
         $parents = $data->parents;
         return [
             'spouse_surname' => $parents->spouse_surname ?? null,
@@ -200,45 +196,107 @@ class Form extends Component
         ];
     }
 
-
     public function loadCountries() {
-        $client = new Client();
-    
+        // Check cache first (e.g., using Laravel Cache)
+        if (Cache::has('countries')) {
+            return $this->countries = Cache::get('countries');
+        }
+
         try {
-            // Fetch the countries data with only required fields
+            $client = new Client();
             $response = $client->get('https://restcountries.com/v3.1/all?fields=name');
-            $countries = json_decode($response->getBody()->getContents(), true);
-    
+            $countries = json_decode($response->getBody(), true);
+
+            // Validate response structure
+            if (!is_array($countries)) {
+                throw new \Exception('Invalid API response');
+            }
+
             // Sort countries by common name
             usort($countries, fn($a, $b) => strcmp($a['name']['common'], $b['name']['common']));
-    
+
+            // Cache the result for 24 hours
+            Cache::put('countries', $countries, now()->addHours(24));
+
             $this->countries = $countries;
-    
             return $this->countries;
         } catch (\Exception $e) {
-            // Handle exceptions such as request errors
+            // Log the error
             logger()->error('Failed to load countries: ' . $e->getMessage());
-            return [];
+
+            // Provide a default empty array if an error occurs
+            return $this->countries = [];
         }
     }
-    
+
+    private $tabAccordionMappings = [
+        'employee_personal' => [
+            'tab' => 'details',
+            'accordions' => [
+                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
+                'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
+                'contact' => ['mobile_number', 'tel_no', 'company_email'],
+                'appearance' => ['height', 'weight', 'blood_type'],
+                'identification' => ['gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no']
+            ]
+        ],
+        'employee_children' => [
+            'tab' => 'family',
+            'accordions' => [
+                'parents' => ['spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix', 'spouse_occupation', 'spouse_business_name_employer', 'spouse_business_address', 'spouse_contact_no', 'father_surname', 'father_firstname', 'father_middlename', 'father_suffix', 'mother_surname', 'mother_firstname', 'mother_middlename'],
+                'children' => ['firstname', 'lastname', 'middlename', 'birthdate']
+            ]
+        ],
+        'employee_education' => ['tab' => 'education'],
+        'employee_employment_history' => ['tab' => 'history'],
+        'employee_civil_service' => ['tab' => 'civil_service'],
+        'employee_trainings' => ['tab' => 'trainings'],
+        'employee_others' => ['tab' => 'others'],
+        'employee_skills' => ['tab' => 'skills'],
+        'employee_account' => ['tab' => 'account'],
+    ];
+
+    private $defaultFields = [
+        'employee_education' => [
+            'level' => '',
+            'school_name' => '',
+            'course' => '',
+            'from_year' => '',
+            'to_year' => '',
+        ],
+        'employee_employment_history' => [
+            'position' => '',
+            'department' => '',
+            'company_name' => '',
+            'monthly_salary' => '',
+            'employment_status' => '',
+            'isGovernment' => '',
+            'from_year' => '',
+            'to_year' => ''
+        ],
+        'employee_children' => [
+            'firstname' => '',
+            'middlename' => '',
+            'lastname' => '',
+            'birthdate' => '',
+        ],
+        'employee_civil_service' => [],
+        'employee_trainings' => [],
+        'employee_others' => [],
+        'employee_skills' => [],
+    ];
 
     public function setActiveTab($tab) {
         $this->activeTab = $tab;
     }
 
     public function setActiveAccordion($accordion) {
-        if($this->activeAccordion !== $accordion) {
-            $this->activeAccordion = $accordion;
-        } else {
-            $this->activeAccordion = '';
-        }
+        $this->activeAccordion = $accordion;
     }
 
     public function select_change(string $property) {
-        
+        $this->setActiveAccordion('personal');
         if($property == 'citizenship') {
-            $this->setActiveAccordion('personal');
             if($this->records['employee_personal']['citizenship'] == 'dual_citizenship') {
                 $this->isDualCitizenship = true;
             } else {
@@ -258,45 +316,14 @@ class Form extends Component
     }
 
     public function addRecord($tab, $type, $accordion = null) {
-
         $this->activeAccordion = $accordion;
-
-        $fields = [
-            'employee_education' => [
-                'level' => '',
-                'school_name' => '',
-                'course' => '',
-                'from_year' => '',
-                'to_year' => '',
-            ],
-            'employee_employment_history' => [
-                'position' => '',
-                'department' => '',
-                'company_name' => '',
-                'monthly_salary' => '',
-                'employment_status' => '',
-                'isGovernment' => '',
-                'from_year' => '',
-                'to_year' => ''
-            ],
-            'employee_children' => [
-                'firstname' => '',
-                'middlename' => '',
-                'lastname' => '',
-                'birthdate' => '',
-            ],
-            'employee_civil_service' => [],
-            'employee_trainings' => [],
-            'employee_others' => [],
-            'employee_skills' => [],
-        ];
-    
-        $this->records[$type][] = $fields[$type];
+        if (isset($this->defaultFields[$type])) {
+            $this->records[$type][] = $this->defaultFields[$type];
+        }
     }
 
     public function removeRecord($tab, $type, $index) {
         $this->activeTab = $tab;
-        
         if (isset($this->records[$type][$index])) {
             unset($this->records[$type][$index]);
             $this->records[$type] = array_values($this->records[$type]);
@@ -306,123 +333,24 @@ class Form extends Component
     public function setErrorActiveTabAccordions(array $errorKeys) {
         foreach ($errorKeys as $key) {
             $parts = explode('.', $key);
-            
-            if (isset($parts[1])) {
-                switch ($parts[1]) {
-                    case 'employee_personal':
-                        $this->activeTab = 'details';
-    
-                        $accordion = [
-                            'personal' => [
-                                'firstname',
-                                'lastname',
-                                'middlename',
-                                'suffix',
-                                'birthday',
-                                'civil_status',
-                                'sex',
-                                'citizenship',
-                                'citizenship_type'
-                            ],
-                            'address' => [
-                                'present_address',
-                                'present_province',
-                                'present_city',
-                                'permanent_address',
-                                'permanent_province',
-                                'permanent_city'
-                            ],
-                            'contact' => [
-                                'mobile_number',
-                                'tel_no',
-                                'company_email'
-                            ],
-                            'appearance' => [
-                                'height',
-                                'weight',
-                                'blood_type'
-                            ],
-                            'identification' => [
-                                'gsis_no',
-                                'pagibig_no',
-                                'philhealth_no',
-                                'sss_no',
-                                'tin_no'
-                            ]
-                        ];
-    
-                        $lastKey = end($parts); // Get the last part of the error key
-                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
-                        
-                        return;
-    
-                    case 'employee_children':
-                        $this->activeTab = 'family';
-    
-                        $accordion = [
-                            'parents' => [
-                                'spouse_surname',
-                                'spouse_firstname',
-                                'spouse_middlename',
-                                'spouse_suffix',
-                                'spouse_occupation',
-                                'spouse_business_name_employer',
-                                'spouse_business_address',
-                                'spouse_contact_no',
-                                'father_surname',
-                                'father_firstname',
-                                'father_middlename',
-                                'father_suffix',
-                                'mother_surname',
-                                'mother_firstname',
-                                'mother_middlename',
-                            ],
-                            'children' => [
-                                'firstname',
-                                'lastname',
-                                'middlename',
-                                'birthdate'
-                            ]
-                        ];
-    
-                        $lastKey = end($parts);
-                        $this->activeAccordion = $this->findAccordionKey($lastKey, $accordion);
-                        return;
-    
-                    case 'employee_education':
-                        $this->activeTab = 'education';
-                        return;
-    
-                    case 'employee_employment_history':
-                        $this->activeTab = 'history';
-                        return;
+            $type = $parts[1] ?? null;
+            $field = end($parts);
 
-                    case 'employee_civil_service':
-                        $this->activeTab = 'civil_service';
-                        return;
+            if ($type && isset($this->tabAccordionMappings[$type])) {
+                $mapping = $this->tabAccordionMappings[$type];
+                $this->activeTab = $mapping['tab'];
 
-                    case 'employee_trainings':
-                        $this->activeTab = 'trainings';
-                        return;
-
-                    case 'employee_others':
-                        $this->activeTab = 'others';
-                        return;
-    
-                    case 'employee_skills':
-                        $this->activeTab = 'skills';
-                        return;
-
-                    case 'employee_account':
-                        $this->activeTab = 'account';
-                        return;
+                if (isset($mapping['accordions'])) {
+                    $this->activeAccordion = $this->findAccordionKey($field, $mapping['accordions']);
                 }
+
+                return; // Break after finding the first match
             }
         }
     }
 
-    private function findAccordionKey(string $key, array $accordion) {
-        foreach ($accordion as $accordionKey => $fields) {
+    private function findAccordionKey(string $key, array $accordions) {
+        foreach ($accordions as $accordionKey => $fields) {
             if (in_array($key, $fields)) {
                 return $accordionKey;
             }
@@ -503,8 +431,8 @@ class Form extends Component
             'records.employee_skills.*.recognition' => 'required|string|max:255',
             'records.employee_skills.*.organization' => 'required|string|max:255',
 
-
-            'records.employee_account.password' => 'nullable|min:8|same:records.employee_account.confirm_password',
+            'records.employee_account.notify_user' => 'boolean',
+            'records.employee_account.password' => 'required_with:records.employee_account.notify_user,true|min:8|same:records.employee_account.confirm_password',
             'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
 
         ];
@@ -591,81 +519,77 @@ class Form extends Component
             'records.employee_skills.*.recognition.required' => 'The recognition field is required for each skill record.',
             'records.employee_skills.*.organization.required' => 'The organization field is required for each skill record.',  
             
-            'records.employee_account.password.min' => 'The password must be at least 8 characters.',
-            'records.employee_account.password.same' => 'The password and confirmation password must match.',
-            'records.employee_account.confirm_password.required_with' => 'The confirmation password is required when password is provided.',
-            'records.employee_account.confirm_password.min' => 'The confirmation password must be at least 8 characters.',
+            'records.employee_account.notify_user.boolean' => 'The Notify User field must be true or false.',
+            'records.employee_account.password.required_with' => 'The Password field is required when Notify User is enabled.',
+            'records.employee_account.password.min' => 'The Password must be at least 8 characters.',
+            'records.employee_account.password.same' => 'The Password and Confirm Password must match.',
         ];
     }
 
     public function save() {
-
         $id = $this->employee_no;
 
-        $record = EmployeeInformation::where('employee_no', $id);
-        if(!$record) {
+        // Check if the employee exists
+        $record = EmployeeInformation::where('employee_no', $id)->first();
+        if (!$record) {
             return $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops', 
+                'title' => 'Oops',
                 'isRemoveRowDT' => false,
                 'showAlert' => true,
-                'message' => 'Error: You\'re saving an non-existence employee!'                
+                'message' => 'Error: You\'re saving a non-existent employee!'
             ]);
         }
 
+        // Validate input data
         try {
             $this->validate($this->rules($id));
         } catch (ValidationException $e) {
             $this->setErrorActiveTabAccordions($e->validator->errors()->keys());
-            throw $e; 
+            throw $e;
         }
-                
+
         DB::beginTransaction();
 
         try {
-
+            // Save the employee data
             $process = new HRISProcessingService;
             $process->save(false, $id, $id, $this->records);
 
-            if($this->records['employee_account'] 
-                && isset($this->records['employee_account']['notify_user'])
-                && $this->records['employee_account']['notify_user']
-                && !empty($this->records['employee_account']['password'])) {
-                    
-                    $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $id)
-                        ->first();
+            // Notify user if necessary
+            $account = $this->records['employee_account'] ?? [];
+            if (!empty($account['notify_user']) && !empty($account['password'])) {
+                $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $id)->first();
 
-                    if(!$record || is_null($record->personal->email)) {
-                        return $this->dispatch('alert', [
-                            'status' => 'error',
-                            'title' => 'Oops!', 
-                            'isRemoveRowDT' => false,
-                            'showAlert' => true,
-                            'message' => 'Unable to notify this employee, his/her email address is invalid or empty. Please update it first!'
-                        ]);
-                    }
+                if (!$record || empty($record->personal->email)) {
+                    return $this->dispatch('alert', [
+                        'status' => 'error',
+                        'title' => 'Oops!',
+                        'isRemoveRowDT' => false,
+                        'showAlert' => true,
+                        'message' => 'Unable to notify this employee, their email address is invalid or empty. Please update it first!'
+                    ]);
+                }
 
-                    $data = [
-                        'is_newly_hired' => false,
-                        'employee_no' => $record->employee_no,
-                        'email' => $record->account->email,
-                        'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
-                        'password' => $this->records['employee_account']['password']
-                    ];
-                    
+                $data = [
+                    'is_newly_hired' => false,
+                    'employee_no' => $record->employee_no,
+                    'email' => $record->account->email,
+                    'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
+                    'password' => $account['password']
+                ];
 
-                    Mail::to($record->personal->email)->send(new SendEmployeeAccount($data));
-
+                Mail::to($record->personal->email)->send(new SendEmployeeAccount($data));
             }
 
             DB::commit();
 
-            return$this->dispatch('alert', [
+            return $this->dispatch('alert', [
                 'status' => 'success',
-                'title' => 'Success!', 
+                'title' => 'Success!',
                 'isRemoveRowDT' => false,
                 'isReloadDT' => false,
-                'message' => 'Employee ' . strtoupper($id) . ' records successfully.',
+                'message' => 'Employee ' . strtoupper($id) . ' records saved successfully.',
                 'redirect' => route('hris.show', ['employee_no' => $id])
             ]);
 
@@ -673,16 +597,15 @@ class Form extends Component
             DB::rollBack();
             return $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops!', 
+                'title' => 'Oops!',
                 'isRemoveRowDT' => true,
                 'showAlert' => true,
-                'message' => 'Error: ' . $e->getMessage() 
+                'message' => 'Error: ' . $e->getMessage()
             ]);
         }
     }
 
-    public function render()
-    {
+    public function render() {
         return view('livewire.admin.hris.form');
     }
 }

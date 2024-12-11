@@ -1,14 +1,18 @@
 <div wire:poll>
     
     <div class="text-uppercase">
-        <h4 class="mb-1 fw-bold">Branch: {{ $records['branch']['branch_name'] }}</h4>
-        <h4 class="mb-1 fw-bold">Department: {{ $records['department']['department_name'] }}</h4>
+        <h5 class="mb-2 fw-bold">Branch: <span class="ms-1 text-decoration-underline">{{ $records['branch']['branch_name'] }}</span></h5>
+        <h5 class="mb-2 fw-bold">Department: <span class="ms-1 text-decoration-underline">{{ $records['department']['department_name'] }}</span></h5>
+        <h5 class="mb-2 fw-bold">Section: <span class="ms-1 text-decoration-underline">{{ $records['section']['section_name'] }}</span></h5>
     </div>
     
     <div class="mt-3">
         @foreach ($records['positions'] as $position)
             <div class="mt-5 mb-2">
-                <h5 class="text-uppercase fw-bold">Position: {{ $position['position_name'] }} ({{ count($position['employees']) }} Employees)</h5>
+                <div class="d-flex justify-content-between">
+                    <h5 class="text-uppercase fw-bold">Position: {{ $position['position_name'] }}</h5>
+                    <h5 class="text-uppercase text-muted fw-bold">({{ count($position['employees']) }} Employee{{ count($position['employees']) > 1 ? 's' : '' }})</h5>
+                </div>
                 <div class="row mt-4">
                     @foreach ($position['employees'] as $employee)
                         <div class="col-12 col-md-6 mb-4">
@@ -18,7 +22,7 @@
                                          style="width: 120px; height: 120px;">
                                 </div>
                                     <ul class="list-unstyled mb-0">
-                                    <li>Employee ID: #<strong>{{ format_id($employee['id'], 6) }}</strong></li>
+                                    <li>Employee ID: <strong>{{ format_id($employee['id'], 6) }}</strong></li>
                                     <li>Biometrics ID: <strong>{{ $employee['biometrics_id'] }}</strong></li>
                                     <li>Full Name: <strong>{{ ucwords($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}</strong></li>
                                     <li>Email: <strong>{{ $employee['account']['email'] }}</strong></li>

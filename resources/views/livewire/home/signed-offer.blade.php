@@ -40,7 +40,10 @@
                                             </div>
                                         </div>
                                         <div class="mt-5 d-flex justify-content-end">
-                                            <button type="submit" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Submit</button>
+                                            <button type="submit" wire:loading.attr="disabled" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">
+                                                <span wire:loading.remove>Submit</span>    
+                                                <span wire:loading>Submitting <i class="fa-solid fa-spinner fa-spin"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

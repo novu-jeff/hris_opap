@@ -4,9 +4,9 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Status</th>
                     <th>Type</th>
                     <th>Date</th>
+                    <th>Status</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
             </thead>                
@@ -14,17 +14,17 @@
                 @foreach($records as $record)
                     <tr data-id="{{$record->id}}">
                         <td>#{{format_id($record->id, 6)}}</td>
+                        <td>{{'(' . $record->leave_type->code . ') - ' . $record->leave_type->name}}</td>
+                        <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
                         <td>
                             @if ($record->status == 'granted')
                                 <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Leave Granted</div>
                             @elseif ($record->status == 'rejected')
                                 <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Leave Denied</div>
                             @elseif($record->status === 'pending')
-                                <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">Waiting for approval</div>
+                                <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">Pending</div>
                             @endif
                         </td>
-                        <td>{{$record->type}}</td>
-                        <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
                         <td>
                             @if($record->status === 'pending')
                                 <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">

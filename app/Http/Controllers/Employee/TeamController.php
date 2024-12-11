@@ -10,7 +10,7 @@ class TeamController extends Controller
     public function index() {
         return view('employee.team', [
             'action' => 'index',
-            'title' => 'My Team',
+            'title' => 'ESS | My Team',
             'header' => 'My Team',
             'sub' => 'Lists of all employees under my team'
         ]);

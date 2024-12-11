@@ -64,8 +64,6 @@
             </a>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#">Holidays</a></li>
-                <li><a class="dropdown-item" href="#">Earnings</a></li>
-                <li><a class="dropdown-item" href="#">Deduction</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Period</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Configuration</a></li>
             </ul>

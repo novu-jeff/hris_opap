@@ -13,7 +13,7 @@ class EmployeeLeave extends Model
     protected $fillable = [
         'employee_no',
         'status',
-        'type',
+        'leave_id',
         'reason',
         'from',
         'to',
@@ -22,11 +22,15 @@ class EmployeeLeave extends Model
     ];
 
     public function employment() {
-        return $this->hasOne(EmployeeInformation::class, 'id', 'employee_id');
+        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
     }
 
     public function employee() {
-        return $this->hasOne(EmployeePersonal::class, 'employee_id', 'employee_id');
+        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
+    }
+
+    public function leave_type() {
+        return $this->hasOne(LeaveType::class, 'id', 'leave_id');
     }
 
 }

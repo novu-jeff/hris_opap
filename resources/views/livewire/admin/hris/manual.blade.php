@@ -176,7 +176,7 @@
                         <button wire:click="setActiveTab('history')" class="nav-link text-uppercase fw-bold {{$activeTab == 'history' ? 'active' : ''}}" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" role="tab" aria-controls="pills-history" aria-selected="false">Employment History</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button wire:click="setActiveTab('civil_service')" class="nav-link text-uppercase fw-bold {{$activeTab == 'civil_service' ? 'active' : ''}}" id="pills-civil-service-tab" data-bs-toggle="pill" data-bs-target="#pills-civil-service" type="button" role="tab" aria-controls="pills-civil-service" aria-selected="false">Civil Service Eligibilty</button>
+                        <button wire:click="setActiveTab('civil_service')" class="nav-link text-uppercase fw-bold {{$activeTab == 'civil_service' ? 'active' : ''}}" id="pills-civil-service-tab" data-bs-toggle="pill" data-bs-target="#pills-civil-service" type="button" role="tab" aria-controls="pills-civil-service" aria-selected="false">Civil Service Eligibility</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button wire:click="setActiveTab('trainings')" class="nav-link text-uppercase fw-bold {{$activeTab == 'trainings' ? 'active' : ''}}" id="pills-trainings-tab" data-bs-toggle="pill" data-bs-target="#pills-trainings" type="button" role="tab" aria-controls="pills-trainings" aria-selected="false">Trainings</button>
@@ -933,7 +933,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.date_exam') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -945,7 +945,7 @@
                                                     </div>
                                                 </td>                                         
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.license_no') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -1155,7 +1155,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -1176,7 +1176,7 @@
                             <div class="row">
                                 <div class="col-12 col-md-12 mb-3">
                                     <label class="mb-2" for="records.employee_account.email">Email ID</label>
-                                    <input type="email" wire:model="records.employee_account.email" id="records.employee_account.email" class="form-control restricted" readonly>
+                                    <input type="email" class="form-control restricted text-uppercase" placeholder="System Generated" readonly>
                                     <div class="error-field">
                                         @error('records.employee_account.email') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
