@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
@@ -166,6 +167,16 @@ Route::prefix('admin')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
             });
+        });
+
+        Route::prefix('reports')->group( function() {
+            Route::get('daily-time-record', function () {
+                $title = 'Daily Time Record';
+                return view('admin.reports.daily-time-record.index', compact('title'));
+            })->name('reports.dtr');
+
+            Route::get('/reports/{date?}', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
+
         });
         
         Route::prefix('settings')->group( function() {

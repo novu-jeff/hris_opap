@@ -4,9 +4,20 @@
         Reports
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Module 1</a></li>
-        <li><a class="dropdown-item" href="#">Module 2</a></li>
-        <li><a class="dropdown-item" href="#">Module 3</a></li>
-        <li><a class="dropdown-item" href="#">Module 4</a></li>
-    </ul>
+        <li><a href="{{ route('reports.dtr') }}" class="dropdown-item">Daily Time Record (DTR)</a></li>
+        <li><a href="#" class="dropdown-item">Official Business Slip</a></li>
+        <li><a href="#" class="dropdown-item">Application for Leave</a></li>
+        <li><a href="#" class="dropdown-item">Monetization Form</a></li>
+        <li><a href="#" class="dropdown-item">Authority to Render Overtime</a></li>
+        <li><a href="#" class="dropdown-item">Statement of Overtime</a></li>
+        <li><a href="#" class="dropdown-item">Accomplishment Report</a></li>
+        <li><a href="#" class="dropdown-item">Overtime Work Program</a></li>
+        <li><a href="#" class="dropdown-item">Certificate of Clearance</a></li>
+        <li><a href="#" class="dropdown-item">Certificate of Completion of Service</a></li>
+        <li><a href="#" class="dropdown-item">New Employee Onboarding Checklist</a></li>
+        <li><a href="#" class="dropdown-item">Courtesy Call</a></li>
+        <li><a href="#" class="dropdown-item">Terms Of Reference</a></li>
+        <li><a href="#" class="dropdown-item">(TBD)</a></li>
+        <li><a href="#" class="dropdown-item">(TBD)</a></li>
+    </ul>    
 </li>
