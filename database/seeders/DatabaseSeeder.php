@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        $product = env('APP_PRODUCT');
+        $product = config('app.product');
 
         $this->call([
             AdminAccountSeeder::class,
@@ -29,8 +29,8 @@ class DatabaseSeeder extends Seeder
             JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
+            ShiftScheduleSeeder::class,
             CompanyInformationSeeder::class,
-            ShiftScheduleSeeder::class
         ]);
 
         

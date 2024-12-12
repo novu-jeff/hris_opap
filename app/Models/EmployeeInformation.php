@@ -13,6 +13,7 @@ class EmployeeInformation extends Model
 
     protected $fillable = [
         'employee_no',
+        'bsd_no',
         'biometrics_id',
         'section_id',
         'position_id',

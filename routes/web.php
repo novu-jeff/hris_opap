@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\OfficialBusinessSlipController;
+use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
@@ -29,7 +31,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
-use App\Http\Controllers\Admin\TimeKeeping\UploadController;
+use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -46,6 +48,7 @@ use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutCont
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
+use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
@@ -147,18 +150,18 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
-            Route::get('logs/{month?}/{year?}', [UploadController::class, 'index'])
+            Route::get('logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'index'])
                 ->name('timekeeping.index');
-            Route::get('upload', [UploadController::class, 'upload'])
+            Route::get('upload', [TimekeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
         });
 
         Route::prefix('ess')->group(function() {
+            Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
+                ->name('ess.obs.index');
+
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
-        
-            Route::get('clock-in-out', [ESSClockInOutController::class, 'index'])
-                ->name('ess.clock-in-out');
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
@@ -173,6 +176,16 @@ Route::prefix('admin')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
             });
+        });
+
+        Route::prefix('reports')->group( function() {
+            Route::get('daily-time-record', function () {
+                $title = 'Daily Time Record';
+                return view('admin.reports.daily-time-record.index', compact('title'));
+            })->name('reports.dtr');
+
+            Route::get('/reports/{date?}', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
+
         });
         
         Route::prefix('settings')->group( function() {
@@ -266,6 +279,16 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
+        });
+
+        Route::prefix('official-business-slip')->group(function() {
+
+            Route::get('/', [BusinessSlipController::class, 'index'])
+                ->name('employee.obs.index');
+            Route::get('apply', [BusinessSlipController::class, 'create'])
+                ->name('employee.obs.apply');
+            Route::get('edit/{id}', [BusinessSlipController::class, 'edit'])
+                ->name('employee.obs.edit');
         });
 
         Route::prefix('authority-to-render-time')->group(function() {
