@@ -104,7 +104,7 @@
                         <div class="d-flex align-items-center">
                             <button 
                                 class="btn btn-sm btn-outline-primary" 
-                                wire:click="changeMonth(-1, {{ $employee_id }})"
+                                wire:click="changeMonth(-1, '{{ $employee_id }}')"
                                 wire:loading.attr="disabled" 
                                 wire:loading.class="btn-secondary">
                                 <i class="fa-solid fa-chevron-left"></i>
@@ -116,7 +116,7 @@
                             
                             <button 
                                 class="btn btn-sm btn-outline-primary" 
-                                wire:click="changeMonth(1, {{ $employee_id }})"
+                                wire:click="changeMonth(1, '{{ $employee_id }}')"
                                 wire:loading.attr="disabled" 
                                 wire:loading.class="btn-secondary">
                                 <i class="fa-solid fa-chevron-right"></i>
