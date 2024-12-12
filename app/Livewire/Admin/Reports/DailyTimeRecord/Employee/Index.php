@@ -77,37 +77,40 @@ class Index extends Component
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
 
+        $employeeClockQuery = DB::table('employee_clock_in_out')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orWhereNull('created_at');
+
         $dtr = DB::table('employee_account')
-        ->leftJoin('employee_clock_in_out', function ($join) use ($startDate, $endDate) {
-            $join->on('employee_account.employee_no', '=', 'employee_clock_in_out.employee_no')
-                ->whereBetween('employee_clock_in_out.created_at', [$startDate, $endDate])
-                ->orWhereNull('employee_clock_in_out.created_at');
-        })
-        ->leftJoin('employee_personal', 'employee_account.employee_no', '=', 'employee_personal.employee_no')
-        ->leftJoin('employee_information', 'employee_account.employee_no', '=', 'employee_information.employee_no')
-        ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')
-        ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
-        ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
-        ->select(
-            'employee_account.employee_no',
-            'employee_personal.firstname',
-            'employee_personal.middlename',
-            'employee_personal.lastname',
-            'employee_clock_in_out.clock_in_am',
-            'employee_clock_in_out.clock_out_am',
-            'employee_clock_in_out.clock_in_pm',
-            'employee_clock_in_out.clock_out_pm',
-            'employee_clock_in_out.total_mins_consumed',
-            
-            'employee_clock_in_out.created_at',
-            'positions.code as position_code',
-            'positions.name as position_name',
-            'positions.salary',
-            'departments.name as department_name',
-            'departments.code as department_code'
-        )
-        ->where('employee_account.employee_no', $id)
-        ->get();
+            ->leftJoin('employee_information', 'employee_account.employee_no', '=', 'employee_information.employee_no')
+            ->leftJoinSub($employeeClockQuery, 'clock_data', function ($join) {
+                $join->on('employee_information.bsd_no', '=', 'clock_data.bsd_no');
+            })
+            ->leftJoin('employee_personal', 'employee_account.employee_no', '=', 'employee_personal.employee_no')
+            ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')
+            ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
+            ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
+            ->select(
+                'employee_account.employee_no',
+                'employee_information.bsd_no',
+                'employee_personal.firstname',
+                'employee_personal.middlename',
+                'employee_personal.lastname',
+                'clock_data.clock_in_am',
+                'clock_data.clock_out_am',
+                'clock_data.clock_in_pm',
+                'clock_data.clock_out_pm',
+                'clock_data.total_mins_consumed',
+                'clock_data.created_at',
+                'positions.code as position_code',
+                'positions.name as position_name',
+                'positions.salary',
+                'departments.name as department_name',
+                'departments.code as department_code'
+            )
+            ->where('employee_account.employee_no', $id)
+            ->get();
+
 
         $allDays = collect();
         foreach ($startDate->toPeriod($endDate) as $day) {
