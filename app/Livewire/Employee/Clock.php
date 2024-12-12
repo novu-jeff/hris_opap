@@ -384,11 +384,12 @@ class Clock extends Component
             // Clock in based on AM or PM shift
             EmployeeClockInOut::create([
                 'employee_no' => $this->user_id,
+                'origin' => 'web',
                 'captured_image_clockin' => $this->capturedImage,
                 'captured_location_clockin' => $location,
                 'isLate' => $this->isLate,
                 // Conditionally set the clock in time depending on the shift
-                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
+                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => Carbon::parse($timestamp)->format('g:i A')
             ]);
         } else {
             // Clock in based on AM or PM shift
@@ -396,7 +397,7 @@ class Clock extends Component
                 'employee_no' => $this->user_id,
                 'isLate' => $this->isLate,
                 // Conditionally set the clock in time depending on the shift
-                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => $timestamp
+                $shift == 'am' ? 'clock_in_am' : 'clock_in_pm' => Carbon::parse($timestamp)->format('g:i A')
             ]);
         }
 
@@ -483,7 +484,7 @@ class Clock extends Component
             'captured_image_clockout' => $this->capturedImage,
             'captured_location_clockout' => $location,
             'isUnderTime' => $this->isUndertime,
-            $clockOutColumn => $timestamp, // Update the correct clock-out field
+            $clockOutColumn => Carbon::parse($timestamp)->format('g:i A'), // Update the correct clock-out field
         ]);
 
         // Calculate total minutes consumed (AM and PM combined)
@@ -495,7 +496,6 @@ class Clock extends Component
         if ($minsAm == 0 && $minsPm > 0) {
 
             $endShift = Carbon::createFromTime(17, 0, 0); // 5:00 PM
-            
             
             if(is_null($records->clock_in_am) && is_null($records->mins_consumed_am)) {
                 $clockin = Carbon::parse($records->clock_in_pm);
@@ -520,14 +520,23 @@ class Clock extends Component
 
             }
 
-            if($clockout->gt($endShift)) {
-                $regMins = $clockout->diffInMinutes($endShift);
-                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
-                    $regMins += 60;
-                } 
+            if(!is_null($records->clock_out_am) && !is_null($records->clock_in_pm)) {
+                if($clockout->gt($endShift)) {
+                    $regMins = $clockout->diffInMinutes($endShift);
+                    if($clockin->between($breakTimeFrom, $breakTimeTo)) {
+                        $regMins += 60;
+                    } 
+                }
+            } else {
+                if($clockout->gt($endShift)) {
+                    $minsOT = $clockout->diffInMinutes($endShift);
+                    $regMins = $regMins - $minsOT; 
+                } else {
+                    $regMins = $regMins;
+                }
             }
 
-                        
+                  
             // Calculate overtime minutes (if any)
             $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;
         
@@ -546,12 +555,11 @@ class Clock extends Component
             $clockout = Carbon::parse($records->clock_out_pm); // Clock-out time
             
             // Regular minutes
-
+     
             $totalConsumedHrs= $records->mins_consumed_am + $records->mins_consumed_pm;
 
-            $workingHrs = 480;
      
-            if($totalConsumedHrs > $workingHrs) {
+            if($clockout->gt($endShift)) {
                 $minsOT = $clockout->diffInMinutes($endShift);
                 $regMins = $totalConsumedHrs - $minsOT; 
             } else {
@@ -583,8 +591,7 @@ class Clock extends Component
             'showAlert' => true,
             'status' => 'success',
             'title' => 'Yey!',
-            'message' => 'You\'re clocked out at ' . $timestamp->format('M d, Y h:i A') . 
-                        '. Total minutes rendered: ' . $minutesRendered . ' minutes.',
+            'message' => 'You\'re clocked out at ' . $timestamp->format('M d, Y h:i A'),
         ]);
     }
     

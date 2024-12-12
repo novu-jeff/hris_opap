@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('employee_clock_in_out', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_no');  
+            $table->string('employee_no')
+                ->nullable();
             $table->string('clock_in_am')
                 ->nullable();
             $table->string('clock_out_am')
