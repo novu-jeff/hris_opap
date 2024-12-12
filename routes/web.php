@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutCont
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
+use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
@@ -155,6 +157,9 @@ Route::prefix('admin')->group(function() {
         });
 
         Route::prefix('ess')->group(function() {
+            Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
+                ->name('ess.obs.index');
+
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
         
@@ -277,6 +282,16 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
+        });
+
+        Route::prefix('official-business-slip')->group(function() {
+
+            Route::get('/', [BusinessSlipController::class, 'index'])
+                ->name('employee.obs.index');
+            Route::get('apply', [BusinessSlipController::class, 'create'])
+                ->name('employee.obs.apply');
+            Route::get('edit/{id}', [BusinessSlipController::class, 'edit'])
+                ->name('employee.obs.edit');
         });
 
         Route::prefix('authority-to-render-time')->group(function() {

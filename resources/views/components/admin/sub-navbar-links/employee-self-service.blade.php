@@ -5,6 +5,7 @@
     </a>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{{route('ess.leave')}}">Leave Applications</a></li>
+        <li><a class="dropdown-item" href="{{route('ess.obs.index')}}">Business Slip Application</a></li>
         <li><a class="dropdown-item" href="{{route('ess.clock-in-out')}}">Clock In Out</a></li>
         <li><a class="dropdown-item" href="{{route('ess.announcements.index')}}">Announcements</a></li>
         <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
