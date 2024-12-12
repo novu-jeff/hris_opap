@@ -14,7 +14,7 @@ class EmployeeClockInOut extends Model
         'employee_no',
         'origin',
         'biometricdtrid',
-        'bsdno',
+        'bsd_no',
         'isindtr',
         'nfcdeviceid',
         'type',
@@ -38,6 +38,6 @@ class EmployeeClockInOut extends Model
     ];
 
     public function information() {
-        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
+        return $this->hasOne(EmployeeInformation::class, 'bsd_no', 'bsd_no');
     }
 }

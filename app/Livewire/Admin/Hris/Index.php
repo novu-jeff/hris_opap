@@ -280,7 +280,7 @@ class Index extends Component
     public function validateUploaded($spreadsheet, $sheetNames) {
 
         $expectedSheets = [
-            'employee information' => ['employee no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'monthly salary', 'job category', 'email'],
+            'employee information' => ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'monthly salary', 'job category', 'email'],
             'family background' => ['employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename', 'spouse suffix', 'spouse occupation', 'spouse business name', 'spouse business address', 'spouse contact no', 'father surname', 'father firstname', 'father middlename', 'father suffix', 'mother surname', 'mother firstname', 'mother middlename'],
             'children' => ['employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'],
             'education' => ['employee no.', 'level', 'school name', 'course', 'from year', 'to year'],

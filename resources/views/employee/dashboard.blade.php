@@ -36,10 +36,16 @@
                     <p>Payslip</p>
                 </div>
             </a>
-            <a href="{{route('employee.request-status')}}" class="nav-link">
+            {{-- <a href="{{route('employee.request-status')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/request.png')}}" alt="leave" class="w-100">
                     <p>Request Status</p>
+                </div>
+            </a> --}}
+            <a href="{{route('employee.obs.index')}}" class="nav-link">
+                <div class="item">
+                    <img src="{{asset('/img/business-slip.png')}}" alt="leave" class="w-100">
+                    <p>Official Business Slip</p>
                 </div>
             </a>
             <a href="{{route('employee.directory')}}" class="nav-link">

@@ -12,7 +12,9 @@
     <div class="mt-3">
         @livewire('admin.timekeeping.index', [
             'year' => $year ?? null,
-            'month' => $month ?? null
+            'day' => $day ?? null,
+            'month' => $month ?? null,
+            'setup' => $setup ?? null
         ])
     </div>
 </div>

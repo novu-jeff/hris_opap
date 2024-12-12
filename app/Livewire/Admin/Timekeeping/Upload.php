@@ -340,7 +340,6 @@ class Upload extends Component
                         $date = Carbon::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
                         
                         $insertion = EmployeeClockInOut::insert([
-                            'employee_no' => $item['bsdno'] ?? null,
                             'origin' => 'biometrics',
                             'biometricdtrid' => $item['biometricdtrid'] ?? null,
                             'clock_in_am' => $item['clock_in_am'] ?? null,
@@ -359,7 +358,7 @@ class Upload extends Component
                             'total_mins_consumed' => null, 
                             'mins_ot' => null, 
                             'overall_mins' => null, 
-                            'bsdno' => $item['bsdno'] ?? null,
+                            'bsd_no' => $item['bsdno'] ?? null,
                             'isindtr' => !empty($item['isindtr']) ? (bool) $item['isindtr'] : null,
                             'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
                             'type' => $item['type'] ?? 0,

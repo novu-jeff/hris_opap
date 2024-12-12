@@ -14,7 +14,7 @@ class CompanyInformationSeeder extends Seeder
     public function run(): void
     {
         
-        $product = env('APP_PRODUCT');
+        $product = config('app.product');
 
         if($product == 'opap') {
             $information = [
