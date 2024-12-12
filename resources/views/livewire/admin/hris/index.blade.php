@@ -136,7 +136,7 @@
                 </thead>
                 <tbody>
                     @if ($lazy)
-                        @for ($i = 0; $i < 10; $i++)
+                        @for ($i = 0; $i < 20; $i++)
                             <tr>
                                 <td class="text-center">
                                     <div class="skeleton skeleton-circle" style="width: 50px; height: 50px;"></div>
@@ -183,35 +183,7 @@
                     @endif
                 </tbody>
             </table>
-        </div>
-        <style>
-            .skeleton {
-                background-color: #e0e0e0;
-                border-radius: 4px;
-                animation: pulse 1.5s infinite ease-in-out;
-            }
-            .skeleton-circle {
-                border-radius: 50%;
-            }
-            .skeleton-text {
-                height: 16px;
-                margin-top: 8px;
-            }
-            .skeleton-button {
-                border-radius: 6px;
-            }
-            @keyframes pulse {
-                0% {
-                    background-color: #e0e0e0;
-                }
-                50% {
-                    background-color: #f0f0f0;
-                }
-                100% {
-                    background-color: #e0e0e0;
-                }
-            }
-        </style>        
+        </div>     
     </div>
 </div>
 

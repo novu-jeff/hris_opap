@@ -111,7 +111,7 @@ class Form extends Component
             'id' => $data->id,
             'employee_id' => format_id($data->id, 6),
             'employee_no' => $data->employee_no,
-            'biometrics_id' => $data->biometrics_id,
+            'biometrics_id' => $data->bsd_no,
             'section_id' => $data->section_id,
             'position_id' => $data->position_id,
             'date_hired' => $data->date_hired,
@@ -364,6 +364,10 @@ class Form extends Component
                 'required',
                 Rule::unique('employee_information', 'employee_no')->ignore($employee_no, 'employee_no')
             ],
+            'records.employee_information.biometrics_id' => [
+                'required',
+                Rule::unique('employee_information', 'bsd_no')->ignore($employee_no, 'employee_no')
+            ],
             'records.employee_information.type' => 'nullable|exists:job_categories,id',
             'records.employee_information.status' => 'nullable|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
@@ -371,7 +375,6 @@ class Form extends Component
             'records.employee_information.section_id' => 'nullable|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
-            'records.employee_information.biometrics_id' => 'nullable|numeric',
             'records.employee_information.type' => 'required|exists:job_categories,id',
 
             'records.employee_personal.firstname' => 'required|string|max:255',
@@ -442,6 +445,8 @@ class Form extends Component
         return [
             'records.employee_information.employee_no.required' => 'The employee no is required.',
             'records.employee_information.employee_no.unique' => 'The employee no is already taken.',
+            'records.employee_information.biometrics_id.required' => 'The biometrics ID is required.',
+            'records.employee_information.biometrics_id.unique' => 'The biometrics ID is already taken.',
             'records.employee_information.type.in' => 'The selected employment type does not exists.',
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
             'records.employee_information.date_hired.required' => 'The date hired is required',
