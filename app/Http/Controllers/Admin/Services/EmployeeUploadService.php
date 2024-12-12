@@ -32,7 +32,6 @@ class EmployeeUploadService extends Controller
     }    
 
     public function uploadEmployeeInformation($data) {
-
         $result = [
             'employee_information' => [
                 'inserted' => [
@@ -57,29 +56,30 @@ class EmployeeUploadService extends Controller
         ];
     
         foreach ($data as $employeeData) {
-
+    
             // Handle Position
-
-            if(!empty($employeeData[16])) {
+    
+            if (!empty($employeeData[17])) { // Adjusted index
                 $position = Positions::firstOrCreate(
-                    ['name' => $employeeData[16]],
-                    ['code' => $employeeData[16]]
+                    ['name' => $employeeData[17]],
+                    ['code' => $employeeData[17]]
                 );
             }
     
             // Handle Job Category (optional)
-            $jobCategory = JobCategory::where('name', $employeeData[18])->first();
+            $jobCategory = JobCategory::where('name', $employeeData[19])->first(); // Adjusted index
     
             // Create or Update Employee Information
             $employeeInfo = EmployeeInformation::updateOrCreate(
                 ['employee_no' => $employeeData[0]],
                 [
-                    'date_hired' => $this->transformDate($employeeData[15]),
+                    'bsd_no' => $employeeData[1],
+                    'date_hired' => $this->transformDate($employeeData[16]), // Adjusted index
                     'department_id' => null,
                     'position_id' => $position->id ?? null,
                     'job_category_id' => $jobCategory?->id ?? null,
-                    'bank_account_no' => $employeeData[14],
-                    'monthly_rate' => $employeeData[17]
+                    'bank_account_no' => $employeeData[15], // Adjusted index
+                    'monthly_rate' => $employeeData[18], // Adjusted index
                 ]
             );
     
@@ -88,13 +88,13 @@ class EmployeeUploadService extends Controller
                 $result['employee_information']['inserted']['total']++;
                 $result['employee_information']['inserted']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[2] . ' ' . $employeeData[1], // Assuming firstname and lastname
+                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
                 ];
             } else {
                 $result['employee_information']['updated']['total']++;
                 $result['employee_information']['updated']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[2] . ' ' . $employeeData[1], // Assuming firstname and lastname
+                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
                 ];
             }
     
@@ -102,20 +102,21 @@ class EmployeeUploadService extends Controller
             $employeePersonal = EmployeePersonal::updateOrCreate(
                 ['employee_no' => $employeeData[0]],
                 [
-                    'lastname' => $employeeData[1],
-                    'firstname' => $employeeData[2],
-                    'middlename' => $employeeData[3],
-                    'present_address' => $employeeData[4],
-                    'sex' => strtolower($employeeData[5]),
-                    'civil_status' => strtolower($employeeData[6]),
-                    'birthday' => $this->transformDate($employeeData[7]),
-                    'age' => is_numeric($employeeData[8]) ? $employeeData[8] : null,
-                    'gsis_no' => $employeeData[9],
-                    'pagibig_no' => $employeeData[10],
-                    'philhealth_no' => $employeeData[11],
-                    'sss_no' => $employeeData[12],
-                    'tin_no' => $employeeData[13],
-                    'email' => $employeeData[19],
+                    'bsd_no' => $employeeData[1],
+                    'lastname' => $employeeData[2], // Adjusted index
+                    'firstname' => $employeeData[3], // Adjusted index
+                    'middlename' => $employeeData[4], // Adjusted index
+                    'present_address' => $employeeData[5], // Adjusted index
+                    'sex' => strtolower($employeeData[6]), // Adjusted index
+                    'civil_status' => strtolower($employeeData[7]), // Adjusted index
+                    'birthday' => $this->transformDate($employeeData[8]), // Adjusted index
+                    'age' => is_numeric($employeeData[9]) ? $employeeData[9] : null, // Adjusted index
+                    'gsis_no' => $employeeData[10], // Adjusted index
+                    'pagibig_no' => $employeeData[11], // Adjusted index
+                    'philhealth_no' => $employeeData[12], // Adjusted index
+                    'sss_no' => $employeeData[13], // Adjusted index
+                    'tin_no' => $employeeData[14], // Adjusted index
+                    'email' => $employeeData[20], // Adjusted index
                 ]
             );
     
@@ -124,22 +125,23 @@ class EmployeeUploadService extends Controller
                 $result['employee_personal']['inserted']['total']++;
                 $result['employee_personal']['inserted']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[2] . ' ' . $employeeData[1], // Assuming firstname and lastname
+                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
                 ];
             } else {
                 $result['employee_personal']['updated']['total']++;
                 $result['employee_personal']['updated']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[2] . ' ' . $employeeData[1], // Assuming firstname and lastname
+                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
                 ];
             }
-
+    
             // For new accounts
-            $this->createAccount($employeeData[0], $employeeData[2], $employeeData[1]);
+            $this->createAccount($employeeData[0], $employeeData[3], $employeeData[2]); // Adjusted index
         }
     
         return $result;
     }
+    
     
     public function uploadFamilyBackground($data) {
         // Initialize result counters

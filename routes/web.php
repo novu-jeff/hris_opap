@@ -29,7 +29,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
-use App\Http\Controllers\Admin\TimeKeeping\UploadController;
+use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
@@ -147,18 +147,15 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
-            Route::get('logs/{month?}/{year?}', [UploadController::class, 'index'])
+            Route::get('logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'index'])
                 ->name('timekeeping.index');
-            Route::get('upload', [UploadController::class, 'upload'])
+            Route::get('upload', [TimekeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
         });
 
         Route::prefix('ess')->group(function() {
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
-        
-            Route::get('clock-in-out', [ESSClockInOutController::class, 'index'])
-                ->name('ess.clock-in-out');
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
