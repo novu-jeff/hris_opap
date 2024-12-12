@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->integer('from_id');
+            $table->string('from_id');
             $table->string('from_role');
-            $table->integer('to_id');
+            $table->string('to_id');
             $table->string('to_role');
             $table->longText('message')
                 ->nullable();

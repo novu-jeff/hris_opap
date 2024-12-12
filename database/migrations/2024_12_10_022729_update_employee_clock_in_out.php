@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::table('employee_clock_in_out', function (Blueprint $table) {
             $table->string('origin')->nullable()->after('id');
             $table->string('biometricdtrid')->nullable()->after('origin');
-            $table->string('bsdno')->nullable()->after('biometricdtrid');
-            $table->boolean('isindtr')->nullable()->after('bsdno');
+            $table->string('bsd_no')->nullable()->after('biometricdtrid');
+            $table->boolean('isindtr')->nullable()->after('bsd_no');
             $table->string('nfcdeviceid')->nullable()->after('isindtr');
             $table->integer('type')->default(0)->after('nfcdeviceid');
             $table->boolean('ismanual')->nullable()->after('type');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->dropColumn([
                 'origin',
                 'biometricdtrid',
-                'bsdno',
+                'bsd_no',
                 'isindtr',
                 'nfcdeviceid',
                 'type',

@@ -9,28 +9,40 @@
                                 {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
                                 {{ in_array($status, ['Break In', 'Break Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
                                 {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
-                            wire:click="triggerClock">
+                            wire:click="triggerClock" wire:target="triggerClock">
                             <div class="card-body d-flex align-items-center">
                                 <div>
                                     <div class="d-flex justify-content-center">
-                                        <i class="fa-regular fa-circle-check"></i>
+                                        <span wire:loading.remove wire:target="triggerClock">
+                                            <i class="fa-regular fa-circle-check"></i>
+                                        </span>
+                                        <span wire:loading wire:target="triggerClock">
+                                            <i class="fa-solid fa-spinner fa-spin"></i>
+                                        </span>
                                     </div>
                                     <div class="text-center mt-3">
-                                        {{$status}}
+                                        <span wire:loading.remove wire:target="triggerClock">{{$status}}</span>
+                                        <span wire:loading wire:target="triggerClock">Saving...</span>
                                     </div>
                                 </div>
                             </div>      
                         </div>              
                     </div>
                     <div class="col-12 col-md-4 mb-3">
-                        <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs">
+                        <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs" wire:target="showLogs">
                             <div class="card-body d-flex align-items-center">
                                 <div>
                                     <div class="d-flex justify-content-center">
-                                        <i class="fa-regular fa-calendar-check"></i>
+                                        <span wire:loading.remove wire:target="showLogs">
+                                            <i class="fa-regular fa-calendar-check"></i>
+                                        </span>
+                                        <span wire:loading wire:target="showLogs">
+                                            <i class="fa-solid fa-spinner fa-spin"></i>
+                                        </span>
                                     </div>
                                     <div class="text-center mt-3">
-                                        Clock Logs
+                                        <span wire:loading.remove wire:target="showLogs">Clock Logs</span>
+                                        <span wire:loading wire:target="showLogs">Please Wait...</span>
                                     </div>
                                 </div>
                             </div>

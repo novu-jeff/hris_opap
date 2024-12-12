@@ -7,6 +7,16 @@
         <li><a class="dropdown-item" href="{{route('company.index')}}">Company Information</a></li>
         <li class="nav-item dropstart">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Location Management
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{route('branch.index')}}">Branches</a></li>
+                <li><a class="dropdown-item" href="{{route('department.index')}}">Departments</a></li>
+                <li><a class="dropdown-item" href="{{route('section.index')}}">Sections</a></li>
+            </ul>
+        </li>
+        <li class="nav-item dropstart">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Recruitment
             </a>
             <ul class="dropdown-menu">
@@ -28,16 +38,6 @@
                 HRIS
             </a>
             <ul class="dropdown-menu">
-                <li class="nav-item dropstart">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Location Management
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branches</a></li>
-                        <li><a class="dropdown-item" href="{{route('department.index')}}">Departments</a></li>
-                        <li><a class="dropdown-item" href="{{route('section.index')}}">Sections</a></li>
-                    </ul>
-                </li>
                 <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
                 {{-- <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li> --}}
                 <li><a class="dropdown-item" href="{{route('employee-status.index')}}">Employee Status</a></li>

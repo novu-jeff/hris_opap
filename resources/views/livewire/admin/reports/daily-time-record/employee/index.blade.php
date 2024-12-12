@@ -279,7 +279,7 @@
                             </td>                        
                             <td>
                                 <a href="#" class="btn btn-primary" 
-                                    wire:click="showDtr({{ $record->employee_no }})" >
+                                    wire:click="showDtr('{{ $record->employee_no }}')" >
                                 <i class="fa-solid fa-eye"></i> Show DTR
                              </a>
                             </td>

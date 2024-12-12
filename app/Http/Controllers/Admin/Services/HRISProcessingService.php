@@ -89,6 +89,7 @@ class HRISProcessingService extends Controller
             
             $record = EmployeeInformation::create([
                 'employee_no' => $employee_no,
+                'bsd_no' => $data['employee_information']['biometrics_id'],
                 'monthly_rate' => $data['employee_information']['salary'],
                 'date_hired' => Carbon::now()->format('Y-m-d'),
             ]);
@@ -101,7 +102,7 @@ class HRISProcessingService extends Controller
         return $record->update([
             'section_id' => $data['section_id'],
             'position_id' => $data['position_id'],
-            'biometrics_id' => $data['biometrics_id'],
+            'bsd_no' => $data['biometrics_id'],
             'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
             'job_category_id' => $data['type'],

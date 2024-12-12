@@ -1,4 +1,4 @@
-<form wire:submit.prevent="save">
+<form wire:submit.prevent="save" wire:target="save">
     <div class="row">
         <div class="col-12">
             <div class="card shadow p-4">
@@ -74,7 +74,10 @@
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end gap-3">
-                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Proceed <i class="fa-solid fa-arrow-right ms-1"></i></button>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Proceed <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Proceeding <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
                 </div>
             </div>
         </div>

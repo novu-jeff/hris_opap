@@ -144,6 +144,7 @@ class Index extends Component
             ],
             'clock_in_out' => $mappedClockData
         ];
+
     }
 
     public function render()
