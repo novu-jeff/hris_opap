@@ -17,56 +17,38 @@
                             <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->firstname . ' ' . $view_records->lastname : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="date_filed">Date Filed</label>
-                            <input type="date" id="date_filed" class="form-control restricted" value="{{ isset($view_records) ? $view_records->date_filed : '' }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-md-7 mb-4">
-                            <label class="mb-2" for="section">Section</label>
-                            <input type="text" id="section" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->section_name . ' (' . $view_records->section_code . ') ') : '' }}" readonly>
-                        </div>
-                        <div class="col-12 col-md-5 mb-4">
-                            <label class="mb-2" for="department">Department</label>
-                            <input type="text" id="department" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->department_name . ' (' . $view_records->department_code . ') ') : '' }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="branch">Position</label>
-                            <input type="text" id="branch" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->branch_name . ' (' . $view_records->branch_code . ') ') : '' }}" readonly>
-                        </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="position">Position</label>
-                            <input type="text" id="position" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->position_name . ' (' . $view_records->position_code . ') ') : '' }}" readonly>
+                            <label class="mb-2" for="date">Date</label>
+                            <input type="date" id="date" class="form-control restricted" value="{{ isset($view_records) ? $view_records->date : '' }}" readonly>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="destination">Destination</label>
-                            <input type="text" id="destination" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->destination) : ''}}" readonly>
+                            <label class="mb-2" for="start_time">Start Time</label>
+                            <input type="text" id="start_time" class="form-control restricted" 
+                                   value="{{ isset($view_records) ? $view_records->start_time : '' }}" 
+                                   readonly>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="purpose">Purpose</label>
-                            <input type="text" id="purpose" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->purpose) : ''}}" readonly>
+                            <label class="mb-2" for="end_time">End Time</label>
+                            <input type="text" id="end_time" class="form-control restricted" 
+                                   value="{{ isset($view_records) ? $view_records->end_time : '' }}" 
+                                   readonly>
+                        </div>
+                    </div>    
+                
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="justification">Justification</label>
+                            <textarea id="justification" class="form-control restricted" readonly>{{ isset($view_records) ? $view_records->justification : '' }}</textarea>                            
+                        </div>
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="remarks">Purpose</label>
+                            <textarea id="remarks" class="form-control restricted" readonly>{{ isset($view_records) ? $view_records->remarks : '' }}</textarea>     
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="arrival_time">Arrival Time</label>
-                            <input type="text" id="arrival_time" class="form-control restricted" 
-                                   value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->arrival_time)->format('g:i A') : '' }}" 
-                                   readonly>
-                        </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="departure_time">Departure Time</label>
-                            <input type="text" id="departure_time" class="form-control restricted" 
-                                   value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->departure_time)->format('g:i A') : '' }}" 
-                                   readonly>
-                        </div>
-                    </div>                    
+                                 
                 </div>
 
                    
@@ -84,13 +66,13 @@
         <div class="card-body p-0" wire:ignore>
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.obs.index', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
+                    <a href="{{route('ess.atro', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.obs.index', ['status' => 'granted'])}}" class="nav-link text-uppercase fw-medium {{$status === 'granted' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
+                    <a href="{{route('ess.atro', ['status' => 'approve'])}}" class="nav-link text-uppercase fw-medium {{$status === 'approve' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.obs.index', ['status' => 'rejected'])}}" class="nav-link text-uppercase fw-medium {{$status === 'rejected' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Rejected</a>
+                    <a href="{{route('ess.atro', ['status' => 'denied'])}}" class="nav-link text-uppercase fw-medium {{$status === 'denied' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Rejected</a>
                 </li>
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
@@ -98,7 +80,7 @@
                     <table class="table data-tables w-100" wire:ignore>
                         <thead>
                             <tr>
-                                <th>Employee ID</th>
+                                <th>#</th>
                                 <th>Employee Name</th>
                                 <th>Date Applied</th>
                                 <th style="max-width: 200px;">Action</th>
