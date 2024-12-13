@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Job\RequirementsController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
+use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
@@ -160,6 +161,9 @@ Route::prefix('admin')->group(function() {
         Route::prefix('ess')->group(function() {
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
                 ->name('ess.obs.index');
+
+            Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
+                ->name('ess.atro');
 
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');

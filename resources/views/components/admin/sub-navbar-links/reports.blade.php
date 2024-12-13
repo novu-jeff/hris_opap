@@ -5,7 +5,7 @@
     </a>
     <ul class="dropdown-menu">
         <li><a href="{{ route('reports.dtr') }}" class="dropdown-item">Daily Time Record (DTR)</a></li>
-        <li><a href="#" class="dropdown-item">Official Business Slip</a></li>
+        {{-- <li><a href="#" class="dropdown-item">Official Business Slip</a></li>
         <li><a href="#" class="dropdown-item">Application for Leave</a></li>
         <li><a href="#" class="dropdown-item">Monetization Form</a></li>
         <li><a href="#" class="dropdown-item">Authority to Render Overtime</a></li>
@@ -18,6 +18,6 @@
         <li><a href="#" class="dropdown-item">Courtesy Call</a></li>
         <li><a href="#" class="dropdown-item">Terms Of Reference</a></li>
         <li><a href="#" class="dropdown-item">(TBD)</a></li>
-        <li><a href="#" class="dropdown-item">(TBD)</a></li>
+        <li><a href="#" class="dropdown-item">(TBD)</a></li> --}}
     </ul>    
 </li>
