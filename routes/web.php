@@ -50,6 +50,7 @@ use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
+use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 
@@ -301,6 +302,9 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.atro.edit');
                 
         });
+
+        Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
+            ->name('employee.dtr');
 
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
             ->name('employee.clock');
