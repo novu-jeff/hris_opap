@@ -54,7 +54,7 @@
 
     @if(empty($items))
         <div class="table-responsive" wire:ignore>
-            <table class="table w-100">
+            <table class="table data-tables w-100">
                 <thead>
                     <tr>
                         <th>Billing Month</th>
@@ -98,7 +98,7 @@
         </ul>
         <hr class="mt-4">
         <div class="table-responsive mt-4">
-            <table class="table w-100">
+            <table class="table data-tables w-100">
                 <thead>
                     <tr>
                         <th>BP No</th>
