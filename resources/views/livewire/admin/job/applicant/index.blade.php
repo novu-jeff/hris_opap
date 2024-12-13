@@ -397,7 +397,7 @@
                 </li>
             </ul>
             <div class="mt-4" wire:ignore>
-                <table class="table w-100">
+                <table class="table data-tables w-100">
                     <thead>
                         <tr>
                             <th>No.</th>
