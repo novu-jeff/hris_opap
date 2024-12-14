@@ -95,7 +95,7 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <table class="table w-100" wire:ignore>
+                    <table class="table data-tables w-100" wire:ignore>
                         <thead>
                             <tr>
                                 <th>Employee ID</th>

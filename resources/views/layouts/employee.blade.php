@@ -38,7 +38,7 @@
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/home-layout.scss', 'resources/sass/employee-layout.scss', 'resources/sass/chat.scss'])
 
-
+    @yield('style')
 
     @livewireStyles
     @livewireScripts

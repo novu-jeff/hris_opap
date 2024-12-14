@@ -29,6 +29,12 @@ return new class extends Migration
                 ->constrained('positions');
             $table->string('date_hired')
                 ->nullable();
+            $table->foreignId('shift_id')
+                ->nullable()
+                ->constrained('shift_schedule');
+            $table->foreignId('schedule_id')
+                ->nullable()
+                ->constrained('employee_schedules');
             $table->string('date_resignation')
                 ->nullable();
             $table->foreignId('job_category_id')

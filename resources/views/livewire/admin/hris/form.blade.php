@@ -49,10 +49,34 @@
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="date_hired">Service Duration</label>
+                        <label class="mb-2" for="service_duration">Service Duration</label>
                         <input type="text" wire:model="records.employee_information.service_duration" id="records.employee_information.service_duration" class="form-control restricted" readonly>
                         <div class="error-field">
                             @error('records.employee_information.service_duration') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div> 
+                    <div class="col-12 col-md-3 mb-3">
+                        <label class="mb-2" for="shift_schedule">Employee Shift Schedule</label>
+                        <select wire:model="records.employee_information.shift_schedule" wire:change="select_change('section')" id="records.employee_information.shift_schedule" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            @foreach ($shiftSchedule as $shift)
+                                <option value="{{$shift->id}}">{{$shift->name}}</option>
+                            @endforeach
+                        </select>
+                        <div class="error-field">
+                            @error('records.employee_information.shift_schedule') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div> 
+                    <div class="col-12 col-md-3 mb-3">
+                        <label class="mb-2" for="employee_schedule">Employee Days Schedule</label>
+                        <select wire:model="records.employee_information.employee_schedule" wire:change="select_change('section')" id="records.employee_information.employee_schedule" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            @foreach ($employeeSchedule as $schedule)
+                                <option value="{{$schedule->id}}">{{$schedule->name}}</option>
+                            @endforeach
+                        </select>
+                        <div class="error-field">
+                            @error('records.employee_information.employee_schedule') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
