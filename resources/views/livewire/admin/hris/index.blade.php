@@ -124,7 +124,7 @@
 
     <div>
         <div class="table-responsive">
-            <table class="table table-striped w-100">
+            <table class="table table-striped w-100 data-tables">
                 <thead>
                     <tr>
                         <th></th>

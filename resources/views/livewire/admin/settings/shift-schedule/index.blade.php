@@ -1,6 +1,6 @@
 <div class="card border-0 mt-3">
     <div class="card-body p-0" wire:ignore>
-        <table class="table w-100" wire:ignore>
+        <table class="table w-100 data-tables" wire:ignore>
             <thead>
                 <tr>
                     <th>Shift Name</th>
