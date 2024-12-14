@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
+use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
@@ -241,11 +242,14 @@ Route::prefix('admin')->group(function() {
 
                 Route::post('employee/deductions/{id}', [DeductionController::class, 'create'])
                     ->name('deductions.create');
-        
-                Route::resource('shift-schedule', ShiftScheduleController::class)
-                    ->names('shift-schedule');
 
             });
+
+            Route::resource('shift-schedule', ShiftScheduleController::class)
+                ->names('shift-schedule');
+
+            Route::resource('employee-schedule', EmployeeScheduleController::class)
+                ->names('employee-schedule');
         
             Route::prefix('users')->group(function() {
                 Route::get('{type}', [UserController::class, 'index'])

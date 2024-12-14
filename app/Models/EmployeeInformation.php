@@ -15,6 +15,8 @@ class EmployeeInformation extends Model
         'employee_no',
         'bsd_no',
         'biometrics_id',
+        'shift_schedule',
+        'employee_schedule',
         'section_id',
         'position_id',
         'date_hired',

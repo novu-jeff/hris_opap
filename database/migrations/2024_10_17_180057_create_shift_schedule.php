@@ -11,8 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('shift_schedule', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->longText('description');
+            $table->string('shift_duration');
+            $table->string('start_shift');
+            $table->string('break_out');
+            $table->string('break_in');
+            $table->string('end_shift');
+            $table->string('work_setup');
+            $table->string('min_ot_mins')
+                ->nullable()
+                ->default(0);
+            $table->string('max_ot_time')
+                ->nullable();
             $table->string('mobile_earliest_clockin')
                 ->nullable();
             $table->string('mobile_latest_clockin')
@@ -21,20 +35,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('web_latest_clockin')
                 ->nullable();
-            $table->string('break_from')
-                ->nullable();
-            $table->string('break_to')
-                ->nullable();
-            $table->string('min_ot_mins')
-                ->nullable();
-            $table->string('max_ot_time')
-                ->nullable();
-            $table->boolean('is_late_strict')
-                ->nullable()
-                ->default(false);
-            $table->boolean('is_strict_undertime')
-                ->nullable()
-                ->default(false);
             $table->timestamps();
         });
     }

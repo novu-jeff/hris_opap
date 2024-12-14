@@ -335,44 +335,79 @@ class Upload extends Component
                 $insertedCount = 0;
 
                 foreach ($formattedData as $index => $data) {
-                    foreach($data as $item) {
+                    foreach ($data as $item) {
+                        // Skip if clock_in_am or clock_out_pm is null
+                        if (empty($item['clock_in_am']) || empty($item['clock_out_pm'])) {
+                            continue; // Skip to the next iteration
+                        }
+                
+                        // Parse the logdatetime
                         $timestamp = Carbon::createFromFormat('d/m/Y H:i:s', $item['logdatetime'])->timestamp;
                         $date = Carbon::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
                         
-                        $insertion = EmployeeClockInOut::insert([
-                            'origin' => 'biometrics',
-                            'biometricdtrid' => $item['biometricdtrid'] ?? null,
-                            'clock_in_am' => $item['clock_in_am'] ?? null,
-                            'clock_out_am' => $item['clock_out_am'] ?? null,
-                            'mins_consumed_am' => null,
-                            'clock_in_pm' => $item['clock_in_pm'] ?? null,
-                            'clock_out_pm' => $item['clock_out_pm'] ?? null,
-                            'mins_consumed_pm' => null,
-                            'captured_image_clockin' => null,
-                            'captured_image_clockout' => null,
-                            'captured_location_clockin' => null,
-                            'captured_location_clockout' => null,
-                            'isLate' => false,
-                            'isHalfDay' => false,
-                            'isUnderTime' => false,
-                            'total_mins_consumed' => null, 
-                            'mins_ot' => null, 
-                            'overall_mins' => null, 
-                            'bsd_no' => $item['bsdno'] ?? null,
-                            'isindtr' => !empty($item['isindtr']) ? (bool) $item['isindtr'] : null,
-                            'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
-                            'type' => $item['type'] ?? 0,
-                            'ismanual' => !empty($item['ismanual']) ? (bool) $item['ismanual'] : null,
-                            'created_at' => $date,
-                            'updated_at' => now(),
-                        ]);
+                        // Parse the clock-in time and calculate the expected clock-out time (9 hours later)
+                        $clockInTime = Carbon::createFromFormat('h:i A', $item['clock_in_am']);
+                        $expectedClockOut = $clockInTime->copy()->addHours(8);
+                
+                        // Parse actual clock-out time
+                        $actualClockOutTime = Carbon::createFromFormat('h:i A', $item['clock_out_pm']);
+                        
+                        $minsOT = 0;
+                        $regMins = 0;
+                
+                        $regMins = $actualClockOutTime->diffInMinutes($clockInTime);
 
+                        // Calculate overtime if the actual clock-out exceeds the expected clock-out
+                        if ($actualClockOutTime->gt($expectedClockOut)) {
+                            $minsOT = $actualClockOutTime->diffInMinutes($expectedClockOut);                            
+                            $regMins = $regMins - $minsOT;
+                        } else {
+                            // No overtime, calculate regular minutes only
+                            $regMins = $clockInTime->diffInMinutes($actualClockOutTime);
+                        }
+                
+                        $overallMins = $regMins + $minsOT;
+                
+                        // Insert or update record in the database
+                        $insertion = EmployeeClockInOut::updateOrInsert(
+                            [
+                                'biometricdtrid' => $item['biometricdtrid'] ?? null,
+                            ],
+                            [
+                                'origin' => 'biometrics',
+                                'biometricdtrid' => $item['biometricdtrid'] ?? null,
+                                'clock_in_am' => $item['clock_in_am'] ?? null,
+                                'clock_out_am' => $item['clock_out_am'] ?? null,
+                                'mins_consumed_am' => null,
+                                'clock_in_pm' => $item['clock_in_pm'] ?? null,
+                                'clock_out_pm' => $item['clock_out_pm'] ?? null,
+                                'mins_consumed_pm' => null,
+                                'captured_image_clockin' => null,
+                                'captured_image_clockout' => null,
+                                'captured_location_clockin' => null,
+                                'captured_location_clockout' => null,
+                                'isLate' => false,
+                                'isHalfDay' => false,
+                                'isUnderTime' => false,
+                                'total_mins_consumed' => $regMins,
+                                'mins_ot' => $minsOT,
+                                'overall_mins' => $overallMins,
+                                'bsd_no' => $item['bsdno'] ?? null,
+                                'isindtr' => !empty($item['isindtr']) ? (bool) $item['isindtr'] : null,
+                                'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
+                                'type' => $item['type'] ?? 0,
+                                'ismanual' => !empty($item['ismanual']) ? (bool) $item['ismanual'] : null,
+                                'created_at' => $date,
+                                'updated_at' => $date,
+                            ]
+                        );
+                
                         if ($insertion) {
                             $insertedCount++;
                         }
                     }
                 }
-                
+                              
             }
 
             DB::commit();
