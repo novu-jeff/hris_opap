@@ -8,9 +8,11 @@ use App\Mail\SendEmployeeAccount;
 use App\Models\CompanyInformation;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
+use App\Models\EmployeeSchedule;
 use App\Models\JobCategory;
 use App\Models\Positions;
 use App\Models\Sections;
+use App\Models\ShiftSchedule;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +28,8 @@ class Form extends Component
     public object $sections;
     public object $positions;
     public object $jobCategories;
+    public object $shiftSchedule;
+    public object $employeeSchedule;
     public array $records;
     public $countries;
 
@@ -49,11 +53,15 @@ class Form extends Component
         $this->positions = Positions::all();
         $this->jobCategories = JobCategory::all();
 
+        $this->shiftSchedule = ShiftSchedule::all();
+        $this->employeeSchedule = EmployeeSchedule::all();
+
+
         // Fetch related earnings and deductions
         $otherServices = new OtherServices();
         $earnings = $otherServices->earnings($this->employee_no) ?? [];
         $deductions = $otherServices->deductions($this->employee_no) ?? [];
-
+        
         // Fetch employee data with relations
         $data = EmployeeInformation::with([
             'department',

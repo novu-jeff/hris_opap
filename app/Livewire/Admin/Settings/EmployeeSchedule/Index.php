@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Hris\Leave;
+namespace App\Livewire\Admin\Settings\EmployeeSchedule;
 
-use App\Models\LeaveType;
+use App\Models\EmployeeSchedule;
 use Livewire\Component;
 
 class Index extends Component
 {
 
     public $selected_id;
-    public object $records;
+    public $records;
+
     protected $listeners = ['remove']; 
 
     public function mount() {
@@ -17,9 +18,33 @@ class Index extends Component
     }
 
     public function loadRecords() {
-        $this->records = LeaveType::all();
+        $records = EmployeeSchedule::all();  // Get all employee schedules
+    
+        $data = [];
+    
+        foreach ($records as $record) {
+            // Create an object for each record
+            $obj = new \stdClass();
+            $obj->id = $record->id;  // Add the 'id' property
+            $obj->name = $record->name;
+    
+            // Get the days that are true (1) and store them in an array
+            $days = [];
+            foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+                if ($record->$day == 1) {
+                    $days[] = ucfirst($day);  // Add the day name to the array if it's true (1)
+                }
+            }
+    
+            $obj->days = implode(', ', $days);  // Implode the array into a comma-separated string
+    
+            // Add the object to the data array
+            $data[] = $obj;
+        }
+    
+        $this->records = $data;
     }
-
+    
     public function remove(bool $isNotify = true, int $id = null) {
 
         if($isNotify) {
@@ -37,7 +62,7 @@ class Index extends Component
 
         }  else {
 
-            $record = LeaveType::find($this->selected_id);
+            $record = EmployeeSchedule::find($this->selected_id);
                 
             if($record) {
                 
@@ -48,7 +73,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave type ' . strtoupper($record->name) . ' deleted successfully' 
+                    'message' => 'Shift schedule ' . strtoupper($record->name) . ' deleted successfully' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -64,6 +89,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.leave.index');
+        return view('livewire.admin.settings.employee-schedule.index');
     }
 }

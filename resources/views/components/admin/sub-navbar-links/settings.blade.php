@@ -55,7 +55,7 @@
             </a>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="{{route('shift-schedule.index')}}">Shift Schedule</a></li>
-                <li><a class="dropdown-item" href="#">Employee Schedule</a></li>
+                <li><a class="dropdown-item" href="{{route('employee-schedule.index')}}">Employee Schedule</a></li>
             </ul>
         </li>
         <li class="nav-item dropstart">

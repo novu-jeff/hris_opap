@@ -64,7 +64,7 @@ class Create extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Section ' . strtoupper($this->fields['name']) . ' was added successfully.'
+                'message' => 'Leave type ' . strtoupper($this->fields['name']) . ' was added successfully.'
             ]);
 
             $this->reset('fields');
