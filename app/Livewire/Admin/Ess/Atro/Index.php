@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Livewire\Admin\Ess\BusinessSlip;
+namespace App\Livewire\Admin\Ess\Atro;
 
-use App\Models\EmployeeBusinessSlip;
+use App\Models\EmployeeAtro;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Index extends Component
 {
+    
     public $status;
     public $records;
     public $view_records;
@@ -20,36 +21,19 @@ class Index extends Component
     }
 
     public function loadRecords(int $id = null) {
-        $records = DB::table('employee_business_slips')
-            ->leftJoin('employee_personal', 'employee_business_slips.employee_no', '=', 'employee_personal.employee_no')
-            ->leftJoin('employee_information', 'employee_business_slips.employee_no', '=', 'employee_information.employee_no')
-            ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')
-            ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
-            ->leftJoin('branches', 'sections.branch_id', '=', 'branches.id')
-            ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
+        $records = DB::table('employee_atro')
+            ->leftJoin('employee_personal', 'employee_atro.employee_no', '=', 'employee_personal.employee_no')
+            ->leftJoin('employee_information', 'employee_atro.employee_no', '=', 'employee_information.employee_no')
             ->select(
-                'employee_business_slips.*',
+                'employee_atro.*',
                 'employee_personal.firstname',
                 'employee_personal.middlename',
                 'employee_personal.lastname',
-
-                'positions.code as position_code',
-                'positions.name as position_name',
-                
-                'sections.name as section_name',
-                'sections.code as section_code',
-
-                'branches.name as branch_name',
-                'branches.code as branch_code',
-
-                'departments.name as department_name',
-                'departments.code as department_code',
-
             )
-            ->where('employee_business_slips.status',  $this->status);
+            ->where('employee_atro.status',  $this->status);
             
         if(!is_null($id)) {
-            $records->where('employee_business_slips.id', $id);
+            $records->where('employee_atro.id', $id);
             return $this->view_records = $records->first();
         }
 
@@ -81,10 +65,10 @@ class Index extends Component
 
         } else {
 
-            EmployeeBusinessSlip::where('id', $this->selected_id)
+            EmployeeAtro::where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->update([
-                    'status' => 'rejected'
+                    'status' => 'denied'
                 ]);
 
             $this->dispatch('alert', [
@@ -115,15 +99,12 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeBusinessSlip::with('employment')->where('id', $this->selected_id)
+            EmployeeAtro::where('id', $this->selected_id)
                 ->where('status', 'pending')
-                ->first();
-            
-            // Update the EmployeeLeave record's status
-            $record->update([
-                'status' => 'granted'
-            ]);
-        
+                ->update([
+                    'status' => 'approve'
+                ]);
+                
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -154,7 +135,7 @@ class Index extends Component
 
         }  else {
 
-            $record = EmployeeBusinessSlip::find($this->selected_id);
+            $record = EmployeeAtro::find($this->selected_id);
                 
             if($record) {
                 
@@ -181,6 +162,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.ess.business-slip.index');
+        return view('livewire.admin.ess.atro.index');
     }
 }

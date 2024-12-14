@@ -48,6 +48,12 @@
                     <p>Official Business Slip</p>
                 </div>
             </a>
+            <a href="{{route('employee.dtr')}}" class="nav-link">
+                <div class="item">
+                    <img src="{{asset('/img/dtr.png')}}" alt="leave" class="w-100">
+                    <p>Daily Time Record</p>
+                </div>
+            </a>
             <a href="{{route('employee.directory')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/directory.png')}}" alt="leave" class="w-100">
