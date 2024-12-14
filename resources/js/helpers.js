@@ -24,10 +24,10 @@ export function copy_link() {
 }
 
 export function reinitializeDataTable() {
-    if ($.fn.DataTable.isDataTable('table')) {
-        $('table').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable('.data-tables')) {
+        $('.data-tables').DataTable().destroy();
     }
-    $('table').DataTable({
+    $('.data-tables').DataTable({
         scrollX: true,
         pageLength: 20 
     });

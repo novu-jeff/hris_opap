@@ -624,6 +624,8 @@ class Clock extends Component
 
     public function showLogs() {
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
             ->get();
 
         $this->logs = $records;

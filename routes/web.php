@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Job\RequirementsController;
 use App\Http\Controllers\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementController;
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
+use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
@@ -51,6 +52,7 @@ use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
+use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 
@@ -160,6 +162,9 @@ Route::prefix('admin')->group(function() {
         Route::prefix('ess')->group(function() {
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
                 ->name('ess.obs.index');
+
+            Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
+                ->name('ess.atro');
 
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
@@ -305,6 +310,9 @@ Route::prefix('employee')->group(function() {
                 ->name('employee.atro.edit');
                 
         });
+
+        Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
+            ->name('employee.dtr');
 
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
             ->name('employee.clock');

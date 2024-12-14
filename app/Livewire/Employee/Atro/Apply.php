@@ -78,14 +78,16 @@ class Apply extends Component
                 'date',
                 'before:today',
                 function ($attribute, $value, $fail) {
-                    $employeeNo = $this->user_id; 
+                    if(is_null($this->record_id)) {
+                        $employeeNo = $this->user_id; 
                     
-                    $exists = EmployeeAtro::where('employee_no', $employeeNo)
-                        ->where('date', $value)
-                        ->exists();
-
-                    if ($exists) {
-                        $fail('An overtime application has already been submitted for this date.');
+                        $exists = EmployeeAtro::where('employee_no', $employeeNo)
+                            ->where('date', $value)
+                            ->exists();
+    
+                        if ($exists) {
+                            $fail('An overtime application has already been submitted for this date.');
+                        }
                     }
                 },
             ],
@@ -112,7 +114,6 @@ class Apply extends Component
             'fields.*.date.unique' => 'The employee cannot have multiple records for the same date.',
         ];
     }
-
 
     public function save(bool $isNotify = true) {
 
