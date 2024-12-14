@@ -20,11 +20,7 @@ class Index extends Component
     }
 
     public function loadRecords(int $id = null) {
-        // $records = EmployeeBusinessSlip::with('employment', 'employee', 'approved_by')
-        //     ->where('status', $this->status);
-
         $records = DB::table('employee_business_slips')
-            // ->leftJoin('employee_account', 'employee_business_slips.employee_no', '=', 'employee_account.employee_no')
             ->leftJoin('employee_personal', 'employee_business_slips.employee_no', '=', 'employee_personal.employee_no')
             ->leftJoin('employee_information', 'employee_business_slips.employee_no', '=', 'employee_information.employee_no')
             ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')

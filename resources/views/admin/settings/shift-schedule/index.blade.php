@@ -8,6 +8,11 @@
         <div class="section-title">
             <h1>Manage Shift Schedule</h1>
         </div>
+        <div class="action">
+            <div class="d-flex gap-3">
+                <a href="{{route('shift-schedule.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</a>
+            </div>
+        </div>
     </div>
     <div class="mt-3">
         @livewire('admin.settings.shift-schedule.index')

@@ -48,7 +48,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave ' . strtoupper($record->name) . ' deleted successfully' 
+                    'message' => 'Leave type ' . strtoupper($record->name) . ' deleted successfully' 
                 ]);
             } else {
                 return $this->dispatch('alert', [

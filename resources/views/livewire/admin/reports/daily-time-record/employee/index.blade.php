@@ -84,6 +84,13 @@
         font-size: 12px;
     }
 
+    .shaded-box {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 5px;
+    }
+
     .remarks {
         margin-top: 20px;
         font-size: 12px;
@@ -164,7 +171,12 @@
                                 <tbody>
                                     @foreach ($dtr['clock_in_out'] as $day)
                                         <tr>
-                                            <td>{{ \Carbon\Carbon::parse($day['date'])->format('d D') }}</td>
+                                            <td style="position: relative;">
+                                                {{ \Carbon\Carbon::parse($day['date'])->format('d D') }}
+                                                @if ($day['origin'] === 'web')
+                                                    <div class="shaded-box">|</div>
+                                                @endif
+                                            </td>
 
                                             <!-- AM -->
                                             <td>{{ isset($day['clock_in_am']) ? \Carbon\Carbon::parse($day['clock_in_am'])->format('g:i') : ' ' }}</td>
@@ -260,7 +272,7 @@
 
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
-            <table class="table w-100">
+            <table class="table data-tables w-100">
                 <thead>
                     <tr>
                         <th>Employee #</th>
