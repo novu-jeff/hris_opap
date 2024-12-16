@@ -34,7 +34,8 @@ class EmployeeClockInOut extends Model
         'isUnderTime',
         'total_mins_consumed',
         'mins_ot',
-        'overall_mins'
+        'overall_mins',
+        'accomplishment'
     ];
 
     public function information() {

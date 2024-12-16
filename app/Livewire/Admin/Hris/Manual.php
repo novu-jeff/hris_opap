@@ -186,7 +186,7 @@ class Manual extends Component
             ],
             'records.employee_information.biometrics_id' => [
                 'required',
-                Rule::unique('employee_information', 'bsd_no')->ignore($employee_no, 'employee_no')
+                Rule::unique('employee_information', 'bsd_no')->ignore($id, 'employee_no')
             ],
             'records.employee_information.type' => 'nullable|exists:job_categories,id',
             'records.employee_information.status' => 'nullable|in:active,inactive',

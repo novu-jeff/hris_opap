@@ -14,7 +14,13 @@
                 @foreach($records as $record)
                     <tr data-id="{{$record->id}}">
                         <td>{{$record->name}}</td>
-                        <td>{{ \Carbon\Carbon::parse($record->start_shift)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($record->end_shift)->format('h:i A') }}</td>
+                        <td>
+                            @if($record->shift_duration !== 'flexible')
+                                {{ \Carbon\Carbon::parse($record->start_shift)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($record->end_shift)->format('h:i A') }}
+                            @else
+                                <p class="text-muted fst-italic mb-0">Flexible 8 Hours</p>
+                            @endif
+                        </td>
                         <td>{{ \Carbon\Carbon::parse($record->break_out)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($record->break_in)->format('h:i A') }}</td>
                         <td>{{$record->work_setup}}</td>
                         <td>

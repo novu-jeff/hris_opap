@@ -55,20 +55,20 @@
                             @error('records.employee_information.service_duration') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="shift_schedule">Employee Shift Schedule</label>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="mb-2" for="shift_schedule">Shift Schedule</label>
                         <select wire:model="records.employee_information.shift_schedule" wire:change="select_change('section')" id="records.employee_information.shift_schedule" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($shiftSchedule as $shift)
-                                <option value="{{$shift->id}}">{{$shift->name}}</option>
+                                <option value="{{$shift->id}}">{{$shift->name . ' (' . $shift->work_setup . ')'}}</option>
                             @endforeach
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.shift_schedule') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="employee_schedule">Employee Days Schedule</label>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="mb-2" for="employee_schedule">Days Schedule</label>
                         <select wire:model="records.employee_information.employee_schedule" wire:change="select_change('section')" id="records.employee_information.employee_schedule" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($employeeSchedule as $schedule)
@@ -79,7 +79,7 @@
                             @error('records.employee_information.employee_schedule') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 col-md-3 mb-3">
+                    <div class="col-12 col-md-4 mb-3">
                         <label class="mb-2" for="date_resignation">Date Resignation</label>
                         <input type="text" wire:model="records.employee_information.date_resignation" id="records.employee_information.date_resignation" class="form-control restricted" readonly>
                         <div class="error-field">

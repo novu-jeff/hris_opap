@@ -72,6 +72,12 @@
                     <p>Announcements</p>
                 </div>
             </a>
+            <a href="{{route('employee.profile')}}" class="nav-link">
+                <div class="item">
+                    <img src="{{asset('/img/profile.png')}}" alt="leave" class="w-100">
+                    <p>My Profile</p>
+                </div>
+            </a>
             <a href="{{route('employee.logout')}}" class="nav-link">
                 <div class="item">
                     <img src="{{asset('/img/logout.png')}}" alt="leave" class="w-100">
