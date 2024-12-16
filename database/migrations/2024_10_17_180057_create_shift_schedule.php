@@ -17,10 +17,16 @@ return new class extends Migration
             $table->string('name');
             $table->longText('description');
             $table->string('shift_duration');
-            $table->string('start_shift');
+            $table->string('earliest_in')
+                ->nullable();
+            $table->string('latest_in')
+                ->nullable();
+            $table->string('start_shift')
+                ->nullable();
             $table->string('break_out');
             $table->string('break_in');
-            $table->string('end_shift');
+            $table->string('end_shift')
+                ->nullable();
             $table->string('work_setup');
             $table->string('min_ot_mins')
                 ->nullable()

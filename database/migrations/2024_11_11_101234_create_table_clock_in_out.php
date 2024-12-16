@@ -47,6 +47,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('overall_mins')
                 ->nullable();
+            $table->longText('accomplishment')
+                ->nullable();
             $table->timestamps();
         });
     }

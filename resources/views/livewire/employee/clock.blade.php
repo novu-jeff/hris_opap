@@ -20,13 +20,20 @@
                                             <i class="fa-solid fa-spinner fa-spin"></i>
                                         </span>
                                     </div>
-                                    <div class="text-center mt-3">
+                                    <div class="text-center fw-bold text-uppercase mt-4">
                                         <span wire:loading.remove wire:target="triggerClock">{{$status}}</span>
                                         <span wire:loading wire:target="triggerClock">Saving...</span>
                                     </div>
                                 </div>
                             </div>      
-                        </div>              
+                        </div>  
+                        @if (in_array($status, ['Break In', 'Break Out']))
+                            <div class="text-center mt-2">
+                                <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
+                                    Clock Out
+                                </button>
+                            </div>     
+                        @endif       
                     </div>
                     <div class="col-12 col-md-4 mb-3">
                         <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs" wire:target="showLogs">
@@ -40,7 +47,7 @@
                                             <i class="fa-solid fa-spinner fa-spin"></i>
                                         </span>
                                     </div>
-                                    <div class="text-center mt-3">
+                                    <div class="text-center fw-bold text-uppercase mt-4">
                                         <span wire:loading.remove wire:target="showLogs">Clock Logs</span>
                                         <span wire:loading wire:target="showLogs">Please Wait...</span>
                                     </div>
@@ -83,11 +90,7 @@
                                         <th>Break Out</th>
                                         <th>Break In</th>
                                         <th>Clock Out</th>
-                                        <th>Regular Hours</th>
-                                        <th>OT Hours</th>
-                                        <th>Total Hours</th>
                                         <th>Remarks</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,10 +102,6 @@
                                             <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
-                                            <td>{{ $item->total_mins_consumed ? sprintf('%02d:%02d', floor($item->total_mins_consumed / 60), $item->total_mins_consumed % 60) . ' HRS' : '' }}</td>
-                                            <td>{{ $item->mins_ot ? sprintf('%02d:%02d', floor($item->mins_ot / 60), $item->mins_ot % 60) . ' HRS' : '' }}</td>
-                                            <td>{{ $item->overall_mins ? sprintf('%02d:%02d', floor($item->overall_mins / 60), $item->overall_mins % 60) . ' HRS' : '' }}</td>
-                                            <td></td>
                                             <td></td>
                                         </tr>
                                     @empty
@@ -156,7 +155,10 @@
             });
         }
 
-        Livewire.on('capture', () => {
+        Livewire.on('capture', (data) => {
+           
+            const isForcedClockOut = data[0].isForcedClockout ? true : false;
+
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -165,7 +167,8 @@
 
             isImageCaptured = isNotBlank;
 
-            @this.call('processClock', canvas.toDataURL('image/png'), isImageCaptured);
+            @this.call('processClock', canvas.toDataURL('image/png'), isImageCaptured, isForcedClockOut);
+        
         });
 
         function hasContent(imageData) {
