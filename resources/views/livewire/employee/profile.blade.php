@@ -44,28 +44,28 @@
                                                 <div class="row">
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="lastname">Surname</label>
-                                                        <input type="text" wire:model="records.employee_personal.lastname" id="lastname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.lastname" id="lastname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="firstname">First Name</label>
-                                                        <input type="text" wire:model="records.employee_personal.firstname" id="firstname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.firstname" id="firstname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="middlename">Middle Name</label>
-                                                        <input type="text" wire:model="records.employee_personal.middlename" id="middlename" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.middlename" id="middlename" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-2 mb-3">
                                                         <label class="mb-2" for="suffix">Suffix</label>
-                                                        <select wire:model="records.employee_personal.suffix" id="suffix" class="form-select">
+                                                        <select wire:model="records.employee_personal.suffix" id="suffix" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="jr">Jr</option>
                                                             <option value="sr">Sr</option>
@@ -81,14 +81,14 @@
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="birthday">Date of Birth</label>
-                                                        <input type="date" wire:model="records.employee_personal.birthday" id="birthday" class="form-control">
+                                                        <input type="date" wire:model="records.employee_personal.birthday" id="birthday" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.birthday') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="civil_status">Civil Status</label>
-                                                        <select wire:model="records.employee_personal.civil_status" id="civil_status" class="form-select">
+                                                        <select wire:model="records.employee_personal.civil_status" id="civil_status" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="single">Single</option>
                                                             <option value="married">Married</option>
@@ -103,7 +103,7 @@
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="sex">Sex</label>
-                                                        <select wire:model="records.employee_personal.sex" id="sex" class="form-select">
+                                                        <select wire:model="records.employee_personal.sex" id="sex" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="male">Male</option>
                                                             <option value="female">Female</option>
@@ -119,7 +119,7 @@
                                                 <div class="row">
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="citizenship">Citizenship</label>
-                                                        <select wire:model="records.employee_personal.citizenship" wire:change="select_change('citizenship')"  id="citizenship" class="form-select">
+                                                        <select wire:model="records.employee_personal.citizenship" wire:change="select_change('citizenship')"  id="citizenship" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="filipino">Filipino</option>
                                                             <option value="dual_citizenship">Dual Citizenship</option>
@@ -131,7 +131,7 @@
                                                     @if ($isDualCitizenship)
                                                         <div class="col-12 col-md-4 mb-3">    
                                                             <label class="mb-2" for="country">Country (Dual Citizenship)</label>
-                                                                <select wire:model="records.employee_personal.country" id="citizenship_type" class="form-select">
+                                                                <select wire:model="records.employee_personal.country" id="citizenship_type" class="form-select text-uppercase">
                                                                     <option value=""> - CHOOSE - </option>
                                                                     @foreach ($countries as $country)
                                                                         <option value="{{$country['name']['common']}}">{{$country['name']['common']}}</option>
@@ -144,7 +144,7 @@
                                                         @endif
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="citizenship_type">Citizenship Type</label>
-                                                        <select wire:model="records.employee_personal.citizenship_type" id="citizenship_type" class="form-select">
+                                                        <select wire:model="records.employee_personal.citizenship_type" id="citizenship_type" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="by_birth">By Birth</option>
                                                             <option value="by_naturalization">By Naturalization</option>
@@ -168,21 +168,21 @@
                                                 <div class="row">
                                                     <div class="col-12 col-md-12 mb-3">
                                                         <label class="mb-2" for="present_address">Residential Address</label>
-                                                        <input type="text" wire:model="records.employee_personal.present_address" id="present_address" class="form-control" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                                        <input type="text" wire:model="records.employee_personal.present_address" id="present_address" class="form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.present_address') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="present_province">State / Province</label>
-                                                        <input type="text" wire:model="records.employee_personal.present_province" id="present_province" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.present_province" id="present_province" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.present_province') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="present_city">City / Municipality</label>
-                                                        <input type="text" wire:model="records.employee_personal.present_city" id="present_city" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.present_city" id="present_city" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.present_city') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -192,21 +192,21 @@
                                                     </div> 
                                                     <div class="col-12 col-md-12 mb-3">
                                                         <label class="mb-2" for="permanent_address">Permanent Address</label>
-                                                        <input type="text" wire:model="records.employee_personal.permanent_address" id="permanent_address" class="form-control" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                                        <input type="text" wire:model="records.employee_personal.permanent_address" id="permanent_address" class="form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.permanent_address') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="permanent_province">State / Province</label>
-                                                        <input type="text" wire:model="records.employee_personal.permanent_province" id="permanent_province" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.permanent_province" id="permanent_province" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.permanent_province') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="permanent_city">City / Municipality</label>
-                                                        <input type="text" wire:model="records.employee_personal.permanent_city" id="permanent_city" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.permanent_city" id="permanent_city" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.permanent_city') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -226,21 +226,21 @@
                                                 <div class="row">
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="mobile_number">Mobile No.</label>
-                                                        <input type="text" wire:model="records.employee_personal.mobile_number" id="mobile_number" class="form-control" data-mask="mobile">
+                                                        <input type="text" wire:model="records.employee_personal.mobile_number" id="mobile_number" class="form-control text-uppercase" data-mask="mobile">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.mobile_number') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="tel_no">Telephone No.</label>
-                                                        <input type="text" wire:model="records.employee_personal.tel_no" id="tel_no" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.tel_no" id="tel_no" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.tel_no') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="email">Email</label>
-                                                        <input type="text" wire:model="records.employee_personal.email" id="email" class="form-control text-lowercase">
+                                                        <input type="text" wire:model="records.employee_personal.email" id="email" class="form-control text-uppercase text-lowercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.email') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -260,21 +260,21 @@
                                                 <div class="row">
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="height">Height</label>
-                                                        <input type="text" wire:model="records.employee_personal.height" id="height" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.height" id="height" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.height') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="weight">Weight</label>
-                                                        <input type="text" wire:model="records.employee_personal.weight" id="weight" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.weight" id="weight" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.weight') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-6 mb-3">
                                                         <label class="mb-2" for="blood_type">Blood Type</label>
-                                                        <input type="text" wire:model="records.employee_personal.blood_type" id="blood_type" class="form-control">
+                                                        <input type="text" wire:model="records.employee_personal.blood_type" id="blood_type" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.blood_type') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -303,28 +303,28 @@
 
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_surname">Spouse's Surname</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_surname" id="records.employee_parents.spouse_surname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_surname" id="records.employee_parents.spouse_surname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_surname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_firstname">First Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_firstname" id="records.employee_parents.spouse_firstname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_firstname" id="records.employee_parents.spouse_firstname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_middlename">Middle Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_middlename" id="records.employee_parents.spouse_middlename" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_middlename" id="records.employee_parents.spouse_middlename" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="suffix">Suffix</label>
-                                                        <select wire:model="records.employee_parents.spouse_suffix" id="records.employee_parents.spouse_suffix" class="form-select">
+                                                        <select wire:model="records.employee_parents.spouse_suffix" id="records.employee_parents.spouse_suffix" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="jr">Jr</option>
                                                             <option value="sr">Sr</option>
@@ -340,28 +340,28 @@
                                                     </div>
                                                     <div class="col-12 col-md-12 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_occupation">Occupation</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_occupation" id="records.employee_parents.spouse_occupation" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_occupation" id="records.employee_parents.spouse_occupation" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_occupation') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_business_name_employer">Employer / Business Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_business_name_employer" id="records.employee_parents.spouse_business_name_employer" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_business_name_employer" id="records.employee_parents.spouse_business_name_employer" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_business_name_employer') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_business_address">Business Address</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_business_address" id="records.employee_parents.spouse_business_address" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_business_address" id="records.employee_parents.spouse_business_address" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_business_address') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_contact_no">Contact Number</label>
-                                                        <input type="text" wire:model="records.employee_parents.spouse_contact_no" id="records.employee_parents.spouse_contact_no" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.spouse_contact_no" id="records.employee_parents.spouse_contact_no" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.spouse_contact_no') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -372,28 +372,28 @@
 
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.father_surname">Father's Surname</label>
-                                                        <input type="text" wire:model="records.employee_parents.father_surname" id="records.employee_parents.father_surname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.father_surname" id="records.employee_parents.father_surname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.father_surname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.father_firstname">First Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.father_firstname" id="records.employee_parents.father_firstname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.father_firstname" id="records.employee_parents.father_firstname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.father_firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.father_middlename">Middle Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.father_middlename" id="records.employee_parents.father_middlename" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.father_middlename" id="records.employee_parents.father_middlename" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.father_middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="suffix">Suffix</label>
-                                                        <select wire:model="records.employee_parents.father_suffix" id="records.employee_parents.father_suffix" class="form-select">
+                                                        <select wire:model="records.employee_parents.father_suffix" id="records.employee_parents.father_suffix" class="form-select text-uppercase">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="jr">Jr</option>
                                                             <option value="sr">Sr</option>
@@ -412,21 +412,21 @@
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.records.employee_parents.mother_surname">Mother's Surname</label>
-                                                        <input type="text" wire:model="records.employee_parents.mother_surname" id="records.employee_parents.mother_surname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.mother_surname" id="records.employee_parents.mother_surname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.mother_surname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.mother_firstname">First Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.mother_firstname" id="records.employee_parents.mother_firstname" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.mother_firstname" id="records.employee_parents.mother_firstname" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.mother_firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                     <div class="col-12 col-md-4 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.mother_middlename">Middle Name</label>
-                                                        <input type="text" wire:model="records.employee_parents.mother_middlename" id="records.employee_parents.mother_middlename" class="form-control">
+                                                        <input type="text" wire:model="records.employee_parents.mother_middlename" id="records.employee_parents.mother_middlename" class="form-control text-uppercase">
                                                         <div class="error-field">
                                                             @error('records.employee_parents.mother_middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
@@ -467,25 +467,25 @@
                                                                             </button>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control">
+                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control">
+                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control">
+                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="date" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control">
+                                                                            <input type="date" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
@@ -533,7 +533,7 @@
                                                 </button>
                                             </td>
                                             <td>
-                                                <select style="width: 300px" wire:model="records.employee_education.{{$key}}.level" id="records.employee_education.{{$key}}.level" class="form-select">
+                                                <select style="width: 300px" wire:model="records.employee_education.{{$key}}.level" id="records.employee_education.{{$key}}.level" class="form-select text-uppercase">
                                                     <option value=""> - CHOOSE - </option>
                                                     <option value="elementary">Elementary</option>
                                                     <option value="secondary">Secondary</option>
@@ -549,25 +549,25 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.school_name" id="records.employee_education.{{$key}}.school_name" class="form-control">
+                                                <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.school_name" id="records.employee_education.{{$key}}.school_name" class="form-control text-uppercase">
                                                 <div class="error-field">
                                                     @error('records.employee_education.'.$key.'.school_name') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.course" id="records.employee_education.{{$key}}.course" class="form-control">
+                                                <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.course" id="records.employee_education.{{$key}}.course" class="form-control text-uppercase">
                                                 <div class="error-field">
                                                     @error('records.employee_education.'.$key.'.course') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year" id="records.employee_education.{{$key}}.from_year" class="form-control">
+                                                <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year" id="records.employee_education.{{$key}}.from_year" class="form-control text-uppercase">
                                                 <div class="error-field">
                                                     @error('records.employee_education.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year" id="records.employee_education.{{$key}}.to_year" class="form-control">
+                                                <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year" id="records.employee_education.{{$key}}.to_year" class="form-control text-uppercase">
                                                 <div class="error-field">
                                                     @error('records.employee_education.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -613,31 +613,31 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.position" id="records.employee_employment_history.{{$key}}.position" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.position" id="records.employee_employment_history.{{$key}}.position" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.department" id="records.employee_employment_history.{{$key}}.department" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.department" id="records.employee_employment_history.{{$key}}.department" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.department') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.company_name" id="records.employee_employment_history.{{$key}}.company_name" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.company_name" id="records.employee_employment_history.{{$key}}.company_name" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.company_name') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.monthly_salary" id="records.employee_employment_history.{{$key}}.monthly_salary" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.monthly_salary" id="records.employee_employment_history.{{$key}}.monthly_salary" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.monthly_salary') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status" id="records.employee_employment_history.{{$key}}.employment_status" class="form-select">
+                                                    <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status" id="records.employee_employment_history.{{$key}}.employment_status" class="form-select text-uppercase">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="regular">Regular</option>
                                                         <option value="part time">Part Time</option>
@@ -649,7 +649,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment" id="records.employee_employment_history.{{$key}}.isGovernment" class="form-select">
+                                                    <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment" id="records.employee_employment_history.{{$key}}.isGovernment" class="form-select text-uppercase">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="yes">Yes</option>
                                                         <option value="no">No</option>
@@ -659,13 +659,13 @@
                                                     </div>
                                                 </td>                                                
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.from_year" id="records.employee_employment_history.{{$key}}.from_year" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.from_year" id="records.employee_employment_history.{{$key}}.from_year" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.to_year" id="records.employee_employment_history.{{$key}}.to_year" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.to_year" id="records.employee_employment_history.{{$key}}.to_year" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -710,37 +710,37 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.certification" id="records.employee_civil_service.{{$key}}.certification" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.certification" id="records.employee_civil_service.{{$key}}.certification" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.certification') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.rating" id="records.employee_civil_service.{{$key}}.rating" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.rating" id="records.employee_civil_service.{{$key}}.rating" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.rating') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.date_exam') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.place_exam" id="records.employee_civil_service.{{$key}}.place_exam" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.place_exam" id="records.employee_civil_service.{{$key}}.place_exam" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.place_exam') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>                                         
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.license_no') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_validity" id="records.employee_civil_service.{{$key}}.date_validity" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_validity" id="records.employee_civil_service.{{$key}}.date_validity" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.date_validity') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -785,37 +785,37 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.type" id="records.employee_trainings.{{$key}}.type" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.type" id="records.employee_trainings.{{$key}}.type" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.type') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.name" id="records.employee_trainings.{{$key}}.name" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.name" id="records.employee_trainings.{{$key}}.name" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.name') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_from" id="records.employee_trainings.{{$key}}.date_from" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_from" id="records.employee_trainings.{{$key}}.date_from" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_to" id="records.employee_trainings.{{$key}}.date_to" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_to" id="records.employee_trainings.{{$key}}.date_to" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>  
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.consumed_hours" id="records.employee_trainings.{{$key}}.consumed_hours" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.consumed_hours" id="records.employee_trainings.{{$key}}.consumed_hours" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>                                         
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.sponsored_by" id="records.employee_trainings.{{$key}}.sponsored_by" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.sponsored_by" id="records.employee_trainings.{{$key}}.sponsored_by" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.sponsored_by') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -860,37 +860,37 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.organization" id="records.employee_others.{{$key}}.organization" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.organization" id="records.employee_others.{{$key}}.organization" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.address" id="records.employee_others.{{$key}}.address" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.address" id="records.employee_others.{{$key}}.address" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.address') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_to" id="records.employee_others.{{$key}}.date_to" class="form-control">
+                                                    <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_to" id="records.employee_others.{{$key}}.date_to" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>  
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.consumed_hours" id="records.employee_others.{{$key}}.consumed_hours" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.consumed_hours" id="records.employee_others.{{$key}}.consumed_hours" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>                                         
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.position" id="records.employee_others.{{$key}}.position" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.position" id="records.employee_others.{{$key}}.position" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -932,19 +932,19 @@
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.name" id="records.employee_skills.{{$key}}.name" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.name" id="records.employee_skills.{{$key}}.name" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.name') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.recognition" id="records.employee_skills.{{$key}}.recognition" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.recognition" id="records.employee_skills.{{$key}}.recognition" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.recognition') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control">
+                                                    <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>

@@ -83,34 +83,32 @@
                 </div>
             </div>
 
-            <div class="send-box" wire:click="makeSeen">
+            <div class="send-box w-100" wire:click="makeSeen">
                 <form wire:submit.prevent="send" wire:target="send" class="mb-0">
-                    <div class="form-group">
-                        <!-- Add a label for accessibility -->
-                        <label for="message" class="visually-hidden">Message</label>
-                        <textarea
-                            wire:model.defer="message"
-                            id="message"
-                            cols="30"
-                            rows="1"
-                            class="form-control @error('message') invalid-feed @enderror"
-                            placeholder="Type something..."
-                        ></textarea>
-                        <!-- Show validation error message -->
-                        @error('message')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                    <div class="mt-2">
-                        <button type="submit" class="btn btn-primary">
-                            <span wire:loading.remove wire:target="send">
-                                <i class="fa fa-paper-plane" aria-hidden="true"></i>
-                                Send
-                            </span>
-                            <span wire:loading wire:target="send">
-                                <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
-                            </span>
-                        </button>
+                    <div class="d-flex gap-3">
+                        <div class="form-group w-100">
+                            <!-- Add a label for accessibility -->
+                            <label for="message" class="visually-hidden">Message</label>
+                            <textarea
+                                wire:model.defer="message"
+                                id="message"
+                                cols="30"
+                                rows="1"
+                                class="w-100 form-control @error('message') invalid-feed @enderror"
+                                placeholder="Type something..."
+                            ></textarea>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <span wire:loading.remove wire:target="send">
+                                    <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                    Send
+                                </span>
+                                <span wire:loading wire:target="send">
+                                    <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </form>                
                 <div class="error-field">

@@ -186,7 +186,7 @@ class HRISProcessingService extends Controller
         
 
         if ($isFirstTime) {
-            $template['employee_id'] = $employee_no;
+            $template['employee_no'] = $employee_no;
             return EmployeePersonal::create($template);
         }
 
