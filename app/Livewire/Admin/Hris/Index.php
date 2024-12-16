@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
+use App\Models\EmployeeUpdatePersonal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -96,7 +97,6 @@ class Index extends Component
 
         $this->isUploading = true;
     
-        DB::beginTransaction();
     
         try {
             // Correct file path using the Storage facade
@@ -243,9 +243,7 @@ class Index extends Component
             
                 $this->resultMessage = $resultMessage;
             }            
-                  
-            DB::commit();
-    
+                      
             $this->dispatch('hideModal', [
                 'modal' => 'upload_employee'
             ]);
@@ -259,7 +257,6 @@ class Index extends Component
 
         } catch (\Exception $e) {
             
-            DB::rollBack();
     
             logger()->error('Error uploading file: ' . $e->getMessage());
     
@@ -372,6 +369,8 @@ class Index extends Component
             
                 $record->delete();
 
+                $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
+
                 $this->loadRecords();
 
                 $this->dispatch('alert', [
@@ -391,9 +390,28 @@ class Index extends Component
                     'message' => 'Error: ID does not exists' 
                 ]);
             }
+
+            $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
+
+            if($record) {
+
+                $record->education()->delete();
+                $record->parents()->delete();
+                $record->children()->delete();
+                $record->employment_history()->delete();
+                $record->civil_service()->delete();
+                $record->trainings()->delete();
+                $record->others()->delete();
+                $record->skills()->delete();
+                
+                $record->delete();
+
+                return true;
+
+            }
         }
     }
-    
+
     public function render()
     {
         return view('livewire.admin.hris.index');

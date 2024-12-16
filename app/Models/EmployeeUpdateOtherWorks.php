@@ -12,7 +12,6 @@ class EmployeeUpdateOtherWorks extends Model
     protected $table = 'employee_update_other_works';
 
     protected $fillable = [
-        'updating_id',
         'employee_no',
         'organization',
         'address',

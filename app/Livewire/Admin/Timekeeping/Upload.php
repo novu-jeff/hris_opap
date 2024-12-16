@@ -56,7 +56,7 @@ class Upload extends Component
                         $this->isParsing = false;
                     }
                 } else {
-                    $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
+                    $this->addError('file', 'The file must be in csv format.');
                 }
             }
 
@@ -83,7 +83,6 @@ class Upload extends Component
 
         $this->isUploading = true;
     
-        DB::beginTransaction();
     
         try {
             // Correct file path using the Storage facade
@@ -96,11 +95,34 @@ class Upload extends Component
             }
             
             if (($handle = fopen($absolutePath, 'r')) !== false) {
+                
                 $csvData = [];
                 
+                $requiredHeaders = [
+                    "biometricdtrid",
+                    "bsdno",
+                    "isindtr",
+                    "logdatetime",
+                    "nfcdeviceid",
+                    "type",
+                    "ismanual",
+                ];
+            
+                // Get the headers (first row)
+                $headers = fgetcsv($handle);
+            
+                // Ensure all required headers are present
+                $missingHeaders = array_diff($requiredHeaders, $headers);
+                if (!empty($missingHeaders)) {
+                    // Handle the missing headers (e.g., throw an exception or return an error)
+                    throw new \Exception('Uploading an invalid csv file for logs!');
+                }
+
                 // Get the headers (first row) and add them to the data array
                 $headers = fgetcsv($handle);
                 
+                dd($headers);
+
                 while (($row = fgetcsv($handle)) !== false) {
                     $csvData[] = array_combine($headers, $row);
                 }
@@ -410,8 +432,6 @@ class Upload extends Component
                               
             }
 
-            DB::commit();
-
             $formattedDate = Carbon::parse($date)->format('F Y');
 
             $this->dispatch('alert', [
@@ -425,7 +445,6 @@ class Upload extends Component
 
         } catch (\Exception $e) {
             
-            DB::rollBack();
     
             logger()->error('Error uploading file: ' . $e->getMessage());
     
