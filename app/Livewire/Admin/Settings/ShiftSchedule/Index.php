@@ -20,7 +20,7 @@ class Index extends Component
     }
 
     public function loadRecords() {
-        $this->records = ShiftSchedule::all();
+        $this->records = ShiftSchedule::latest()->get();
     }
     
     public function remove(bool $isNotify = true, int $id = null) {
@@ -40,10 +40,20 @@ class Index extends Component
 
         }  else {
 
-            $record = ShiftSchedule::find($this->selected_id);
-                
+            $record = ShiftSchedule::with('employees')->find($this->selected_id);
+            
             if($record) {
                 
+                if ($record->employees->isNotEmpty()) {
+                    $message = 'Unable to delete this shift because there are ' . $record->employees->count() . ' employee' . ($record->employees->count() > 1 ? 's' : '') . ' linked to this shift.';
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'warning',
+                        'title' => 'Please be informed!',
+                        'message' => $message
+                    ]);
+                }
+
                 $record->delete();
 
                 $this->dispatch('alert', [

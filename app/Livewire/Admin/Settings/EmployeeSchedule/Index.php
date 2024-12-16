@@ -62,10 +62,20 @@ class Index extends Component
 
         }  else {
 
-            $record = EmployeeSchedule::find($this->selected_id);
+            $record = EmployeeSchedule::with('employees')->find($this->selected_id);
                 
             if($record) {
-                
+
+                if ($record->employees->isNotEmpty()) {
+                    $message = 'Unable to delete this schedule because there are ' . $record->employees->count() . ' employee' . ($record->employees->count() > 1 ? 's' : '') . ' linked to this schedule.';
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'warning',
+                        'title' => 'Please be informed!',
+                        'message' => $message
+                    ]);
+                }
+
                 $record->delete();
 
                 $this->dispatch('alert', [

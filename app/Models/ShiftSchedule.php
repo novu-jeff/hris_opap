@@ -14,6 +14,8 @@ class ShiftSchedule extends Model
         'name',
         'description',
         'shift_duration',
+        'earliest_in',
+        'latest_in',
         'start_shift',
         'break_out',
         'break_in',
@@ -26,5 +28,9 @@ class ShiftSchedule extends Model
         'web_earliest_clockin',
         'web_latest_clockin',
     ];    
+
+    public function employees() {
+        return $this->hasMany(EmployeeInformation::class, 'shift_id', 'id');
+    }
 
 }

@@ -26,8 +26,9 @@
                         </div>
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="shift_duration" id="shift_duration">Shift Duration <span class="text-danger">*</span></label>
-                            <select wire:model="shift_duration" id="shift_duration" class="form-select">
+                            <select wire:model="shift_duration" wire:change="onSelect('shift_duration')" id="shift_duration" class="form-select">
                                 <option value=""> - CHOOSE - </option>
+                                <option value="flexible">Flexible (8 Hours)</option>
                                 <option value="standard">Standard Shift (8 Hours)</option>
                                 <option value="extended">Extended Shift (12 Hours)</option>
                                 <option value="full-day">Full-Day Shift (24 Hours)</option>
@@ -38,13 +39,20 @@
                                 @error('shift_duration') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="start_shift">Shift Start <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="start_shift" id="start_shift" class="form-control">
+                            <label class="mb-2" for="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}">
+                                {{ $isFlexible ? 'Earliest In' : 'Shift Start' }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" wire:model="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}" 
+                                   id="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}" class="form-control">
                             <div class="error-field">
-                                @error('start_shift') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error($isFlexible ? 'earliest_in' : 'start_shift') 
+                                    <span class="text-danger">{{ $message }}</span> 
+                                @enderror
                             </div>
                         </div>
+                        
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="break_out">Break Out <span class="text-danger">*</span></label>
                             <input type="time" wire:model="break_out" id="break_out" class="form-control">
@@ -52,6 +60,7 @@
                                 @error('break_out') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="break_in">Break In <span class="text-danger">*</span></label>
                             <input type="time" wire:model="break_in" id="break_in" class="form-control">
@@ -59,19 +68,25 @@
                                 @error('break_in') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="end_shift">End Shift <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="end_shift" id="end_shift" class="form-control">
+                            <label class="mb-2" for="{{ $isFlexible ? 'latest_in' : 'end_shift' }}">
+                                {{ $isFlexible ? 'Latest In' : 'End Shift' }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" wire:model="{{ $isFlexible ? 'latest_in' : 'end_shift' }}" 
+                                   id="{{ $isFlexible ? 'latest_in' : 'end_shift' }}" class="form-control">
                             <div class="error-field">
-                                @error('end_shift') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error($isFlexible ? 'latest_in' : 'end_shift') 
+                                    <span class="text-danger">{{ $message }}</span> 
+                                @enderror
                             </div>
-                        </div>
+                        </div>                        
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="work_setup" id="work_setup">Work Setup <span class="text-danger">*</span></label>
                             <select wire:model="work_setup" wire:change="changeWorkSetup" id="work_setup" class="form-select">
                                 <option value=""> - CHOOSE - </option>
-                                <option value="wfh">Work From Home</option>
                                 <option value="onsite">On Site</option>
+                                <option value="hybrid">Hybrid</option>
                             </select>
                             <div class="error-field">
                                 @error('work_setup') <span class="text-danger">{{ $message }}</span> @enderror
@@ -94,7 +109,7 @@
                             </div>
                         </div>
                     </div>
-                    @if($isWorkFromHome)
+                    @if($isHybrid)
                         <hr class="mx-3 mb-5">
                         <div class="header mb-4">
                             <h5 class="text-uppercase fw-bold">For Mobile Timekeeping</h5>
