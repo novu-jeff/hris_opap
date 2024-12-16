@@ -9,13 +9,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('employee_clock_in_out', function (Blueprint $table) {
-            $table->string('origin')->nullable()->after('id');
-            $table->string('biometricdtrid')->nullable()->after('origin');
-            $table->string('bsd_no')->nullable()->after('biometricdtrid');
-            $table->boolean('isindtr')->nullable()->after('bsd_no');
-            $table->string('nfcdeviceid')->nullable()->after('isindtr');
+            $table->string('origin')
+                ->nullable()
+                ->after('id');
+            $table->string('biometricdtrid')
+                ->nullable()
+                ->after('origin');
+            $table->string('bsd_no')
+                ->nullable()
+                ->after('biometricdtrid');
+            $table->boolean('isindtr')
+                ->nullable()
+                ->after('bsd_no');
+            $table->string('nfcdeviceid')
+                ->nullable()
+                ->after('isindtr');
             $table->integer('type')->default(0)->after('nfcdeviceid');
-            $table->boolean('ismanual')->nullable()->after('type');
+            $table->boolean('ismanual')
+                ->nullable()
+                ->after('type');
         });
     }
 

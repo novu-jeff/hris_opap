@@ -120,6 +120,8 @@ class Form extends Component
             'employee_id' => format_id($data->id, 6),
             'employee_no' => $data->employee_no,
             'biometrics_id' => $data->bsd_no,
+            'shift_schedule' => $data->shift_id,
+            'employee_schedule' => $data->schedule_id,
             'section_id' => $data->section_id,
             'position_id' => $data->position_id,
             'date_hired' => $data->date_hired,

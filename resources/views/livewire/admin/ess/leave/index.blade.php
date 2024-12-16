@@ -77,10 +77,10 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <table class="table w-100" wire:ignore>
+                    <table class="table w-100 data-tables" wire:ignore>
                         <thead>
                             <tr>
-                                <th>Employee ID</th>
+                                <th>Employee No</th>
                                 <th>Employee Name</th>
                                 <th>Date Applied</th>
                                 <th style="max-width: 200px;">Action</th>
@@ -89,7 +89,7 @@
                         <tbody>
                             @foreach($records as $record)
                                 <tr data-id="{{$record->id}}">
-                                    <td>#{{format_id($record->employee_id, 6)}}</td>
+                                    <td>{{$record->employee_no}}</td>
                                     <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
                                     <td>{{format_date($record->created_at, 'date_string')}}</td>
                                     <td>

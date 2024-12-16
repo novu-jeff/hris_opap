@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementControll
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
+use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
@@ -182,6 +184,9 @@ Route::prefix('admin')->group(function() {
                 Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
             });
+
+            Route::resource('employee/profile/approval', ESSApprovalProfile::class)
+                ->names('ess.approval-profile');
         });
 
         Route::prefix('reports')->group( function() {
@@ -199,21 +204,22 @@ Route::prefix('admin')->group(function() {
             Route::get('company-information', [CompanyInformationController::class, 'index'])
                 ->name('company.index');
 
-            Route::prefix('hris')->group( function() {
-        
-                Route::prefix('location-management')->group( function() {
-                    Route::resource('/branch', BranchController::class)
-                        ->names('branch');
-        
-                    Route::resource('/cost-center', CostCenterController::class)
-                        ->names('cost-center');
-        
-                    Route::resource('/department', DepartmentController::class)
-                        ->names('department');
+            Route::prefix('location')->group( function() {
+                Route::resource('/branch', BranchController::class)
+                    ->names('branch');
+    
+                Route::resource('/cost-center', CostCenterController::class)
+                    ->names('cost-center');
+    
+                Route::resource('/department', DepartmentController::class)
+                    ->names('department');
 
-                    Route::resource('/section', SectionController::class)
-                        ->names('section');
-                });
+                Route::resource('/section', SectionController::class)
+                    ->names('section');
+
+            });
+
+            Route::prefix('hris')->group( function() {
         
                 Route::resource('bank-information', BankInformationController::class)
                     ->names('bank-information');    

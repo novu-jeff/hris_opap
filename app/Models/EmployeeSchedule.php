@@ -33,4 +33,8 @@ class EmployeeSchedule extends Model
         'sunday',
         'sunday_remarks',
     ];
+
+    public function employees() {
+        return $this->hasMany(EmployeeInformation::class, 'schedule_id', 'id');
+    }
 }

@@ -21,6 +21,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
+use function PHPUnit\Framework\isEmpty;
+
 class HRISProcessingService extends Controller
 {
 
@@ -98,11 +100,14 @@ class HRISProcessingService extends Controller
         }
 
         $record = EmployeeInformation::where('employee_no', $employee_no);
-
+        
+        
         return $record->update([
             'section_id' => $data['section_id'],
             'position_id' => $data['position_id'],
             'bsd_no' => $data['biometrics_id'],
+            'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
+            'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
             'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
             'job_category_id' => $data['type'],

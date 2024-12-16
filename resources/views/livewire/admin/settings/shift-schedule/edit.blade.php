@@ -70,8 +70,8 @@
                             <label class="mb-2" for="work_setup" id="work_setup">Work Setup <span class="text-danger">*</span></label>
                             <select wire:model="work_setup" wire:change="changeWorkSetup" id="work_setup" class="form-select">
                                 <option value=""> - CHOOSE - </option>
-                                <option value="wfh">Work From Home</option>
                                 <option value="onsite">On Site</option>
+                                <option value="hybrid">Hybrid</option>
                             </select>
                             <div class="error-field">
                                 @error('work_setup') <span class="text-danger">{{ $message }}</span> @enderror
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                     </div>
-                    @if($isWorkFromHome)
+                    @if($isHybrid)
                         <hr class="mx-3 mb-5">
                         <div class="header mb-4">
                             <h5 class="text-uppercase fw-bold">For Mobile Timekeeping</h5>

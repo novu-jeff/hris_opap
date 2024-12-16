@@ -8,6 +8,7 @@
         <li><a class="dropdown-item" href="{{route('ess.obs.index')}}">Business Slip Application</a></li>
         <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority to Render Overtime Application</a></li>
         <li><a class="dropdown-item" href="{{route('ess.announcements.index')}}">Announcements</a></li>
+        <li><a class="dropdown-item" href="{{route('ess.approval-profile.index')}}">Employee Profile Approval</a></li>
         <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
     </ul>
 </li>
