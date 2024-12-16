@@ -83,7 +83,8 @@ class Upload extends Component
 
         $this->isUploading = true;
     
-    
+        DB::transaction();
+
         try {
             // Correct file path using the Storage facade
             $relativePath = str_replace(asset('storage/'), '', $this->upload_preview);
@@ -121,8 +122,6 @@ class Upload extends Component
                 // Get the headers (first row) and add them to the data array
                 $headers = fgetcsv($handle);
                 
-                dd($headers);
-
                 while (($row = fgetcsv($handle)) !== false) {
                     $csvData[] = array_combine($headers, $row);
                 }
@@ -427,12 +426,15 @@ class Upload extends Component
                         if ($insertion) {
                             $insertedCount++;
                         }
+
                     }
                 }
                               
             }
 
             $formattedDate = Carbon::parse($date)->format('F Y');
+
+            DB::commit();
 
             $this->dispatch('alert', [
                 'status' => 'success',
@@ -445,6 +447,7 @@ class Upload extends Component
 
         } catch (\Exception $e) {
             
+            DB::rollback();
     
             logger()->error('Error uploading file: ' . $e->getMessage());
     

@@ -97,6 +97,7 @@ class Index extends Component
 
         $this->isUploading = true;
     
+        DB::beginTransaction();
     
         try {
             // Correct file path using the Storage facade
@@ -243,7 +244,9 @@ class Index extends Component
             
                 $this->resultMessage = $resultMessage;
             }            
-                      
+                  
+            DB::commit();
+    
             $this->dispatch('hideModal', [
                 'modal' => 'upload_employee'
             ]);
@@ -257,6 +260,7 @@ class Index extends Component
 
         } catch (\Exception $e) {
             
+            DB::rollBack();
     
             logger()->error('Error uploading file: ' . $e->getMessage());
     
