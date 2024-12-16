@@ -1,6 +1,11 @@
 <div>
     <div class="clockinout">
         <div class="row">
+            <div class="col-12 col-md-4 mb-5">
+                <label for="user" class="mb-3">Manipulate time for testing</label>
+                <input type="time" class="form-control" wire:model="manipulate_timestamp">
+                <button wire:click="delete" class="btn btn-danger mt-3">Delete Record</button>
+            </div>
             <div class="col-12 col-md-12 mb-3 mb-3">
                 <div class="row">
                     <div class="col-12 col-md-4 mb-3">

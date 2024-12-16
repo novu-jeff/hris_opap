@@ -21,15 +21,11 @@
             new Swiper('.swiper-container', {
                 slidesPerView: 4, // Number of visible slides
                 spaceBetween: 20, // Space between slides in pixels
-                navigation: {
-                    nextEl: '.swiper-button-next', // Selector for the "next" button
-                    prevEl: '.swiper-button-prev', // Selector for the "previous" button
-                },
                 pagination: {
                     el: '.swiper-pagination', // Selector for pagination bullets
                     clickable: true, // Allow users to click on bullets to navigate
                 },
-                freeMode: true, // Enable free scrolling without snapping
+                freeMode: false, // Enable free scrolling without snapping
             });
         });
     </script>
