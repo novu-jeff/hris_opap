@@ -1,5 +1,8 @@
 @import 'variables';
 
+body {
+  overflow-x: hidden;
+}
 
 table {
     width: 100%; 
@@ -23,7 +26,31 @@ table {
     }
   }
 
+  .latest-announcements {
+    .swiper-container {
+      width: 100%;
+      padding: 20px 0;
+      cursor: grab;
+    }
+    
+    .swiper-slide {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .card {
+      min-height: 100px !important;
+      width: 300px;
+      flex-shrink: 0;
+      cursor: pointer;
+
+    }
+    
+  }
+
   .dashboard {
+
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 2fr)); 
@@ -112,8 +139,6 @@ table {
   }
 
 }
-
-
 
 .text-clamp {
   display: -webkit-box;
