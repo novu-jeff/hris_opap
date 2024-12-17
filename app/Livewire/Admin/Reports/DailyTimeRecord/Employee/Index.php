@@ -17,6 +17,7 @@ class Index extends Component
     public $dtr = null;
     public $dtrDate;
     public $employee_id;
+    public $isLoading;
 
     protected $dailyTimeRecordService;
 
@@ -43,37 +44,6 @@ class Index extends Component
     {
         $this->dtrDate = $newDate;
         $this->loadRecords();
-    }
-
-    public function changeMonth($increment, $employee_id)
-    {
-        $this->initializeService();
-
-        Log::info('Before Change Month: ' . $this->dtrDate);
-    
-        $currentDate = Carbon::createFromFormat('F, Y', $this->dtrDate);
-        $currentDate->addMonths($increment);
-    
-        $this->dtrDate = $currentDate->format('F, Y');
-    
-        $this->employee_id = $employee_id;
-        
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
-    }
-    
-    public function showDtr($id) {
-        
-        $this->initializeService();
-
-        $this->employee_id = $id;
-        $this->dtrDate = $this->date ?? now()->format('F, Y'); // change date to selected date or current
-
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
-
-        // Dispatch the modal
-        $this->dispatch('showModal', [
-            'modal' => 'dtrModal'
-        ]);
     }
 
     public function render()

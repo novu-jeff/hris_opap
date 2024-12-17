@@ -95,32 +95,32 @@
 </style>
 @endsection
 <div class="container">
-    <div class="py-3 d-flex justify-content-between gap-3 align-items-center">
-        <div class="d-flex align-items-center">
-            <button 
-                class="btn btn-sm btn-outline-primary" 
-                wire:click="changeMonth(-1, '{{ Auth::user()->employee_no }}')"
-                wire:loading.attr="disabled" 
-                wire:loading.class="btn-secondary">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            
-            <div class="mx-3" id="monthYear">
-                {{ $dtrDate }}
-            </div>
-            
-            <button 
-                class="btn btn-sm btn-outline-primary" 
-                wire:click="changeMonth(1, '{{ Auth::user()->employee_no }}')"
-                wire:loading.attr="disabled" 
-                wire:loading.class="btn-secondary"
-                @disabled($dtrDate == now()->subMonth()->format('F, Y'))>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-        <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
-    </div>
     @if($dtr)
+        <div class="py-3 d-flex justify-content-between gap-3 align-items-center">
+            <div class="d-flex align-items-center">
+                <button 
+                    class="btn btn-sm btn-outline-primary" 
+                    wire:click="changeMonth(-1, '{{ Auth::user()->employee_no }}')"
+                    wire:loading.attr="disabled" 
+                    wire:loading.class="btn-secondary">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                
+                <div class="mx-3" id="monthYear">
+                    {{ $dtrDate }}
+                </div>
+                
+                <button 
+                    class="btn btn-sm btn-outline-primary" 
+                    wire:click="changeMonth(1, '{{ Auth::user()->employee_no }}')"
+                    wire:loading.attr="disabled" 
+                    wire:loading.class="btn-secondary"
+                    @disabled($dtrDate == now()->subMonth()->format('F, Y'))>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
+        </div>
         <div class="dtr">
             <div wire:loading class="ml-2 loading-screen">
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -252,6 +252,15 @@
             </div>
         </div>
     @else
-        <p>No DTR available for this employee for the selected date.</p>
+        <div class="alert alert-info" role="alert">
+            Please contact HR regarding this issue.
+            @if (!empty($errors))
+                <ul class="m-0">
+                    @foreach ($errors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
     @endif
 </div>
