@@ -597,7 +597,6 @@ class Clock extends Component
             $clockOutColumn = 'clock_out_pm'; // Switch to PM clock-out column
             $hoursConsumedColumn = 'mins_consumed_pm'; // Use PM hours consumed column
             $clockInTime = Carbon::createFromFormat('h:i A', $records->clock_in_am); // Use clock-in AM time for calculation
-            $isMinusOneHour = true;
         }
     
         // Special case: if it's 12 PM and clock-in for AM is missing and clock-in for PM exists, update the PM clock-out
@@ -614,33 +613,52 @@ class Clock extends Component
             $clockOutColumn = 'clock_out_am'; // Use AM clock-out column
             $hoursConsumedColumn = 'mins_consumed_am'; // Use AM hours consumed column
         }
+
+
+        if(is_null($records->clock_in_am)) {
+            $clockInTime = Carbon::parse($records->clock_in_pm);
+            $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+        } else if(is_null($records->clock_out_am)) {
+            $clockInTime = Carbon::parse($records->clock_in_am);
+            $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+        } else if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm)) {
+            $clockInTime = Carbon::parse($records->clock_in_am);
+            $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+
+            $minutesRendered -= $records->mins_consumed_am;
+
+        }
+
+        if ($timestamp->between($breakTimeFrom, $breakTimeTo)) {
+            $minutesRendered = $timestamp->diffInMinutes($breakTimeFrom);
+        }
     
-        if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
-            $clockInTime = Carbon::parse($records->clock_out_am);
-            $minutesRendered = $clockInTime->diffInMinutes($timestamp);
-            $isMinusOneHour = true;
-        } else {
-            // Calculate the minutes rendered by comparing clock-in time and the given timestamp
-            $minutesRendered = $clockInTime->diffInMinutes($timestamp);
-        }
+        // if(!is_null($records->clock_in_am) && !is_null($records->clock_out_am) && is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
+        //     $clockInTime = Carbon::parse($records->clock_out_am);
+        //     $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+        //     $isMinusOneHour = true;
+        // } else if(!is_null($records->clock_in_am) && is_null($records->clock_out_am) && is_null($records->clock_in_pm) && !is_null($records->clock_out_pm)) {            $clockInTime = Carbon::parse($records->clock_in_am);
+        //     $clockInTime = Carbon::parse($records->clock_in_am);
+        //     $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+        // }
 
 
-        // If $isMinusOneHour is true, subtract 60 minutes
-        if ($isMinusOneHour) {
-            $minutesRendered -= 60; // Subtract 60 minutes if condition is true
-        }
-
-
-        // Check if the clock_in_pm is between breakTimeFrom and breakTimeTo
         if ($clockInTime->between($breakTimeFrom, $breakTimeTo) && $timestamp->gt($breakTimeTo)) {
-            // If it is, calculate the minutes from $breakTimeTo to the timestamp
-            $minutesRendered = $breakTimeTo->diffInMinutes($timestamp);
+            $minutesRendered = $timestamp->diffInMinutes($breakTimeFrom);
         }
 
         // Ensure that the minutes rendered are not negative (in case the breaktimeTo is after the timestamp)
         $minutesRendered = max(0, $minutesRendered);
 
+
         if($this->isForcedClockout) {
+            if ((is_null($records->clock_in_pm) || is_null($records->clock_out_am)) && $timestamp->between($breakTimeFrom, $breakTimeTo)) {
+                $diff = $timestamp->diffInMinutes($breakTimeFrom);
+                $minutesRendered -= $diff;
+                $minutesRendered = max(0, $minutesRendered);
+            } 
+            
+                    
             $records->update([
                 'employee_no' => $this->user_id,
                 'captured_image_clockout' => $this->capturedImage,
