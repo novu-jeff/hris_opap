@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
+use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
@@ -267,6 +268,10 @@ Route::prefix('admin')->group(function() {
                     ->name('users.index');
             });
             
+            Route::prefix('payroll')->group( function() {
+                Route::resource('/holidays', HolidayController::class)->only('create', 'index', 'edit')
+                    ->names('holiday');
+            });
         });
     });
 
