@@ -10,7 +10,7 @@
             <p>Track and monitor your employment records.</p>
         </div>
     </div>
-    @livewire('employee.dashboard');
+    @livewire('employee.dashboard')
 </div>
 @endsection
 

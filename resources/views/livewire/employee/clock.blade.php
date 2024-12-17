@@ -32,7 +32,7 @@
                                 </div>
                             </div>      
                         </div>  
-                        @if (in_array($status, ['Break In', 'Break Out']))
+                        @if (in_array($status, ['Break Out']))
                             <div class="text-center mt-2">
                                 <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
                                     Clock Out
@@ -115,6 +115,7 @@
                                             <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
+                                            
                                             <td>{{ $item->mins_consumed_am ? \Carbon\CarbonInterval::minutes($item->mins_consumed_am)->cascade()->format('%h hours %i minutes') : '' }}</td>
                                             <td>{{ $item->mins_consumed_pm ? \Carbon\CarbonInterval::minutes($item->mins_consumed_pm)->cascade()->format('%h hours %i minutes') : '' }}</td>
                                             <td>{{ $item->total_mins_consumed ? \Carbon\CarbonInterval::minutes($item->total_mins_consumed)->cascade()->format('%h hours %i minutes') : '' }}</td>

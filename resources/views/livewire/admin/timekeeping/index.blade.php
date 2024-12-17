@@ -15,8 +15,8 @@
             <select id="workSetup" class="form-select" style="width: 300px">
                 <option value=""> - CHOOSE WORK SETUP -</option>
                 <option value="all" {{empty($setup) ?? '' }}>All</option>
-                <option value="wfh" {{$setup == 'wfh' ? 'selected' : '' }}>Work From Home</option>
                 <option value="onsite" {{$setup == 'onsite' ? 'selected' : '' }}>On-Site</option>
+                <option value="wfh" {{$setup == 'wfh' ? 'selected' : '' }}>Work From Home</option>
             </select>
         </div>
         <div class="d-flex align-items-center gap-3">
@@ -102,10 +102,10 @@
                         }
 
                         // Get the log's clock-in, break-out, break-in, and clock-out times
-                        const clockIn = log.clock_in_am || log.clock_in_pm;
-                        const breakOut = log.break_out_am || log.break_out_pm;
-                        const breakIn = log.break_in_am || log.break_in_pm;
-                        const clockOut = log.clock_out_am || log.clock_out_pm;
+                        const clockIn = log.clock_in_am;
+                        const breakOut = log.clock_out_am;
+                        const breakIn = log.clock_in_pm;
+                        const clockOut = log.clock_out_pm;
 
                         // Format the captured images if available
                         const clockInImage = log.captured_image_clockin ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockin}` : 'https://placehold.co/300x150.png?text=No+Image';
@@ -122,9 +122,9 @@
                                     <div class="col-12 col-md-5 mb-3">
                                         <strong>Employee Information:</strong>
                                         <ul class="my-3">
-                                            <li>Employee No: <strong><u>${log.employee_no ?? 'N/A'}</u></strong></li>
+                                            <li>Employee No: <strong><u>${log.information.employee_no ?? 'N/A'}</u></strong></li>
                                             <li>Employee Name: <strong><u>${log.information?.personal?.firstname ?? 'N/A'} ${log.information?.personal?.lastname ?? 'N/A'}</u></strong></li>
-                                            <li>Biometrics ID: <strong><u>${log.information?.biometrics_id ?? 'N/A'}</u></strong></li>
+                                            <li>Biometrics ID: <strong><u>${log.information?.bsd_no ?? 'N/A'}</u></strong></li>
                                         </ul>
                                     </div>
                                     <div class="col-12 col-md-7 mb-3">
@@ -163,6 +163,36 @@
                                                     <td class="border px-4 py-2"><strong><u>${formatTime(clockOut) ?? 'N/A'}</u></strong></td>
                                                     <td class="border px-4 py-2"><strong><u>${log.isLate ? 'Yes' : 'No'}</u></strong></td>
                                                     <td class="border px-4 py-2"><strong><u>${log.isUnderTime ? 'Yes' : 'No'}</u></strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                            <thead class="bg-gray-200">
+                                                <tr>
+                                                    <th class="border px-4 py-2">Consumed Hours (AM)</th>
+                                                    <th class="border px-4 py-2">Consumed Hours (PM)</th>
+                                                    <th class="border px-4 py-2">Regular Hours Consumed</th>
+                                                    <th class="border px-4 py-2">Overtime Hours</th>
+                                                    <th class="border px-4 py-2">Total Hours</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="border px-4 py-2">
+                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_am)}</u></strong>
+                                                    </td>
+                                                    <td class="border px-4 py-2">
+                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_pm)}</u></strong>
+                                                    </td>
+                                                    <td class="border px-4 py-2">
+                                                        <strong><u>${convertToHoursAndMinutes(log.total_mins_consumed)}</u></strong>
+                                                    </td>
+                                                    <td class="border px-4 py-2">
+                                                        <strong><u>${convertToHoursAndMinutes(log.mins_ot)}</u></strong>
+                                                    </td>
+                                                    <td class="border px-4 py-2">
+                                                        <strong><u>${convertToHoursAndMinutes(log.overall_mins)}</u></strong>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>

@@ -6,6 +6,7 @@ import {
     copy_link, 
     ckeditor, 
     formatTime,
+    convertToHoursAndMinutes
 }
 from './helpers';
 
@@ -16,6 +17,7 @@ window.ckeditor = ckeditor;
 window.copy_link = copy_link;
 window.reinitializeDataTable = reinitializeDataTable;
 window.formatTime = formatTime;
+window.convertToHoursAndMinutes = convertToHoursAndMinutes;
 
 reinitializeDataTable();
 

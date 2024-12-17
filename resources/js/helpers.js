@@ -121,3 +121,9 @@ export function formatTime(date) {
     // In case the date is neither a string nor a Date object, return an empty string
     return '';
 }
+
+export function convertToHoursAndMinutes(mins) {
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+    return `${hours} hr ${minutes} min`;
+}

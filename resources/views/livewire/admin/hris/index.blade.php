@@ -93,14 +93,43 @@
                             <div wire:loading wire:target="file" class="mt-2 text-center text-muted">
                                 <p>Please Wait... <i class="fa-solid fa-spinner fa-spin"></i></p>
                             </div>
-                            @error('file') 
-                                <span class="text-danger">{{ $message }}</span> 
-                            @enderror
                             <div class="mt-3">
                                 @if($upload_preview)
                                     File Ready to import: <a href="{{$upload_preview}}">{{$upload_preview}}</a>
                                 @endif
                             </div>
+                            <div class="form-check my-3">
+                                <input class="form-check-input" type="checkbox" wire:change="select_change('linkSchedule')" wire:model="isLinkSchedule">
+                                <label class="form-check-label">
+                                    Link Shift and Schedule
+                                </label>
+                            </div>
+                            @if($isLinkSchedule)
+                                <hr class="my-4">
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+                                        <label class="mb-2">Link Shift Schedule</label>
+                                        <select wire:model="shift_id" id="shift_id" class="form-select">
+                                            <option value=""> - CHOOSE - </option>
+                                            @foreach($shifts as $shift)
+                                                <option value="{{$shift->id}}">{{$shift->name . ' (' . $shift->shift_duration . ')'}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="mb-2">Link Employee Schedule</label>
+                                        <select wire:model="schedule_id" id="schedule_id" class="form-select">
+                                            <option value=""> - CHOOSE - </option>
+                                            @foreach($schedules as $schedule)
+                                                <option value="{{$schedule->id}}">{{$schedule->name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            @endif
+                            @error('file') 
+                                <span class="text-danger">{{ $message }}</span> 
+                            @enderror
                             <div class="mt-4 d-flex justify-content-end">
                                 @if($upload_preview)
                                     <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 

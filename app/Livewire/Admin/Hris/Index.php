@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
+use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -29,6 +31,11 @@ class Index extends Component
     public $resultMessage;
     public $countries;
     public $selected_id;
+    public $isLinkSchedule = false;
+    public $shifts;
+    public $schedules;
+    public $shift_id;
+    public $schedule_id;
 
     public bool $lazy = true;
 
@@ -45,11 +52,20 @@ class Index extends Component
 
     public function loadRecords() {
         $this->employees = EmployeeInformation::with('personal')->get();
+        $this->shifts = ShiftSchedule::all();
+        $this->schedules = EmployeeSchedule::all();
     }
 
     public function close_upload_employee() {
         $this->dispatch('reinitializeDataTable');
         $this->reset('upload_preview', 'file');
+    }
+
+    public function select_change($property) {
+        if($property === 'linkSchedule') {
+            $this->isLinkSchedule = !$this->isLinkSchedule ? false : true;
+            $this->dispatch('reinitializeDataTable');
+        }
     }
 
     public function updatedFile() {
@@ -118,6 +134,11 @@ class Index extends Component
     
             $this->validateUploaded($spreadsheet, $sheetNames);
 
+            $schedules = [
+                'shift' => $this->shift_id,
+                'schedule' => $this->schedule_id
+            ];
+
             $results = [];
 
             foreach ($sheetsData as $index => $sheet) {
@@ -140,7 +161,7 @@ class Index extends Component
             
                 // Process each sheet based on its name
                 $result = match ($sheetName) {
-                    'Employee Information' => $service->uploadEmployeeInformation($sheet),
+                    'Employee Information' => $service->uploadEmployeeInformation($sheet, $schedules),
                     'Family Background' => $service->uploadFamilyBackground($sheet),
                     'Children' => $service->uploadChildren($sheet),
                     'Education' => $service->uploadEducation($sheet),
@@ -254,6 +275,8 @@ class Index extends Component
             $this->dispatch('showModal', [
                 'modal' => 'alert_employee'
             ]);
+
+            $this->reset(['shift_id', 'schedule_id']);
 
             $this->loadRecords();
             $this->dispatch('reinitializeDataTable');
