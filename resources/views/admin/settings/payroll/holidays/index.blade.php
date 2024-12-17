@@ -1,19 +1,19 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Add Batch Information'
+    'title' => 'HRIS | All Holidays'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Add Batch</h1>
+            <h1>All Holidays</h1>
         </div>
         <div class="actions">
-            <a href="{{route('batch-configuration.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <a href="{{route('holiday.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Create New</a>
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.settings.hris.batch.create')
+        @livewire('admin.settings.payroll.holiday.index')
     </div>
 </div>
 @endsection
