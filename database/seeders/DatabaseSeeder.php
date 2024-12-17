@@ -29,7 +29,8 @@ class DatabaseSeeder extends Seeder
             JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
-            // ShiftScheduleSeeder::class,
+            ShiftScheduleSeeder::class,
+            EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
         ]);
 
