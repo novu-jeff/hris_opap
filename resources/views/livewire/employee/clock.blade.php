@@ -95,6 +95,14 @@
                                         <th>Break Out</th>
                                         <th>Break In</th>
                                         <th>Clock Out</th>
+
+                                        <th>Consumed AM</th>
+                                        <th>Consumed PM</th>
+                                        <th>Total Consumed</th>
+                                        <th>OT Mins</th>
+                                        <th>Over All Mins</th>
+                                        <th>Accomplishment</th>
+
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
@@ -107,6 +115,12 @@
                                             <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
+                                            <td>{{ $item->mins_consumed_am ? \Carbon\CarbonInterval::minutes($item->mins_consumed_am)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->mins_consumed_pm ? \Carbon\CarbonInterval::minutes($item->mins_consumed_pm)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->total_mins_consumed ? \Carbon\CarbonInterval::minutes($item->total_mins_consumed)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->mins_ot ? \Carbon\CarbonInterval::minutes($item->mins_ot)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->overall_mins ? \Carbon\CarbonInterval::minutes($item->overall_mins)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->accomplishment }} </td>
                                             <td></td>
                                         </tr>
                                     @empty

@@ -139,32 +139,37 @@ Livewire.on('showConfirmation', function(data) {
     }).then(function(result) {
         const textarea = document.getElementById('accomplishment-report');
         if (result.isConfirmed) {
-            const textareaValue = textarea ? textarea.value : '';
+            if (data[0].plugin && data[0].plugin[0] == 'textarea') {
 
-            // If textarea is present, make sure it's not empty
-            if (isTextareaPresent && !textareaValue.trim()) {
-                // Create the error message HTML
-                errorHtml = `<p style="font-size:11px" class="text-danger mt-2 text-uppercase fw-bold mt-2">The accomplishment report is required.</p>`;
-                
-                // Reopen the Swal dialog and append the error message to the textarea
-                Swal.fire({
-                    icon: "info",
-                    title: data[0].title,
-                    html: data[0].message + textareaHtml + errorHtml, // Append error message below textarea
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showCancelButton: true,        
-                    cancelButtonText: 'Cancel',   
-                    confirmButtonText: 'Proceed',   
-                    confirmButtonColor: '#143953', 
-                    cancelButtonColor: '#d33',      
-                    reverseButtons: true,  
-                });
-                return; // Prevent dispatching if validation fails
+                const textareaValue = textarea ? textarea.value : '';
+
+                // If textarea is present, make sure it's not empty
+                if (isTextareaPresent && !textareaValue.trim()) {
+                    // Create the error message HTML
+                    errorHtml = `<p style="font-size:11px" class="text-danger mt-2 text-uppercase fw-bold mt-2">The accomplishment report is required.</p>`;
+                    
+                    // Reopen the Swal dialog and append the error message to the textarea
+                    Swal.fire({
+                        icon: "info",
+                        title: data[0].title,
+                        html: data[0].message + textareaHtml + errorHtml, // Append error message below textarea
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showCancelButton: true,        
+                        cancelButtonText: 'Cancel',   
+                        confirmButtonText: 'Proceed',   
+                        confirmButtonColor: '#143953', 
+                        cancelButtonColor: '#d33',      
+                        reverseButtons: true,  
+                    });
+                    return; // Prevent dispatching if validation fails
+                }
+
+                formData['report'] = textareaValue;
+                Livewire.dispatch(data[0].action, [false, formData]);
+            } else {
+                Livewire.dispatch(data[0].action, [false]);
             }
-
-            formData['report'] = textareaValue;
-            Livewire.dispatch(data[0].action, [false, formData]);
         }
     });  
 });
