@@ -102,7 +102,6 @@ Livewire.on('showConfirmation', function(data) {
     let formData = {};
     let isTextareaPresent = false; // Flag to track if textarea is present
     let errorHtml = ''; // Variable to store error message HTML
-
     // Check if 'textarea' exists in the 'plugin' and is an array
     if (data[0].plugin && data[0].plugin[0] == 'textarea') {
         // Add textarea HTML with default title
