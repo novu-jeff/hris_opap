@@ -151,48 +151,14 @@
                                                     <th class="border px-4 py-2">Break Out</th>
                                                     <th class="border px-4 py-2">Break In</th>
                                                     <th class="border px-4 py-2">Clock Out</th>
-                                                    <th class="border px-4 py-2">Is Late</th>
-                                                    <th class="border px-4 py-2">Is Under Time</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isLate ? 'Yes' : 'No'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isUnderTime ? 'Yes' : 'No'}</u></strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                            <thead class="bg-gray-200">
-                                                <tr>
-                                                    <th class="border px-4 py-2">Consumed Hours (AM)</th>
-                                                    <th class="border px-4 py-2">Consumed Hours (PM)</th>
-                                                    <th class="border px-4 py-2">Regular Hours Consumed</th>
-                                                    <th class="border px-4 py-2">Overtime Hours</th>
-                                                    <th class="border px-4 py-2">Total Hours</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_am)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_pm)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.total_mins_consumed)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_ot)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.overall_mins)}</u></strong>
-                                                    </td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockIn ?? 'N/A'}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakOut ?? 'N/A'}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakIn ?? 'N/A'}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockOut ?? 'N/A'}</u></strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>
