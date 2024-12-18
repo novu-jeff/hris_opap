@@ -202,7 +202,7 @@
                                 </td>
 
                                 <!-- Remark column -->
-                                <td>{{ '  ' }}</td> 
+                                <td>{{ isset($day['remarks']) ? $day['remarks'] : ' ' }}</td> 
                             </tr>
                         @endforeach
                     </tbody>
@@ -211,43 +211,39 @@
                     <table class="dtr-table">
                         <tr>
                             <td>Days Worked</td>
-                            <td></td>
+                            <td>{{ isset($dtr['summary']['days_works']) ? $dtr['summary']['days_works'] : ' ' }}</td>
                             <td>Tardinesss</td>
-                            <td>0</td>
+                            <td>{{ isset($dtr['summary']['lates']) ? $dtr['summary']['lates'] : ' ' }}</td>
                             <td>Leave</td>
-                            <td></td>
+                            <td>{{ isset($dtr['summary']['leaves']) ? $dtr['summary']['leaves'] : ' ' }}</td>
                         </tr>
                         <tr>
                             <td>Absences</td>
-                            <td>0</td>
+                            <td>{{ isset($dtr['summary']['absences']) ? $dtr['summary']['absences'] : ' ' }}</td>
                             <td>TA Freq.</td>
                             <td>0</td>
                             <td>Rest Day</td>
-                            <td></td>
+                            <td>{{ isset($dtr['summary']['rest_days']) ? $dtr['summary']['rest_days'] : ' ' }}</td>
                         </tr>
                         <tr>
                             <td>Overtime</td>
-                            <td>0</td>
+                            <td>{{ isset($dtr['summary']['overtime']) ? $dtr['summary']['overtime'] : ' ' }}</td>
                             <td>Undertime</td>
-                            <td>0</td>
+                            <td>{{ isset($dtr['summary']['undertime']) ? $dtr['summary']['undertime'] : ' ' }}</td>
                             <td>Special Hol.</td>
-                            <td></td>
+                            <td>{{ isset($dtr['summary']['special_holidays']) ? $dtr['summary']['special_holidays'] : ' ' }}</td>
                         </tr>
                         <tr>
-                            <td>Total Days Worked</td>
-                            <td>0</td>
+                            <td>Total Days of Work</td>
+                            <td>{{ isset($dtr['summary']['total_days_work']) ? $dtr['summary']['total_days_work'] : ' ' }}</td>
                             <td>UT Freq.</td>
                             <td>0</td>
                             <td>Legal Hol.</td>
-                            <td></td>
+                            <td>{{ isset($dtr['summary']['regular_holidays']) ? $dtr['summary']['regular_holidays'] : ' ' }}</td>
                         </tr>
                         <tr>
                             <td>Less TA/UT</td>
                             <td>0</td>
-                            <td>No lunch</td>
-                            <td>0</td>
-                            <td></td>
-                            <td></td>
                         </tr>
                     </table>
                     <div class="signature" style="margin-top: 30px; text-align: center;">
