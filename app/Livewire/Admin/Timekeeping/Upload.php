@@ -372,60 +372,73 @@ class Upload extends Component
                 foreach ($formattedData as $index => $data) {
                     foreach ($data as $item) {
                         // Skip if clock_in_am or clock_out_pm is null
-                        if (empty($item['clock_in_am']) || empty($item['clock_out_pm'])) {
+                        if (empty($item['clock_out_pm'])) {
                             continue; // Skip to the next iteration
                         }
                 
                         // Parse the logdatetime
                         $timestamp = Carbon::createFromFormat('d/m/Y H:i:s', $item['logdatetime'])->timestamp;
                         $date = Carbon::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
-                        
-                        // Parse the clock-in time and calculate the expected clock-out time (9 hours later)
-                        $clockInTime = Carbon::createFromFormat('h:i A', $item['clock_in_am']);
+                
+                        // Parse clock-in and clock-out times
+                        $clockInTime = empty($item['clock_in_am']) 
+                            ? Carbon::createFromFormat('H:i', '07:00') // Default clock-in time if empty
+                            : Carbon::createFromFormat('h:i A', $item['clock_in_am']);
+                
+                        $actualClockOutTime = Carbon::createFromFormat('h:i A', $item['clock_out_pm']);
+                
+                        // Determine expected clock-out time (8 hours from clock-in or 5:00 PM default)
                         $expectedClockOut = $clockInTime->copy()->addHours(8);
                 
-                        // Parse actual clock-out time
-                        $actualClockOutTime = Carbon::createFromFormat('h:i A', $item['clock_out_pm']);
-                        
+                        if (empty($item['clock_in_am'])) {
+                            $expectedClockOut = Carbon::createFromFormat('H:i', '16:00'); // Default expected clock-out at 4:00 PM
+                        }
+                
                         $minsOT = 0;
                         $regMins = 0;
+
                 
-                        $regMins = $actualClockOutTime->diffInMinutes($clockInTime);
-
-                        // Calculate overtime if the actual clock-out exceeds the expected clock-out
-                        if ($actualClockOutTime->gt($expectedClockOut)) {
-                            $minsOT = $actualClockOutTime->diffInMinutes($expectedClockOut);                            
-                            $regMins = $regMins - $minsOT;
-                        } else {
-                            // No overtime, calculate regular minutes only
-                            $regMins = $clockInTime->diffInMinutes($actualClockOutTime);
-                        }
-
-                        $clock_in_am = Carbon::parse($item['clock_in_am']);
-                        $clock_out_am = Carbon::parse($item['clock_out_am']);
-                        $clock_in_pm = Carbon::parse($item['clock_in_pm']);
+                        $clock_in_am = Carbon::parse($item['clock_in_am'] ?? null);
+                        $clock_out_am = Carbon::parse($item['clock_out_am'] ?? null);
+                        $clock_in_pm = Carbon::parse($item['clock_in_pm'] ?? null);
                         $clock_out_pm = Carbon::parse($item['clock_out_pm']);
-                        
+                
                         // Define breaktime range
                         $breaktime_from = Carbon::parse($breaktime_from);
                         $breaktime_to = Carbon::parse($breaktime_to);
-                        
+                
+                        // Handle null clock_out_am or clock_in_pm with respect to breaktime range
+                        if (empty($item['clock_out_am']) || empty($item['clock_in_pm'])) {
+                            if ($clock_out_pm->gt($breaktime_from)) {
+                                $clock_out_am = $breaktime_from;
+                                $clock_in_pm = $breaktime_to;
+                            }
+                        }
+                
                         // Adjust clock_out_am if it overlaps with the breaktime range
                         if ($clock_out_am->between($breaktime_from, $breaktime_to)) {
                             $clock_out_am = $breaktime_from;
                         }
-                        
+                
                         // Adjust clock_in_pm if it overlaps with the breaktime range
                         if ($clock_in_pm->between($breaktime_from, $breaktime_to)) {
                             $clock_in_pm = $breaktime_to;
                         }
-                        
+                
+                          // Calculate regular minutes and overtime
+                        if ($actualClockOutTime->gt($expectedClockOut)) {
+                            $minsOT = $actualClockOutTime->diffInMinutes($expectedClockOut);
+                            $regMins = $expectedClockOut->diffInMinutes($clockInTime);
+                        } else {
+                            $regMins = $actualClockOutTime->diffInMinutes($clockInTime);
+                        }
+
                         // Calculate minutes consumed in the morning
                         $mins_consumed_am = $clock_in_am->diffInMinutes($clock_out_am);
-                        
+                
                         // Calculate minutes consumed in the afternoon
                         $mins_consumed_pm = $clock_in_pm->diffInMinutes($clock_out_pm);
-
+                
                         $overallMins = $regMins + $minsOT;
                 
                         // Insert or update record in the database
@@ -437,9 +450,9 @@ class Upload extends Component
                                 'origin' => 'biometrics',
                                 'biometricdtrid' => $item['biometricdtrid'] ?? null,
                                 'clock_in_am' => $item['clock_in_am'] ?? null,
-                                'clock_out_am' => $item['clock_out_am'] ?? null,
+                                'clock_out_am' => $clock_out_am->format('H:i'),
                                 'mins_consumed_am' => $mins_consumed_am,
-                                'clock_in_pm' => $item['clock_in_pm'] ?? null,
+                                'clock_in_pm' => $clock_in_pm->format('H:i'),
                                 'clock_out_pm' => $item['clock_out_pm'] ?? null,
                                 'mins_consumed_pm' => $mins_consumed_pm,
                                 'captured_image_clockin' => null,
@@ -467,6 +480,8 @@ class Upload extends Component
                         }
                     }
                 }
+                
+                
                               
             }
 
