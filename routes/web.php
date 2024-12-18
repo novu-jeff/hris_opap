@@ -160,6 +160,10 @@ Route::prefix('admin')->group(function() {
                 ->name('timekeeping.index');
             Route::get('upload', [TimekeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
+
+            Route::get('correction/logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'correction'])
+                ->name('timekeeping.correction');
+
         });
 
         Route::prefix('ess')->group(function() {

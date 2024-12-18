@@ -6,6 +6,6 @@
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{{route('timekeeping.index')}}">View Time Logs</a></li>
         <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
-        <li><a class="dropdown-item" href="#">Correction Time Logs</a></li>
+        <li><a class="dropdown-item" href="{{route('timekeeping.correction')}}">Correction Time Logs</a></li>
     </ul>
 </li>
