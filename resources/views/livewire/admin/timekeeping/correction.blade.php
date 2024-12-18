@@ -7,7 +7,7 @@
         <h2 class="mb-0 text-uppercase fw-bold">{{$records['current']['month'] . ' ' . $records['current']['day'] . ', ' . $records['current']['year']}}</h2>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-5">
-        <a href="{{ route('timekeeping.index', ['year' => $records['previous']['year'], 'month' => $records['previous']['month'], 'day' => $records['previous']['day']]) }}" class="btn btn-info px-5 py-3 text-uppercase fw-bold">
+        <a href="{{ route('timekeeping.correction', ['year' => $records['previous']['year'], 'month' => $records['previous']['month'], 'day' => $records['previous']['day']]) }}" class="btn btn-info px-5 py-3 text-uppercase fw-bold">
             Previous Day
         </a>
         <div class="d-flex gap-2">
@@ -20,7 +20,7 @@
             </select>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('timekeeping.index', ['year' => $records['next']['year'], 'month' => $records['next']['month'], 'day' => $records['next']['day']]) }}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+            <a href="{{ route('timekeeping.correction', ['year' => $records['next']['year'], 'month' => $records['next']['month'], 'day' => $records['next']['day']]) }}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                 Next Day
             </a>
         </div>
@@ -144,6 +144,9 @@
                                     <div class="col-12 col-md-12">
                                          <hr>
                                         <strong>Employee Clock In & Out</strong>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink" data-id="${log.id}">Apply Correction</a>
+                                        </div>
                                         <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
                                             <thead class="bg-gray-200">
                                                 <tr>
@@ -151,48 +154,14 @@
                                                     <th class="border px-4 py-2">Break Out</th>
                                                     <th class="border px-4 py-2">Break In</th>
                                                     <th class="border px-4 py-2">Clock Out</th>
-                                                    <th class="border px-4 py-2">Is Late</th>
-                                                    <th class="border px-4 py-2">Is Under Time</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isLate ? 'Yes' : 'No'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isUnderTime ? 'Yes' : 'No'}</u></strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                            <thead class="bg-gray-200">
-                                                <tr>
-                                                    <th class="border px-4 py-2">Consumed Hours (AM)</th>
-                                                    <th class="border px-4 py-2">Consumed Hours (PM)</th>
-                                                    <th class="border px-4 py-2">Regular Hours Consumed</th>
-                                                    <th class="border px-4 py-2">Overtime Hours</th>
-                                                    <th class="border px-4 py-2">Total Hours</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_am)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_pm)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.total_mins_consumed)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_ot)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.overall_mins)}</u></strong>
-                                                    </td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockIn ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakOut ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakIn ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockOut ?? ''}</u></strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -204,6 +173,14 @@
                         // Show the child row with the generated content
                         row.child(childContent).show();
                         tr.addClass('shown');
+
+                        $(document).on('click', '#applyCorrectionLink', function(e) {
+                            e.preventDefault(); 
+                            const log_id = $(this).data('id');
+                            const url = '{{ route("timekeeping.correction-apply", ["id" => "__id__"]) }}'.replace('__id__', log_id);
+                            window.open(url, '_blank'); 
+                        });
+
                     } catch (error) {
                         console.error(error.message);
 
@@ -226,7 +203,7 @@
                 const [year, month, day] = date.split('-');
                 
                 // Build the URL with the selected month, day, and year
-                const url = '{{ route("timekeeping.index", ["year" => "__year__", "month" => "__month__", "day" => "__day__"]) }}'
+                const url = '{{ route("timekeeping.correction", ["year" => "__year__", "month" => "__month__", "day" => "__day__"]) }}'
                             .replace('__year__', year)
                             .replace('__month__', month)
                             .replace('__day__', day);

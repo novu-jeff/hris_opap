@@ -78,4 +78,8 @@ class TimekeepingController extends Controller
         return view('admin.timekeeping.correction', compact('month', 'day', 'year', 'setup'));
     }
 
+    public function correction_apply(int $id = null) {
+        return view('admin.timekeeping.correction-apply', compact('id'));
+    }
+
 }

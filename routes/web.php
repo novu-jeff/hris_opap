@@ -163,6 +163,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('correction/logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'correction'])
                 ->name('timekeeping.correction');
+
+            Route::get('correction/{id}', [TimekeepingController::class, 'correction_apply'])
+                ->name('timekeeping.correction-apply');
         });
 
         Route::prefix('ess')->group(function() {

@@ -358,8 +358,6 @@ class Upload extends Component
                         }
                     }
                 }
-                
-                
                    
                 // Sort the dates and records
                 $formattedData = array_map(function ($dateData) {
