@@ -563,58 +563,58 @@ class Clock extends Component
     }
     
     private function clockout($shift, $records, $timestamp)
-    {
-        // Determine the default columns for clock-in, clock-out
-        $clockInColumn = $shift == 'am' ? 'clock_in_am' : 'clock_in_pm';
-        $clockOutColumn = $shift == 'am' ? 'clock_out_am' : 'clock_out_pm';
+{
+    // Always use clock_out_pm for forced clock-out
+    $clockOutColumn = 'clock_out_pm';
 
-        $location = $this->saveLocation();
+    $location = $this->saveLocation();
 
-        // Default to current timestamp if isForcedClockout is true and clock-out or clock-in fields are missing
-        if ($this->isForcedClockout) {
-            // Check if clock_out_am is not empty but clock_in_pm is empty
-            if (!empty($records->clock_out_am) && empty($records->$clockInColumn)) {
-                // Use clock_out_am and current timestamp for computation
-                $clockOutTime = $timestamp; // Use current timestamp as clock-out time
-            } 
-            // Check if clock_out_am or clock_in_pm is null/empty
-            elseif (empty($records->$clockOutColumn) || empty($records->$clockInColumn)) {
-                // Use clock_in_am and clock_out_pm for computation
-                $clockInTime = Carbon::parse($records->clock_in_am);  // Use clock_in_am
-                $clockOutTime = $timestamp; // Use clock_out_pm
-            } else {
-                $clockOutTime = Carbon::parse($records->$clockOutColumn);  // Regular clock_out field
-            }
-        } else {
-            $clockOutTime = Carbon::parse($timestamp);  // Regular clock-out time
+    // Default to current timestamp if isForcedClockout is true and clock-out or clock-in fields are missing
+    if ($this->isForcedClockout) {
+        // If clock_out_am is not empty but clock_in_pm is empty, use clock_out_am and current timestamp
+        if (!empty($records->clock_out_am) && empty($records->clock_in_pm)) {
+            // Set the clock_out_pm to current timestamp
+            $clockOutTime = $timestamp; // Use current timestamp as clock-out time
         }
-
-        // Update the record with the calculated values
-        $records->update([
-            'employee_no' => $this->user_id,
-            'captured_image_clockout' => $this->capturedImage,
-            'captured_location_clockout' => $location,
-            $clockOutColumn => $clockOutTime->format('g:i A'), // Update the correct clock-out field
-        ]);
-
-        // Update the record with the calculated total consumed, overtime, and overall minutes
-        $records->update([
-            'bsd_no' => $this->bsd_no,
-            'accomplishment' => $this->accomplishment['report'] ?? ''
-        ]);
-
-        $this->toggleStatus($records);
-
-        // Adjust message dynamically based on shift
-
-        // Dispatch success alert
-        $this->dispatch('alert', [
-            'showAlert' => true,
-            'status' => 'success',
-            'title' => 'Yey!',
-            'message' => 'Your action has been successfully documented and recorded in the system for future reference.',
-        ]);
+        // If clock_out_am or clock_in_pm is null/empty, use clock_in_am and clock_out_pm for computation
+        elseif (empty($records->clock_out_pm) || empty($records->clock_in_am)) {
+            // Use clock_in_am and the current timestamp for clock_out_pm
+            $clockInTime = Carbon::parse($records->clock_in_am);  // Use clock_in_am
+            $clockOutTime = $timestamp; // Use current timestamp as clock_out_pm
+        } else {
+            // Regular clock_out_pm value if no forced clock-out and both times are available
+            $clockOutTime = Carbon::parse($records->clock_out_pm);  
+        }
+    } else {
+        // If not forced, just use the current timestamp as clock-out time
+        $clockOutTime = Carbon::parse($timestamp);  // Regular clock-out time
     }
+
+    // Update the record with the calculated clock-out time, location, and captured image
+    $records->update([
+        'employee_no' => $this->user_id,
+        'captured_image_clockout' => $this->capturedImage,
+        'captured_location_clockout' => $location,
+        $clockOutColumn => $clockOutTime->format('g:i A'), // Always update clock_out_pm
+    ]);
+
+    // Update other details like BSD number and accomplishment report
+    $records->update([
+        'bsd_no' => $this->bsd_no,
+        'accomplishment' => $this->accomplishment['report'] ?? ''
+    ]);
+
+    $this->toggleStatus($records);
+
+    // Dispatch success alert
+    $this->dispatch('alert', [
+        'showAlert' => true,
+        'status' => 'success',
+        'title' => 'Yey!',
+        'message' => 'Your action has been successfully documented and recorded in the system for future reference.',
+    ]);
+}
+
 
     public function processClock($imageData, $isImageCaptured, $isForcedClockout) {
 

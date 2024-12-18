@@ -33,7 +33,7 @@
                             </div>      
                         </div>  
                         @if (in_array($status, ['Break Out']))
-                            <div class="text-center mt-2">
+                            <div class="text-center mt-3">
                                 <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
                                     Clock Out
                                 </button>
