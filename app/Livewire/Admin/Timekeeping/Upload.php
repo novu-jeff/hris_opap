@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeInformation;
+use App\Models\ShiftSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -56,7 +58,7 @@ class Upload extends Component
                         $this->isParsing = false;
                     }
                 } else {
-                    $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
+                    $this->addError('file', 'The file must be in csv format.');
                 }
             }
 
@@ -100,6 +102,23 @@ class Upload extends Component
                 
                 // Get the headers (first row) and add them to the data array
                 $headers = fgetcsv($handle);
+                $requiredHeaders = [
+                    "biometricdtrid",
+                    "bsdno",
+                    "isindtr",
+                    "logdatetime",
+                    "nfcdeviceid",
+                    "type",
+                    "ismanual",
+                ];
+            
+            
+                // Ensure all required headers are present
+                $missingHeaders = array_diff($requiredHeaders, $headers);
+                if (!empty($missingHeaders)) {
+                    // Handle the missing headers (e.g., throw an exception or return an error)
+                    throw new \Exception('Uploading an invalid csv file for logs!');
+                }
                 
                 while (($row = fgetcsv($handle)) !== false) {
                     $csvData[] = array_combine($headers, $row);
@@ -145,12 +164,28 @@ class Upload extends Component
                         'timePeriod' => $timePeriod
                     ];
                 }
-                
-                $breaktime_from = '12:00 PM';
-                $breaktime_to = '1:00 PM';
+
                 
                 foreach ($formattedData as &$dateData) {
                     foreach ($dateData as &$recordData) {
+                        $shift = $this->employeeShift($recordData['bsdno']);
+                
+                        // Skip processing if no shift is found
+                        if (!$shift) {
+                            continue;
+                        }
+                
+                        $breaktime_from = Carbon::parse($shift->break_out);
+                        $breaktime_to = Carbon::parse($shift->break_in);
+                
+                        if ($shift->shift_duration == 'flexible') {
+                            $earliest_in = $shift->earliest_in;
+                            $latest_in = $shift->latest_in;
+                        } else {
+                            $start_shift = $shift->start_shift;
+                            $endShift = $shift->end_shift; 
+                        }
+                
                         // Sort times by actual time
                         usort($recordData['times'], function ($a, $b) {
                             return strtotime($a['time']) - strtotime($b['time']);
@@ -216,15 +251,15 @@ class Upload extends Component
                 
                             // Handle middle time based on its position (before or after break)
                             if (strtotime($middleTime) < strtotime($breaktime_from)) {
-                                $recordData['clock_out_am'] = $middleTime;  // Before break, assign to clock_out_am
+                                $recordData['clock_out_am'] = $middleTime; // Before break, assign to clock_out_am
                             } elseif (strtotime($middleTime) >= strtotime($breaktime_to)) {
-                                $recordData['clock_in_pm'] = $middleTime;  // After break, assign to clock_in_pm
+                                $recordData['clock_in_pm'] = $middleTime; // After break, assign to clock_in_pm
                             } else {
                                 // If between breaktime, assign it as clock_out_am or clock_out_pm
                                 if (!$recordData['clock_out_am']) {
-                                    $recordData['clock_out_am'] = $middleTime;  // If no clock_out_am, use it
+                                    $recordData['clock_out_am'] = $middleTime; // If no clock_out_am, use it
                                 } else {
-                                    $recordData['clock_out_pm'] = $middleTime;  // Otherwise, use it for clock_out_pm
+                                    $recordData['clock_out_pm'] = $middleTime; // Otherwise, use it for clock_out_pm
                                 }
                             }
                 
@@ -325,7 +360,7 @@ class Upload extends Component
                 }
                 
                 
-            
+                   
                 // Sort the dates and records
                 $formattedData = array_map(function ($dateData) {
                     ksort($dateData);
@@ -365,7 +400,15 @@ class Upload extends Component
                             // No overtime, calculate regular minutes only
                             $regMins = $clockInTime->diffInMinutes($actualClockOutTime);
                         }
-                
+
+                        $clock_in_am = Carbon::parse($item['clock_in_am']);
+                        $clock_out_am = Carbon::parse($item['clock_out_am']);
+                        $clock_in_pm = Carbon::parse($item['clock_in_pm']);
+                        $clock_out_pm = Carbon::parse($item['clock_out_pm']);
+
+                        $mins_consumed_am = $clock_in_am->diffInMinutes($clock_out_am);
+                        $mins_consumed_pm = $clock_in_pm->diffInMinutes($clock_out_pm);
+
                         $overallMins = $regMins + $minsOT;
                 
                         // Insert or update record in the database
@@ -378,10 +421,10 @@ class Upload extends Component
                                 'biometricdtrid' => $item['biometricdtrid'] ?? null,
                                 'clock_in_am' => $item['clock_in_am'] ?? null,
                                 'clock_out_am' => $item['clock_out_am'] ?? null,
-                                'mins_consumed_am' => null,
+                                'mins_consumed_am' => $mins_consumed_am,
                                 'clock_in_pm' => $item['clock_in_pm'] ?? null,
                                 'clock_out_pm' => $item['clock_out_pm'] ?? null,
-                                'mins_consumed_pm' => null,
+                                'mins_consumed_pm' => $mins_consumed_pm,
                                 'captured_image_clockin' => null,
                                 'captured_image_clockout' => null,
                                 'captured_location_clockin' => null,
@@ -441,6 +484,25 @@ class Upload extends Component
             // Ensure `isUploading` is set to false
             $this->isUploading = false;
         }
+    }
+
+    public function employeeShift($bsd_no) {
+        $shift = EmployeeInformation::select('shift_id')->where('bsd_no', $bsd_no)->first();
+    
+        // Check if shift_id is null
+        if (is_null($shift) || is_null($shift->shift_id)) {
+            return null;
+        }
+    
+        // Find the shift schedule record
+        $record = ShiftSchedule::find($shift->shift_id);
+    
+        // Check if the record is null
+        if (is_null($record)) {
+            return null;
+        }
+    
+        return $record;
     }
 
     public function render() {

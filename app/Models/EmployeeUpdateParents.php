@@ -12,7 +12,6 @@ class EmployeeUpdateParents extends Model
     protected $table = 'employee_update_parents';
 
     protected $fillable = [
-        'updating_id',
         'employee_no',
         'spouse_surname',
         'spouse_firstname',

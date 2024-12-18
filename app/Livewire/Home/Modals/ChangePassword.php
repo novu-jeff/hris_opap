@@ -19,7 +19,7 @@ class ChangePassword extends Component
     public function rules() {
         return [
             'old_password' => 'required',
-            'new_password' => 'required|min:8|same:confirm_password',
+            'new_password' => 'required|min:8|same:confirm_password|different:old_password',
             'confirm_password' => 'required|min:8'
         ];
     }

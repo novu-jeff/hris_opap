@@ -21,6 +21,7 @@ use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployeeUpdateSkillsHobbies;
 use App\Models\EmployeeUpdateTrainings;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Edit extends Component
@@ -35,6 +36,7 @@ class Edit extends Component
     public $activeTab = 'details';
     public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
+    protected $listeners = ['approve', 'reject'];
 
     public function mount() {
         $this->loadRecords();
@@ -48,8 +50,7 @@ class Edit extends Component
         ])->where('employee_no', $this->employee_no)->first();
     
         if (!$data) {
-            $this->records = []; // Handle empty state if no data is found
-            return;
+            return redirect()->route('ess.approval-profile.index');
         }
     
         // Populate employee records
@@ -138,7 +139,7 @@ class Edit extends Component
         if($isNotify) {
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
-            $action = 'save';
+            $action = 'approve';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -146,12 +147,36 @@ class Edit extends Component
             ]);
         } else {
 
+            DB::beginTransaction();
+
             try {
 
-                $employee_update = EmployeeUpdatePersonal::where('employee_no', $this->employee_no);
+                $this->updatePersonalData($this->employee_no);
+                $this->updateEducationData($this->employee_no);
+                $this->updateParentsData($this->employee_no);
+                $this->updateChildrenData($this->employee_no);
+                $this->updateEmploymentData($this->employee_no);
+                $this->updateCivilServiceData($this->employee_no);
+                $this->updateTrainingData($this->employee_no);
+                $this->updateOthersData($this->employee_no);
+                $this->updateSkillsData($this->employee_no);
 
+                $this->remove();
+                
+
+                DB::commit();
+
+                return $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!',
+                    'isRemoveRowDT' => false,
+                    'isReloadDT' => false,
+                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was approved successfully.',
+                    'redirect' => route('ess.approval-profile.index')
+                ]);
 
             } catch (\Exception $e) {
+                DB::rollBack();
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
@@ -162,11 +187,47 @@ class Edit extends Component
         }
     }
 
-    public function rejected() {
+    public function reject(bool $isNotify = true) {
+        if($isNotify) {
+            $title = 'Are you sure to continue?';
+            $message = 'The action cannot be undone or reverted!';
+            $action = 'reject';
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+        } else {
+            DB::beginTransaction();
 
+            try {
+                $this->remove();
+
+                DB::commit();
+
+                return $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!',
+                    'isRemoveRowDT' => false,
+                    'isReloadDT' => false,
+                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was rejected for updating profile.',
+                    'redirect' => route('ess.approval-profile.index')
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops', 
+                    'message' => 'Error: ' . $e->getMessage()
+                ]);
+            }
+
+        }
     }
 
-    public function updateProfileData($employee_no) {
+    public function updatePersonalData($employee_no) {
         $employeePersonal = EmployeePersonal::where('employee_no', $employee_no)->first();
         $employeeUpdatePersonal = EmployeeUpdatePersonal::where('employee_no', $employee_no)->first();
 
@@ -208,158 +269,187 @@ class Edit extends Component
     }
 
     public function updateEducationData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateEducation::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateEducation::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeEducation::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'level' => $employeeUpdatePersonal->level ?? null,
-                    'school_name' => $employeeUpdatePersonal->school_name ?? null,
-                    'course' => $employeeUpdatePersonal->course ?? null,
-                    'from_year' => $employeeUpdatePersonal->from_year ?? null,
-                    'to_year' => $employeeUpdatePersonal->to_year ?? null,
+                ['employee_no' => $employee_no, 'school_name' => $personal->school_name], // Unique identifier, adding school_name to differentiate entries
+                [
+                    'level' => $personal->level ?? null,
+                    'school_name' => $personal->school_name ?? null,
+                    'course' => $personal->course ?? null,
+                    'from_year' => $personal->from_year ?? null,
+                    'to_year' => $personal->to_year ?? null,
                 ]
             );
-    
-        } 
+        }
     }
-
+    
     public function updateParentsData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateParents::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
-            EmployeeParents::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'spouse_surname' => $employeeUpdatePersonal->spouse_surname ?? null,
-                    'spouse_firstname' => $employeeUpdatePersonal->spouse_firstname ?? null,
-                    'spouse_middlename' => $employeeUpdatePersonal->spouse_middlename ?? null,
-                    'spouse_suffix' => $employeeUpdatePersonal->spouse_suffix ?? null,
-                    'father_surname' => $employeeUpdatePersonal->father_surname ?? null,
-                    'father_firstname' => $employeeUpdatePersonal->father_firstname ?? null,
-                    'father_middlename' => $employeeUpdatePersonal->father_middlename ?? null,
-                    'father_suffix' => $employeeUpdatePersonal->father_suffix ?? null,
-                    'father_occupation' => $employeeUpdatePersonal->father_occupation ?? null,
-                    'father_business_name' => $employeeUpdatePersonal->father_business_name ?? null,
-                    'father_business_address' => $employeeUpdatePersonal->father_business_address ?? null,
-                    'father_tel_no' => $employeeUpdatePersonal->father_tel_no ?? null,
-                    'mother_surname' => $employeeUpdatePersonal->mother_surname ?? null,
-                    'mother_firstname' => $employeeUpdatePersonal->mother_firstname ?? null,
-                    'mother_middlename' => $employeeUpdatePersonal->mother_middlename ?? null,
-                    'mother_occupation' => $employeeUpdatePersonal->mother_occupation ?? null,
-                    'mother_business_name' => $employeeUpdatePersonal->mother_business_name ?? null,
-                    'mother_business_address' => $employeeUpdatePersonal->mother_business_address ?? null,
-                    'mother_tel_no' => $employeeUpdatePersonal->mother_tel_no ?? null,
-                ]
-            );
+        $employeeUpdatePersonal = EmployeeUpdateParents::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
     
-        } 
+        foreach ($employeeUpdatePersonal as $personal) {
+            EmployeeParents::updateOrCreate(
+                ['employee_no' => $employee_no, 'spouse_surname' => $personal->spouse_surname], // Unique identifier, adding spouse_surname to differentiate entries
+                [
+                    'spouse_surname' => $personal->spouse_surname ?? null,
+                    'spouse_firstname' => $personal->spouse_firstname ?? null,
+                    'spouse_middlename' => $personal->spouse_middlename ?? null,
+                    'spouse_suffix' => $personal->spouse_suffix ?? null,
+                    'father_surname' => $personal->father_surname ?? null,
+                    'father_firstname' => $personal->father_firstname ?? null,
+                    'father_middlename' => $personal->father_middlename ?? null,
+                    'father_suffix' => $personal->father_suffix ?? null,
+                    'father_business_name' => $personal->father_business_name ?? null,
+                    'father_business_address' => $personal->father_business_address ?? null,
+                    'father_tel_no' => $personal->father_tel_no ?? null,
+                    'mother_surname' => $personal->mother_surname ?? null,
+                    'mother_firstname' => $personal->mother_firstname ?? null,
+                    'mother_middlename' => $personal->mother_middlename ?? null,
+                    'mother_occupation' => $personal->mother_occupation ?? null,
+                    'mother_business_name' => $personal->mother_business_name ?? null,
+                    'mother_business_address' => $personal->mother_business_address ?? null,
+                    'mother_tel_no' => $personal->mother_tel_no ?? null,
+                ]
+            );
+        }
     }
-
+    
     public function updateChildrenData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateChildren::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateChildren::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeChildren::updateOrCreate(
-                ['employee_id' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'firstname' => $employeeUpdatePersonal->firstname ?? null,
-                    'middlename' => $employeeUpdatePersonal->middlename ?? null,
-                    'lastname' => $employeeUpdatePersonal->lastname ?? null,
-                    'birthdate' => $employeeUpdatePersonal->birthdate ?? null,
+                ['employee_no' => $employee_no, 'firstname' => $personal->firstname], // Unique identifier, adding firstname to differentiate entries
+                [
+                    'firstname' => $personal->firstname ?? null,
+                    'middlename' => $personal->middlename ?? null,
+                    'lastname' => $personal->lastname ?? null,
+                    'birthdate' => $personal->birthdate ?? null,
                 ]
             );
-        } 
+        }
     }
-
+    
     public function updateEmploymentData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateEmploymentHistory::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateEmploymentHistory::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeEmploymentHistory::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'position' => $employeeUpdatePersonal->position ?? null,
-                    'department' => $employeeUpdatePersonal->department ?? null,
-                    'company_name' => $employeeUpdatePersonal->company_name ?? null,
-                    'monthly_salary' => $employeeUpdatePersonal->monthly_salary ?? null,
-                    'employment_status' => $employeeUpdatePersonal->employment_status ?? null,
-                    'isGovernment' => $employeeUpdatePersonal->isGovernment ?? null,
-                    'from_year' => $employeeUpdatePersonal->from_year ?? null,
-                    'to_year' => $employeeUpdatePersonal->to_year ?? null,
+                ['employee_no' => $employee_no, 'company_name' => $personal->company_name], // Unique identifier, adding company_name to differentiate entries
+                [
+                    'position' => $personal->position ?? null,
+                    'department' => $personal->department ?? null,
+                    'company_name' => $personal->company_name ?? null,
+                    'monthly_salary' => $personal->monthly_salary ?? null,
+                    'employment_status' => $personal->employment_status ?? null,
+                    'isGovernment' => $personal->isGovernment ?? null,
+                    'from_year' => $personal->from_year ?? null,
+                    'to_year' => $personal->to_year ?? null,
                 ]
             );
-        } 
+        }
     }
-
+    
     public function updateCivilServiceData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateCivilService::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateCivilService::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeCivilService::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'certification' => $employeeUpdatePersonal->certification ?? null,
-                    'rating' => $employeeUpdatePersonal->rating ?? null,
-                    'date_exam' => $employeeUpdatePersonal->date_exam ?? null,
-                    'place_exam' => $employeeUpdatePersonal->place_exam ?? null,
-                    'license_no' => $employeeUpdatePersonal->license_no ?? null,
-                    'date_validity' => $employeeUpdatePersonal->date_validity ?? null,
+                ['employee_no' => $employee_no, 'license_no' => $personal->license_no], // Unique identifier, adding license_no to differentiate entries
+                [
+                    'certification' => $personal->certification ?? null,
+                    'rating' => $personal->rating ?? null,
+                    'date_exam' => $personal->date_exam ?? null,
+                    'place_exam' => $personal->place_exam ?? null,
+                    'license_no' => $personal->license_no ?? null,
+                    'date_validity' => $personal->date_validity ?? null,
                 ]
             );
-        } 
+        }
     }
-
+    
     public function updateTrainingData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateTrainings::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateTrainings::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeTrainings::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'type' => $employeeUpdatePersonal->type ?? null,
-                    'name' => $employeeUpdatePersonal->name ?? null,
-                    'date_from' => $employeeUpdatePersonal->date_from ?? null,
-                    'date_to' => $employeeUpdatePersonal->date_to ?? null,
-                    'consumed_hours' => $employeeUpdatePersonal->consumed_hours ?? null,
-                    'sponsored_by' => $employeeUpdatePersonal->sponsored_by ?? null,
+                ['employee_no' => $employee_no, 'name' => $personal->name], // Unique identifier, adding name to differentiate entries
+                [
+                    'type' => $personal->type ?? null,
+                    'name' => $personal->name ?? null,
+                    'date_from' => $personal->date_from ?? null,
+                    'date_to' => $personal->date_to ?? null,
+                    'consumed_hours' => $personal->consumed_hours ?? null,
+                    'sponsored_by' => $personal->sponsored_by ?? null,
                 ]
             );
-        } 
+        }
     }
-
+    
     public function updateOthersData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateOtherWorks::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateOtherWorks::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeePersonal::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'organization' => $employeeUpdatePersonal->organization ?? null,
-                    'address' => $employeeUpdatePersonal->address ?? null,
-                    'date_from' => $employeeUpdatePersonal->date_from ?? null,
-                    'date_to' => $employeeUpdatePersonal->date_to ?? null,
-                    'consumed_hours' => $employeeUpdatePersonal->consumed_hours ?? null,
-                    'position' => $employeeUpdatePersonal->position ?? null,
+                ['employee_no' => $employee_no, 'organization' => $personal->organization], // Unique identifier, adding organization to differentiate entries
+                [
+                    'organization' => $personal->organization ?? null,
+                    'address' => $personal->address ?? null,
+                    'date_from' => $personal->date_from ?? null,
+                    'date_to' => $personal->date_to ?? null,
+                    'consumed_hours' => $personal->consumed_hours ?? null,
+                    'position' => $personal->position ?? null,
                 ]
             );
-        } 
+        }
     }
-
+    
     public function updateSkillsData($employee_no) {
-        $employeeUpdatePersonal = EmployeeUpdateSkillsHobbies::where('employee_no', $employee_no)->first();
-        if ($employeeUpdatePersonal) {
-            // Use updateOrCreate to either update or insert the employee data
+        $employeeUpdatePersonal = EmployeeUpdateSkillsHobbies::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
+    
+        foreach ($employeeUpdatePersonal as $personal) {
             EmployeeSkillsHobbies::updateOrCreate(
-                ['employee_no' => $employee_no], // Unique identifier
-                [ // Data to update or insert
-                    'name' => $employeeUpdatePersonal->name ?? null,
-                    'recognition' => $employeeUpdatePersonal->recognition ?? null,
-                    'organization' => $employeeUpdatePersonal->organization ?? null,
+                ['employee_no' => $employee_no, 'name' => $personal->name], // Unique identifier, adding name to differentiate entries
+                [
+                    'name' => $personal->name ?? null,
+                    'recognition' => $personal->recognition ?? null,
+                    'organization' => $personal->organization ?? null,
                 ]
             );
-        } 
+        }
+    }
+    
+
+    public function remove() {
+
+        $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
+
+        if($record) {
+
+            $record->education()->delete();
+            $record->parents()->delete();
+            $record->children()->delete();
+            $record->employment_history()->delete();
+            $record->civil_service()->delete();
+            $record->trainings()->delete();
+            $record->others()->delete();
+            $record->skills()->delete();
+            
+            $record->delete();
+
+            return true;
+
+        } else {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'isRemoveRowDT' => false,
+                'message' => 'Error: ID does not exists' 
+            ]);
+        }
+
     }
 
     public function render() {

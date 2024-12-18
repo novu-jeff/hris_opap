@@ -95,32 +95,32 @@
 </style>
 @endsection
 <div class="container">
-    <div class="py-3 d-flex justify-content-between gap-3 align-items-center">
-        <div class="d-flex align-items-center">
-            <button 
-                class="btn btn-sm btn-outline-primary" 
-                wire:click="changeMonth(-1, '{{ Auth::user()->employee_no }}')"
-                wire:loading.attr="disabled" 
-                wire:loading.class="btn-secondary">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            
-            <div class="mx-3" id="monthYear">
-                {{ $dtrDate }}
-            </div>
-            
-            <button 
-                class="btn btn-sm btn-outline-primary" 
-                wire:click="changeMonth(1, '{{ Auth::user()->employee_no }}')"
-                wire:loading.attr="disabled" 
-                wire:loading.class="btn-secondary"
-                @disabled($dtrDate == now()->subMonth()->format('F, Y'))>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-        <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
-    </div>
     @if($dtr)
+        <div class="py-3 d-flex justify-content-between gap-3 align-items-center">
+            <div class="d-flex align-items-center">
+                <button 
+                    class="btn btn-sm btn-outline-primary" 
+                    wire:click="changeMonth(-1, '{{ Auth::user()->employee_no }}')"
+                    wire:loading.attr="disabled" 
+                    wire:loading.class="btn-secondary">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                
+                <div class="mx-3" id="monthYear">
+                    {{ $dtrDate }}
+                </div>
+                
+                <button 
+                    class="btn btn-sm btn-outline-primary" 
+                    wire:click="changeMonth(1, '{{ Auth::user()->employee_no }}')"
+                    wire:loading.attr="disabled" 
+                    wire:loading.class="btn-secondary"
+                    @disabled($dtrDate == now()->subMonth()->format('F, Y'))>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
+        </div>
         <div class="dtr">
             <div wire:loading class="ml-2 loading-screen">
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -196,7 +196,7 @@
                             </td>
 
                             <!-- Remark column -->
-                            <td>{{ '  ' }}</td> 
+                            <td>{{ isset($day['remarks']) ? $day['remarks'] : ' ' }}</td> 
                         </tr>
                     @endforeach
                 </tbody>
@@ -205,43 +205,39 @@
                 <table class="dtr-table">
                     <tr>
                         <td>Days Worked</td>
-                        <td></td>
+                        <td>{{ isset($dtr['summary']['days_works']) ? $dtr['summary']['days_works'] : ' ' }}</td>
                         <td>Tardinesss</td>
-                        <td>0</td>
+                        <td>{{ isset($dtr['summary']['lates']) ? $dtr['summary']['lates'] : ' ' }}</td>
                         <td>Leave</td>
-                        <td></td>
+                        <td>{{ isset($dtr['summary']['leaves']) ? $dtr['summary']['leaves'] : ' ' }}</td>
                     </tr>
                     <tr>
                         <td>Absences</td>
-                        <td>0</td>
+                        <td>{{ isset($dtr['summary']['absences']) ? $dtr['summary']['absences'] : ' ' }}</td>
                         <td>TA Freq.</td>
                         <td>0</td>
                         <td>Rest Day</td>
-                        <td></td>
+                        <td>{{ isset($dtr['summary']['rest_days']) ? $dtr['summary']['rest_days'] : ' ' }}</td>
                     </tr>
                     <tr>
                         <td>Overtime</td>
-                        <td>0</td>
+                        <td>{{ isset($dtr['summary']['overtime']) ? $dtr['summary']['overtime'] : ' ' }}</td>
                         <td>Undertime</td>
-                        <td>0</td>
+                        <td>{{ isset($dtr['summary']['undertime']) ? $dtr['summary']['undertime'] : ' ' }}</td>
                         <td>Special Hol.</td>
-                        <td></td>
+                        <td>{{ isset($dtr['summary']['special_holidays']) ? $dtr['summary']['special_holidays'] : ' ' }}</td>
                     </tr>
                     <tr>
-                        <td>Total Days Worked</td>
-                        <td>0</td>
+                        <td>Total Days of Work</td>
+                        <td>{{ isset($dtr['summary']['total_days_work']) ? $dtr['summary']['total_days_work'] : ' ' }}</td>
                         <td>UT Freq.</td>
                         <td>0</td>
                         <td>Legal Hol.</td>
-                        <td></td>
+                        <td>{{ isset($dtr['summary']['regular_holidays']) ? $dtr['summary']['regular_holidays'] : ' ' }}</td>
                     </tr>
                     <tr>
                         <td>Less TA/UT</td>
                         <td>0</td>
-                        <td>No lunch</td>
-                        <td>0</td>
-                        <td></td>
-                        <td></td>
                     </tr>
                 </table>
                 <div class="signature" style="margin-top: 30px; text-align: center;">
@@ -252,6 +248,15 @@
             </div>
         </div>
     @else
-        <p>No DTR available for this employee for the selected date.</p>
+        <div class="alert alert-info" role="alert">
+            Please contact HR regarding this issue.
+            @if (!empty($errors))
+                <ul class="m-0">
+                    @foreach ($errors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
     @endif
 </div>

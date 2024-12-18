@@ -12,7 +12,6 @@ class EmployeeUpdateTrainings extends Model
     protected $table = 'employee_update_trainings';
 
     protected $fillable = [
-        'updating_id',
         'employee_no',
         'type',
         'name',

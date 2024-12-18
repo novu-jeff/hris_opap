@@ -77,7 +77,7 @@
                             {{ $record['group_name'] }}
                         </button>
                     </h2>
-                    <div id="collapseUnassigned" class="accordion-collapse collapse" aria-labelledby="headingUnassigned" data-bs-parent="#accordionExample">
+                    <div id="collapseUnassigned" class="accordion-collapse collapse show" aria-labelledby="headingUnassigned" data-bs-parent="#accordionExample">
                         <div class="accordion-body">
                             <div class="row">
                                 @foreach ($record['employees'] as $employee)

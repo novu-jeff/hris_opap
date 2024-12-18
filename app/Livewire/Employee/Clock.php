@@ -16,6 +16,7 @@ class Clock extends Component
 {
 
     public $user_id;
+    public $bsd_no;
     public $isClockedIn = false;
     public $isClockedOut = false;
     public $isImageCaptured = false;
@@ -27,6 +28,7 @@ class Clock extends Component
     public $isHalfDay = false;
     public $accomplishment;
     public $isForcedClockout = false;
+    public $manipulate_timestamp = '07:00';
 
     public $status;
 
@@ -46,12 +48,22 @@ class Clock extends Component
 
         $this->user_id = $user_id;
 
+        $information = EmployeeInformation::where('employee_no', $user_id)->first();
+
+        $this->bsd_no = $information->bsd_no ?? null;
+
         $timestamp = Carbon::today();
 
         $records = EmployeeClockInOut::where('employee_no', $user_id)
             ->whereDate('created_at', $timestamp)->first();
 
         $this->toggleStatus($records);
+    }
+
+
+    public function delete() {
+        $timestamp = Carbon::today();
+        EmployeeClockInOut::whereDate('created_at', $timestamp)->delete();
     }
 
     public function toggleStatus($records)
@@ -66,7 +78,8 @@ class Clock extends Component
         $breakTimeFrom = Carbon::parse($shift->break_out);
         $breakTimeTo = Carbon::parse($shift->break_in);
 
-        $timestamp = Carbon::createFromTime(11,0,0);
+        // $timestamp = Carbon::now();
+        $timestamp = Carbon::parse($this->manipulate_timestamp);
 
         if(!is_null($records)) {
             if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->lte($breakTimeFrom)) {
@@ -123,7 +136,6 @@ class Clock extends Component
         return $record;
     }
     
-    
     public function triggerClock(bool $isNotify = true, $data = null)
     {
 
@@ -148,7 +160,8 @@ class Clock extends Component
         $latestClockIn = Carbon::parse($shift->web_latest_clockin);
 
         // Current time (timestamp)
-        $timestamp = Carbon::createFromTime(11,0,0);
+        // $timestamp = Carbon::now();
+        $timestamp = Carbon::parse($this->manipulate_timestamp);
         $timestampFormatted = $timestamp->format('g:i A');
 
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
@@ -282,7 +295,7 @@ class Clock extends Component
             # Handle PM Validation
             
             if($amOrPm == 'pm') {
-                
+              
                 if(is_null($records->clock_out_pm) && $timestamp->lt($maxClockOut)) {
                     if($expectedClockOut->gt($maxClockOut)) {
                         $this->isUndertime = true;
@@ -292,7 +305,7 @@ class Clock extends Component
                                 'textarea',
                                 'title' => 'Please write your today\'s accomplishment report.',
                             ],
-                            'message' => 'You\'re clocking-out earlier thans your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                            'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
                             'action' => 'triggerClock',
                         ]);  
                     }
@@ -305,7 +318,7 @@ class Clock extends Component
                                 'textarea',
                                 'title' => 'Please write your today\'s accomplishment report.',
                             ],
-                            'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
+                            'message' => 'You\'re clocking-out earlier thans your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
                             'action' => 'triggerClock',
                         ]);  
                     }
@@ -397,7 +410,8 @@ class Clock extends Component
             ]);
         }
 
-        $timestamp = Carbon::createFromTime(11,0,0);
+        // $timestamp = Carbon::now();
+        $timestamp = Carbon::parse($this->manipulate_timestamp);
 
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
 
@@ -405,20 +419,16 @@ class Clock extends Component
             ->whereDate('created_at', $timestamp)
             ->first();
 
-        if ($records && $records->clock_in_am !== $records->clock_out_am && $records->clock_in_am !== $records->clock_in_pm) {
-            $clockInTime = $records->clock_in_am;
-            $maxClockOut = Carbon::parse($clockInTime)->addHours(9);
-        } else {
-            $maxClockOut = Carbon::createFromTime(17, 0, 0);
-        }
+        $endShift = Carbon::createFromTime(17, 0, 0);
+
 
         if($isNotify) {
             $clockInTime = Carbon::parse($records->clock_in_am);
             $expectedClockOut = $clockInTime->copy()->addHours(9);  
             $expectedClockOutMins = $expectedClockOut->diffInMinutes($timestamp);
             
-            if($expectedClockOut->gt($maxClockOut)) {
-                $formattedExpectedClockOut = $maxClockOut->format('g:i A'); 
+            if($expectedClockOut->gt($endShift)) {
+                $formattedExpectedClockOut = $endShift->format('g:i A'); 
             } else {
                 $formattedExpectedClockOut = $expectedClockOut->format('g:i A');
             }
@@ -448,7 +458,8 @@ class Clock extends Component
         $breakTimeTo = Carbon::parse($shift->break_in);
         $latestClockIn = Carbon::parse($shift->web_latest_clockin);
 
-        $timestamp = Carbon::createFromTime(11,0,0); // Assuming the current date is considered
+        // $timestamp = Carbon::now();
+        $timestamp = Carbon::parse($this->manipulate_timestamp); // Assuming the current date is considered
         $amOrPm = strtolower($timestamp->format('A')); // AM or PM
         $records = EmployeeClockInOut::where('employee_no', $this->user_id)
             ->whereDate('created_at', $timestamp)
@@ -565,185 +576,130 @@ class Clock extends Component
     
     private function clockout($shift, $records, $timestamp)
     {
-
         $isMinusOneHour = false;
 
         // Determine the default columns for clock-in, clock-out, and hours consumed
         $clockInColumn = $shift == 'am' ? 'clock_in_am' : 'clock_in_pm';
         $clockOutColumn = $shift == 'am' ? 'clock_out_am' : 'clock_out_pm';
         $hoursConsumedColumn = $shift == 'am' ? 'mins_consumed_am' : 'mins_consumed_pm';
-    
+
         // Parse the clock-in time
         $clockInTime = Carbon::parse($records->$clockInColumn);
 
-        $shift = $this->employeeShift();
-
+        $shiftDetails = $this->employeeShift();
         $location = $this->saveLocation();
 
-        // Calculate break time to handle the condition for switching to PM clock-out
-        $breakTimeFrom = Carbon::parse($shift->break_out);
-        $breakTimeTo = Carbon::parse($shift->break_in);
-                
+        // Define break times
+        $breakTimeFrom = Carbon::parse($shiftDetails->break_out ?? '12:00:00');
+        $breakTimeTo = Carbon::parse($shiftDetails->break_in ?? '13:00:00');
 
-        // Add condition for handling the clock-out logic based on break time
-        if (!is_null($records->clock_in_am) && is_null($records->clock_out_am) && $timestamp->gt($breakTimeTo)) {
-            // If the condition is met, update to PM clock-out column and calculate hours from AM clock-in to current time
-            $clockOutColumn = 'clock_out_pm'; // Switch to PM clock-out column
-            $hoursConsumedColumn = 'mins_consumed_pm'; // Use PM hours consumed column
-            $clockInTime = Carbon::parse($records->clock_in_am); // Use clock-in AM time for calculation
-            $isMinusOneHour = true;
+        // Default to current timestamp if isForcedClockout is true and clock-out or clock-in fields are missing
+        if ($this->isForcedClockout) {
+            // Check if clock_out_am is not empty but clock_in_pm is empty
+            if (!empty($records->clock_out_am) && empty($records->$clockInColumn)) {
+                // Use clock_out_am and current timestamp for computation
+                $clockInTime = Carbon::parse($records->clock_out_am);  // Use clock_out_am as clock-in time
+                $clockOutTime = $timestamp; // Use current timestamp as clock-out time
+            } 
+            // Check if clock_out_am or clock_in_pm is null/empty
+            elseif (empty($records->$clockOutColumn) || empty($records->$clockInColumn)) {
+                // Use clock_in_am and clock_out_pm for computation
+                $clockInTime = Carbon::parse($records->clock_in_am);  // Use clock_in_am
+                $clockOutTime = $timestamp; // Use clock_out_pm
+            } else {
+                $clockOutTime = Carbon::parse($records->$clockOutColumn);  // Regular clock_out field
+            }
+        } else {
+            $clockOutTime = Carbon::parse($timestamp);  // Regular clock-out time
         }
 
-    
-        // Special case: if it's 12 PM and clock-in for AM is missing and clock-in for PM exists, update the PM clock-out
-        if ($timestamp->hour == 12 && is_null($records->clock_in_am) && is_null($records->clock_out_am) && !is_null($records->clock_in_pm) && is_null($records->clock_out_pm)) {
-            // If conditions match, update the PM clock-out column instead of AM
-            $clockOutColumn = 'clock_out_pm'; // Use PM clock-out column
-            $hoursConsumedColumn = 'mins_consumed_pm'; // Use PM hours consumed column
-        }
-    
-        // Handle special case: if it's PM and AM clock-out is missing, update AM fields
-        if ($shift == 'pm' && $records->clock_out_am === null && $records->clock_in_pm == null) {
-            // If it's PM, but AM hasn't been clocked out, switch to AM clock-out fields
-            $clockOutColumn = 'clock_out_am'; // Use AM clock-out column
-            $hoursConsumedColumn = 'mins_consumed_am'; // Use AM hours consumed column
-        }
-    
-        // Calculate the minutes rendered by comparing clock-in time and the given timestamp
-        $minutesRendered = $clockInTime->diffInMinutes($timestamp);
+        // Calculate the minutes rendered
+        $minutesRendered = $clockInTime->diffInMinutes($clockOutTime);
 
-        // If $isMinusOneHour is true, subtract 60 minutes
-        if ($isMinusOneHour) {
-            $minutesRendered -= 60; // Subtract 60 minutes if condition is true
+        // Adjust for break time overlap
+        if ($clockInTime->lt($breakTimeTo) && $clockOutTime->gt($breakTimeFrom)) {
+            $breakOverlapStart = $clockInTime->lt($breakTimeFrom) ? $breakTimeFrom : $clockInTime;
+            $breakOverlapEnd = $clockOutTime->gt($breakTimeTo) ? $breakTimeTo : $clockOutTime;
+            $breakDuration = $breakOverlapStart->diffInMinutes($breakOverlapEnd);
+            $minutesRendered -= $breakDuration;
         }
 
-        // Check if the clock_in_pm is between breakTimeFrom and breakTimeTo
-        if ($clockInTime->between($breakTimeFrom, $breakTimeTo) && $timestamp->gt($breakTimeTo)) {
-            // If it is, calculate the minutes from $breakTimeTo to the timestamp
-            $minutesRendered = $breakTimeTo->diffInMinutes($timestamp);
-        }
-
-        // Ensure that the minutes rendered are not negative (in case the breaktimeTo is after the timestamp)
+        // Ensure minutesRendered is not negative
         $minutesRendered = max(0, $minutesRendered);
 
-        if($this->isForcedClockout) {
-            $records->update([
-                'employee_no' => $this->user_id,
-                'captured_image_clockout' => $this->capturedImage,
-                'captured_location_clockout' => $location,
-                'isUnderTime' => $this->isUndertime,
-                'mins_consumed_pm' => $minutesRendered,
-                'clock_out_pm' => Carbon::parse($timestamp)->format('g:i A'),
-            ]);
-        }
+        // Check if the worked time is greater than 8 hours
+        $standardWorkHours = 480; // 8 hours = 480 minutes
+        $overtimeMins = max(0, $minutesRendered - $standardWorkHours);
         
+        // If overtime exists, adjust minutes
+        $workedMinutes = $minutesRendered - $overtimeMins;
+
         // Update the record with the calculated values
         $records->update([
             'employee_no' => $this->user_id,
-            $hoursConsumedColumn => $minutesRendered, // Update the correct hours consumed field
             'captured_image_clockout' => $this->capturedImage,
             'captured_location_clockout' => $location,
             'isUnderTime' => $this->isUndertime,
-            $clockOutColumn => Carbon::parse($timestamp)->format('g:i A'), // Update the correct clock-out field
+            $hoursConsumedColumn => $workedMinutes, // Update the correct hours consumed field
+            $clockOutColumn => $clockOutTime->format('g:i A'), // Update the correct clock-out field
         ]);
 
-        // Calculate total minutes consumed (AM and PM combined)
+        // Calculate total consumed minutes for the day
         $minsAm = (int) $records->mins_consumed_am ?? 0;
         $minsPm = (int) $records->mins_consumed_pm ?? 0;
 
-        //  if employee start working pm shift only
-        if ($minsAm == 0 && $minsPm > 0) {
+        // Calculate the regular work hours for PM shift (until 5:00 PM)
+        $standardEndTime = Carbon::parse($records->clock_in_am)->addHours(9); // 5:00 PM
 
-            $endShift = Carbon::createFromTime(17, 0, 0); // 5:00 PM
-            
-            if(is_null($records->clock_in_am) && is_null($records->mins_consumed_am)) {
-                $clockin = Carbon::parse($records->clock_in_pm);
-                $clockout = Carbon::parse($records->clock_out_pm); 
+        if ($records->clock_in_pm && $records->clock_out_pm) {
+            // Parse clock-in and clock-out times for the PM shift
+            $clockInPmTime = Carbon::parse($records->clock_in_pm);
+            $clockOutPmTime = Carbon::parse($records->clock_out_pm);
 
-                $regMins = $clockout->diffInMinutes($clockin);
-
-                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
-                    $regMins -= 60;
-                } 
-            } else if (!is_null($records->clock_in_am) && is_null($records->mins_consumed_am) || $records->mins_consumed_am == 0) {
-                $clockin = Carbon::parse($records->clock_in_am);
-                $clockout = Carbon::parse($records->clock_out_pm); 
-
-                $regMins = $clockout->diffInMinutes($clockin);
-
-                if($clockin->between($breakTimeFrom, $breakTimeTo)) {
-                    $regMins -= 60;
-                } 
-
-            }
-           
-
-            if(!is_null($records->clock_out_am) && !is_null($records->clock_in_pm)) {
-                if($clockout->gt($endShift)) {
-                    $regMins = $clockout->diffInMinutes($endShift);
-                    if($clockin->between($breakTimeFrom, $breakTimeTo)) {
-                        $regMins += 60;
-                    } 
-                }
-            } else {
-                if($clockout->gt($endShift)) {
-                    $minsOT = $clockout->diffInMinutes($endShift);
-                    $regMins = $regMins - $minsOT; 
-                } else {
-                    $regMins = $regMins;
-                }
+            // Adjust clockInPmTime to start at or after breakTimeTo (1:00 PM)
+            if ($clockInPmTime->lt($breakTimeTo)) {
+                $clockInPmTime = $breakTimeTo; // Adjust clock-in time to start at 1:00 PM
             }
 
-            // Calculate overtime minutes (if any)
-            $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;
-        
-            // Calculate overall minutes (regular + overtime)
-            $overallMins = $regMins + $minsOT;
-        }
-        
+            // Regular work hours is the time between 1:00 PM and 5:00 PM
+            $regularWorkTime = $clockInPmTime->diffInMinutes($standardEndTime->min($clockOutPmTime));
+            $overtimeMinsPm = max(0, $clockOutPmTime->diffInMinutes($standardEndTime));
 
-        //  if employee start working from am shift to afternoon
-        if($minsAm > 0 && $minsPm > 0) {
-            
-            $expectedClockOut = Carbon::parse($records->clock_in_am)->addHours(9);
-            $endShift = Carbon::createFromTime($expectedClockOut->hour, $expectedClockOut->minute, $expectedClockOut->second);
-
-            $clockin = Carbon::parse($records->clock_in_am);
-            $clockout = Carbon::parse($records->clock_out_pm); // Clock-out time
-            
-            // Regular minutes
-     
-            $totalConsumedHrs= $records->mins_consumed_am + $records->mins_consumed_pm;
-
-     
-            if($clockout->gt($endShift)) {
-                $minsOT = $clockout->diffInMinutes($endShift);
-                $regMins = $totalConsumedHrs - $minsOT; 
-            } else {
-                $regMins = $totalConsumedHrs;
-            }
-
-            // Calculate overtime minutes (if any)
-            // $minsOT = ($clockout->gt($endShift)) ? $clockout->diffInMinutes($clockout->copy()->setTime(17, 0)) : 0;
-        
-            // Calculate overall minutes (regular + overtime)
-            $overallMins = $regMins + ($minsOT ?? 0);
-
+            // Update minsPm with regular work hours and OT separately
+            $minsPm = $regularWorkTime;
+            $overtimeMins += $overtimeMinsPm; // Add overtime minutes
         }
 
+        // Calculate overall minutes, including OT
+        $overallMins = $minsAm + $minsPm + $overtimeMins; // Total minutes including OT
 
-        // Update the record with calculated values
+        // Only set totalConsumedMins to 480 if total exceeds 480
+        $totalConsumedMins = $minsAm + $minsPm + $overtimeMins;
+        if ($totalConsumedMins > 480) {
+            $totalConsumedMins = 480;
+        }
+
+        if(is_null($records->clock_in_am) && is_null($records->clock_out_am)) {
+            $totalConsumedMins = null;
+            $overallMins = null;
+            $overtimeMins = null;
+            $minsAm = null;
+            $minsPm = null;
+        }
+
+        // Update the record with the calculated total consumed, overtime, and overall minutes
         $records->update([
-            'employee_no' => $this->user_id,
-            'total_mins_consumed' => $regMins ?? 0, // Regular minutes
-            'mins_ot' => $minsOT ?? 0,              // Overtime minutes
-            'overall_mins' => $overallMins ?? 0,    // Total minutes including overtime
-            'accomplishment' => $this->accomplishment['report']
+            'bsd_no' => $this->bsd_no,
+            'total_mins_consumed' => $totalConsumedMins, // Total worked minutes (capped at 480)
+            'mins_ot' => $overtimeMins, // OT minutes
+            'overall_mins' => $overallMins, // Total including OT
+            'mins_consumed_am' => $minsAm,
+            'mins_consumed_pm' => $minsPm, // Update the PM minutes after deducting OT
+            'accomplishment' => $this->accomplishment['report'] ?? ''
         ]);
-        
 
         $this->toggleStatus($records);
-    
+
         // Dispatch success alert
         $this->dispatch('alert', [
             'showAlert' => true,
@@ -752,6 +708,7 @@ class Clock extends Component
             'message' => 'You\'re clocked out at ' . $timestamp->format('M d, Y h:i A'),
         ]);
     }
+
     
     public function processClock($imageData, $isImageCaptured, $isForcedClockout) {
 
@@ -776,7 +733,8 @@ class Clock extends Component
 
         if($isForcedClockout) {
 
-            $timestamp = Carbon::createFromTime(11,0,0);
+            // $timestamp = Carbon::now();
+            $timestamp = Carbon::parse($this->manipulate_timestamp);
             $amOrPm = strtolower($timestamp->format('A'));
 
             $records = EmployeeClockInOut::where('employee_no', $this->user_id)

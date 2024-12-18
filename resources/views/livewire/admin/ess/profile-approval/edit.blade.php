@@ -1,4 +1,7 @@
 <div>
+    <div class="d-flex justify-content-end mb-5 gap-3">
+        <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
+    </div>
     <div class="card mb-4">
         <div class="card-body">
             <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
@@ -80,7 +83,7 @@
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="birthday">Date of Birth</label>
-                                                    <input type="date" wire:model="records.employee_personal.birthday" id="birthday" class="form-control restricted">
+                                                    <input type="text" wire:model="records.employee_personal.birthday" id="birthday" class="form-control restricted">
                                                     <div class="error-field">
                                                         @error('records.employee_personal.birthday') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -447,7 +450,6 @@
                                                     <table class="table table-bordered mt-3">
                                                         <thead>
                                                             <tr>
-                                                                <th></th>
                                                                 <th>First Name</th>
                                                                 <th>Middle Name</th>
                                                                 <th>Last Name</th>
@@ -457,11 +459,6 @@
                                                         <tbody>
                                                             @foreach ($records['employee_children'] as $key => $item)
                                                                 <tr>
-                                                                    <td>
-                                                                        <button type="button" class="btn btn-danger" wire:click="removeRecord('family', 'employee_children', '{{$key}}')">
-                                                                            <i class="fa-solid fa-circle-minus"></i>
-                                                                        </button>
-                                                                    </td>
                                                                     <td>
                                                                         <input type="text" readonly wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control restricted">
                                                                         <div class="error-field">
@@ -481,7 +478,7 @@
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="date" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control restricted">
+                                                                        <input type="text" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control restricted">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
@@ -508,7 +505,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Level</th>
                                         <th>Name of School</th>
                                         <th>Basic Education / Strand / Degree / Course</th>
@@ -520,12 +516,7 @@
                                     @foreach ($records['employee_education'] as $key => $item)
                                     <tr>
                                         <td>
-                                            <button type="button" class="btn btn-danger" wire:click="removeRecord('education', 'employee_education', {{$key}})">
-                                                <i class="fa-solid fa-circle-minus"></i>
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <select style="width: 300px" wire:model="records.employee_education.{{$key}}.level" id="records.employee_education.{{$key}}.level" class="form-select restricted">
+                                            <select disabled style="width: 300px" wire:model="records.employee_education.{{$key}}.level" id="records.employee_education.{{$key}}.level" class="form-select restricted">
                                                 <option value=""> - CHOOSE - </option>
                                                 <option value="elementary">Elementary</option>
                                                 <option value="secondary">Secondary</option>
@@ -553,13 +544,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year" id="records.employee_education.{{$key}}.from_year" class="form-control restricted">
+                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year" id="records.employee_education.{{$key}}.from_year" class="form-control restricted">
                                             <div class="error-field">
                                                 @error('records.employee_education.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="date" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year" id="records.employee_education.{{$key}}.to_year" class="form-control restricted">
+                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year" id="records.employee_education.{{$key}}.to_year" class="form-control restricted">
                                             <div class="error-field">
                                                 @error('records.employee_education.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
@@ -580,7 +571,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Position</th>
                                         <th>Department</th>
                                         <th>Company Name</th>
@@ -594,11 +584,6 @@
                                 <tbody>
                                     @foreach ($records['employee_employment_history'] as $key => $item)
                                         <tr>
-                                            <td>
-                                                <button type="button" class="btn btn-danger" wire:click="removeRecord('history', 'employee_employment_history', {{$key}})">
-                                                    <i class="fa-solid fa-circle-minus"></i>
-                                                </button>
-                                            </td>
                                             <td>
                                                 <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.position" id="records.employee_employment_history.{{$key}}.position" class="form-control restricted">
                                                 <div class="error-field">
@@ -624,7 +609,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status" id="records.employee_employment_history.{{$key}}.employment_status" class="form-select restricted">
+                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status" id="records.employee_employment_history.{{$key}}.employment_status" class="form-select restricted">
                                                     <option value=""> - CHOOSE - </option>
                                                     <option value="regular">Regular</option>
                                                     <option value="part time">Part Time</option>
@@ -636,7 +621,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <select style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment" id="records.employee_employment_history.{{$key}}.isGovernment" class="form-select restricted">
+                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment" id="records.employee_employment_history.{{$key}}.isGovernment" class="form-select restricted">
                                                     <option value=""> - CHOOSE - </option>
                                                     <option value="yes">Yes</option>
                                                     <option value="no">No</option>
@@ -646,13 +631,13 @@
                                                 </div>
                                             </td>                                                
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.from_year" id="records.employee_employment_history.{{$key}}.from_year" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.from_year" id="records.employee_employment_history.{{$key}}.from_year" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_employment_history.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_employment_history.{{$key}}.to_year" id="records.employee_employment_history.{{$key}}.to_year" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.to_year" id="records.employee_employment_history.{{$key}}.to_year" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_employment_history.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -675,7 +660,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Certification</th>
                                         <th>Rating</th>
                                         <th>Date of Exam</th>
@@ -687,11 +671,6 @@
                                 <tbody>
                                     @foreach ($records['employee_civil_service'] as $key => $item)
                                         <tr>
-                                            <td>
-                                                <button type="button" class="btn btn-danger" wire:click="removeRecord('civil_service', 'employee_civil_service', {{$key}})">
-                                                    <i class="fa-solid fa-circle-minus"></i>
-                                                </button>
-                                            </td>
                                             <td>
                                                 <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.certification" id="records.employee_civil_service.{{$key}}.certification" class="form-control restricted">
                                                 <div class="error-field">
@@ -705,7 +684,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_civil_service.'.$key.'.date_exam') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -723,7 +702,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_civil_service.{{$key}}.date_validity" id="records.employee_civil_service.{{$key}}.date_validity" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_validity" id="records.employee_civil_service.{{$key}}.date_validity" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_civil_service.'.$key.'.date_validity') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -746,7 +725,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Type</th>
                                         <th>Name</th>
                                         <th>Date From</th>
@@ -758,11 +736,6 @@
                                 <tbody>
                                     @foreach ($records['employee_trainings'] as $key => $item)
                                         <tr>
-                                            <td>
-                                                <button type="button" class="btn btn-danger" wire:click="removeRecord('civil_service', 'employee_trainings', {{$key}})">
-                                                    <i class="fa-solid fa-circle-minus"></i>
-                                                </button>
-                                            </td>
                                             <td>
                                                 <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.type" id="records.employee_trainings.{{$key}}.type" class="form-control restricted">
                                                 <div class="error-field">
@@ -776,13 +749,13 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_from" id="records.employee_trainings.{{$key}}.date_from" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_from" id="records.employee_trainings.{{$key}}.date_from" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_trainings.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_trainings.{{$key}}.date_to" id="records.employee_trainings.{{$key}}.date_to" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_to" id="records.employee_trainings.{{$key}}.date_to" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_trainings.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -818,7 +791,6 @@
                             <table class="table table-bordered mt-3">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Organization</th>
                                         <th>Address</th>
                                         <th>Date From</th>
@@ -830,11 +802,6 @@
                                 <tbody>
                                     @foreach ($records['employee_others'] as $key => $item)
                                         <tr>
-                                            <td>
-                                                <button type="button" class="btn btn-danger" wire:click="removeRecord('others', 'employee_others', {{$key}})">
-                                                    <i class="fa-solid fa-circle-minus"></i>
-                                                </button>
-                                            </td>
                                             <td>
                                                 <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.organization" id="records.employee_others.{{$key}}.organization" class="form-control restricted">
                                                 <div class="error-field">
@@ -848,13 +815,13 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_others.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="date" wire:model="records.employee_others.{{$key}}.date_to" id="records.employee_others.{{$key}}.date_to" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_to" id="records.employee_others.{{$key}}.date_to" class="form-control restricted">
                                                 <div class="error-field">
                                                     @error('records.employee_others.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -889,7 +856,6 @@
                             <table class="table table-bordered mt-3 w-100">
                                 <thead>
                                     <tr>
-                                        <th></th>
                                         <th>Name</th>
                                         <th>Recognition</th>
                                         <th>Organization</th>
@@ -898,11 +864,6 @@
                                 <tbody>
                                     @foreach ($records['employee_skills'] as $key => $item)
                                         <tr>
-                                            <td>
-                                                <button type="button" class="btn btn-danger" wire:click="removeRecord('skills', 'employee_skills', {{$key}})">
-                                                    <i class="fa-solid fa-circle-minus"></i>
-                                                </button>
-                                            </td>
                                             <td>
                                                 <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.name" id="records.employee_skills.{{$key}}.name" class="form-control restricted">
                                                 <div class="error-field">
@@ -936,7 +897,7 @@
         @if (!empty($records))
             <div class="card-footer d-flex gap-3 justify-content-end bg-transparent border-0">
                 <div class="text-end">
-                    <button type="submit" wire:target="reject" wire:loading.attr="disabled" class="btn btn-danger py-3 px-5 mt-2 text-uppercase fw-bold">
+                    <button type="submit" wire:click="reject" wire:target="reject" wire:loading.attr="disabled" class="btn btn-danger py-3 px-5 mt-2 text-uppercase fw-bold">
                         <span wire:loading.remove>Reject</span>    
                         <span wire:loading>Rejecting <i class="fa-solid fa-spinner fa-spin"></i>
                     </button>
@@ -947,7 +908,7 @@
                     </div>
                 </div>
                 <div class="text-end">
-                    <button type="submit" wire:target="approve" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
+                    <button type="submit" wire:click="approve" wire:target="approve" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
                         <span wire:loading.remove>Aprrove</span>    
                         <span wire:loading>Approving <i class="fa-solid fa-spinner fa-spin"></i>
                     </button>

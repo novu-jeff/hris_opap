@@ -15,6 +15,7 @@ class DailyTimeRecord extends Component
     public $dtr = null;
     public $dtrDate;
     public $employee_id;
+    public $errors;
 
     protected $dailyTimeRecordService;
 
@@ -27,15 +28,22 @@ class DailyTimeRecord extends Component
     {
         $this->initializeService();
 
-        $this->dtrDate = $this->dtrDate ?? now()->subMonth()->format('F, Y');
-        $this->employee_id = Auth::user()->employee_no;
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
+        try {
+            $this->dtrDate = $this->dtrDate ?? now()->subMonth()->format('F, Y');
+            $this->employee_id = Auth::user()->employee_no;
+            $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
 
-        if ($this->dailyTimeRecordService) {
-            Log::error('DailyTimeRecordService is not null.');
-        } else {
-            Log::error('DailyTimeRecordService is null while changing month.');
+            if ($this->dailyTimeRecordService) {
+                Log::error('DailyTimeRecordService is not null.');
+            } else {
+                Log::error('DailyTimeRecordService is null while changing month.');
+            }
+
+            $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
+        } catch (\Exception $e) {
+            $this->errors = explode("\n", $e->getMessage());
         }
+        
     }
 
     public function changeMonth($increment)
@@ -52,7 +60,6 @@ class DailyTimeRecord extends Component
         } else {
             $this->dtrDate = $currentDate->format('F, Y');
         }
-
         $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
     }
 

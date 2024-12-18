@@ -1,6 +1,11 @@
 <div>
     <div class="clockinout">
         <div class="row">
+            <div class="col-12 col-md-4 mb-5">
+                <label for="user" class="mb-3">Manipulate time for testing</label>
+                <input type="time" class="form-control" wire:model="manipulate_timestamp">
+                <button wire:click="delete" class="btn btn-danger mt-3">Delete Record</button>
+            </div>
             <div class="col-12 col-md-12 mb-3 mb-3">
                 <div class="row">
                     <div class="col-12 col-md-4 mb-3">
@@ -27,7 +32,7 @@
                                 </div>
                             </div>      
                         </div>  
-                        @if (in_array($status, ['Break In', 'Break Out']))
+                        @if (in_array($status, ['Break Out']))
                             <div class="text-center mt-2">
                                 <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
                                     Clock Out
@@ -90,6 +95,14 @@
                                         <th>Break Out</th>
                                         <th>Break In</th>
                                         <th>Clock Out</th>
+
+                                        <th>Consumed AM</th>
+                                        <th>Consumed PM</th>
+                                        <th>Total Consumed</th>
+                                        <th>OT Mins</th>
+                                        <th>Over All Mins</th>
+                                        <th>Accomplishment</th>
+
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
@@ -102,6 +115,13 @@
                                             <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
+                                            
+                                            <td>{{ $item->mins_consumed_am ? \Carbon\CarbonInterval::minutes($item->mins_consumed_am)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->mins_consumed_pm ? \Carbon\CarbonInterval::minutes($item->mins_consumed_pm)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->total_mins_consumed ? \Carbon\CarbonInterval::minutes($item->total_mins_consumed)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->mins_ot ? \Carbon\CarbonInterval::minutes($item->mins_ot)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->overall_mins ? \Carbon\CarbonInterval::minutes($item->overall_mins)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                            <td>{{ $item->accomplishment }} </td>
                                             <td></td>
                                         </tr>
                                     @empty

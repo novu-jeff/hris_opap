@@ -112,7 +112,7 @@ class Chatbox extends Component
         ];
     }
      
-    public function isFirstTime(int $id) {
+    public function isFirstTime(string $id) {
         $model = Message::class;
         $user = EmployeePersonal::where('employee_no', $id)->first();
         $record = $model::where('from_id', $id)
