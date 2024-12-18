@@ -12,114 +12,6 @@ use function PHPUnit\Framework\returnSelf;
 
 class DailyTimeRecordService {
 
-    // public function getDailyTimeRecord($id, $date)
-    // {
-    //     $date = Carbon::createFromFormat('F, Y', $date);
-
-    //     Log::info('Showing DTR for Date: ' . $date);
-
-    //     $startDate = $date->copy()->startOfMonth();
-    //     $endDate = $date->copy()->endOfMonth();
-
-    //     $employeeClockQuery = DB::table('employee_clock_in_out')
-    //     ->whereBetween('created_at', [$startDate, $endDate])
-    //     ->orWhereNull('created_at');
-    
-    //     // Main query
-    //     $dtr = DB::table('employee_account')
-    //         ->leftJoin('employee_information', 'employee_account.employee_no', '=', 'employee_information.employee_no')
-    //         ->leftJoinSub($employeeClockQuery, 'clock_data', function ($join) {
-    //             $join->on('employee_information.bsd_no', '=', 'clock_data.bsd_no')
-    //                 ->orOn('employee_information.employee_no', '=', 'clock_data.employee_no');
-    //         })
-    //         ->leftJoin('employee_schedules', 'employee_information.schedule_id', '=', 'employee_schedules.id')
-    //         ->leftJoin('shift_schedule', 'employee_information.shift_id', '=', 'shift_schedule.id')
-    //         ->leftJoin('employee_personal', 'employee_account.employee_no', '=', 'employee_personal.employee_no')
-    //         ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')
-    //         ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
-    //         ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
-    //         ->select(
-    //             # Employee personal details
-    //             'employee_account.employee_no',
-    //             'employee_information.bsd_no',
-    //             'employee_personal.firstname',
-    //             'employee_personal.middlename',
-    //             'employee_personal.lastname',
-
-    //             # Clock in and out
-    //             'clock_data.clock_in_am',
-    //             'clock_data.clock_out_am',
-    //             'clock_data.clock_in_pm',
-    //             'clock_data.clock_out_pm',
-
-    //             'clock_data.total_mins_consumed',
-    //             'clock_data.created_at',
-    //             'clock_data.origin',
-    //             'clock_data.isLate',
-    //             'clock_data.isUnderTime',
-    //             'clock_data.isHalfDay',
-
-    //             'clock_data.total_mins_consumed',
-    //             'clock_data.mins_ot',
-    //             'clock_data.overall_mins',
-
-    //             # Employee Shift
-                
-
-    //             # Employee Additional Information
-    //             'positions.code as position_code',
-    //             'positions.name as position_name',
-    //             'positions.salary',
-    //             'departments.name as department_name',
-    //             'departments.code as department_code'
-    //         )
-    //         ->where('employee_account.employee_no', $id)
-    //         ->get();
-
-    //     dd($dtr);
-    //     $allDays = collect();
-    //     foreach ($startDate->toPeriod($endDate) as $day) {
-    //         $allDays->push($day->toDateString()); 
-    //     }
-
-    //     $mappedClockData = [];
-    //     foreach ($allDays as $day) {
-
-    //         $clockData = $dtr->firstWhere(function($item) use ($day) {
-    //             return Carbon::parse($item->created_at)->isSameDay(Carbon::parse($day));
-    //         });
-
-    //         $mappedClockData[] = [
-    //             'date' => $day,
-    //             'clock_in_am' => $clockData ? $clockData->clock_in_am : null,
-    //             'clock_out_am' => $clockData ? $clockData->clock_out_am : null,
-    //             'clock_in_pm' => $clockData ? $clockData->clock_in_pm : null,
-    //             'clock_out_pm' => $clockData ? $clockData->clock_out_pm : null,
-    //             'origin' => $clockData ? $clockData->origin : null,
-    //             'total_mins_consumed' => $clockData ? $clockData->total_mins_consumed : null,
-    //         ];
-    //     }
-
-    //     // Assign data to $this->dtr
-    //     $dtr_new_format = [
-    //         'employee_account' => [
-    //             'employee_no' => $dtr->first()->employee_no,
-    //             'firstname' => $dtr->first()->firstname,
-    //             'lastname' => $dtr->first()->lastname,
-    //             'middlename' => $dtr->first()->middlename ? strtoupper(substr($dtr->first()->middlename, 0, 1)) . '.' : '',
-    //             'position' => $dtr->first()->position_name . ' (' . $dtr->first()->position_code . ')',
-    //             'department' => $dtr->first()->department_name . ' (' . $dtr->first()->department_code . ')',
-    //             'salary' => $dtr->first()->salary,
-    //         ],
-    //         'clock_in_out' => $mappedClockData
-    //     ];
-        
-
-
-
-    //     return $dtr_new_format;
-    // }
-
     public function getDailyTimeRecord($id, $date)
     {
         $errors = [];
@@ -183,6 +75,26 @@ class DailyTimeRecordService {
             $errors[] = "Employee schedule is missing for employee {$id}. Please assign one.";
         }
 
+        # get the overtime of employee
+        $overtime = DB::table('employee_atro')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where('employee_no', $id)
+                ->where('status', 'approve')
+                ->count();
+
+        # get the leaves of employee
+        $leaves = DB::table('employee_leave')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where('employee_no', $id)
+                ->where('status', 'approve')
+                ->count();
+
+        # get Holidays of employee
+        $holidays = DB::table('holidays')
+                ->whereBetween('date', [$startDate, $endDate])
+                ->where('isActive', true)
+                ->get();
+
         # Throw all errors if any
         if (!empty($errors)) {
             throw new \Exception(implode("\n", $errors));
@@ -219,31 +131,89 @@ class DailyTimeRecordService {
             $allDays->push($day->toDateString());
         }
 
-        $dailyTimeRecord = $this->computeDailyTimeRecord($employee, $shift, $schedule, $clockData, $allDays);
+        # DTR Computation
+        $dailyTimeRecord = $this->computeDailyTimeRecord(
+                    $employee, 
+                    $shift, 
+                    $schedule, 
+                    $clockData, 
+                    $overtime,
+                    $leaves,
+                    $holidays,
+                    $allDays
+                );
 
         return $dailyTimeRecord;
     }
 
-    public function computeDailyTimeRecord(object $employee, object $shift, object $schedule, Object $clockData, $allDays)
+    public function computeDailyTimeRecord(
+            object $employee, 
+            object $shift, 
+            object $schedule, 
+            Object $clockData, 
+            int $overtime, 
+            int $leaves,
+            object $holiday,
+            $allDays)
     {
-       
-         # Map clock-in/out data to the dates
-         $mappedClockData = [];
-         foreach ($allDays as $day) {
-             $clockEntry = $clockData->firstWhere(function ($item) use ($day) {
-                 return Carbon::parse($item->created_at)->isSameDay(Carbon::parse($day));
-             });
- 
-             $mappedClockData[] = [
-                 'date' => $day,
-                 'clock_in_am' => $clockEntry ? $clockEntry->clock_in_am : null,
-                 'clock_out_am' => $clockEntry ? $clockEntry->clock_out_am : null,
-                 'clock_in_pm' => $clockEntry ? $clockEntry->clock_in_pm : null,
-                 'clock_out_pm' => $clockEntry ? $clockEntry->clock_out_pm : null,
-                 'origin' => $clockEntry ? $clockEntry->origin : null,
-                 'total_mins_consumed' => $clockEntry ? $clockEntry->total_mins_consumed : null,
-             ];
-         }
+        $totalOfWorkDaysForCurrentMonth  = 0;
+        $totalPresentDays = 0;
+        $totalLates = 0;
+        $totalUndertime = 0;
+        $totalHalfDay = 0;
+        $totalRestDay = 0;
+
+        $remarks = '';
+
+        $scheduleDays = $this->getDaysSchedule($schedule);
+        $convertedHolidays = $this->convertHolidayToArray($holiday);
+
+        # Map clock-in/out data to the dates
+        $mappedClockData = [];
+        foreach ($allDays as $day) {
+            $dayTextFormat = Carbon::parse($day)->format('l');
+
+            $clockEntry = $clockData->firstWhere(function ($item) use ($day) {
+                return Carbon::parse($item->created_at)->isSameDay(Carbon::parse($day));
+            });
+            
+            # check if the day is in the schedule
+            if(in_array($dayTextFormat, $scheduleDays))
+            {
+                $totalOfWorkDaysForCurrentMonth++;
+                $remarks = '';
+            }  else {
+                $totalRestDay++;
+                $remarks = 'Rest day';
+            }
+
+            if(in_array($day, $convertedHolidays['regular']) || in_array($day, $convertedHolidays['special']) || in_array($day, $convertedHolidays['company'])) {
+                $remarks = 'Holiday';
+            }
+
+            # Check if the employee was present (i.e., clocked in and out)
+            if ($clockEntry && $clockEntry->clock_in_am && $clockEntry->clock_out_pm) {
+                $totalPresentDays++;
+            }
+
+            # other Totals
+            if ($clockEntry) {
+                $totalLates += $clockEntry->isLate ? 1 : 0;
+                $totalUndertime += $clockEntry->isUnderTime ? 1 : 0;
+                $totalHalfDay += $clockEntry->isHalfDay ? 1 : 0;
+            }
+
+            $mappedClockData[] = [
+                'date' => $day,
+                'clock_in_am' => $clockEntry ? $clockEntry->clock_in_am : null,
+                'clock_out_am' => $clockEntry ? $clockEntry->clock_out_am : null,
+                'clock_in_pm' => $clockEntry ? $clockEntry->clock_in_pm : null,
+                'clock_out_pm' => $clockEntry ? $clockEntry->clock_out_pm : null,
+                'origin' => $clockEntry ? $clockEntry->origin : null,
+                'remarks' => $remarks ? $remarks : null,
+                'total_mins_consumed' => $clockEntry ? $clockEntry->total_mins_consumed : null,
+            ];
+        }
 
         # Format the result
         $dtr_new_format = [
@@ -258,10 +228,76 @@ class DailyTimeRecordService {
                 'department' => $employee->department_name . ' (' . $employee->department_code . ')',
                 'salary' => $employee->salary,
             ],
-            'clock_in_out' => $mappedClockData
+            'clock_in_out' => $mappedClockData,
+            'summary' => [
+                'days_works' => $totalPresentDays,
+                'absences' => $totalOfWorkDaysForCurrentMonth - $totalPresentDays,
+                'overtime' => $overtime,
+                'leaves' => $leaves,
+                'rest_days' => $totalRestDay,
+                'lates' => $totalLates,
+                'undertime' => $totalUndertime,
+                'halfday' => $totalHalfDay,
+                'special_holidays' => count($convertedHolidays['special']),
+                'regular_holidays' => count($convertedHolidays['regular']),
+                'total_days_work' => $totalOfWorkDaysForCurrentMonth,
+            ]
         ];
 
         return $dtr_new_format;
 
     }
+
+    public function getDaysSchedule(object $schedule)
+    {
+        $workDays = [];
+        if ($schedule->monday) {
+            $workDays[] = 'Monday';
+        }
+        if ($schedule->tuesday) {
+            $workDays[] = 'Tuesday';
+        }
+        if ($schedule->wednesday) {
+            $workDays[] = 'Wednesday';
+        }
+        if ($schedule->thursday) {
+            $workDays[] = 'Thursday';
+        }
+        if ($schedule->friday) {
+            $workDays[] = 'Friday';
+        }
+        if ($schedule->saturday) {
+            $workDays[] = 'Saturday';
+        }
+        if ($schedule->sunday) {
+            $workDays[] = 'Sunday';
+        }
+        return $workDays;
+    }
+
+    public function convertHolidayToArray(object $holidays)
+    {
+        $specialHoliday = [];
+        $national = [];
+        $companyHoliday = [];
+
+        foreach($holidays as $hday)
+        {
+            if($hday->type === 'special')
+            {
+                $specialHoliday[] = $hday->date;
+            } else if ($hday->type === 'national') {
+                $national[] = $hday->date;
+            } else {
+                $companyHoliday[] = $hday->date;
+            }
+        }
+            
+        return [
+            'special' => $specialHoliday,
+            'regular' => $national,
+            'company' => $companyHoliday,
+        ];
+    }
+
 }
