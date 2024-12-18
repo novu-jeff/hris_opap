@@ -12,7 +12,6 @@ class EmployeeUpdateCivilService extends Model
     protected $table = 'employee_update_civil_service';
 
     protected $fillable = [
-        'updating_id',
         'employee_no',
         'certification',
         'rating',

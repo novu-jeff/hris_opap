@@ -131,6 +131,9 @@ class Manual extends Component
             if($record) {
                 $this->records['employee_information']['branch'] = $record->branch->name ?? '';
                 $this->records['employee_information']['department'] = $record->department->name ?? '';
+            } else {
+                $this->records['employee_information']['branch'] = '';
+                $this->records['employee_information']['department'] = '';
             }
         }
     }
@@ -185,7 +188,6 @@ class Manual extends Component
                 Rule::unique('employee_information', 'employee_no')->ignore($id, 'employee_no')
             ],
             'records.employee_information.biometrics_id' => [
-                'required',
                 Rule::unique('employee_information', 'bsd_no')->ignore($id, 'employee_no')
             ],
             'records.employee_information.type' => 'nullable|exists:job_categories,id',

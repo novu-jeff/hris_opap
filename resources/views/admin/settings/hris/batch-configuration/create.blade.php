@@ -9,7 +9,7 @@
             <h1>Add Batch</h1>
         </div>
         <div class="actions">
-            <a href="{{route('batch-configuration.index')}} class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <a href="{{route('batch-configuration.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
     <div class="mt-3">

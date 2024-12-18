@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
+use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
@@ -159,6 +160,9 @@ Route::prefix('admin')->group(function() {
                 ->name('timekeeping.index');
             Route::get('upload', [TimekeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
+
+            Route::get('correction/logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'correction'])
+                ->name('timekeeping.correction');
         });
 
         Route::prefix('ess')->group(function() {
@@ -195,8 +199,8 @@ Route::prefix('admin')->group(function() {
                 return view('admin.reports.daily-time-record.index', compact('title'));
             })->name('reports.dtr');
 
-            Route::get('/reports/{date?}', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
-
+            Route::get('/dtr/{date?}', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
+            Route::get('/dtr/{date?}/{id}', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
         });
         
         Route::prefix('settings')->group( function() {
@@ -267,6 +271,10 @@ Route::prefix('admin')->group(function() {
                     ->name('users.index');
             });
             
+            Route::prefix('payroll')->group( function() {
+                Route::resource('/holidays', HolidayController::class)->only('create', 'index', 'edit')
+                    ->names('holiday');
+            });
         });
     });
 

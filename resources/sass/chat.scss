@@ -400,12 +400,6 @@ li.reply .time {
     border-top: 1px solid #ccc;
 }
 
-.send-box form {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
 
 .send-box .form-control {
     display: block;
@@ -434,8 +428,7 @@ li.reply .time {
     border-radius: 0.25rem;
     font-size: 14px;
     font-weight: 400;
-    width: 24%;
-    margin-left: 1%;
+    width: 200px !important;
 }
 
 .send-box button i {

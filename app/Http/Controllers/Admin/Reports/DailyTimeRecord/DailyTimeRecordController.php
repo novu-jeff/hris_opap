@@ -16,5 +16,10 @@ class DailyTimeRecordController extends Controller
     
         return view('admin.reports.daily-time-record.employee.index', compact('date'));
     }
+
+    public function show($date, $id)
+    {
+        return view('admin.reports.daily-time-record.employee.show', compact('id', 'date'));
+    }
     
 }

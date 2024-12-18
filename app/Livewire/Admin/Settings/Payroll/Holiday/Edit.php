@@ -1,0 +1,114 @@
+<?php
+
+namespace App\Livewire\Admin\Settings\Payroll\Holiday;
+
+use App\Models\Holiday;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Livewire\Component;
+
+class Edit extends Component
+{
+    public int $id;
+    public $name, $date, $type, $isYearly;
+
+    public function mount() {
+        $this->loadRecords($this->id);
+    }
+
+    public function loadRecords(int $id) {
+
+        $record = Holiday::where('id', $id)->where('isActive', true)->first();
+    
+        if (!$record) {
+            return redirect()->route('holidays.index');
+        }
+
+        $this->name = $record->name;
+        $this->date = $record->date;
+        $this->type = $record->type;
+        $this->isYearly = $record->isYearly;
+    }
+    
+
+    public function checkIfYearly() {
+        $type = $this->type;
+
+        if($type == 'company') {
+            $this->isYearly = false;
+        } else {
+            $this->isYearly = true;
+        }
+    }
+
+    public function save() {
+
+        $this->validate();
+
+        DB::beginTransaction();
+
+        try {
+
+            Holiday::where('id', $this->id)
+                ->where('isActive', true)
+                ->update([
+                    'name' => $this->name,
+                    'date' => $this->date,
+                    'type' => $this->type,
+                    'isYearly' => $this->isYearly,
+            ]);
+
+            DB::commit();
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!', 
+                'showAlert' => true,
+                'message' => 'Holiday: ' . strtoupper($this->name) . ' was updated successfully.'
+            ]);
+
+            
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!', 
+                'showAlert' => true,
+                'message' => 'Error occured: ' . $e->getMessage()
+            ]);
+        }
+
+    }
+
+    protected function rules() {
+        return [
+            'name' => [
+                'required',
+                Rule::unique('holidays', 'name')
+                    ->ignore($this->id)
+            ],
+            'date' => 'required|date',
+            'type' => 'required|string',
+        ];
+    }
+
+    public function messages() {
+        return [
+            'name.required' => 'The holiday name is required.',
+            'name.unique' => 'The holiday name is already taken.',
+            
+            'date.required' => 'The date is required.',
+            'name.date' => 'Must be a date.',
+
+            'type.required' => 'The type is required.',
+            'type.string' => 'Must be a string.',
+        ];
+    }
+    
+    public function render()
+    {
+        return view('livewire.admin.settings.payroll.holiday.edit');
+    }
+}

@@ -31,7 +31,7 @@ class EmployeeUploadService extends Controller
         }
     }    
 
-    public function uploadEmployeeInformation($data) {
+    public function uploadEmployeeInformation($data, $schedules) {
         $result = [
             'employee_information' => [
                 'inserted' => [
@@ -73,6 +73,8 @@ class EmployeeUploadService extends Controller
             $employeeInfo = EmployeeInformation::updateOrCreate(
                 ['employee_no' => $employeeData[0]],
                 [
+                    'shift_id' => $schedules['shift'] ?? null,
+                    'schedule_id' => $schedules['schedule'] ?? null, 
                     'bsd_no' => $employeeData[1],
                     'date_hired' => $this->transformDate($employeeData[16]), // Adjusted index
                     'department_id' => null,

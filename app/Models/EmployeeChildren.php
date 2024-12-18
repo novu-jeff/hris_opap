@@ -11,7 +11,7 @@ class EmployeeChildren extends Model
 
     protected $table = 'employee_children';
     protected $fillable = [
-        'employee_id',
+        'employee_no',
         'firstname',
         'middlename',
         'lastname',

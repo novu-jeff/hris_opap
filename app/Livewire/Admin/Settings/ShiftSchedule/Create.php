@@ -164,6 +164,13 @@ class Create extends Component
             ]);
         } else {
             try {
+
+
+                $mobileEarliestClockin = $this->work_setup === 'hybrid' ? $this->mobile_earliest_clockin : null;
+                $mobileLatestClockin = $this->work_setup === 'hybrid' ? $this->mobile_latest_clockin : null;
+                $webEarliestClockin = $this->work_setup === 'hybrid' ? $this->web_earliest_clockin : null;
+                $webLatestClockin = $this->work_setup === 'hybrid' ? $this->web_latest_clockin : null;
+
                 // Build data for update or create
                 $data = [
                     'name' => $this->name,
@@ -174,6 +181,10 @@ class Create extends Component
                     'max_ot_time' => $this->max_ot_time,
                     'break_out' => $this->break_out,
                     'break_in' => $this->break_in,
+                    'mobile_earliest_clockin' => $mobileEarliestClockin,
+                    'mobile_latest_clockin' => $mobileLatestClockin,
+                    'web_earliest_clockin' => $webEarliestClockin,
+                    'web_latest_clockin' => $webLatestClockin,
                 ];
 
                 if ($this->isFlexible) {

@@ -63,7 +63,7 @@
                 Payroll
             </a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Holidays</a></li>
+                <li><a class="dropdown-item" href="{{ route('holiday.index') }}">Holidays</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Period</a></li>
                 <li><a class="dropdown-item" href="#">Payroll Configuration</a></li>
             </ul>

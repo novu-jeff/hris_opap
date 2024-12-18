@@ -23,6 +23,7 @@ class Index extends Component
 
     public function remove(bool $isNotify = true, int $id = null) {
 
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';

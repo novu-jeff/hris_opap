@@ -91,8 +91,8 @@ class HRISProcessingService extends Controller
             
             $record = EmployeeInformation::create([
                 'employee_no' => $employee_no,
-                'bsd_no' => $data['employee_information']['biometrics_id'],
-                'monthly_rate' => $data['employee_information']['salary'],
+                'bsd_no' => $data['employee_information']['biometrics_id'] ?? '',
+                'monthly_rate' => $data['employee_information']['salary'] ?? '',
                 'date_hired' => Carbon::now()->format('Y-m-d'),
             ]);
 
@@ -186,7 +186,7 @@ class HRISProcessingService extends Controller
         
 
         if ($isFirstTime) {
-            $template['employee_id'] = $employee_no;
+            $template['employee_no'] = $employee_no;
             return EmployeePersonal::create($template);
         }
 
