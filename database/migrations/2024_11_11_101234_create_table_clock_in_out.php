@@ -19,13 +19,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('clock_out_am')
                 ->nullable();
-            $table->string('mins_consumed_am')
-                ->nullable();
             $table->string('clock_in_pm')
                 ->nullable();
             $table->string('clock_out_pm')
-                ->nullable();
-            $table->string('mins_consumed_pm')
                 ->nullable();
             $table->string('captured_image_clockin')
                 ->nullable();
@@ -34,18 +30,6 @@ return new class extends Migration
             $table->string('captured_location_clockin')
                 ->nullable();
             $table->string('captured_location_clockout')
-                ->nullable();
-            $table->boolean('isLate')
-                ->default(false);
-            $table->boolean('isHalfDay')
-                ->default(false);
-            $table->boolean('isUnderTime')
-                ->default(false);
-            $table->string('total_mins_consumed')
-                ->nullable();
-            $table->string('mins_ot')
-                ->nullable();
-            $table->string('overall_mins')
                 ->nullable();
             $table->longText('accomplishment')
                 ->nullable();
