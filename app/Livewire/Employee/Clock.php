@@ -564,8 +564,9 @@ class Clock extends Component
     
     private function clockout($shift, $records, $timestamp)
     {
-        // Always use clock_out_pm for forced clock-out
-        $clockOutColumn = 'clock_out_pm';
+        // Determine the default columns for clock-in, clock-out
+        $clockInColumn = $shift == 'am' ? 'clock_in_am' : 'clock_in_pm';
+        $clockOutColumn = $shift == 'am' ? 'clock_out_am' : 'clock_out_pm';
 
         $location = $this->saveLocation();
 
@@ -585,26 +586,38 @@ class Clock extends Component
                 // Regular clock_out_pm value if no forced clock-out and both times are available
                 $clockOutTime = Carbon::parse($records->clock_out_pm);  
             }
+
+            $clockOutColumn = 'clock_out_pm';
+
+            $records->update([
+                'employee_no' => $this->user_id,
+                'captured_image_clockout' => $this->capturedImage,
+                'captured_location_clockout' => $location,
+                $clockOutColumn => $clockOutTime->format('g:i A'), // Update the correct clock-out field
+            ]);
+
         } else {
             // If not forced, just use the current timestamp as clock-out time
             $clockOutTime = Carbon::parse($timestamp);  // Regular clock-out time
+             // Update the record with the calculated values
+            $records->update([
+                'employee_no' => $this->user_id,
+                'captured_image_clockout' => $this->capturedImage,
+                'captured_location_clockout' => $location,
+                $clockOutColumn => $clockOutTime->format('g:i A'), // Update the correct clock-out field
+            ]);
         }
 
-        // Update the record with the calculated clock-out time, location, and captured image
-        $records->update([
-            'employee_no' => $this->user_id,
-            'captured_image_clockout' => $this->capturedImage,
-            'captured_location_clockout' => $location,
-            $clockOutColumn => $clockOutTime->format('g:i A'), // Always update clock_out_pm
-        ]);
 
-        // Update other details like BSD number and accomplishment report
+        // Update the record with the calculated total consumed, overtime, and overall minutes
         $records->update([
             'bsd_no' => $this->bsd_no,
             'accomplishment' => $this->accomplishment['report'] ?? ''
         ]);
 
         $this->toggleStatus($records);
+
+        // Adjust message dynamically based on shift
 
         // Dispatch success alert
         $this->dispatch('alert', [
