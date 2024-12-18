@@ -80,8 +80,6 @@ class Correction extends Component
             ->where('created_at', 'like', '%' . $timestamp . '%')
             ->where(function ($query) {
                 $query->whereNull('clock_in_am')
-                    ->orWhereNull('clock_out_am')
-                    ->orWhereNull('clock_in_pm')
                     ->orWhereNull('clock_out_pm');
             })
             ->get();
@@ -91,6 +89,6 @@ class Correction extends Component
     }
 
     public function render() {
-        return view('livewire.admin.timekeeping.index');
+        return view('livewire.admin.timekeeping.correction');
     }
 }

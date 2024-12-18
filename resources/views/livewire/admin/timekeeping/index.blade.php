@@ -155,10 +155,10 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td class="border px-4 py-2"><strong><u>${clockIn ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${breakOut ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${breakIn ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${clockOut ?? 'N/A'}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockIn ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakOut ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${breakIn ?? ''}</u></strong></td>
+                                                    <td class="border px-4 py-2"><strong><u>${clockOut ?? ''}</u></strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>
