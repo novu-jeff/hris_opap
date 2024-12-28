@@ -196,72 +196,85 @@
                     <a href="{{route('users.index', ['type' => 'admin'])}}" class="nav-link {{$type == 'admin' ? 'active' : ''}}" id="pills-admin-tab" type="button" role="tab" aria-controls="pills-admin" aria-selected="false">Administrators</a>
                 </li>
             </ul>
-            <div class="mt-4" wire:ignore>
-                <table class="table data-tables w-100">
-                    <thead>
-                        <tr>
-                            <th>Profile</th>
-                            <th>Name</th>
-                            <th>Email</th>
+            <div class="mt-4">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered w-100">
+                        <thead>
+                            <tr>
+                                <th>Profile</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                @if($type === 'applicants')
+                                    <th>Date Joined</th>
+                                @elseif($type == 'employees')
+                                    <th>Date Hired</th>
+                                @endif
+                                <th style="max-width: 200px;">Action</th>
+                            </tr>
+                        </thead>                
+                        <tbody>
                             @if($type === 'applicants')
-                                <th>Date Joined</th>
-                            @elseif($type == 'employees')
-                                <th>Date Hired</th>
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td colspan="1">
+                                            <img src="{{
+                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                            }}" style="width: 40px; height: 40px">
+                                        </td>
+                                        <td>{{$record->firstname . ' ' . $record->lastname}}</td>
+                                        <td>{{$record->email}}</td>
+                                        @if($type === 'applicants')
+                                            <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                        @endif
+                                        <td>
+                                            <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
+                                                <i class="fa-solid fa-person"></i>
+                                            </button>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>  
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr>
+                                @endforelse
+                            @elseif($type === 'employees')
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td colspan="1">
+                                            <img src="{{
+                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                            }}" style="width: 40px; height: 40px">
+                                        </td>
+                                        <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
+                                        <td>{{$record->account->email}}</td>
+                                        @if($type === 'employees')
+                                            <td>{{$record->date_hired}}</td>
+                                        @endif
+                                        <td>
+                                            <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->id])}}" class="btn btn-success mx-1">
+                                                <i class="fa-solid fa-person"></i>
+                                            </a>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>  
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr>
+                                @endforelse
+                            @else
                             @endif
-                            <th style="max-width: 200px;">Action</th>
-                        </tr>
-                    </thead>                
-                    <tbody>
-                        @if($type === 'applicants')
-                            @foreach($records as $record)
-                                <tr data-id="{{$record->id}}">
-                                    <td colspan="1">
-                                        <img src="{{
-                                            $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                        }}" style="width: 40px; height: 40px">
-                                    </td>
-                                    <td>{{$record->firstname . ' ' . $record->lastname}}</td>
-                                    <td>{{$record->email}}</td>
-                                    @if($type === 'applicants')
-                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
-                                    @endif
-                                    <td>
-                                        <button class="btn btn-success mx-1" wire:click="view_user({{$record->id}})">
-                                            <i class="fa-solid fa-person"></i>
-                                        </button>
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>  
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @elseif($type === 'employees')
-                            @foreach($records as $record)
-                                <tr data-id="{{$record->id}}">
-                                    <td colspan="1">
-                                        <img src="{{
-                                            $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                        }}" style="width: 40px; height: 40px">
-                                    </td>
-                                    <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
-                                    <td>{{$record->account->email}}</td>
-                                    @if($type === 'employees')
-                                        <td>{{$record->date_hired}}</td>
-                                    @endif
-                                    <td>
-                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->id])}}" class="btn btn-success mx-1">
-                                            <i class="fa-solid fa-person"></i>
-                                        </a>
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>  
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @else
-                        @endif
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $records->links(data: ['scrollTo' => false]) }}
+                </div>
             </div>
         </div>
     </div>
