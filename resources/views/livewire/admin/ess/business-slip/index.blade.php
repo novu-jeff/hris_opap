@@ -95,7 +95,29 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <table class="table data-tables w-100" wire:ignore>
+                    <div class="row mb-5">
+                        <div class="col-md-6 d-flex align-items-center gap-2">
+                            <label for="entries" class="form-label mb-0">Show entries:</label>
+                            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="40">40</option>
+                                <option value="50">50</option>
+                                <option value="60">60</option>
+                                <option value="70">70</option>
+                                <option value="80">80</option>
+                                <option value="90">90</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                            <label for="search" class="form-label mb-0">Search:</label>
+                            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+                        </div>
+                    </div>
+                    <table class="table table-striped w-100" wire:ignore>
                         <thead>
                             <tr>
                                 <th>Employee ID</th>
@@ -105,7 +127,7 @@
                             </tr>
                         </thead>                
                         <tbody>
-                            @foreach($records as $record)
+                            @forelse($records as $record)
                                 <tr data-id="{{$record->id}}">
                                     <td>#{{format_id($record->id, 6)}}</td>
                                     <td>{{$record->firstname . ' ' . $record->lastname}}</td>
@@ -119,9 +141,16 @@
                                         </button>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                </tr> 
+                            @endforelse
                         </tbody>
                     </table>
+                    <div class="mt-4">
+                        {{ $records->links(data: ['scrollTo' => false]) }}
+                    </div>
                 </div>
             </div>
         </div>

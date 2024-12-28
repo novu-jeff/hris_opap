@@ -4,32 +4,22 @@ namespace App\Livewire\Admin\Ess\Leave;
 
 use App\Models\EmployeeLeave;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
  
+    use WithPagination;
+
     public $status;
-    public $records;
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'rejected', 'granted'];
 
-
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords(int $id = null) {
-        $records = EmployeeLeave::with('employment', 'employee', 'leave_type')
-            ->where('status', $this->status);
-            
-        if(!is_null($id)) {
-            $records->where('id', $id);
-            return $this->view_records = $records->first();
-        }
-        return $this->records = $records->get();
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function view(int $id) {
         $this->selected_id = $id;
@@ -39,6 +29,12 @@ class Index extends Component
                 'modal' => 'showModal', 
             ]);
         }
+    }
+
+    public function loadRecords(int $id) {
+        $this->view_records = EmployeeLeave::with('employment', 'employee', 'leave_type')
+            ->where('id', $id)
+            ->first();
     }
 
     public function rejected(bool $isNotify = true) {
@@ -171,6 +167,28 @@ class Index extends Component
  
     public function render()
     {
-        return view('livewire.admin.ess.leave.index');
+       
+        $model = EmployeeLeave::with('employment', 'employee', 'leave_type')
+            ->where('status', $this->status);
+
+        if ($this->search) {
+            $this->resetPage(); 
+
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('employee', function ($subQuery) {
+                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+            });
+        } else {
+            $records = $model;
+        }
+
+        $records = $records->latest()->paginate($this->entries);
+
+
+        return view('livewire.admin.ess.leave.index', [
+            'records' => $records
+        ]);
     }
 }
