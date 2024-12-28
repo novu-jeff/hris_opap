@@ -152,6 +152,7 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('tin_no')
                 ->nullable();
+            $table->index(['firstname', 'lastname', 'employee_no']);
         });
 
         Schema::create('employee_parents', function(Blueprint $table) {

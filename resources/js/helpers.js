@@ -82,10 +82,10 @@ export function ckeditor(isReadOnly = false) {
 
 
 export function removeRowDT(id) {
-    var table = $('table').DataTable();
-    var row = table.row($('tr[data-id="' + id + '"]'));
-    if (row.node()) {
-        row.remove().draw(false); 
+    var row = $('tr[data-id="' + id + '"]');
+    
+    if (row.length) {
+        row.remove();
     } else {
         console.log('Row not found!');
     }
