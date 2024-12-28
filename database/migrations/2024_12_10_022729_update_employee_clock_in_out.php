@@ -28,6 +28,7 @@ return new class extends Migration
             $table->boolean('ismanual')
                 ->nullable()
                 ->after('type');
+            $table->index('bsd_no');
         });
     }
 

@@ -152,8 +152,30 @@
     </div>
 
     <div>
-        <div class="table-responsive">
-            <table class="table table-striped w-100 data-tables">
+        <div class="row mb-5">
+            <div class="col-md-6 d-flex align-items-center gap-2">
+                <label for="entries" class="form-label mb-0">Show entries:</label>
+                <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                <label for="search" class="form-label mb-0">Search:</label>
+                <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+            </div>
+        </div>
+        <div class="table-responsive mt-3">
+            <table class="table table-striped w-100">
                 <thead>
                     <tr>
                         <th></th>
@@ -165,7 +187,7 @@
                 </thead>
                 <tbody>
                     @if ($lazy)
-                        @for ($i = 0; $i < 20; $i++)
+                        @for ($i = 0; $i < 10; $i++)
                             <tr>
                                 <td class="text-center">
                                     <div class="skeleton skeleton-circle" style="width: 50px; height: 50px;"></div>
@@ -180,38 +202,46 @@
                                     <div class="skeleton skeleton-text" style="width: 100px;"></div>
                                 </td>
                                 <td>
-                                    <div class="skeleton skeleton-button" style="width: 60px; height: 30px;"></div>
+                                    <div class="d-flex gap-2">
+                                        <div class="skeleton skeleton-button" style="width: 40px; height: 30px;"></div>
+                                    <div class="skeleton skeleton-button" style="width: 40px; height: 30px;"></div>
+                                    </div>
                                 </td>
                             </tr>
                         @endfor
                     @else
-                        @if (!empty($employees))
-                            @foreach($employees as $key => $item)
-                                <tr data-id="{{$item->employee_no}}">
-                                    <td class="text-center">
-                                        <img style="width: 50px; height: 50px;" src="{{
-                                            $item->personal && $item->personal->profile 
-                                                ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) 
-                                                : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                        }}">
-                                    </td>
-                                    <td>{{$item->employee_no}}</td>
-                                    <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
-                                    <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
-                                    <td wire:ignore.self>
-                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </a>
-                                        <button id="remove" data-id="{{$item->employee_no}}" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endif
+                        @forelse($employees as $key => $item)
+                            <tr data-id="{{$item->employee_no}}">
+                                <td class="text-center">
+                                    <img style="width: 50px; height: 50px;" src="{{
+                                        $item->personal && $item->personal->profile 
+                                            ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) 
+                                            : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                    }}">
+                                </td>
+                                <td>{{$item->employee_no}}</td>
+                                <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
+                                <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
+                                <td wire:ignore.self>
+                                    <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <button id="remove" data-id="{{$item->employee_no}}" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                            </tr>
+                        @endforelse
                     @endif
                 </tbody>
             </table>
+            <div class="mt-4">
+                {{ $employees->links(data: ['scrollTo' => false]) }}
+            </div>
         </div>     
     </div>
 </div>
@@ -227,6 +257,7 @@
                 const id = $(this).data('id');
                 Livewire.dispatch('remove', [true, id]);
             });
+
 
         })
     </script>
