@@ -104,7 +104,7 @@ class Apply extends Component
 
         if($isNotify) {
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Yes, I am sure that all the information I have provided is accurate and true. This ensures that there will be no issues as we proceed.';
             $action = 'save';
             Log::info('employee no: ' . $this->employee_no);
             $this->dispatch('showConfirmation', [
@@ -134,15 +134,22 @@ class Apply extends Component
 
                 // reset form if not edit
                 if(is_null($this->record_id)){
-                    $this->resetInputData();
-                }
+                    $this->resetExcept('user_id');
 
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'success',
-                    'title' => 'Yey!', 
-                    'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding'
-                ]);
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'success',
+                        'title' => 'Yey!', 
+                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                    ]);
+                } else {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'success',
+                        'title' => 'Yey!', 
+                        'message' => 'Your application has been updated. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                    ]);
+                }
 
             } catch (\Exception $e) {
                 DB::rollBack();
@@ -155,16 +162,6 @@ class Apply extends Component
             }
 
         }
-    }
-
-    public function resetInputData()
-    {
-        $this->employee_no =  '';
-        $this->date_filed = '';
-        $this->destination =  '';
-        $this->purpose =  '';
-        $this->departure_time =  '';
-        $this->arrival_time =  '';
     }
 
     public function render()

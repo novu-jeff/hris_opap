@@ -41,9 +41,8 @@ class Index extends Component
     public bool $lazy = true;
 
     protected $listeners = ['remove', 'loading'];
+    
     protected $paginationTheme = 'bootstrap';
-    protected $preserveScroll = true;
-
     public $entries = 10;
     public $search = '';
 

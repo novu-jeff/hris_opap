@@ -86,10 +86,15 @@ export function removeRowDT(id) {
     
     if (row.length) {
         row.remove();
+        
+        if ($('tr').length === 1) {
+            location.reload(); 
+        }
     } else {
         console.log('Row not found!');
     }
 }
+
 
 export function reloadDT() {
     location.reload();
