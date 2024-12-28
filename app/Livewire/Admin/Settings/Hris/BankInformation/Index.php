@@ -4,24 +4,25 @@ namespace App\Livewire\Admin\Settings\Hris\BankInformation;
 
 use App\Models\BankInformations;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public $selected_id;
-    public object $records;
-    protected $listeners = ['remove'];
+    use WithPagination;
 
-    public function mount() {
-        $this->records = BankInformations::with('departments')->get();
-    }
+    public $selected_id;
+    protected $listeners = ['remove'];
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this bank information. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -60,6 +61,24 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.bank-information.index');
+
+        $model = BankInformations::with('departments');
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('account_number', 'like', '%' . $this->search . '%')
+                ->orWhereHas('departments', function($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%');
+                });
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.hris.bank-information.index', [
+            'records' => $records
+        ]);
     }
 }

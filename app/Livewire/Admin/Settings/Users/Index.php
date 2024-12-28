@@ -8,35 +8,21 @@ use App\Models\EmployeeInformation;
 use App\Models\JobApplicants;
 use App\Models\User;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public $type = 'applicants';
-    public $records;
     public $selected_id;
     public $user_information;
     protected $listeners = ['remove'];
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        if($this->type === 'applicants') {
-            $record = ApplicantUsers::all();
-        }
-
-        if($this->type === 'employees') {
-            $record = EmployeeInformation::with('personal', 'account')->get();
-        }
-
-        if($this->type === 'admin') {
-            $record = User::all();
-        }
-
-        $this->records = $record;
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function view_user(int $id) {
         if($this->type == 'applicants') {
@@ -62,7 +48,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this '.substr($this->type, 0, -1).'. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -110,6 +96,31 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.users.index');
+
+
+        if($this->type === 'applicants') {
+            $model = ApplicantUsers::query();
+        }
+
+        if($this->type === 'employees') {
+            $model = EmployeeInformation::with('personal', 'account');
+        }
+
+        if($this->type === 'admin') {
+            $model = User::query();
+        }
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('name', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.users.index', [
+            'records' => $records
+        ]);
     }
 }

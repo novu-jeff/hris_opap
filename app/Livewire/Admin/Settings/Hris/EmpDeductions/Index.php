@@ -7,15 +7,22 @@ use App\Models\EmployeeInformation;
 use App\Models\OtherDeductions;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public int $id;
-    public object $records;
     public object $employees;
     public array $fields;
     public int $selected_id;
+    public $deduction_id;
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     protected $listeners = ['remove'];
 
@@ -25,9 +32,7 @@ class Index extends Component
 
     public function loadRecords($id) {
 
-        $this->records = EmployeeDeductions::with('personal')
-            ->where('deduction_id', $id)
-            ->get();
+        $this->deduction_id = $id; 
 
         $this->employees = EmployeeInformation::with('personal')->get();
     }
@@ -128,7 +133,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this deduction. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -173,6 +178,25 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.emp-deductions.index');
+
+        $model =  EmployeeDeductions::with('personal')
+            ->where('deduction_id', $this->deduction_id);
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhere('amount', 'like', '%' . $this->search . '%')
+                ->orWhereHas('personal', function($query) {
+                    $query->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.hris.emp-deductions.index', [
+            'records' => $records
+        ]);
     }
 }
