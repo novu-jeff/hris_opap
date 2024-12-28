@@ -63,7 +63,7 @@
     </div>
     
     <div class="card border-0 mt-3">
-        <div class="card-body p-0" wire:ignore>
+        <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a href="{{route('ess.leave', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
@@ -77,7 +77,7 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <div class="row mb-5">
+                    <div class="row mb-4">
                         <div class="col-md-6 d-flex align-items-center gap-2">
                             <label for="entries" class="form-label mb-0">Show entries:</label>
                             <select id="entries" wire:model.live="entries" class="form-select w-auto">
@@ -99,37 +99,39 @@
                             <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
                         </div>
                     </div>
-                    <table class="table table-striped w-100" wire:ignore>
-                        <thead>
-                            <tr>
-                                <th>Employee No</th>
-                                <th>Employee Name</th>
-                                <th>Date Applied</th>
-                                <th style="max-width: 200px;">Action</th>
-                            </tr>
-                        </thead>                
-                        <tbody>
-                            @forelse($records as $record)
-                                <tr data-id="{{$record->id}}">
-                                    <td>{{$record->employee_no}}</td>
-                                    <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
-                                    <td>{{format_date($record->created_at, 'date_string')}}</td>
-                                    <td>
-                                        <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @empty
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered w-100">
+                            <thead>
                                 <tr>
-                                    <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                                </tr> 
-                            @endforelse
-                        </tbody>
-                    </table>
+                                    <th>Employee No</th>
+                                    <th>Employee Name</th>
+                                    <th>Date Applied</th>
+                                    <th style="max-width: 200px;">Action</th>
+                                </tr>
+                            </thead>                
+                            <tbody>
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td>{{$record->employee_no}}</td>
+                                        <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
+                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                        <td>
+                                            <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr> 
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="mt-4">
                         {{ $records->links(data: ['scrollTo' => false]) }}
                     </div>

@@ -42,7 +42,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to reject this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'rejected';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -76,7 +76,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to grant this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'granted';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -128,7 +128,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this leave application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -172,6 +172,7 @@ class Index extends Component
             ->where('status', $this->status);
 
         if ($this->search) {
+
             $this->resetPage(); 
 
             $records = $model->where(function ($query) {
@@ -180,12 +181,9 @@ class Index extends Component
                     $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
                 });
             });
-        } else {
-            $records = $model;
         }
 
-        $records = $records->latest()->paginate($this->entries);
-
+        $records = $model->latest()->paginate($this->entries);
 
         return view('livewire.admin.ess.leave.index', [
             'records' => $records

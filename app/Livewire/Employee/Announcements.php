@@ -53,6 +53,7 @@ class Announcements extends Component
         $model = EmployeeAnnouncements::query();
 
         if ($this->search) {
+            $this->resetPage(); 
             $model->where('title', 'like', '%' . $this->search . '%');
         }
 
