@@ -4,30 +4,26 @@ namespace App\Livewire\Admin\Ess\Announcements;
 
 use App\Models\EmployeeAnnouncements;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+
+    use WithPagination;
     
-    public $records = [];
     public $selected_id;
     protected $listeners = ['remove'];
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        $records = EmployeeAnnouncements::all();
-        $this->records = $records;
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
-
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this announcement. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -66,6 +62,18 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.ess.announcements.index');
+
+        $model = EmployeeAnnouncements::query();
+
+        if ($this->search) {
+            $this->resetPage(); 
+            $model->where('title', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.ess.announcements.index', [
+            'records' => $records
+        ]);
     }
 }

@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View Leave Application</h1>
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View OBS Application</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -14,7 +14,7 @@
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->firstname . ' ' . $view_records->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="date_filed">Date Filed</label>
@@ -22,48 +22,45 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-12 col-md-7 mb-4">
+                        <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="section">Section</label>
-                            <input type="text" id="section" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->section_name . ' (' . $view_records->section_code . ') ') : '' }}" readonly>
+                            <input type="text" id="section" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->name . ' (' . $view_records->employment->section->code . ') ') : '' }}" readonly>
                         </div>
-                        <div class="col-12 col-md-5 mb-4">
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="branch">Branch</label>
+                            <input type="text" id="branch" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->branch->name . ' (' . $view_records->employment->section->branch->code . ') ') : '' }}" readonly>
+                        </div>
+                        <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="department">Department</label>
-                            <input type="text" id="department" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->department_name . ' (' . $view_records->department_code . ') ') : '' }}" readonly>
+                            <input type="text" id="department" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->department->name . ' (' . $view_records->employment->section->department->code . ') ') : '' }}" readonly>
+                        </div>
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="position">Position</label>
+                            <input type="text" id="position" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->positions['name'] . ' (' . $view_records->employment->positions['code'] . ') ') : '' }}" readonly>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="branch">Position</label>
-                            <input type="text" id="branch" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->branch_name . ' (' . $view_records->branch_code . ') ') : '' }}" readonly>
-                        </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="position">Position</label>
-                            <input type="text" id="position" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->position_name . ' (' . $view_records->position_code . ') ') : '' }}" readonly>
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="purpose">Purpose</label>
+                            <textarea class="form-control restricted" rows="5" readonly>{{ isset($view_records) ? ($view_records->purpose) : ''}}</textarea>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
+                        <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="destination">Destination</label>
                             <input type="text" id="destination" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->destination) : ''}}" readonly>
                         </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="purpose">Purpose</label>
-                            <input type="text" id="purpose" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->purpose) : ''}}" readonly>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="arrival_time">Arrival Time</label>
-                            <input type="text" id="arrival_time" class="form-control restricted" 
-                                   value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->arrival_time)->format('g:i A') : '' }}" 
-                                   readonly>
-                        </div>
-                        <div class="col-12 col-md-6 mb-4">
+                        <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="departure_time">Departure Time</label>
                             <input type="text" id="departure_time" class="form-control restricted" 
                                    value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->departure_time)->format('g:i A') : '' }}" 
+                                   readonly>
+                        </div>
+                        <div class="col-12 col-md-4 mb-4">
+                            <label class="mb-2" for="arrival_time">Arrival Time</label>
+                            <input type="text" id="arrival_time" class="form-control restricted" 
+                                   value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->arrival_time)->format('g:i A') : '' }}" 
                                    readonly>
                         </div>
                     </div>                    
@@ -81,7 +78,7 @@
     </div>
 
     <div class="card border-0 mt-3">
-        <div class="card-body p-0" wire:ignore>
+        <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a href="{{route('ess.obs.index', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
@@ -95,7 +92,7 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <div class="row mb-5">
+                    <div class="row mb-4">
                         <div class="col-md-6 d-flex align-items-center gap-2">
                             <label for="entries" class="form-label mb-0">Show entries:</label>
                             <select id="entries" wire:model.live="entries" class="form-select w-auto">
@@ -117,37 +114,39 @@
                             <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
                         </div>
                     </div>
-                    <table class="table table-striped w-100" wire:ignore>
-                        <thead>
-                            <tr>
-                                <th>Employee ID</th>
-                                <th>Employee Name</th>
-                                <th>Date Applied</th>
-                                <th style="max-width: 200px;">Action</th>
-                            </tr>
-                        </thead>                
-                        <tbody>
-                            @forelse($records as $record)
-                                <tr data-id="{{$record->id}}">
-                                    <td>#{{format_id($record->id, 6)}}</td>
-                                    <td>{{$record->firstname . ' ' . $record->lastname}}</td>
-                                    <td>{{format_date($record->created_at, 'date_string')}}</td>
-                                    <td>
-                                        <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @empty
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered w-100">
+                            <thead>
                                 <tr>
-                                    <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                                </tr> 
-                            @endforelse
-                        </tbody>
-                    </table>
+                                    <th>Employee No.</th>
+                                    <th>Employee Name</th>
+                                    <th>Date Applied</th>
+                                    <th style="max-width: 200px;">Action</th>
+                                </tr>
+                            </thead>                
+                            <tbody>
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td>{{$record->employee_no}}</td>
+                                        <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
+                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                        <td>
+                                            <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr> 
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="mt-4">
                         {{ $records->links(data: ['scrollTo' => false]) }}
                     </div>
