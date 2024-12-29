@@ -9,19 +9,26 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Jobs extends Component
 {
 
+    use WithPagination;
+
     public $user_id;
-    public $records;
     public $records_no = 1;
     public $record_info;
     public $applied_job_ids;
     public $saved_job_ids;
     public $search_query;
+    public $search_term;
     public $search_result;
     protected $listeners = ['loadMoreRecords'];
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 5;
+    public $search = '';
 
     # load default data needed
     public function mount() {
@@ -29,14 +36,6 @@ class Jobs extends Component
         # initially store user id
 
         $this->user_id = Auth::guard('applicant')->user()->id ?? null;
-
-        # initially load all job records
-
-        if($this->search_query) {
-            $this->search(true);
-        } else {
-            $this->showRecords();
-        }   
 
         # initially load all applied jobs
 
@@ -48,17 +47,17 @@ class Jobs extends Component
     }
 
     # show records
-    public function showRecords() {
-        $this->records_no += 1;
-        $record = JobPosts::with('applicants')
-            ->take($this->records_no);
+    // public function showRecords() {
+    //     $this->records_no += 1;
+    //     $record = JobPosts::with('applicants')
+    //         ->take($this->records_no);
 
-        if($record->count() > 0) {
-            $this->records = $record->latest()->get();
-        } else {
-            $this->records = null;
-        }
-    }
+    //     if($record->count() > 0) {
+    //         $this->records = $record->latest()->get();
+    //     } else {
+    //         $this->records = null;
+    //     }
+    // }
 
     public function loadMoreRecords() {
         $this->records_no += 1;
@@ -106,43 +105,6 @@ class Jobs extends Component
                 'title' => 'Oops!',
                 'message' => 'Error occured: ' . $e->getMessage()
             ]);
-        }
-    }
-
-    # search logic
-    public function search(bool $isSearched = false) {
-        if(!$isSearched) {
-            $this->dispatch('navigateToSearch', $this->search_query);
-        } else {
-            if(!empty($this->search_query)) {
-                $records = JobPosts::with('applicants')->where('position', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('company_name', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('setup', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('location', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('type', 'LIKE', '%' . $this->search_query . '%');
-
-                    $this->search_result = [
-                        'count' => $records->count(),
-                        'is_empty_parameter' => false,
-                        'parameter' => $this->search_query
-                    ];
-
-                    if($records->count() > 0) {
-                        $this->records = $records->get();
-                        $this->record_info = null;
-                    } else {
-                        $this->records = null;
-                    }
-
-            } else {
-                $this->search_result = [
-                    'count' => 0,
-                    'is_empty_parameter' => true,
-                    'parameter' => $this->search_query
-                ];
-                $this->records = JobPosts::latest()->get();
-            }
-
         }
     }
 
@@ -306,9 +268,34 @@ class Jobs extends Component
     }
 
     # render view
+
+    public function find() {
+        $this->search_term = $this->search_query;
+        $this->resetPage();
+    }
     
     public function render()
     {
-        return view('livewire.home.jobs');
+
+        $model = JobPosts::with('applicants');
+            // ->where('position', 'red');
+
+        if ($this->search_term) {
+
+            $records = $model->where('position', 'like', '%' . $this->search_query . '%')
+                ->orWhere('company_name', 'like', '%' . $this->search_query . '%')
+                ->orWhere('location', 'like', '%' . $this->search_query . '%')
+                ->orWhere('setup', 'like', '%' . $this->search_query . '%')
+                ->orWhere('type', 'like', '%' . $this->search_query . '%')
+                ->orWhere('min_salary', 'like', '%' . $this->search_query . '%')
+                ->orWhere('max_salary', 'like', '%' . $this->search_query . '%')
+                ->orWhere('slots', 'like', '%' . $this->search_query . '%');
+        }
+        
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.home.jobs', [
+            'records' => $records
+        ]);
     }
 }

@@ -22,15 +22,6 @@ class Create extends Component
         }
     }
 
-    public function resetInputs()
-    {
-        $this->name = '';
-        $this->date = '';
-        $this->type = '';
-
-        $this->isYearly = true;
-    }
-
     public function save() {
         
         $this->validate();
@@ -47,6 +38,8 @@ class Create extends Component
             ]);
 
             DB::commit();
+
+            $this->reset();
 
             $this->dispatch('alert', [
                 'status' => 'success',

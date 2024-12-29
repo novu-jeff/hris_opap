@@ -24,10 +24,8 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     protected $paginationTheme = 'bootstrap';
-    protected $preserveScroll = true;
 
     protected $listeners = ['loading'];
-
 
     public function mount() {
         $this->loadRecords();

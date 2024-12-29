@@ -1,27 +1,51 @@
 <div class="job">
+    <div class="row mb-4">
+        <div class="col-md-6 d-flex align-items-center gap-2">
+            <label for="entries" class="form-label mb-0">Show entries:</label>
+            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50">50</option>
+                <option value="60">60</option>
+                <option value="70">70</option>
+                <option value="80">80</option>
+                <option value="90">90</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+            <label for="search" class="form-label mb-0">Search:</label>
+            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+        </div>
+    </div>
     <div class="row" wire:poll>
-        <div class="col-12 col-md-4 mb-4">
-            <a href="{{route('job.posts.create')}}" class="text-decoration-none">
-                <div class="card create">
-                    <div class="card-body d-flex justify-content-center align-items-center">
-                        <div class="text-center">
-                            <div class="icon text-center">
-                                <i class="fa-solid fa-plus"></i>
-                            </div>
-                            <div class="label">
-                                <div>
-                                    Create New
+        @if(empty($search))
+            <div class="col-12 col-md-4 mb-4">
+                <a href="{{route('job.posts.create')}}" class="text-decoration-none">
+                    <div class="card create">
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <div class="text-center">
+                                <div class="icon text-center">
+                                    <i class="fa-solid fa-plus"></i>
                                 </div>
-                                <div>
-                                    Add or post a new job opportunity
+                                <div class="label">
+                                    <div>
+                                        Create New
+                                    </div>
+                                    <div>
+                                        Add or post a new job opportunity
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        @foreach ($records as $record)
+                </a>
+            </div>
+        @endif
+        @forelse ($records as $record)
             <div class="col-12 col-md-4 mb-4">
                 <div class="card shadow px-2">
                     <a href="{{route('home.view-job', ['slug' => $record->slug])}}" class="nav-link" wire:ignore.self>
@@ -74,6 +98,11 @@
                     </a>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div class="alert alert-primary text-center text-uppercase fw-medium">No data was found</div>
+        @endforelse
+    </div>
+    <div class="mt-4">
+        {{ $records->links(data: ['scrollTo' => false]) }}
     </div>
 </div>

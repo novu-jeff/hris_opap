@@ -16,19 +16,19 @@ use App\Models\JobRequirements;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
     use WithFileUploads;
 
     public $user_id;
-    public $records;
     public $status;
     public $applicant_information;
     public $selected_id;
@@ -38,6 +38,10 @@ class Index extends Component
     public $job_offer = [];
     public $requirements;
     public $selected_requirements = [];
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     protected $listeners = [
         'ckeditor', 
@@ -49,18 +53,8 @@ class Index extends Component
         'delete'
     ];
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
     public function ckeditor($data) {
         $this->job_offer['body'] = $data;
-    }
-
-    public function loadRecords() {
-        $this->records = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
-            ->where('status', $this->status)
-            ->get();
     }
 
     # view applicants
@@ -832,6 +826,20 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.job.applicant.index');
+
+        $model = JobApplicants::with(['applicant', 'job', 'offer', 'requirements']);
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('applicant_no', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.job.applicant.index', [
+            'records' => $records
+        ]);
     }
 }
