@@ -84,7 +84,9 @@
                         <div class="card-body pt-1">
                             <div class="perks">
                                 <div>{{money_format($record->min_salary) . ' - ' . money_format($record->max_salary)}} per month</div>
-                                <div>{{$record->type}}</div>
+                                @if(!is_null($record->employment_type_id))
+                                <div>{{$record->employment_type->name}}</div>
+                                @endif
                                 <div>{{$record->setup}}</div>
                                 <div>{{$record->slots . ' Slots'}}</div>
                             </div>

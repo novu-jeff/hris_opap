@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('batch_configurations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('batch_id')->nullable()->default(null);
-            $table->boolean('isActive')->default(true);
+            $table->string('batch_id')
+                ->nullable()
+                ->default(null);
             $table->timestamps();
         });
     }

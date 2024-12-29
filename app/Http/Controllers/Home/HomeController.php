@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    public function index($search = null) {
-        return view('home.index', compact('search'));
+    public function index(Request $request) {
+
+        $parameter = $request->get('search') ?? '';
+
+        return view('home.index', compact('parameter'));
     }
 }

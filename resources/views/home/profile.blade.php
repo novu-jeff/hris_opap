@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Profile | ' . 
+    'title' => 'HRIS Profile | ' . 
     strtoupper(Auth::user()->firstname . ' ' . Auth::user()->lastname)
 ])
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Hris\EmployeeStatus;
+namespace App\Livewire\Admin\Settings\Hris\EmploymentType;
 
-use App\Models\EmployeeStatus;
+use App\Models\EmployementTypes;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,7 +22,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to delete this employee status. Once this action is processed, it cannot be undone or reversed!';
+            $message = 'Please be informed that you are about to delete this employment type. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -34,7 +34,7 @@ class Index extends Component
 
         }  else {
 
-            $record = EmployeeStatus::find($this->selected_id);
+            $record = EmployementTypes::find($this->selected_id);
             
             if($record) {
                 
@@ -45,7 +45,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee Status ' . strtoupper($record->name) . ' deleted successfully' 
+                    'message' => 'Employment Type ' . strtoupper($record->name) . ' deleted successfully' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -62,18 +62,19 @@ class Index extends Component
     public function render()
     {
         
-        $model = EmployeeStatus::query();
+        $model = EmployementTypes::query();
 
         if ($this->search) {
 
             $this->resetPage(); 
 
-            $records = $model->where('status', 'like', '%' . $this->search . '%');
+            $records = $model->where('code', 'like', '%' . $this->search . '%')
+                ->where('name', 'like', '%' . $this->search . '%');
         }
 
         $records = $model->latest()->paginate($this->entries);
 
-        return view('livewire.admin.settings.hris.employee-status.index', [
+        return view('livewire.admin.settings.hris.employment-type.index', [
             'records' => $records
         ]);
     }

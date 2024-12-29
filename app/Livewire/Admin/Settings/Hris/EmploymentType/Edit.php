@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Hris\EmployeeStatus;
+namespace App\Livewire\Admin\Settings\Hris\EmploymentType;
 
-use App\Models\EmployeeStatus;
-use App\Models\Positions;
+use App\Models\EmployementTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -20,14 +19,15 @@ class Edit extends Component
 
     public function loadRecords(int $id) {
 
-        $records = EmployeeStatus::find($id);
+        $records = EmployementTypes::find($id);
 
         if(!$records) {
             return redirect()->route('position.index');
         }
 
         return $this->fields = [
-            'name' => $records->status,
+            'code' => $records->code,
+            'name' => $records->name,
         ];
     }
 
@@ -39,9 +39,10 @@ class Edit extends Component
 
         try {
 
-            EmployeeStatus::where('id', $this->id)
+            EmployementTypes::where('id', $this->id)
                 ->update([
-                    'status' => $this->fields['name'],
+                    'code' => $this->fields['code'],
+                    'name' => $this->fields['name'],
             ]);
 
             DB::commit();
@@ -50,7 +51,7 @@ class Edit extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Employee Status ' . strtoupper($this->fields['name']) . ' was added successfully.'
+                'message' => 'Employment Type ' . strtoupper($this->fields['name']) . ' was added successfully.'
             ]);
 
             
@@ -70,9 +71,14 @@ class Edit extends Component
 
     protected function rules() {
         return [
+            'fields.code' => [
+                'required',
+                Rule::unique('employment_types', 'code')
+                    ->ignore($this->id)
+            ],
             'fields.name' => [
                 'required',
-                Rule::unique('employee_statuses', 'status')
+                Rule::unique('employment_types', 'name')
                     ->ignore($this->id)
             ],
         ];
@@ -80,13 +86,16 @@ class Edit extends Component
 
     public function messages() {
         return [
-            'fields.name.required' => 'The employee status is required.',
-            'fields.name.unique' => 'The employee status is already taken.',
+            'fields.code.required' => 'The employment code is required.',
+            'fields.code.unique' => 'The employment code is already taken.',
+
+            'fields.name.required' => 'The employment name is required.',
+            'fields.name.unique' => 'The employment name is already taken.',
         ];
     }
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.employee-status.edit');
+        return view('livewire.admin.settings.hris.employment-type.edit');
     }
 }

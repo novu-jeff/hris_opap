@@ -23,7 +23,8 @@ class Jobs extends Component
     public $saved_job_ids;
     public $search_query;
     public $search_term;
-    public $search_result;
+    public $search_result =  [];
+    public $isEmptySearch = false;
     protected $listeners = ['loadMoreRecords'];
 
     protected $paginationTheme = 'bootstrap';
@@ -44,24 +45,12 @@ class Jobs extends Component
         # initially show if jobs are saved or not
         $this->showSavedJobs();
 
-    }
+        # if parameter exists show filter
 
-    # show records
-    // public function showRecords() {
-    //     $this->records_no += 1;
-    //     $record = JobPosts::with('applicants')
-    //         ->take($this->records_no);
+        if($this->search_query) {
+            $this->find();
+        }
 
-    //     if($record->count() > 0) {
-    //         $this->records = $record->latest()->get();
-    //     } else {
-    //         $this->records = null;
-    //     }
-    // }
-
-    public function loadMoreRecords() {
-        $this->records_no += 1;
-        $this->showRecords();
     }
 
     # show job status if apply or applied
@@ -116,7 +105,7 @@ class Jobs extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
-                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
+                'message' => 'You must create first an account before applying to any jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
             ]);
         }
 
@@ -209,7 +198,7 @@ class Jobs extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
-                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
+                'message' => 'You must create first an account before saving any jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
             ]);
         }
 
@@ -270,15 +259,19 @@ class Jobs extends Component
     # render view
 
     public function find() {
+
+        $this->isEmptySearch = empty($this->search_query) ? true : false;
+
+        $this->dispatch('navigateToSearch', $this->search_query);
+
         $this->search_term = $this->search_query;
-        $this->resetPage();
     }
     
     public function render()
     {
 
-        $model = JobPosts::with('applicants');
-            // ->where('position', 'red');
+        $model = JobPosts::with('applicants', 'employment_type');
+        $this->resetPage();
 
         if ($this->search_term) {
 
@@ -286,14 +279,27 @@ class Jobs extends Component
                 ->orWhere('company_name', 'like', '%' . $this->search_query . '%')
                 ->orWhere('location', 'like', '%' . $this->search_query . '%')
                 ->orWhere('setup', 'like', '%' . $this->search_query . '%')
-                ->orWhere('type', 'like', '%' . $this->search_query . '%')
+                ->orWhereHas('employment_type', function($query) {
+                    $query->where('name', 'like', '%' . $this->search_query . '%');
+                })
                 ->orWhere('min_salary', 'like', '%' . $this->search_query . '%')
                 ->orWhere('max_salary', 'like', '%' . $this->search_query . '%')
                 ->orWhere('slots', 'like', '%' . $this->search_query . '%');
+
         }
-        
+
         $records = $model->latest()->paginate($this->entries);
 
+        if ($records->total() > 0) {
+            $this->search_result['isEmpty'] = false;
+        } else {
+            $this->search_result['isEmpty'] = true;
+            $this->isEmptySearch = false;
+        }
+        
+        $this->search_result['parameter'] = $this->search_term;
+        $this->search_result['total'] = $records->total() ?? 0;
+        
         return view('livewire.home.jobs', [
             'records' => $records
         ]);

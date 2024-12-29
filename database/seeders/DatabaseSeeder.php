@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             AdminAccountSeeder::class,
             RequirementSeeder::class,
             InterviewSeeder::class,
+            EmploymentTypesSeeder::class,
             JobPostSeeder::class,
             PositionSeeder::class,
             ViolationSeeder::class,
