@@ -175,7 +175,7 @@
             </div>
         </div>
         <div class="table-responsive mt-3">
-            <table class="table table-striped w-100">
+            <table class="table table-striped table-bordered w-100">
                 <thead>
                     <tr>
                         <th></th>

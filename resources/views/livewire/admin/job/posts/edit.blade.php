@@ -47,11 +47,9 @@
                     <label class="mb-2" for="type">Employment Type <span class="text-danger">*</span></label>
                     <select wire:model="type" id="type" class="form-select">
                         <option value=""> - CHOOSE - </option>
-                        <option value="regular">Regular</option>
-                        <option value="contractual">Contractual</option>
-                        <option value="part time">Part Time</option>
-                        <option value="freelance">Freelance</option>
-                        <option value="project base">Project Base</option>
+                        @foreach ($employment_types as $item)
+                            <option value="{{$item->id}}">{{$item->name . ' - (' . $item->code . ')'}}</option>
+                        @endforeach
                     </select>  
                     <div class="error-field">
                         @error('type') <span class="text-danger">{{ $message }}</span> @enderror

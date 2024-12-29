@@ -3,14 +3,14 @@
         <div class="card-header bg-transparent py-2 border-0">
             <ul class="nav nav-pills" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button type="button" class="nav-link {{$activeTab == 'personal' ? 'active' : ''}}" id="pills-personal-tab" data-bs-toggle="pill" data-bs-target="#pills-personal" type="button" role="tab" aria-controls="pills-personal" aria-selected="true">Personal Information</button>
+                  <button type="button" wire:click="setActiveTab('personal')" class="nav-link {{$activeTab == 'personal' ? 'active' : ''}}" id="pills-personal-tab" data-bs-toggle="pill" data-bs-target="#pills-personal" type="button" role="tab" aria-controls="pills-personal" aria-selected="true">Personal Information</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button type="button" class="nav-link {{$activeTab == 'account' ? 'active' : ''}}" id="pills-account-tab" data-bs-toggle="pill" data-bs-target="#pills-account" type="button" role="tab" aria-controls="pills-account" aria-selected="false">Account Information</button>
+                  <button type="button" wire:click="setActiveTab('account')" class="nav-link {{$activeTab == 'account' ? 'active' : ''}}" id="pills-account-tab" data-bs-toggle="pill" data-bs-target="#pills-account" type="button" role="tab" aria-controls="pills-account" aria-selected="false">Account Information</button>
                 </li>
             </ul>                  
             <div class="note my-3">
-                By creating an account or signing in, you agree to Symphony's Terms. You also acknowledge our Cookie and Privacy policies. Symphony will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
+                By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
             </div>                
         </div>
         <hr class="my-2">
@@ -72,7 +72,7 @@
                         </div>
                         
                         <div class="col-12 col-md-4 mb-3">
-                            <label for="birthday" class="mb-2">Birth Day <span class="text-danger">*</span></label>
+                            <label for="birthday" class="mb-2">BirthDay <span class="text-danger">*</span></label>
                             <input type="date" wire:model="fields.personal.birthday" id="birthday" class="form-control text-uppercase">
                             <div class="error-field">
                                 @error('fields.personal.birthday') <span class="text-danger">{{ $message }}</span> @enderror

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Hris\EmployeeStatus;
+namespace App\Livewire\Admin\Settings\Hris\EmploymentType;
 
-use App\Models\EmployeeStatus;
+use App\Models\EmployementTypes;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -19,8 +19,9 @@ class Create extends Component
 
         try {
 
-            EmployeeStatus::create([
-                'status' => $this->fields['name'],
+            EmployementTypes::create([
+                'code' => $this->fields['code'],
+                'name' => $this->fields['name'],
             ]);
 
             DB::commit();
@@ -29,7 +30,7 @@ class Create extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Employee Status ' . strtoupper($this->fields['name']) . ' was added successfully.'
+                'message' => 'Employment Type ' . strtoupper($this->fields['name']) . ' was added successfully.'
             ]);
 
             $this->reset('fields');
@@ -50,19 +51,23 @@ class Create extends Component
 
     protected function rules() {
         return [
-            'fields.name' => 'required|unique:employee_statuses,status',
+            'fields.code' => 'required|unique:employment_types,code',
+            'fields.name' => 'required|unique:employment_types,name',
         ];
     }
 
     public function messages() {
         return [
-            'fields.name.required' => 'The employee status is required.',
-            'fields.name.unique' => 'The employee status is already taken.',
+            'fields.code.required' => 'The employment code is required.',
+            'fields.code.unique' => 'The employment code is already taken.',
+
+            'fields.name.required' => 'The employment name is required.',
+            'fields.name.unique' => 'The employment name is already taken.',
         ];
     }
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.employee-status.create');
+        return view('livewire.admin.settings.hris.employment-type.create');
     }
 }

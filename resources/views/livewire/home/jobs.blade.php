@@ -1,7 +1,7 @@
 <div class="container">
     <div class="search-jobs">
         <div>
-            <div class="content shadow {{$search_result && $search_result['is_empty_parameter'] ? 'error' : '' }}">
+            <div class="content shadow {{$isEmptySearch ? 'error'  : '' }}">
                 <div class="search-box">
                     <input type="text" name="search" id="search" class="form-control" wire:model.defer='search_query' placeholder="Job, Title, Keyword" value="{{$search_query ?? ''}}">
                 </div>
@@ -13,20 +13,19 @@
                     </button>
                 </div>
             </div>
-            @if ($search_result && $search_result['is_empty_parameter'])
+            @if ($isEmptySearch)
                 <div class="error-field" style="color: red; text-transform: uppercase; font-size: 11px; font-weight: 600; margin-top: 8px;">Try searching something...</div>
             @endif
         </div>
     </div>
     <div>
-        @if ($search_result)
-        <div class="searched-query text-muted">
-            @if (!$search_result['is_empty_parameter'])
+        @if ($search_result && $search_term && !$isEmptySearch)
+            <div class="searched-query text-muted mt-5" wire:ignore>
                 <p class="m-0">You're searching for: <span>{{$search_result['parameter']}}</span></p>
-                <p class="m-0">Returned <span>{{$search_result['count']}} result/s</span></p>
-            @endif
-        </div>
-    @endif
+                <p class="m-0">Returned <span>{{$search_result['total']}} result/s</span></p>
+            </div>
+            <hr class="mt-4">
+        @endif
     </div>
     <div class="row mb-3 mt-5">
         <div class="col-md-6 d-flex align-items-center gap-2">
@@ -43,14 +42,6 @@
                 <option value="80">80</option>
                 <option value="90">90</option>
                 <option value="100">100</option>
-            </select>
-        </div>
-        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
-            <select wire:model.change="status" id="status" class="form-select w-50">
-                <option value=""> - Filter By Work Type - </option>
-                <option value="pending"> Pending </option>
-                <option value="granted"> Granted </option>
-                <option value="rejected"> Rejected </option>
             </select>
         </div>
     </div>
@@ -104,7 +95,9 @@
                                 <div class="card-body pt-1 pb-5">
                                     <div class="perks">
                                         <div>{{money_format($record->min_salary) . ' - ' . money_format($record->max_salary)}} per month</div>
-                                        <div>{{$record->type}}</div>
+                                        @if(!is_null($record->employment_type_id))
+                                            <div>{{$record->employment_type->name}}</div>
+                                        @endif
                                         <div>{{$record->setup}}</div>
                                         <div>{{$record->slots . ' slots'}}</div>
                                     </div>
@@ -135,13 +128,13 @@
                                     @else
                                         <h4 class="fw-bold">Oops! No jobs were found.</h4>
                                         <p class="mt-3 mb-0 fs-5">What's Happening?</p>
-                                        <ul class="mt-3 fst-5">
-                                            <li><span class="text-uppercase fw-bold">Invalid Keywords:</span> The search terms entered may not match any records in our database.</li>
-                                            <li><span class="text-uppercase fw-bold">No Matching Records:</span> The criteria used in your search may not correspond to any available data.</li>
-                                            <li><span class="text-uppercase fw-bold">Misspelled Words:</span> Typographical errors in the search query can lead to no results.</li>
-                                            <li><span class="text-uppercase fw-bold">Filters Applied:</span> Active filters might narrow down results too much, leaving no matching data.</li>
-                                            <li><span class="text-uppercase fw-bold">Outdated Data:</span> The information you’re searching for may no longer be available or relevant.</li>
-                                            <li><span class="text-uppercase fw-bold">System Updates:</span> Temporary system updates or data maintenance might impact search results.</li>
+                                        <ul class="mt-3" style="font-size: 15px">
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">Invalid Keywords:</span> The search terms entered may not match any records in our database.</li>
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">No Matching Records:</span> The criteria used in your search may not correspond to any available data.</li>
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">Misspelled Words:</span> Typographical errors in the search query can lead to no results.</li>
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">Filters Applied:</span> Active filters might narrow down results too much, leaving no matching data.</li>
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">Outdated Data:</span> The information you’re searching for may no longer be available or relevant.</li>
+                                            <li class="mb-2 text-uppercase"><span class="text-uppercase fw-bold">System Updates:</span> Temporary system updates or data maintenance might impact search results.</li>
                                         </ul>                                        
                                     @endif
                                 </div>
@@ -237,21 +230,20 @@
 @script
 <script>
     
-    // $(function() {
+    $(function() {
 
-    //     copy_link();
+        copy_link();
 
-    //     $wire.on('navigateToSearch',function(event) {
-    //         const data = JSON.parse(JSON.stringify(event))[0];
-    //         if(event) {
-    //             history.pushState(null, '', '/search/' + event); 
-    //         } else {
-    //             history.pushState(null, '', '/');
-    //         }
-    //         $wire.search(true)
-    //     });
-        
-    // })
+        $wire.on('navigateToSearch', function (event) {
+            if (event) {
+                const data = JSON.parse(JSON.stringify(event))[0];
+                history.pushState(null, '', '?search=' + data);
+            } 
+
+            $wire.search(true);
+        });
+
+    })
 
 </script>
 @endscript

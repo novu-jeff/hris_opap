@@ -19,7 +19,7 @@ class JobPosts extends Model
         'company_name',
         'location',
         'setup',
-        'type',
+        'employment_type_id',
         'min_salary',
         'max_salary',
         'description',
@@ -28,6 +28,10 @@ class JobPosts extends Model
 
     public function applicants() {
         return $this->hasMany(JobApplicants::class, 'job_id');
+    }
+
+    public function employment_type() {
+        return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
     }
 
     public function getSlugOptions() : SlugOptions

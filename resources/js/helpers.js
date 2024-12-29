@@ -14,7 +14,7 @@ export function copy_link() {
         Swal.fire({
             icon: "success",
             title: 'Job Link Copied',
-            html: 'You can now paste or send the link you copied!',  
+            html: 'You can now share the job link you copied!',  
             confirmButtonText: 'GOT IT',   
             confirmButtonColor: '#143953', 
             cancelButtonColor: '#d33',      

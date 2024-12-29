@@ -20,7 +20,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('salary')
                 ->nullable();
-            $table->boolean('isActive')->default(true);
             $table->timestamps();
         });
     }

@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Admin\Settings\HRIS;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class EmployeeStatusController extends Controller
+class EmploymentTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('admin.settings.hris.employee-status.index');
+        return view('admin.settings.hris.employment-type.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class EmployeeStatusController extends Controller
      */
     public function create()
     {
-        return view('admin.settings.hris.employee-status.create');
+        return view('admin.settings.hris.employment-type.create');
     }
 
     /**
@@ -29,7 +29,7 @@ class EmployeeStatusController extends Controller
 
     public function edit(int $id)
     {
-        return view('admin.settings.hris.employee-status.edit', compact('id'));
+        return view('admin.settings.hris.employment-type.edit', compact('id'));
     }
 
 

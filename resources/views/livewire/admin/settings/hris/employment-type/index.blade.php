@@ -26,6 +26,7 @@
             <table class="table table-striped table-bordered w-100">
                 <thead>
                     <tr>
+                        <th>Code</th>
                         <th>Name</th>
                         <th style="max-width: 200px;">Action</th>
                     </tr>
@@ -33,9 +34,10 @@
                 <tbody>
                     @forelse($records as $record)
                         <tr>
-                            <td>{{$record->status}}</td>
+                            <td>{{$record->code}}</td>
+                            <td>{{$record->name}}</td>
                             <td>
-                                <a href="{{route('employee-status.edit', ['employee_status' => $record->id])}}" class="btn btn-primary mx-1">
+                                <a href="{{route('employment-type.edit', ['employment_type' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">

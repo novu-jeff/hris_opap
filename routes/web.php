@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
 use App\Http\Controllers\Admin\Settings\HRIS\CostCenterController;
 use App\Http\Controllers\Admin\Settings\HRIS\DeductionController;
 use App\Http\Controllers\Admin\Settings\HRIS\DepartmentController;
-use App\Http\Controllers\Admin\Settings\HRIS\EmployeeStatusController;
+use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
 use App\Http\Controllers\Admin\Settings\HRIS\GSISController;
 use App\Http\Controllers\Admin\Settings\HRIS\PositionController;
 use App\Http\Controllers\Admin\Settings\HRIS\ViolationController;
@@ -234,8 +234,8 @@ Route::prefix('admin')->group(function() {
                 Route::resource('batch-configuration', BatchConfigurationController::class)
                     ->names('batch-configuration');           
         
-                Route::resource('employee-status', EmployeeStatusController::class)
-                    ->names('employee-status');
+                Route::resource('employment-type', EmploymentTypeController::class)
+                    ->names('employment-type');
         
                 Route::resource('position', PositionController::class)
                     ->names('position');

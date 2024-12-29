@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Symphony | All Jobs'
+    'title' => 'HRIS | All Jobs'
 ])
 
 @section('content')

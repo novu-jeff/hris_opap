@@ -8,7 +8,14 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12 col-md-12 mb-4">
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="fields.code">Code <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="fields.code" id="fields.code" class="form-control text-uppercase">
+                            <div class="error-field">
+                                @error('fields.code') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="fields.name">Name <span class="text-danger">*</span></label>
                             <input type="text" wire:model="fields.name" id="fields.name" class="form-control text-uppercase">
                             <div class="error-field">
