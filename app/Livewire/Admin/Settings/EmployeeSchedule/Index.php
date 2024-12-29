@@ -77,7 +77,9 @@ class Index extends Component
 
         if ($this->search) {
             $this->resetPage();
+        
             $model->where('name', 'like', '%' . $this->search . '%');
+
         }
 
         $records = $model->latest()->paginate($this->entries);

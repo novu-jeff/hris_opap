@@ -13,6 +13,7 @@ class Index extends Component
 
     public $selected_id;
     protected $listeners = ['remove'];
+    
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';

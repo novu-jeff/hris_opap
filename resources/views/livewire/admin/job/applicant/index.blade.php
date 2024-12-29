@@ -396,151 +396,182 @@
                     <a href="{{route('job.applicants.index', ['status' => 'rejected'])}}" class="nav-link {{$status == 'rejected' ? 'active' : ''}}" id="pills-rejected-tab"  type="button" role="tab" aria-controls="pills-rejected" aria-selected="false">Rejected</a>
                 </li>
             </ul>
-            <div class="mt-4" wire:ignore>
-                <table class="table data-tables w-100">
-                    <thead>
-                        <tr>
-                            <th>No.</th>
-                            <th>Company</th>
-                            <th>Position</th>
-                            @if ($status == 'placement')
-                                <th>
-                                    Job Offer Status
-                                </th>
-                                <th>
-                                    Signed Job Offer
-                                </th>
-                            @endif
-                            <th>Date Applied</th>
-                            <th style="max-width: 200px;">Action</th>
-                        </tr>
-                    </thead>                
-                    <tbody>
-                        @foreach($records as $record)
-                            <tr data-id="{{$record->id}}">
-                                <td>{{$record->applicant_no}}</td>
-                                <td>{{$record->job->company_name}}</td>
-                                <td>{{$record->job->position}}</td>
+            <div class="mt-4">
+                <div class="row mb-4">
+                    <div class="col-md-6 d-flex align-items-center gap-2">
+                        <label for="entries" class="form-label mb-0">Show entries:</label>
+                        <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                            <option value="60">60</option>
+                            <option value="70">70</option>
+                            <option value="80">80</option>
+                            <option value="90">90</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                        <label for="search" class="form-label mb-0">Search:</label>
+                        <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered w-100">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Company</th>
+                                <th>Position</th>
                                 @if ($status == 'placement')
-                                    <td>
-                                        {{$records[0]->offer ? 'Offer Sent' : 'Pending For Offer'}}
-                                    </td>
-                                    <td>
-                                        {{$records[0]->offer 
-                                        ?
-                                        'Received'
-                                        : 
-                                        'Waiting For Signature'}}
-                                    </td>
+                                    <th>
+                                        Job Offer Status
+                                    </th>
+                                    <th>
+                                        Signed Job Offer
+                                    </th>
                                 @endif
-                                <td>{{$record->created_at}}</td>
-                                <td>
-                                    <a target="_blank" href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-info mx-1">
-                                        <i class="fa-regular fa-eye"></i>
-                                    </a>
-                                    <button class="btn btn-success mx-1" wire:click="view_applicant({{$record->id}})">
-                                        <span wire:loading.remove wire:target="view_applicant({{$record->id}})">
-                                            <i class="fa-solid fa-person"></i>
-                                        </span>
-                                        <span wire:loading wire:target="view_applicant({{$record->id}})">
-                                            <i class="fa-solid fa-spinner fa-spin"></i>
-                                        </span>
-                                    </button>
-                                    @if ($status == 'interview')
-                                        <button wire:click="view_responses({{$record->id}})" class="btn btn-primary mx-1">
-                                            <span wire:loading.remove wire:target="view_responses({{$record->id}})">
-                                                <i class="fa-solid fa-reply"></i>
-                                            </span>
-                                            <span wire:loading wire:target="view_responses({{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if($status != 'rejected' && $status != 'hired')
-                                        <button wire:click="set_action('rejected', {{$record->id}})" class="btn btn-danger mx-1">
-                                            <span wire:loading.remove wire:target="set_action('rejected', {{$record->id}})">
-                                                <i class="fa-solid fa-xmark"></i>
-                                            </span>
-                                            <span wire:loading wire:target="set_action('rejected', {{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if ($status === 'placement' && $record->isSignedJobOffer)
-                                        <button wire:click="download_offer({{$record->id}})" class="btn btn-primary mx-1">
-                                            <span wire:loading.remove wire:target="download_offer({{$record->id}})">
-                                                <i class="fa-solid fa-signature"></i>
-                                            </span>
-                                            <span wire:loading wire:target="download_offer({{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if ($status === 'placement' && is_null($record->offer))
-                                        <button wire:click="send_offer(false, {{$record->id}})" class="btn btn-primary mx-1">
-                                            <span wire:loading.remove wire:target="send_offer(false, {{$record->id}})">
-                                                <i class="fa-regular fa-paper-plane"></i>
-                                            </span>
-                                            <span wire:loading wire:target="send_offer(false, {{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if ($status === 'onboarding')
-                                        <button wire:click="set_checklist(false, {{$record->id}})" class="btn btn-primary mx-1">
-                                            <span wire:loading.remove wire:target="set_checklist(false, {{$record->id}})">
-                                                <i class="fa-solid fa-list-check"></i>
-                                            </span>
-                                            <span wire:loading wire:target="set_checklist(false, {{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if($status == 'hired') 
-                                        <button wire:click="set_action('navigate', '{{$record->id}}')" class="btn btn-primary">
-                                            <span wire:loading.remove wire:target="set_action('navigate', '{{$record->id}}')">
-                                                <i class="fa-solid fa-briefcase"></i>
-                                            </span>
-                                            <span wire:loading wire:target="set_action('navigate', '{{$record->id}}')">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>
-                                    @endif
-                                    @if (in_array($status, ['pending', 'interview', 'placement', 'onboarding']))
-                                        @if($status == 'interview' && $record->isInterviewResponded || $status == 'placement' && $record->isSignedJobOffer )
-                                            <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
-                                                <span wire:loading.remove wire:target="set_action('process', {{$record->id}})">
-                                                    <i class="fa-solid fa-arrow-right"></i>
-                                                </span>
-                                                <span wire:loading wire:target="set_action('process', {{$record->id}})">
-                                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                                </span>
-                                            </button>  
-                                        @elseif($status == 'onboarding' || $status == 'pending')
-                                            <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
-                                                <span wire:loading.remove wire:target="set_action('process', {{$record->id}})">
-                                                    <i class="fa-solid fa-arrow-right"></i>
-                                                </span>
-                                                <span wire:loading wire:target="set_action('process', {{$record->id}})">
-                                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                                </span>
-                                            </button>  
-                                        @endif
-                                    @else
-                                        <button wire:click="set_action('delete', {{$record->id}})" class="btn btn-danger mx-1">
-                                            <span wire:loading.remove wire:target="set_action('delete', {{$record->id}})">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </span>
-                                            <span wire:loading wire:target="set_action('delete', {{$record->id}})">
-                                                <i class="fa-solid fa-spinner fa-spin"></i>
-                                            </span>
-                                        </button>           
-                                    @endif
-                                </td>
+                                <th>Date Applied</th>
+                                <th style="max-width: 200px;">Action</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>                
+                        <tbody>
+                            @forelse($records as $record)
+                                <tr data-id="{{$record->id}}">
+                                    <td>{{$record->applicant_no}}</td>
+                                    <td>{{$record->job->company_name}}</td>
+                                    <td>{{$record->job->position}}</td>
+                                    @if ($status == 'placement')
+                                        <td>
+                                            {{$records[0]->offer ? 'Offer Sent' : 'Pending For Offer'}}
+                                        </td>
+                                        <td>
+                                            {{$records[0]->offer 
+                                            ?
+                                            'Received'
+                                            : 
+                                            'Waiting For Signature'}}
+                                        </td>
+                                    @endif
+                                    <td>{{$record->created_at}}</td>
+                                    <td>
+                                        <a target="_blank" href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-info mx-1">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-success mx-1" wire:click="view_applicant({{$record->id}})">
+                                            <span wire:loading.remove wire:target="view_applicant({{$record->id}})">
+                                                <i class="fa-solid fa-person"></i>
+                                            </span>
+                                            <span wire:loading wire:target="view_applicant({{$record->id}})">
+                                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                            </span>
+                                        </button>
+                                        @if ($status == 'interview')
+                                            <button wire:click="view_responses({{$record->id}})" class="btn btn-primary mx-1">
+                                                <span wire:loading.remove wire:target="view_responses({{$record->id}})">
+                                                    <i class="fa-solid fa-reply"></i>
+                                                </span>
+                                                <span wire:loading wire:target="view_responses({{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if($status != 'rejected' && $status != 'hired')
+                                            <button wire:click="set_action('rejected', {{$record->id}})" class="btn btn-danger mx-1">
+                                                <span wire:loading.remove wire:target="set_action('rejected', {{$record->id}})">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </span>
+                                                <span wire:loading wire:target="set_action('rejected', {{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if ($status === 'placement' && $record->isSignedJobOffer)
+                                            <button wire:click="download_offer({{$record->id}})" class="btn btn-primary mx-1">
+                                                <span wire:loading.remove wire:target="download_offer({{$record->id}})">
+                                                    <i class="fa-solid fa-signature"></i>
+                                                </span>
+                                                <span wire:loading wire:target="download_offer({{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if ($status === 'placement' && is_null($record->offer))
+                                            <button wire:click="send_offer(false, {{$record->id}})" class="btn btn-primary mx-1">
+                                                <span wire:loading.remove wire:target="send_offer(false, {{$record->id}})">
+                                                    <i class="fa-regular fa-paper-plane"></i>
+                                                </span>
+                                                <span wire:loading wire:target="send_offer(false, {{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if ($status === 'onboarding')
+                                            <button wire:click="set_checklist(false, {{$record->id}})" class="btn btn-primary mx-1">
+                                                <span wire:loading.remove wire:target="set_checklist(false, {{$record->id}})">
+                                                    <i class="fa-solid fa-list-check"></i>
+                                                </span>
+                                                <span wire:loading wire:target="set_checklist(false, {{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if($status == 'hired') 
+                                            <button wire:click="set_action('navigate', '{{$record->id}}')" class="btn btn-primary">
+                                                <span wire:loading.remove wire:target="set_action('navigate', '{{$record->id}}')">
+                                                    <i class="fa-solid fa-briefcase"></i>
+                                                </span>
+                                                <span wire:loading wire:target="set_action('navigate', '{{$record->id}}')">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                        @if (in_array($status, ['pending', 'interview', 'placement', 'onboarding']))
+                                            @if($status == 'interview' && $record->isInterviewResponded || $status == 'placement' && $record->isSignedJobOffer )
+                                                <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
+                                                    <span wire:loading.remove wire:target="set_action('process', {{$record->id}})">
+                                                        <i class="fa-solid fa-arrow-right"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="set_action('process', {{$record->id}})">
+                                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                                    </span>
+                                                </button>  
+                                            @elseif($status == 'onboarding' || $status == 'pending')
+                                                <button wire:click="set_action('process', {{$record->id}})" class="btn btn-primary mx-1">
+                                                    <span wire:loading.remove wire:target="set_action('process', {{$record->id}})">
+                                                        <i class="fa-solid fa-arrow-right"></i>
+                                                    </span>
+                                                    <span wire:loading wire:target="set_action('process', {{$record->id}})">
+                                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                                    </span>
+                                                </button>  
+                                            @endif
+                                        @else
+                                            <button wire:click="set_action('delete', {{$record->id}})" class="btn btn-danger mx-1">
+                                                <span wire:loading.remove wire:target="set_action('delete', {{$record->id}})">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </span>
+                                                <span wire:loading wire:target="set_action('delete', {{$record->id}})">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                                </span>
+                                            </button>           
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $records->links(data: ['scrollTo' => false]) }}
+                </div>
             </div>
         </div>
     </div>

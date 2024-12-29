@@ -25,37 +25,67 @@
             </a>
         </div>
     </div>
-    <table class="table table-striped w-100" id="logs-table">
-        <thead>
-            <tr>
-                <th>Employee No</th>
-                <th>BSD No.</th>
-                <th>Employee Name</th>
-                <th>Actions</th> <!-- Added actions column for "View" button -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($records['data'] as $key => $item)
-                @php
-                    // Check if the condition is met (avoid repeating the logic)
-                    $highlightBG = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
-                    $highlightColor = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
-                @endphp
-                <tr data-log-id="{{ $key }}" class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
-                    <!-- Display Employee No, BSD No., and Employee Name -->
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->information->employee_no ?? '' }}</td>
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->bsd_no ?? '' }}</td>
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                        {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
-                    </td>                    
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                        <button class="view-log btn btn-primary px-3 text-uppercase fw-medium">View</button>
-                    </td>
-                </tr>               
-            @endforeach
-        </tbody>        
-    </table>
-    
+    <div class="row mb-4">
+        <div class="col-md-6 d-flex align-items-center gap-2">
+            <label for="entries" class="form-label mb-0">Show entries:</label>
+            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50">50</option>
+                <option value="60">60</option>
+                <option value="70">70</option>
+                <option value="80">80</option>
+                <option value="90">90</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+            <label for="search" class="form-label mb-0">Search:</label>
+            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered w-100">
+            <thead>
+                <tr>
+                    <th>Employee No</th>
+                    <th>BSD No.</th>
+                    <th>Employee Name</th>
+                    <th>Actions</th> <!-- Added actions column for "View" button -->
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($timelogs as $key => $item)
+                    @php
+                        // Check if the condition is met (avoid repeating the logic)
+                        $highlightBG = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
+                        $highlightColor = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
+                    @endphp
+                    <tr data-log-id="{{ $key }}" class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
+                        <!-- Display Employee No, BSD No., and Employee Name -->
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->information->employee_no ?? '' }}</td>
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->bsd_no ?? '' }}</td>
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
+                            {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
+                        </td>                    
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
+                            <button class="view-log btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                        </td>
+                    </tr>            
+                @empty
+                    <tr>
+                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                    </tr>   
+                @endforelse
+            </tbody>        
+        </table>
+    </div>
+    <div class="mt-4">
+        {{ $timelogs->links(data: ['scrollTo' => false]) }}
+    </div>
 </div>
 @section('script')
     <script>
