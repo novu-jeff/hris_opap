@@ -16,6 +16,7 @@ use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
+use App\Models\EmployementTypes;
 use App\Models\JobCategory;
 use App\Models\Positions;
 use Illuminate\Support\Facades\Hash;
@@ -67,7 +68,7 @@ class EmployeeUploadService extends Controller
             }
     
             // Handle Job Category (optional)
-            $jobCategory = JobCategory::where('name', $employeeData[19])->first(); // Adjusted index
+            $jobCategory = EmployementTypes::where('name', $employeeData[19])->first(); // Adjusted index
     
             // Create or Update Employee Information
             $employeeInfo = EmployeeInformation::updateOrCreate(
@@ -79,7 +80,7 @@ class EmployeeUploadService extends Controller
                     'date_hired' => $this->transformDate($employeeData[16]), // Adjusted index
                     'department_id' => null,
                     'position_id' => $position->id ?? null,
-                    'job_category_id' => $jobCategory?->id ?? null,
+                    'employment_type_category' => $jobCategory?->id ?? null,
                     'bank_account_no' => $employeeData[15], // Adjusted index
                     'monthly_rate' => $employeeData[18], // Adjusted index
                 ]

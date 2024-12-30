@@ -16,3 +16,19 @@
     </div>
 </div>
 @endsection
+
+@section('script')
+    <script>
+        $(function() {
+            new Swiper('.swiper-container', {
+                slidesPerView: 3,
+                spaceBetween: 20, 
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: false, 
+                },
+                freeMode: true, 
+            });
+        });
+    </script>
+@endsection

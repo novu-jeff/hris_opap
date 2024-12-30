@@ -114,7 +114,22 @@ class Index extends Component
 
             $this->resetPage(); 
 
-            $records = $model->where('name', 'like', '%' . $this->search . '%');
+
+            if($this->type === 'applicants') {
+                $records = $model->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%'])
+                    ->orWhere('email', 'like', '%' . $this->search . '%');
+            }
+
+            if($this->type === 'employees') {
+                $records = $model->whereHas('personal', function($query) {
+                    $query->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                })
+                ->orWhereHas('account', function($query) {
+                    $query->where('email', 'like', '%' . $this->search . '%');
+                });
+                    
+            }
+
         }
 
         $records = $model->latest()->paginate($this->entries);

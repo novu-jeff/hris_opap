@@ -441,6 +441,7 @@ class Index extends Component
         $model = EmployeeInformation::with('personal');
 
         if ($this->search) {
+
             $this->resetPage(); 
 
             $employees = $model->where(function ($query) {

@@ -456,7 +456,7 @@
                                             'Waiting For Signature'}}
                                         </td>
                                     @endif
-                                    <td>{{$record->created_at}}</td>
+                                    <td>{{format_date($record->created_at, 'day_date_string')}}</td>
                                     <td>
                                         <a target="_blank" href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-info mx-1">
                                             <i class="fa-regular fa-eye"></i>

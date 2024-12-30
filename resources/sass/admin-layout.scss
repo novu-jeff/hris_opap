@@ -16,6 +16,14 @@
   min-height: 150px;
 }
 
+.swiper-container {
+  width: 100%;
+  padding: 20px 0;
+  cursor: grab;
+  overflow: hidden;
+}
+
+
 #admin-app {
     position: relative;
     .sidebar {

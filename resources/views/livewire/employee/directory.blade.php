@@ -35,7 +35,7 @@
                                                             </div>
                                                         </button>
                                                     </h2>
-                                                    <div id="collapseSection{{ $section['section_id'] }}" class="accordion-collapse collapse" aria-labelledby="headingSection{{ $section['section_id'] }}" data-bs-parent="#collapseDepartment{{ $department['department_id'] }}">
+                                                    <div id="collapseSection{{ $section['section_id'] }}" class="accordion-collapse collapse {{ $recordIndex === 0 ? 'show' : '' }}" aria-labelledby="headingSection{{ $section['section_id'] }}" data-bs-parent="#collapseDepartment{{ $department['department_id'] }}">
                                                         <div class="accordion-body">
                                                             <div class="row">
                                                                 @foreach ($section['employees'] as $employee)

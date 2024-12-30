@@ -58,7 +58,7 @@ use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryContro
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
-
+use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,10 +73,12 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', [HomeController::class, 'index'])
+Route::redirect('/', 'jobs', 301);;
+
+Route::get('jobs', [HomeController::class, 'index'])
         ->name('home.index')
         ->middleware('applicant:guest');
-Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
+Route::get('jobs/view/{slug}', [ViewJobController::class, 'index'])
     ->name('home.view-job')
     ->middleware('applicant:guest');
 
@@ -99,18 +101,27 @@ Route::prefix('register')->group(function() {
         
 
 Route::middleware(['applicant'])->group(function() {
-    Route::get('applied', [AppliedController::class, 'index'])
+    Route::get('my/jobs/applied', [AppliedController::class, 'index'])
         ->name('home.applied');
-    Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
+
+    Route::get('my/jobs/saved', [SavedJobsController::class, 'index'])
+        ->name('home.saved');
+
+    Route::get('jobs/applied/view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.applied.view-job');
+    
     Route::get('search/{search?}', [HomeController::class, 'index'])
         ->name('home.search');
-    Route::resource('profile', ProfileController::class)
+    
+    Route::resource('my/profile', ProfileController::class)
         ->names('home.profile');
+    
     Route::get('assessment/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
         ->name('interview-respond');
+    
     Route::get('job/offer/upload/signed/{job_id}', [HomeInterviewController::class, 'offer'])
         ->name('upload-signed-offer');
+    
     Route::get('job/requirements/upload/{job_id}', [HomeInterviewController::class, 'requirements'])
         ->name('upload-requirements');
 });
@@ -137,13 +148,20 @@ Route::prefix('admin')->group(function() {
             Route::resource('assessments', InterviewController::class)->names('job.interview');
             Route::resource('requirements', RequirementsController::class)->names('job.requirements');
                     
-            Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
-            Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
-            Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
-            Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])->name('job.applicants.show');
-            Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])->name('job.applicants.edit');
-            Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])->name('job.applicants.update');
-            Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])->name('job.applicants.destroy');
+            Route::get('applicants/{status}', [ApplicantController::class, 'index'])
+                ->name('job.applicants.index');
+            Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])
+                ->name('job.applicants.create');
+            Route::post('applicants/{status}', [ApplicantController::class, 'store'])
+                ->name('job.applicants.store');
+            Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])
+                ->name('job.applicants.show');
+            Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])
+                ->name('job.applicants.edit');
+            Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])
+                ->name('job.applicants.update');
+            Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])
+                ->name('job.applicants.destroy');
         
         });
         
@@ -170,7 +188,7 @@ Route::prefix('admin')->group(function() {
 
         Route::prefix('ess')->group(function() {
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
-                ->name('ess.obs.index');
+                ->name('ess.obs');
 
             Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
                 ->name('ess.atro');

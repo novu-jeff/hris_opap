@@ -17,7 +17,6 @@ class Jobs extends Component
     use WithPagination;
 
     public $user_id;
-    public $records_no = 1;
     public $record_info;
     public $applied_job_ids;
     public $saved_job_ids;
@@ -25,7 +24,6 @@ class Jobs extends Component
     public $search_term;
     public $search_result =  [];
     public $isEmptySearch = false;
-    protected $listeners = ['loadMoreRecords'];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 5;
@@ -36,7 +34,8 @@ class Jobs extends Component
 
         # initially store user id
 
-        $this->user_id = Auth::guard('applicant')->user()->id ?? null;
+        $this->user_id = Auth::guard('applicant')
+            ->user()->id ?? null;
 
         # initially load all applied jobs
 
@@ -256,8 +255,6 @@ class Jobs extends Component
         return view('livewire.home.placeholder.jobs');
     }
 
-    # render view
-
     public function find() {
 
         $this->isEmptySearch = empty($this->search_query) ? true : false;
@@ -266,14 +263,17 @@ class Jobs extends Component
 
         $this->search_term = $this->search_query;
     }
+
+    # render view
     
     public function render()
     {
 
         $model = JobPosts::with('applicants', 'employment_type');
-        $this->resetPage();
 
         if ($this->search_term) {
+
+            $this->resetPage();
 
             $records = $model->where('position', 'like', '%' . $this->search_query . '%')
                 ->orWhere('company_name', 'like', '%' . $this->search_query . '%')
