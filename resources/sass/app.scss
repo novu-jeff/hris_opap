@@ -19,6 +19,10 @@ $theme-colors: (
 @import 'bootstrap/scss/bootstrap';
 
 
+.d-revert {
+  display: revert !important;
+}
+
 .accordion-button {
     background-color: rgb(210.8, 223, 231.8) !important;
 }

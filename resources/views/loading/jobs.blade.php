@@ -1,6 +1,5 @@
 <div>
-    <div class="placeholder__searchbox"></div>
-    <div class="row mt-5">
+    <div class="row">
         <div class="col-12 col-md-12 col-lg-5 col-xl-5 mb-4">
             <div class="row">
                 <div class="col-12 mb-3">

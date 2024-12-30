@@ -80,22 +80,14 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-4">
-                                <label class="mb-2" for="type">Purpoose <span class="text-danger">*</span></label>
+                                <label class="mb-2" for="type">Purpose <span class="text-danger">*</span></label>
                                 <textarea wire:model="purpose" id="purpose" cols="30" rows="5" class="form-control" placeholder="Write something..."></textarea>
                                 <div class="error-field">
                                     @error('purpose') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
-
                         <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label class="mb-2" for="type">Arrival Time <span class="text-danger">*</span></label>
-                               <input type="time" class="form-control" wire:model="arrival_time">
-                                <div class="error-field">
-                                    @error('arrival_time') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
                             <div class="col-md-6 mb-4">
                                 <label class="mb-2" for="type">Departure Time <span class="text-danger">*</span></label>
                                <input type="time" class="form-control" wire:model="departure_time">
@@ -103,9 +95,14 @@
                                     @error('departure_time') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="mb-2" for="type">Arrival Time <span class="text-danger">*</span></label>
+                               <input type="time" class="form-control" wire:model="arrival_time">
+                                <div class="error-field">
+                                    @error('arrival_time') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
                         </div>
-
-
                     </div>
                     <hr class="mx-3">
                     <div class="card-footer bg-transparent border-0 d-flex justify-content-end">

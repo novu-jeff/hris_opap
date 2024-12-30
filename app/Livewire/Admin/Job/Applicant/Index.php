@@ -823,17 +823,22 @@ class Index extends Component
         }
         
     }
-
+    
     public function render()
     {
 
-        $model = JobApplicants::with(['applicant', 'job', 'offer', 'requirements']);
+        $model = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
+            ->where('status', $this->status);
 
         if ($this->search) {
 
             $this->resetPage(); 
 
-            $records = $model->where('applicant_no', 'like', '%' . $this->search . '%');
+            $records = $model->where('applicant_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('job', function($query) {
+                    $query->where('company_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('position', 'like', '%' . $this->search . '%');
+                });
         }
 
         $records = $model->latest()->paginate($this->entries);

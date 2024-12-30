@@ -13,4 +13,9 @@ class EmployementTypes extends Model
         'name',
         'code',
     ];
+
+    public function employees() {
+        return $this->hasMany(EmployeeInformation::class, 'employment_type_id', 'id');
+    }
+
 }

@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             ViolationSeeder::class,
             SkillListSeeder::class,   
             AnnouncementSeeder::class,
-            JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
             ShiftScheduleSeeder::class,

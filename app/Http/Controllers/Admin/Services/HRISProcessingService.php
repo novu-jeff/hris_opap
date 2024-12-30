@@ -110,7 +110,7 @@ class HRISProcessingService extends Controller
             'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
             'employee_no' => $data['employee_no'],
             'date_resignation' => $data['date_resignation'] ?? null,
-            'job_category_id' => $data['type'],
+            'employment_type_id' => $data['type'],
             'status' => $data['status'],
             'salary_method' => $data['salary_method'],
             'leave_credits' => $data['leave_credits'],

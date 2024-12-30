@@ -131,7 +131,7 @@
                         <label class="mb-2" for="type">Employment Type</label>
                         <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            @foreach ($jobCategories as $category)
+                            @foreach ($employmentTypes as $category)
                                 <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
                             @endforeach
                         </select>

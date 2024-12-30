@@ -37,9 +37,10 @@ return new class extends Migration
                 ->constrained('employee_schedules');
             $table->string('date_resignation')
                 ->nullable();
-            $table->foreignId('job_category_id')
+            $table->foreignId('employment_type_id')
                 ->nullable()
-                ->constrained('job_categories');
+                ->constrained('employment_types')
+                ->onDelete('set null');
             $table->enum('status', [
                     'active',
                     'inactive'

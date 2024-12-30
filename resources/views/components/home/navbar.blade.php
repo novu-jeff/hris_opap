@@ -37,8 +37,11 @@
                 <div class="dropdown ms-3 d-none d-md-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown">
                     <img class="profile-img" src="{{
                         Auth::guard('applicant')->user()->image ? Storage::url('public/users/applicant/'. $folder . '/'. Auth::guard('applicant')->user()->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                    }}" alt="Profile Image">
-                    <div class="email">{{ ucwords(Auth::guard('applicant')->user()->firstname . ' ' . Auth::guard('applicant')->user()->lastname ?? 'Guest')}}</div>
+                    }}" alt="Profile Image">  
+                    <div class="name me-3">
+                        <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{ ucwords(Auth::guard('applicant')->user()->firstname . ' ' . Auth::guard('applicant')->user()->lastname ?? 'Guest')}}</p>
+                        <small class="text-uppercase fw-bold text-muted mb-0">Applicant</small>
+                    </div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{{route('home.profile.index')}}" wire:navigate>Profile</a></li>
                         <li>

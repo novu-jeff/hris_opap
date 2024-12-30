@@ -186,57 +186,32 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if ($lazy)
-                        @for ($i = 0; $i < 10; $i++)
-                            <tr>
-                                <td class="text-center">
-                                    <div class="skeleton skeleton-circle" style="width: 50px; height: 50px;"></div>
-                                </td>
-                                <td>
-                                    <div class="skeleton skeleton-text" style="width: 80px;"></div>
-                                </td>
-                                <td>
-                                    <div class="skeleton skeleton-text" style="width: 120px;"></div>
-                                </td>
-                                <td>
-                                    <div class="skeleton skeleton-text" style="width: 100px;"></div>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <div class="skeleton skeleton-button" style="width: 40px; height: 30px;"></div>
-                                    <div class="skeleton skeleton-button" style="width: 40px; height: 30px;"></div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endfor
-                    @else
-                        @forelse($employees as $key => $item)
-                            <tr data-id="{{$item->employee_no}}">
-                                <td class="text-center">
-                                    <img style="width: 50px; height: 50px;" src="{{
-                                        $item->personal && $item->personal->profile 
-                                            ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) 
-                                            : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                    }}">
-                                </td>
-                                <td>{{$item->employee_no}}</td>
-                                <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
-                                <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
-                                <td wire:ignore.self>
-                                    <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </a>
-                                    <button id="remove" data-id="{{$item->employee_no}}" class="btn btn-danger mx-1">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                            </tr>
-                        @endforelse
-                    @endif
+                    @forelse($employees as $key => $item)
+                        <tr data-id="{{$item->employee_no}}">
+                            <td class="text-center">
+                                <img style="width: 50px; height: 50px;" src="{{
+                                    $item->personal && $item->personal->profile 
+                                        ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) 
+                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                }}">
+                            </td>
+                            <td>{{$item->employee_no}}</td>
+                            <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
+                            <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
+                            <td wire:ignore.self>
+                                <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger mx-1">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
             <div class="mt-4">
@@ -245,20 +220,3 @@
         </div>     
     </div>
 </div>
-
-@section('script')
-    <script>
-        $(function() {
-            setTimeout(() => {
-                Livewire.dispatch('loading');
-            }, 1000);
-
-            $(document).on('click', '#remove', function() {
-                const id = $(this).data('id');
-                Livewire.dispatch('remove', [true, id]);
-            });
-
-
-        })
-    </script>
-@endsection
