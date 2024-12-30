@@ -114,7 +114,6 @@ class Index extends Component
 
             $this->resetPage(); 
 
-
             if($this->type === 'applicants') {
                 $records = $model->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%'])
                     ->orWhere('email', 'like', '%' . $this->search . '%');
