@@ -6,6 +6,7 @@ use App\Models\EmployeeDeductions;
 use App\Models\EmployeeInformation;
 use App\Models\OtherDeductions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -76,6 +77,17 @@ class Index extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write employee-deductions')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
 
         DB::beginTransaction();

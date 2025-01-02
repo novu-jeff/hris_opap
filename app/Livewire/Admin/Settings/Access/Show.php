@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Access;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Permission;
@@ -36,12 +37,13 @@ class Show extends Component
             'ess' => ['leave', 'obs', 'arto', 'announcements', 'employee-profile-approval', 'request-status'],
             'reports' => ['dtr'],
             'settings' => [
-                'company-information', 'branches', 'departments', 'sections', 'assessment', 
-                'requirements', 'users', 'access-management', 'bank-information', 'employment-type', 
-                'positions', 'violations', 'leaves', 'gsis-billing', 'earnings', 'deductions', 
+                'company-information', 'branches', 'departments', 'sections', 'assessments', 'requirements',
+                'users', 'access-management', 'bank-information', 'employment-type', 'positions', 'violations',
+                'leave-types', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
             ]
         ];
+        
 
         // Initialize default values for selectedPermissions
         foreach ($this->permissions as $module => $actions) {
@@ -81,7 +83,6 @@ class Show extends Component
             }
         }
 
-        // dd($this->selectedPermissions);
 
     }
 
@@ -100,6 +101,17 @@ class Show extends Component
 
     public function savePermissions()
     {
+
+        if (Gate::denies('write access-management')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         // Validate and prepare the permissions for saving
         $permissionsToSave = [];
 

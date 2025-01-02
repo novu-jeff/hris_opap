@@ -32,7 +32,6 @@ class Index extends Component
     }
 
     public function loading() {
-        $this->dispatch('reinitializeDataTable');
         $this->lazy = false;
     }
 

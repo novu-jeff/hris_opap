@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\EmployeeSchedule;
 
 use App\Models\EmployeeSchedule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Create extends Component
@@ -71,6 +72,16 @@ class Create extends Component
     }
 
     public function save(bool $isNotify = true) {
+
+        if (Gate::denies('write employee-schedule')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->validate();
 

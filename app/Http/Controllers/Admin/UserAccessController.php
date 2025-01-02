@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class UserAccessController extends Controller
 {
+    
+    public function __construct() {
+        $this->middleware('permission:read access-management')->only('index', 'show');
+        $this->middleware('permission:write access-management')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('admin.settings.user-access.index');

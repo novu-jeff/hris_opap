@@ -17,6 +17,7 @@ use App\Models\ShiftSchedule;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -546,6 +547,17 @@ class Form extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $id = $this->employee_no;
 
         // Check if the employee exists

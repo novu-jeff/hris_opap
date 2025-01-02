@@ -10,6 +10,7 @@ use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -70,6 +71,17 @@ class Index extends Component
     }
 
     public function updatedFile() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if ($this->file) {
             $this->upload_preview;
             $file = $this->file;
@@ -109,6 +121,16 @@ class Index extends Component
     }
 
     public function upload_file() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->isUploading = true;
     
@@ -358,6 +380,16 @@ class Index extends Component
     }
     
     public function remove(bool $isNotify = true, string $employee_no = null) {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 

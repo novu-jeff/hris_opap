@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Earnings;
 
-use App\Models\JobCategory;
+use App\Models\EmployementTypes;
 use App\Models\OtherEarnings;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -22,7 +23,7 @@ class Edit extends Component
 
     public function mount() {
     
-        $this->job_category = JobCategory::all();
+        $this->job_category = EmployementTypes::all();
         $this->loadRecords($this->id);
     }
 
@@ -185,6 +186,16 @@ class Edit extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write other earnings')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->dispatch('reinitializeSelect');
 

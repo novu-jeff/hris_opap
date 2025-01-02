@@ -27,7 +27,7 @@
                             <select wire:model="fields.source" wire:change="onChangeSelect('source', event.target.value)" id="source" class="form-select">
                                 <option value=""> - Choose - </option>
                                 <option value="entry">Data Entry</option>
-                                <option value="file_upload">File Upload</option>
+                                <option value="file_upload">File Upload (For GSIS Only)</option>
                             </select>
                             <div class="error-field">
                                 @error('fields.source') <span class="text-danger">{{ $message }}</span> @enderror

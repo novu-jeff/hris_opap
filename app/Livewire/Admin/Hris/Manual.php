@@ -18,6 +18,7 @@ use App\Models\EmployementTypes;
 use App\Models\Positions;
 use App\Models\Sections;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -354,6 +355,16 @@ class Manual extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         try {
             $this->validate($this->rules());

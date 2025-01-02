@@ -9,24 +9,18 @@ use Illuminate\Support\Facades\Gate;
 class PostController extends Controller
 {
 
-
+    public function __construct() {
+        $this->middleware('permission:read jobs')->only('index');
+        $this->middleware('permission:write jobs')->only(['create', 'edit']);
+    }
 
     public function index()
     {
-        if(Gate::denies('read jobs')) {
-            abort(403);
-        }
-
         return view('admin.job.posts.index');
     }
 
     public function create()
     {
-
-        if(Gate::denies('write jobs')) {
-            abort(403);
-        }
-
         return view('admin.job.posts.create');
     }
 

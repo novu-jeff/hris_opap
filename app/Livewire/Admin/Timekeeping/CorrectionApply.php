@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Timekeeping;
 use App\Models\EmployeeClockInOut;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class CorrectionApply extends Component
@@ -58,6 +59,16 @@ class CorrectionApply extends Component
 }
 
     public function save(bool $isNotify = true) {
+
+        if (Gate::denies('write correction-timelogs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->validate();
 

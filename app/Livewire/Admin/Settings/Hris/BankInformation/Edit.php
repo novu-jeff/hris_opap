@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Settings\Hris\BankInformation;
 use App\Models\BankInformations;
 use App\Models\Departments;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Edit extends Component
@@ -36,6 +37,16 @@ class Edit extends Component
 
     public function save() {
         
+        if (Gate::denies('write bank-information')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
 
         DB::beginTransaction();

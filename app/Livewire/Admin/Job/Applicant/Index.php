@@ -15,6 +15,7 @@ use App\Models\JobApplicantsRequirements;
 use App\Models\JobRequirements;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -133,6 +134,17 @@ class Index extends Component
     }
 
     public function set_action(string $action, int $id) {
+
+        if (Gate::denies('write applicants')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($this->validate_action($action)) {
             $this->selected_id = $id;
             switch($action) {

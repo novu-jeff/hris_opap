@@ -7,6 +7,7 @@ use App\Models\ApplicantUsers;
 use App\Models\EmployeeInformation;
 use App\Models\JobApplicants;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -52,6 +53,16 @@ class Index extends Component
 
     public function remove($isNotify = true, int $id = null) {
         
+        if (Gate::denies('write users')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';

@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 
 class TimekeepingController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read timelogs')->only('index');
+        $this->middleware('permission:write timelogs')->only(['create', 'edit']);
+        $this->middleware('permission:read correction-timelogs')->only(['correction']);
+        $this->middleware('permission:read correction-timelogs')->only(['correction_apply']);
+    }
+
     public function index(string $month = null, int $day = null, int $year = null)
     {
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Ess\ProfileApproval;
 
 use App\Models\EmployeeUpdatePersonal;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,7 +18,16 @@ class Index extends Component
     public $search = '';
 
     public function remove(bool $isNotify = true, string $employee_no = null) {
-        $this->dispatch('reinitializeDataTable');
+
+        if (Gate::denies('write employee-profile-approval')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
     
         if ($isNotify) {
             $this->selected_id = $employee_no;
