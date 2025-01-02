@@ -24,6 +24,13 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
 
+
+    public function mount() {
+        if(!in_array($this->type, ['applicants', 'employees', 'admins'])) {
+            return redirect()->route('users.index', ['type' => 'applicants']);
+        }
+    }
+
     public function view_user(int $id) {
         if($this->type == 'applicants') {
             $record =  $record = ApplicantUsers::with(['applied.job'])
@@ -40,7 +47,7 @@ class Index extends Component
                 'id' => $id,
             ]);
             return redirect()->route('hris.index');
-        }
+        } 
     }
 
     public function remove($isNotify = true, int $id = null) {
@@ -66,6 +73,9 @@ class Index extends Component
                     break;
                 case 'employees':
                     $record = EmployeeInformation::find($this->selected_id);
+                    break;
+                case 'admins':
+                    $record = User::find($this->selected_id);
                     break;
                 default:
                     break;
@@ -97,7 +107,6 @@ class Index extends Component
     public function render()
     {
 
-
         if($this->type === 'applicants') {
             $model = ApplicantUsers::query();
         }
@@ -106,7 +115,7 @@ class Index extends Component
             $model = EmployeeInformation::with('personal', 'account');
         }
 
-        if($this->type === 'admin') {
+        if($this->type === 'admins') {
             $model = User::query();
         }
 
@@ -127,6 +136,10 @@ class Index extends Component
                     $query->where('email', 'like', '%' . $this->search . '%');
                 });
                     
+            }
+
+            if($this->type === 'admins') {
+                $records = $model->where('name', 'like', '%' . $this->search . '%');
             }
 
         }

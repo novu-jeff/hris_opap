@@ -193,9 +193,16 @@
                     <a href="{{route('users.index', ['type' => 'employees'])}}" class="nav-link {{$type == 'employees' ? 'active' : ''}}" id="pills-employees-tab" type="button" role="tab" aria-controls="pills-employees" aria-selected="false">Employees</a>
                 </li>
                 <li class="nav-item text-uppercase fw-bold" role="presentation">
-                    <a href="{{route('users.index', ['type' => 'admin'])}}" class="nav-link {{$type == 'admin' ? 'active' : ''}}" id="pills-admin-tab" type="button" role="tab" aria-controls="pills-admin" aria-selected="false">Administrators</a>
+                    <a href="{{route('users.index', ['type' => 'admins'])}}" class="nav-link {{$type == 'admins' ? 'active' : ''}}" id="pills-admin-tab" type="button" role="tab" aria-controls="pills-admin" aria-selected="false">Administrators</a>
                 </li>
             </ul>
+            <div class="actions d-flex justify-content-end mb-5">
+                @if($type == 'employees')
+                    <a href="{{route('hris.manual')}}"  class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</a>
+                @elseif($type == 'admins')
+                    <a href="{{route('admin.new')}}"  class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</a>
+                @endif
+            </div>
             <div class="mt-4">
                 <div class="row mb-4">
                     <div class="col-md-6 d-flex align-items-center gap-2">
@@ -262,7 +269,7 @@
                                         <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
                                     </tr>
                                 @endforelse
-                            @elseif($type === 'employees')
+                                @elseif($type === 'employees')
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td colspan="1">
@@ -279,6 +286,30 @@
                                             <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->employee_no])}}" class="btn btn-success mx-1">
                                                 <i class="fa-solid fa-person"></i>
                                             </a>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>  
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr>
+                                @endforelse
+                                @elseif($type === 'admins')
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td colspan="1">
+                                            <img src="{{
+                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
+                                            }}" style="width: 40px; height: 40px">
+                                        </td>
+                                        <td>{{$record->name}}</td>
+                                        <td>{{$record->email}}</td>
+                                        @if($type === 'employees')
+                                            <td>{{$record->date_hired}}</td>
+                                        @endif
+                                        <td>
                                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>  

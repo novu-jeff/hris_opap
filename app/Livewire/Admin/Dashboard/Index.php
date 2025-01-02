@@ -15,6 +15,7 @@ use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Index extends Component

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Job\Posts;
 use App\Models\EmployementTypes;
 use App\Models\JobPosts;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 

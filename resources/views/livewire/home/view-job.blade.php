@@ -113,17 +113,21 @@
             @endif
         </div>
     </div>
-    <div class="d-flex justify-content-between">
-        @if(!is_null($nextAndPrev['prev']))
-            <a wire:navigate href="{{$nextAndPrev['prev']}}" class="text-uppercase fw-bold text-primary">
-                <i class="fa-solid fa-arrow-left-long me-2"></i> Previous
-            </a>
-        @endif
-        @if(!is_null($nextAndPrev['next']))
-            <a wire:navigate href="{{$nextAndPrev['next']}}" class="text-uppercase fw-bold text-primary">
-                Next <i class="fa-solid fa-arrow-right-long ms-2"></i>
-            </a>
-        @endif
+    <div>
+        <div class="float-start">
+            @if(!is_null($nextAndPrev['prev']))
+                <a wire:navigate href="{{$nextAndPrev['prev']}}" class="text-uppercase fw-bold text-primary">
+                    <i class="fa-solid fa-arrow-left-long me-2"></i> Previous
+                </a>
+            @endif
+        </div>
+        <div class="float-end">
+            @if(!is_null($nextAndPrev['next']))
+                <a wire:navigate href="{{$nextAndPrev['next']}}" class="text-uppercase fw-bold text-primary">
+                    Next <i class="fa-solid fa-arrow-right-long ms-2"></i>
+                </a>
+            @endif  
+        </div>
     </div>
 </div>
 
