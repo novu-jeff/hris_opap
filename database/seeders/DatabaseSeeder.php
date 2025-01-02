@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
         $product = config('app.product');
 
         $this->call([
-            AdminAccountSeeder::class,
             RequirementSeeder::class,
             InterviewSeeder::class,
             EmploymentTypesSeeder::class,
@@ -32,6 +31,9 @@ class DatabaseSeeder extends Seeder
             ShiftScheduleSeeder::class,
             EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
+            AdminPermissionsSeeder::class,
+            RolesSeeder::class,
+            AdminAccountSeeder::class,
         ]);
 
         

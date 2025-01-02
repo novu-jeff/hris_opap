@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
+use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
+use App\Http\Controllers\Admin\UserAccessController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
 use App\Http\Controllers\Home\HomeController;
@@ -125,8 +127,6 @@ Route::middleware(['applicant'])->group(function() {
     Route::get('job/requirements/upload/{job_id}', [HomeInterviewController::class, 'requirements'])
         ->name('upload-requirements');
 });
-
-
     
 Route::prefix('admin')->group(function() {
     Route::get('login', [AdminLoginController::class, 'index'])
@@ -144,9 +144,9 @@ Route::prefix('admin')->group(function() {
 
         Route::prefix('job')->group(function() {
     
-            Route::resource('posts', PostController::class)->names('job.posts');
-            Route::resource('assessments', InterviewController::class)->names('job.interview');
-            Route::resource('requirements', RequirementsController::class)->names('job.requirements');
+            Route::resource('posts', PostController::class)
+                ->only(['index', 'create', 'edit'])
+                ->names('job.posts');
                     
             Route::get('applicants/{status}', [ApplicantController::class, 'index'])
                 ->name('job.applicants.index');
@@ -167,6 +167,7 @@ Route::prefix('admin')->group(function() {
         
         Route::get('hris', [HRISController::class, 'index'])
             ->name('hris.index');
+            
         Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
             ->name('hris.show');
 
@@ -174,6 +175,7 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
+
             Route::get('logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'index'])
                 ->name('timekeeping.index');
             Route::get('upload', [TimekeepingController::class, 'upload'])
@@ -187,6 +189,7 @@ Route::prefix('admin')->group(function() {
         });
 
         Route::prefix('ess')->group(function() {
+            
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
                 ->name('ess.obs');
 
@@ -226,6 +229,9 @@ Route::prefix('admin')->group(function() {
         
         Route::prefix('settings')->group( function() {
         
+            Route::resource('assessments', InterviewController::class)->names('job.interview');
+            Route::resource('requirements', RequirementsController::class)->names('job.requirements');
+
             Route::get('company-information', [CompanyInformationController::class, 'index'])
                 ->name('company.index');
 
@@ -290,7 +296,12 @@ Route::prefix('admin')->group(function() {
             Route::prefix('users')->group(function() {
                 Route::get('{type}', [UserController::class, 'index'])
                     ->name('users.index');
+                Route::get('admins/new', [UserController::class, 'create'])
+                    ->name('admin.new');
             });
+
+            Route::resource('user-access', UserAccessController::class)
+                ->names('users.access');
             
             Route::prefix('payroll')->group( function() {
                 Route::resource('/holidays', HolidayController::class)->only('create', 'index', 'edit')

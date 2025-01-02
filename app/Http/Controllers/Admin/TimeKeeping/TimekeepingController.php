@@ -9,10 +9,6 @@ use Illuminate\Http\Request;
 
 class TimekeepingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
     public function index(string $month = null, int $day = null, int $year = null)
     {
 

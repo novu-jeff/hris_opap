@@ -21,21 +21,23 @@ class Index extends Component
     public function render()
     {
         $model = EmployeeClockInOut::with('information.personal');
-    
+        
         if ($this->search) {
             $this->resetPage();
-    
+        
             $model->where(function ($query) {
                 $query->orWhere(function ($subQuery) {
                     // Check if the search term matches a month or year
                     $subQuery->whereRaw('MONTHNAME(created_at) like ?', ['%' . $this->search . '%'])
-                             ->orWhereRaw('YEAR(created_at) like ?', ['%' . $this->search . '%']);
+                            ->orWhereRaw('YEAR(created_at) like ?', ['%' . $this->search . '%']);
                 });
             });
         }
 
+        // Paginate the results
         $paginatedRecords = $model->latest()->paginate($this->entries);
-        
+
+        // Group the records by month and year
         $records = $paginatedRecords->getCollection()->groupBy(function ($record) {
                 return Carbon::parse($record->created_at)->format('F, Y');
             })->map(function ($group, $monthYear) {
@@ -46,10 +48,12 @@ class Index extends Component
                     'records' => $group,
                 ];
             })->values();
-    
+
+        // Return the paginated records and the grouped records
         return view('livewire.admin.reports.daily-time-record.index', [
             'records' => $records,
         ]);
     }
+
     
 }
