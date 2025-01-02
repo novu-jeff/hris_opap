@@ -321,8 +321,9 @@ return new class extends Migration
             $table->string('status')
                 ->default('pending');
             $table->foreignId('leave_id')
+                ->nullable()
                 ->constrained('leave_types')
-                ->onDelete('cascade');
+                ->onDelete('set null');
             $table->longtext('reason');
             $table->string('from')
                 ->nullable();

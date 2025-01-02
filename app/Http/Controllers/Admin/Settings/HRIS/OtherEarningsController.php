@@ -7,25 +7,21 @@ use Illuminate\Http\Request;
 
 class OtherEarningsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct() {
+        $this->middleware('permission:read other earnings')->only('index');
+        $this->middleware('permission:write other earnings')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('admin.settings.hris.earnings.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.settings.hris.earnings.create');
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
 
     public function edit(int $id)
     {

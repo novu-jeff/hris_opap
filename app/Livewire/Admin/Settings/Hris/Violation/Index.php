@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Hris\Violation;
 
 use App\Models\Violations;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,6 +21,16 @@ class Index extends Component
 
 
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write violations')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 

@@ -7,9 +7,12 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+    public function __construct() {
+        $this->middleware('permission:read users')->only('index');
+        $this->middleware('permission:write users')->only(['create', 'edit']);
+    }
+
     public function index(string $type)
     {
         return view('admin.user.index', compact('type'));

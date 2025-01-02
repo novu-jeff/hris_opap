@@ -27,7 +27,7 @@ class RolesSeeder extends Seeder
 
         // Define permissions for each role
         $permissions = [
-            'superadmin' => Permission::pluck('name')->toArray(), // All permissions
+            'superadmin' => Permission::pluck('name')->toArray(),
             'admin' => Permission::whereNotIn('name', [
                 'read users',
                 'write users',

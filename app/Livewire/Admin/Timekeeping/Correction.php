@@ -32,7 +32,6 @@ class Correction extends Component
     }
 
     public function loading() {
-        $this->dispatch('reinitializeDataTable');
         $this->lazy = false;
     }
 
@@ -73,11 +72,6 @@ class Correction extends Component
             'data' => []
         ];
                 
-    }
-
-    public function getData() {
-        // Create the timestamp for the current date
-        
     }
 
     public function render() {

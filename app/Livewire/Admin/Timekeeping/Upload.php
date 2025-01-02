@@ -7,6 +7,7 @@ use App\Models\EmployeeInformation;
 use App\Models\ShiftSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -24,10 +25,6 @@ class Upload extends Component
     public function mount() {
         $this->loadRecords();
     }
-
-    public function loadRecords() {
-
-    } 
 
     public function updatedFile() {
 
@@ -67,11 +64,19 @@ class Upload extends Component
             $this->isParsing = true;
         }
 
-        $this->dispatch('reinitializeDataTable');
-
     }
 
     public function upload_file() {
+
+        if (Gate::denies('write timelogs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if(!($this->upload_preview)) {
             return $this->dispatch('alert', [

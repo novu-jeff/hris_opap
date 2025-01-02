@@ -25,7 +25,6 @@ class Create extends Component
 
     protected $listeners = ['ckeditor'];
 
-
     public function mount() {
         $this->employment_types = EmployementTypes::all();
     }
@@ -91,6 +90,16 @@ class Create extends Component
 
     public function save() {
     
+        if (Gate::denies('write jobs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
         
         DB::beginTransaction();

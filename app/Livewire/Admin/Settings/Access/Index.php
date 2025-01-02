@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Settings\Access;
 
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -20,6 +21,16 @@ class Index extends Component
     public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write access-management')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 

@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class HolidayController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read holidays')->only('index');
+        $this->middleware('permission:write holidays')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('admin.settings.payroll.holidays.index');

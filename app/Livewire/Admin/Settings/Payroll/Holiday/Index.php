@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Payroll\Holiday;
 
 use App\Models\Holiday;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +20,17 @@ class Index extends Component
     public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write holidays')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
