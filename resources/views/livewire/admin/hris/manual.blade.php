@@ -122,13 +122,6 @@
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="leave_credits">Leave Credits</label>
-                        <input type="text" wire:model="records.employee_information.leave_credits" id="records.employee_information.leave_credits" class="form-control">
-                        <div class="error-field">
-                            @error('records.employee_information.leave_credits') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> 
-                    <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="monthly_rate">Monthly Rate</label>
                         <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
                         <div class="error-field">
@@ -1188,9 +1181,9 @@
             </div>
             <div class="card-footer d-flex justify-content-end bg-transparent border-0">
                 <div class="text-end">
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                        <span wire:loading.remove>Save</span>    
-                        <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                     </button>
                     <div class="mt-3 pb-5">
                         @if ($errors->any())

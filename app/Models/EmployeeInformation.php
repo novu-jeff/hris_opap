@@ -24,7 +24,6 @@ class EmployeeInformation extends Model
         'employment_type_id',
         'status',
         'salary_method',
-        'leave_credits',
         'monthly_rate',
         'daily_rate',
         'company_name',

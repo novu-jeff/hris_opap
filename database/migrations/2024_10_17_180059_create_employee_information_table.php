@@ -54,9 +54,6 @@ return new class extends Migration
                     'e-wallet'
                 ])
                 ->nullable();
-            $table->integer('leave_credits')
-                ->default(0)
-                ->nullable();;
             $table->float('monthly_rate')
                 ->default(0)
                 ->nullable();

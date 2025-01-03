@@ -132,7 +132,6 @@ class Form extends Component
             'type' => $data->employment_type_id,
             'status' => $data->status,
             'salary_method' => $data->salary_method,
-            'leave_credits' => $data->leave_credits,
             'monthly_rate' => $data->monthly_rate,
             'payroll_account_number' => $data->payroll_account_number,
         ];

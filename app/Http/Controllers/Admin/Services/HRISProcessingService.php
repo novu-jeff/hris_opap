@@ -113,7 +113,6 @@ class HRISProcessingService extends Controller
             'employment_type_id' => $data['type'],
             'status' => $data['status'],
             'salary_method' => $data['salary_method'],
-            'leave_credits' => $data['leave_credits'],
             'monthly_rate' => $data['monthly_rate'],
             'payroll_account_number' => $data['payroll_account_number'],
         ]);
