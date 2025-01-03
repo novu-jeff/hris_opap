@@ -38,16 +38,6 @@ class Index extends Component
         $this->employees = EmployeeInformation::with('personal')->get();
     }
 
-    public function addRecords() {
-        $this->dispatch('showModal', [
-            'modal' => 'add_new_modal'
-        ]);
-    }
-
-    public function close_upload() {
-        $this->reset('fields');
-    }
-
     public function select_change(string $field) {
         if ($field === 'employee_no') {
             $employeeNo = $this->fields['employee_no'];

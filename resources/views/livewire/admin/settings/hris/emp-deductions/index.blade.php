@@ -1,44 +1,36 @@
 <div>
-    <div class="modal fade" wire:ignore.self id="add_new_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Add Record</h1>
-                    <button type="button" class="btn-close" wire:click="close_upload" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-4 px-4">
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="fields.employee_no">Employee No. <span class="text-danger">*</span></label>
-                            <select wire:model="fields.employee_no" wire:change="select_change('employee_no')" id="fields.employee_no" class="form-select">
-                                <option value=""> - CHOOSE - </option>
-                                @foreach($employees as $employee)
-                                    <option value="{{$employee->employee_no}}">#{{$employee->employee_no . ' - ' . $employee->personal->firstname . ' ' . $employee->personal->lastname }}</option>
-                                @endforeach
-                            </select>
-                            <div class="error-field">
-                                @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="fields.amount">Amount <span class="text-danger">*</span></label>
-                            <input type="number" wire:model="fields.amount" id="fields.amount" class="form-control">
-                            <div class="error-field">
-                                @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
+    <div class="d-flex justify-content-end mb-5 gap-3">
+        <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+    </div>
+    <div class="card shadow">
+        <div class="card-body px-5 py-5">
+            <div class="row">
+                <div class="col-12 col-md-6 mb-4">
+                    <label class="mb-2" for="fields.employee_no">Employee No. <span class="text-danger">*</span></label>
+                    <select wire:model="fields.employee_no" wire:change="select_change('employee_no')" id="fields.employee_no" class="form-select">
+                        <option value=""> - CHOOSE - </option>
+                        @foreach($employees as $employee)
+                            <option value="{{$employee->employee_no}}">#{{$employee->employee_no . ' - ' . $employee->personal->firstname . ' ' . $employee->personal->lastname }}</option>
+                        @endforeach
+                    </select>
+                    <div class="error-field">
+                        @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
-                <div class="modal-footer d-flex justify-content-end">
-                    <button class="btn btn-primary" wire:click="save">Save</button>
+                <div class="col-12 col-md-6 mb-4">
+                    <label class="mb-2" for="fields.amount">Amount <span class="text-danger">*</span></label>
+                    <input type="number" wire:model="fields.amount" id="fields.amount" class="form-control">
+                    <div class="error-field">
+                        @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-primary px-5 py-3 text-uppercase" wire:click="save">Save</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="d-flex justify-content-end mb-5 gap-3">
-        <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-        <button class="btn btn-primary px-5 py-3 text-uppercase" wire:click="addRecords">Add Employee</button>
-    </div>
+    <hr class="my-5">
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
             <div class="row mb-4">

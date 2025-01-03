@@ -20,40 +20,39 @@ class Index extends Component
 
     public function render()
     {
+        // Initialize the query builder for EmployeeClockInOut with related information
         $model = EmployeeClockInOut::with('information.personal');
-        
+
+        // If search is provided, apply the search condition
         if ($this->search) {
-            $this->resetPage();
-        
             $model->where(function ($query) {
-                $query->orWhere(function ($subQuery) {
-                    // Check if the search term matches a month or year
-                    $subQuery->whereRaw('MONTHNAME(created_at) like ?', ['%' . $this->search . '%'])
-                            ->orWhereRaw('YEAR(created_at) like ?', ['%' . $this->search . '%']);
-                });
+                $query->whereRaw('MONTHNAME(created_at) like ?', ['%' . $this->search . '%'])
+                    ->orWhereRaw('YEAR(created_at) like ?', ['%' . $this->search . '%']);
             });
         }
 
-        // Paginate the results
-        $paginatedRecords = $model->latest()->paginate($this->entries);
+        // Fetch the records (no pagination)
+        $records = $model->latest()->get();
 
         // Group the records by month and year
-        $records = $paginatedRecords->getCollection()->groupBy(function ($record) {
-                return Carbon::parse($record->created_at)->format('F, Y');
-            })->map(function ($group, $monthYear) {
-                $splitDate = explode(', ', $monthYear);
-                return [
-                    'month' => $splitDate[0],
-                    'year' => $splitDate[1],
-                    'records' => $group,
-                ];
-            })->values();
+        $groupedRecords = $records->groupBy(function ($record) {
+            return Carbon::parse($record->created_at)->format('F, Y');
+        })->map(function ($group, $monthYear) {
+            // Extract month and year for each group
+            [$month, $year] = explode(', ', $monthYear);
+            return [
+                'month' => $month,
+                'year' => $year,
+                'records' => $group,
+            ];
+        })->values(); // Re-index the collection after grouping
 
-        // Return the paginated records and the grouped records
+        // Return the grouped records to the view
         return view('livewire.admin.reports.daily-time-record.index', [
-            'records' => $records,
+            'records' => $groupedRecords,  // Pass only the grouped records
         ]);
     }
+
 
     
 }
