@@ -51,7 +51,6 @@
             </table>
         </div>
         <div class="mt-4">
-            {{ $records->links(data: ['scrollTo' => false]) }}
         </div>
     </div>
 </div>
