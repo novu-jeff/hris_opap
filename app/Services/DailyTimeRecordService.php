@@ -289,8 +289,6 @@ class DailyTimeRecordService {
                 'clock_out_pm',
                 'created_at',
                 'origin',
-                'mins_ot',
-                'overall_mins'
             )
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where(function ($query) use ($employee) {
