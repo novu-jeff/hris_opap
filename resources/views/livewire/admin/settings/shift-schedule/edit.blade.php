@@ -28,11 +28,12 @@
                             <label class="mb-2" for="shift_duration" id="shift_duration">Shift Duration <span class="text-danger">*</span></label>
                             <select wire:model="shift_duration" id="shift_duration" class="form-select">
                                 <option value=""> - CHOOSE - </option>
-                                <option value="standard">Standard Shift (8 Hours)</option>
+                                <option value="flexible">Flexible (8 Hours)</option>
+                                {{-- <option value="standard">Standard Shift (8 Hours)</option>
                                 <option value="extended">Extended Shift (12 Hours)</option>
                                 <option value="full-day">Full-Day Shift (24 Hours)</option>
                                 <option value="compressed">Compressed Workweek (10 Hours)</option>
-                                <option value="part-time">Part Time Shift (Below 8 Hours)</option>
+                                <option value="part-time">Part Time Shift (Below 8 Hours)</option> --}}
                             </select>
                             <div class="error-field">
                                 @error('shift_duration') <span class="text-danger">{{ $message }}</span> @enderror
@@ -139,7 +140,10 @@
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Proceed</button>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
                 </div>
             </div>
         </div>

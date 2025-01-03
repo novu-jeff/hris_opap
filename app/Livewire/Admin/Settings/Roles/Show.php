@@ -39,7 +39,7 @@ class Show extends Component
             'settings' => [
                 'company-information', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'batch-configuration', 'employment-type', 'positions', 'violations',
-                'leave-types', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
+                'leave-types', 'leave-credits', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
             ]
         ];

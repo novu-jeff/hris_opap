@@ -39,7 +39,7 @@
                             <td class="d-flex justify-content-end">
                                 @if ($record->source == 'entry')
                                     <a href="{{route('deductions.index', ['id' => $record->id])}}" class="btn btn-secondary mx-1">
-                                        <i class="fa-solid fa-plus"></i>
+                                        <i class="fa-solid fa-plus text-white"></i>
                                     </a>
                                 @endif
                                 <a href="{{route('other-deductions.edit', ['other_deduction' => $record->id])}}" class="btn btn-primary mx-1">
