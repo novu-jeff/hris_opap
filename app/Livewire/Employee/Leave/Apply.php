@@ -177,10 +177,7 @@ class Apply extends Component
                     'message' => 'Error: ' . $e->getMessage()
                 ]);
             }
-
         }
-
-
     }
 
     public function render()

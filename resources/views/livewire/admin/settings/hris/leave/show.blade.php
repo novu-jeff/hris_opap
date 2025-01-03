@@ -34,7 +34,7 @@
                                     <td>{{ $record->employee_no }}</td>
                                     <td>{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                     <td>
-                                        <input type="text" wire:key="deduction-{{$record->employee_no}}" wire:model="deductions.{{$record->employee_no}}" class="form-control w-25">
+                                        <input type="text" wire:key="credit-{{$record->employee_no}}" wire:model="credits.{{$record->employee_no}}" class="form-control w-25">
                                     </td>
                                 </tr>
                             @empty

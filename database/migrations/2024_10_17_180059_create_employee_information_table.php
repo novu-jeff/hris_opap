@@ -29,10 +29,12 @@ return new class extends Migration
                 ->nullable();
             $table->foreignId('shift_id')
                 ->nullable()
-                ->constrained('shift_schedule');
+                ->constrained('shift_schedule')
+                ->onDelete('set null');
             $table->foreignId('schedule_id')
                 ->nullable()
-                ->constrained('employee_schedules');
+                ->constrained('employee_schedules')
+                ->onDelete('set null');
             $table->string('date_resignation')
                 ->nullable();
             $table->foreignId('employment_type_id')

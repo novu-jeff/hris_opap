@@ -9,8 +9,9 @@ class LeaveController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read leave')->only('index');
-        $this->middleware('permission:write leave')->only(['create', 'edit']);
+        $this->middleware('permission:read leave-types')->only('index');
+        $this->middleware('permission:write leave-types')->only(['create', 'edit']);
+        $this->middleware('permission:read leave-credits')->only(['show']);
     }
 
     public function index()
@@ -26,6 +27,11 @@ class LeaveController extends Controller
     public function edit(int $id)
     {
         return view('admin.settings.hris.leave.edit', compact('id'));
+    }
+
+    public function show(int $id)
+    {
+        return view('admin.settings.hris.leave.show', compact('id'));
     }
     
 }

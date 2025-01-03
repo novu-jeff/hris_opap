@@ -1,19 +1,21 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Deductions'
+    'title' => 'HRIS | Add Credits'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>{{$header->name}}</h1>
+            <h1>Add Credits</h1>
         </div>
         <div class="actions">
-            <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.settings.hris.emp-deductions.index', ['id' => $id])
+        @livewire('admin.settings.hris.leave.show', [
+            'id' => $id
+        ])
     </div>
 </div>
 @endsection

@@ -9,8 +9,8 @@ class LeaveController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read leave-types')->only('index');
-        $this->middleware('permission:write leave-types')->only(['create', 'edit']);
+        $this->middleware('permission:read leave')->only('index');
+        $this->middleware('permission:write leave')->only(['create', 'edit']);
     }
 
     public function index(Request $request) {

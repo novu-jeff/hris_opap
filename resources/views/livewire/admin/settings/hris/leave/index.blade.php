@@ -37,6 +37,9 @@
                             <td>{{$record->code}}</td>
                             <td>{{$record->name}}</td>
                             <td>
+                                <a href="{{route('leave.show', ['leave' => $record->id])}}" class="btn btn-secondary mx-1 text-white">
+                                    <i class="fa-solid fa-plus"></i>
+                                </a>
                                 <a href="{{route('leave.edit', ['leave' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>

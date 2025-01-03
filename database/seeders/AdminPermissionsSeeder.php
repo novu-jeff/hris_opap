@@ -54,6 +54,7 @@ class AdminPermissionsSeeder extends Seeder
                 'positions',
                 'violations',
                 'leave-types',
+                'leave-credits',
                 'gsis-billing',
                 'employee-deductions',
                 'other-earnings',
