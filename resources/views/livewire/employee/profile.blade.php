@@ -964,9 +964,9 @@
             @if (!empty($records))
                 <div class="card-footer d-flex justify-content-end bg-transparent border-0">
                     <div class="text-end">
-                        <button type="submit" wire:target="save" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                            <span wire:loading.remove>Save</span>    
-                            <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
+                        <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                            <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                            <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                         </button>
                         <div class="mt-3 pb-5">
                             @if ($errors->any())

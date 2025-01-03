@@ -423,7 +423,6 @@ class Manual extends Component
             'employment_type_id' => $data['type'] ?? null,
             'status' => $data['status'] ?? null,
             'salary_method' => $data['salary_method'] ?? null,
-            'leave_credits' => $data['leave_credits'] ?? null,
             'monthly_rate' => $data['monthly_rate'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);
