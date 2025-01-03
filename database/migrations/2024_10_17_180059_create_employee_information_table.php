@@ -19,8 +19,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('bsd_no')
                 ->nullable();
-            $table->string('biometrics_id')
-                ->nullable();
             $table->foreignId('section_id')
                 ->nullable()
                 ->constrained('sections');

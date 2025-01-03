@@ -83,7 +83,9 @@ class Index extends Component
         }
 
         if ($this->file) {
+
             $this->upload_preview;
+            
             $file = $this->file;
 
             if ($file instanceof \Illuminate\Http\UploadedFile) {

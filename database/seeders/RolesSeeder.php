@@ -29,8 +29,8 @@ class RolesSeeder extends Seeder
         $permissions = [
             'superadmin' => Permission::pluck('name')->toArray(),
             'admin' => Permission::whereNotIn('name', [
-                'read users',
-                'write users',
+                'read roles',
+                'write roles',
             ])->pluck('name')->toArray(), // Exclude certain permissions
         ];
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Access;
+namespace App\Livewire\Admin\Settings\Roles;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -38,7 +38,7 @@ class Show extends Component
             'reports' => ['dtr'],
             'settings' => [
                 'company-information', 'branches', 'departments', 'sections', 'assessments', 'requirements',
-                'users', 'access-management', 'bank-information', 'employment-type', 'positions', 'violations',
+                'users', 'roles', 'bank-information', 'batch-configuration', 'employment-type', 'positions', 'violations',
                 'leave-types', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
             ]
@@ -102,7 +102,7 @@ class Show extends Component
     public function savePermissions()
     {
 
-        if (Gate::denies('write access-management')) {
+        if (Gate::denies('write roles')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -164,6 +164,6 @@ class Show extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.access.show');
+        return view('livewire.admin.settings.roles.show');
     }
 }

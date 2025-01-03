@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.settings.access.create')
+        @livewire('admin.settings.roles.create')
     </div>
 </div>
 @endsection

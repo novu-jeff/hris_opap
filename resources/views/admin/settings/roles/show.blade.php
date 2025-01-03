@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.settings.access.show', [
+        @livewire('admin.settings.roles.show', [
             'id' => $id
         ])
     </div>

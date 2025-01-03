@@ -22,10 +22,6 @@ class Upload extends Component
     public object $records;
     public bool $isParsing, $isUploading = false;
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
     public function updatedFile() {
 
         if ($this->file) {
@@ -175,7 +171,6 @@ class Upload extends Component
                     foreach ($dateData as &$recordData) {
                         $shift = $this->employeeShift($recordData['bsdno']);
                 
-                        // Skip processing if no shift is found
                         if (!$shift) {
                             continue;
                         }
@@ -449,8 +444,6 @@ class Upload extends Component
                 'message' => 'Total of ' . rtrim(number_format($insertedCount, 2), '.00') . ' records has been added to time logs for the month of ' . $formattedDate 
             ]);
             
-            $this->loadRecords();
-
         } catch (\Exception $e) {
             
             DB::rollBack();

@@ -21,7 +21,7 @@ class Index extends Component
 
     public function remove(bool $isNotify = true, int $id = null) {
 
-        if (Gate::denies('write other earnings')) {
+        if (Gate::denies('write other-earnings')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 

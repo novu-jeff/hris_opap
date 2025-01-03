@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Access;
+namespace App\Livewire\Admin\Settings\Roles;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -29,7 +29,7 @@ class Create extends Component
 
     public function save() {
 
-        if (Gate::denies('write access-management')) {
+        if (Gate::denies('write roles')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -78,6 +78,6 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.access.create');
+        return view('livewire.admin.settings.roles.create');
     }
 }
