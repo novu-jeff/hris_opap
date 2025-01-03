@@ -17,7 +17,6 @@ use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
-use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
@@ -37,6 +36,7 @@ use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
+use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\UserAccessController;
@@ -300,7 +300,7 @@ Route::prefix('admin')->group(function() {
                     ->name('admin.new');
             });
 
-            Route::resource('user-access', UserAccessController::class)
+            Route::resource('user-access', RoleController::class)
                 ->names('users.access');
             
             Route::prefix('payroll')->group( function() {

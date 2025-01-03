@@ -69,7 +69,7 @@ class Edit extends Component
             'fields.name' => 'required|string|max:255',
             'fields.frequency' => 'required|in:bi_monthly,monthly',
             'fields.eligible' => 'required|array|min:1',
-            'fields.source' => 'required|in:entry,file_upload'
+            'fields.source' => 'required|in:entry'
         ];
     }
 

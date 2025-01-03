@@ -14,15 +14,7 @@ class OtherDeductionsSeeder extends Seeder
      */
     public function run(): void
     {
-        $other_earnings = [
-            [
-                'code' => 'GSIS',
-                'name' => 'GSIS Contribution',
-                'frequency' => 'monthly',
-                'month_frequency' => null,
-                'source' => 'file_upload',
-                'eligible' => 1,
-            ],
+        $other_deductions = [
             [
                 'code' => 'DBP Savings',
                 'name' => 'DBP Savings',
@@ -57,10 +49,10 @@ class OtherDeductionsSeeder extends Seeder
             ],
         ];
 
-        foreach ($other_earnings as $earning) {
+        foreach ($other_deductions as $deductions) {
             OtherDeductions::updateOrCreate(
-                ['code' => $earning['code'], 'name' => $earning['name']],
-                $earning
+                ['code' => $deductions['code'], 'name' => $deductions['name']],
+                $deductions
             );
         }
     }

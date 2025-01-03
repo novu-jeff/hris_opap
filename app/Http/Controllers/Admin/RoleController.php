@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
-class UserAccessController extends Controller
+class RoleController extends Controller
 {
     
     public function __construct() {
-        $this->middleware('permission:read access-management')->only('index', 'show');
-        $this->middleware('permission:write access-management')->only(['create', 'edit']);
+        $this->middleware('permission:read roles')->only('index', 'show');
+        $this->middleware('permission:write roles')->only(['create', 'edit']);
     }
 
     public function index()

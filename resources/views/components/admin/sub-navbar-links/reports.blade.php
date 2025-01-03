@@ -1,10 +1,15 @@
+@canany([
+    'read dtr'
+])
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fa-solid fa-chart-line"></i>
         Reports
     </a>
     <ul class="dropdown-menu">
-        <li><a href="{{ route('reports.dtr') }}" class="dropdown-item">Daily Time Record (DTR)</a></li>
+        @can('read dtr')
+            <li><a href="{{ route('reports.dtr') }}" class="dropdown-item">Daily Time Record (DTR)</a></li>
+        @endcan
         {{-- <li><a href="#" class="dropdown-item">Official Business Slip</a></li>
         <li><a href="#" class="dropdown-item">Application for Leave</a></li>
         <li><a href="#" class="dropdown-item">Monetization Form</a></li>
@@ -21,3 +26,4 @@
         <li><a href="#" class="dropdown-item">(TBD)</a></li> --}}
     </ul>    
 </li>
+@endcanany

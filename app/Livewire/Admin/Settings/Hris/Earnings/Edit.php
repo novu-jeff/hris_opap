@@ -187,7 +187,7 @@ class Edit extends Component
 
     public function save() {
 
-        if (Gate::denies('write other earnings')) {
+        if (Gate::denies('write other-earnings')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 

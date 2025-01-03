@@ -9,8 +9,8 @@ class OtherDeductionsController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read other deductions')->only('index');
-        $this->middleware('permission:write other deductions')->only(['create', 'edit']);
+        $this->middleware('permission:read other-deductions')->only('index');
+        $this->middleware('permission:write other-deductions')->only(['create', 'edit']);
     }
 
     public function index()

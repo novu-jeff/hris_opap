@@ -18,7 +18,7 @@
                     }}" alt="Profile Image">
                     <div class="name">
                         <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{$employee->personal->firstname . ' ' . $employee->personal->lastname}}</p>
-                        <small class="text-uppercase fw-bold text-muted mb-0">{{$employee->information->positions->name}}</small>
+                        <small class="text-uppercase fw-bold text-muted mb-0">{{$employee->information->positions->name ?? 'Employee'}}</small>
                     </div>                     
                 </div>  
             @endif

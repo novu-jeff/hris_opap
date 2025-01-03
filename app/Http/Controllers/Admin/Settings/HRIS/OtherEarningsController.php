@@ -9,8 +9,8 @@ class OtherEarningsController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read other earnings')->only('index');
-        $this->middleware('permission:write other earnings')->only(['create', 'edit']);
+        $this->middleware('permission:read other-earnings')->only('index');
+        $this->middleware('permission:write other-earnings')->only(['create', 'edit']);
     }
 
     public function index()
