@@ -143,6 +143,7 @@
                         <th>Days</th>
                         <th colspan="2">AM</th>
                         <th colspan="2">PM</th>
+                        <th colspan="2">OVERTIME</th>
                         <th colspan="2">AUT</th>
                         <th>Remark</th>
                     </tr>
@@ -152,6 +153,8 @@
                         <th>Out</th>
                         <th>In</th>
                         <th>Out</th>
+                        <th>Hours</th>
+                        <th>Mins</th>
                         <th>Hours</th>
                         <th>Mins</th>
                         <th></th>
@@ -175,6 +178,26 @@
                             <td>{{ isset($day['clock_in_pm']) ? \Carbon\Carbon::parse($day['clock_in_pm'])->format('g:i') : ' ' }}</td>
                             <td> {{ isset($day['clock_out_pm']) ? \Carbon\Carbon::parse($day['clock_out_pm'])->format('g:i') : ' ' }}</td>
 
+                            <!-- Overtime: Calculate Hours and Mins-->
+                            <td>
+                                {{-- hours --}}
+                                @if(isset($day['overtime_approved']))
+                                    @php
+                                        $hours = str_pad(floor($day['overtime_approved'] / 60), 2, '0', STR_PAD_LEFT);
+                                    @endphp
+                                    {{ $hours }}
+                                @endif
+                            </td>
+                            <td>
+                                {{-- minutes --}}
+                                @if(isset($day['overtime_approved']))
+                                    @php
+                                        $minutes = str_pad($day['overtime_approved'] % 60, 2, '0', STR_PAD_LEFT);
+                                    @endphp
+                                    {{ $minutes }}
+                                @endif
+                            </td>
+
                             <!-- AUT: Calculate Hours and Mins-->
                             <td>
                                 {{-- hours --}}
@@ -194,9 +217,18 @@
                                     {{ $minutes }}
                                 @endif
                             </td>
-
-                            <!-- Remark column -->
-                            <td>{{ isset($day['remarks']) ? $day['remarks'] : ' ' }}</td> 
+                            <td>
+                                @if(isset($day['remarks']) && is_array($day['remarks']))
+                                    @foreach($day['remarks'] as $index => $remark)
+                                        <small>{{ $remark }}</small>
+                                        @if ($index < count($day['remarks']) - 1)
+                                            <small>,</small>
+                                        @endif
+                                    @endforeach
+                                @else
+                                    <span> </span>
+                                @endif
+                            </td>                                                               
                         </tr>
                     @endforeach
                 </tbody>
@@ -206,8 +238,8 @@
                     <tr>
                         <td>Days Worked</td>
                         <td>{{ isset($dtr['summary']['days_works']) ? $dtr['summary']['days_works'] : ' ' }}</td>
-                        <td>Tardinesss</td>
-                        <td>{{ isset($dtr['summary']['lates']) ? $dtr['summary']['lates'] : ' ' }}</td>
+                        <td>Tardiness</td>
+                        <td>-</td>
                         <td>Leave</td>
                         <td>{{ isset($dtr['summary']['leaves']) ? $dtr['summary']['leaves'] : ' ' }}</td>
                     </tr>
@@ -221,9 +253,9 @@
                     </tr>
                     <tr>
                         <td>Overtime</td>
-                        <td>{{ isset($dtr['summary']['overtime']) ? $dtr['summary']['overtime'] : ' ' }}</td>
+                        <td>-</td>
                         <td>Undertime</td>
-                        <td>{{ isset($dtr['summary']['undertime']) ? $dtr['summary']['undertime'] : ' ' }}</td>
+                        <td>-</td>
                         <td>Special Hol.</td>
                         <td>{{ isset($dtr['summary']['special_holidays']) ? $dtr['summary']['special_holidays'] : ' ' }}</td>
                     </tr>
