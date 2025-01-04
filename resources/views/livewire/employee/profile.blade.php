@@ -30,7 +30,7 @@
                 </ul>
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
-                        <div class="row mt-3">
+                        <div class="row mt-3 px-3">
                             <div class="col-12 mb-4">
                                 <div class="accordion" id="accordionTabPersonal">
                                     <div class="accordion-item mb-4">

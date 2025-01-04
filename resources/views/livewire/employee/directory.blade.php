@@ -43,11 +43,8 @@
                                                                     <div class="col-12 col-md-6 mb-4">
                                                                         <div class="d-lg-flex align-items-center justify-content-center justify-content-lg-start gap-3">
                                                                             <div class="mb-3 mb-lg-0">
-                                                                                <img src="{{
-                                                                                    $employee['personal']['profile'] 
-                                                                                        ? Storage::url('employee/users/'.$employee['personal']['employee_id'].'/'.$employee['personal']['profile'])
-                                                                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                                                                }}" style="width: 120px; height: 120px;">
+                                                                                <img style="width: 80px; height: 80px;"
+                                                                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}">              
                                                                             </div>
                                                                             <ul class="list-unstyled mb-0">
                                                                                 <li>Employee No: <strong>{{ $employee['employee_no'] }}</strong></li>
@@ -85,11 +82,8 @@
                                     <div class="col-12 col-md-6 mb-4">
                                         <div class="d-lg-flex align-items-center justify-content-center justify-content-lg-start gap-3">
                                             <div class="mb-3 mb-lg-0">
-                                                <img src="{{
-                                                    $employee['personal']['profile'] 
-                                                        ? Storage::url('employee/users/'.$employee['personal']['employee_id'].'/'.$employee['personal']['profile'])
-                                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                                }}" style="width: 120px; height: 120px;">
+                                                <img style="width: 80px; height: 80px;"
+                                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}">              
                                             </div>
                                             <ul class="list-unstyled mb-0">
                                                 <li>Employee No: <strong>{{ $employee['employee_no'] }}</strong></li>

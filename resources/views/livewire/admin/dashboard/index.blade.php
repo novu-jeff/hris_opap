@@ -23,12 +23,14 @@
                                     @endforelse
                                 </div>
                             </div>
-                            <div class="float-end">
-                                <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
-                                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                                    Swipe left or right to view more
-                                </small>
-                            </div>
+                            @if(count($stats['employee']) > 3) 
+                                <div class="float-end">
+                                    <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
+                                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                        Swipe left or right to view more
+                                    </small>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

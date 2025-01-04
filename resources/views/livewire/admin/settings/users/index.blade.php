@@ -232,7 +232,7 @@
                     <table class="table table-striped table-bordered w-100">
                         <thead>
                             <tr>
-                                <th>Profile</th>
+                                <th></th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 @if($type === 'applicants')
@@ -248,9 +248,8 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td colspan="1">
-                                            <img src="{{
-                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                            }}" style="width: 40px; height: 40px">
+                                            <img style="width: 50px; height: 50px;"
+                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->personal->firstname . ' ' . $record->personal->lastname) }}">              
                                         </td>
                                         <td>{{$record->firstname . ' ' . $record->lastname}}</td>
                                         <td>{{$record->email}}</td>
@@ -274,10 +273,9 @@
                                 @elseif($type === 'employees')
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
-                                        <td colspan="1">
-                                            <img src="{{
-                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                            }}" style="width: 40px; height: 40px">
+                                        <td class="text-center">
+                                            <img style="width: 50px; height: 50px;"
+                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->personal->firstname . ' ' . $record->personal->lastname) }}">              
                                         </td>
                                         <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
                                         <td>{{$record->account->email}}</td>
@@ -302,9 +300,8 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td colspan="1">
-                                            <img src="{{
-                                                $record->profile ? Storage::url('public/applicant/users/'.$record->employee_id.'/'.$record->profile) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                            }}" style="width: 40px; height: 40px">
+                                            <img style="width: 50px; height: 50px;"
+                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->name) }}">              
                                         </td>
                                         <td>{{$record->name}}</td>
                                         <td>{{$record->email}}</td>
