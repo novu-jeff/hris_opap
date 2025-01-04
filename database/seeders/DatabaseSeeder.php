@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             ShiftScheduleSeeder::class,
             EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
-            AdminPermissionsSeeder::class,
+            PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
         ]);

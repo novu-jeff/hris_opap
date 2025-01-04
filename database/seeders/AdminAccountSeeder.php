@@ -16,14 +16,14 @@ class AdminAccountSeeder extends Seeder
     {
         $admins = [
             [
-                'name' => 'BlitzDev Superadmin', 
+                'name' => 'Carl Llemos', 
                 'username' => 'superadmin01',
                 'role' => 'superadmin',
                 'email' => 'superadmin@hris.com', 
                 'password' => Hash::make('password')
             ],
             [
-                'name' => 'BlitzDev Admin', 
+                'name' => 'Kim Mariano', 
                 'username' => 'admin01',
                 'role' => 'admin',
                 'email' => 'admin@hris.com', 
