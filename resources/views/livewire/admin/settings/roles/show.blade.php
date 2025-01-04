@@ -42,7 +42,7 @@
                 @endforeach
             </tbody>
         </table>
-        <div class="mt-4 d-flex justify-content-end">
+        <div class="mt-5 d-flex justify-content-end">
             <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                 <span wire:loading.remove wire:target="savePermissions">Save Permissions <i class="fa-solid fa-arrow-right ms-2"></i></span>
                 <span wire:loading wire:target="savePermissions">Saving Permissions <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>

@@ -234,7 +234,6 @@ class Index extends Component
             
         }
         
-        $this->loadRecords();
         return $this->dispatch('alert', [
             'id' => $this->selected_id,
             'status' => 'success',
@@ -291,7 +290,6 @@ class Index extends Component
                 'status' => 'interview',
             ]);
 
-            $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -354,7 +352,7 @@ class Index extends Component
                 'status' => 'onboarding',
             ]);
     
-            $this->loadRecords();
+            
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -393,7 +391,7 @@ class Index extends Component
                     'status' => 'hired',
                 ]);
     
-                $this->loadRecords();
+                
 
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
@@ -415,8 +413,8 @@ class Index extends Component
 
             $this->selected_id = $id;  
             
-            $records = JobApplicants::with('applicant', 'job', 'offer')->find($id);
-            
+            $records = JobApplicants::with('applicant', 'job.employment_type', 'offer')->find($id);
+
             $this->job_offer = [
                 'min_salary' => $records->job->min_salary,
                 'max_salary' => $records->job->max_salary,
@@ -429,7 +427,7 @@ class Index extends Component
                 'company_name' => $records->job->company_name,
                 'location' => $records->job->location,
                 'setup' => $records->job->setup,
-                'type' => $records->job->type,
+                'type' => $records->job->employment_type->name ?? 'Unknown',
             ];
 
             $this->job_offer['subject'] = 'Job Offer for ' . ucwords($data['position']) . ' Position at ' . $data['company_name'];
@@ -648,7 +646,7 @@ class Index extends Component
                 'status' => 'rejected'
             ]);
          
-            $this->loadRecords();
+            
             $this->dispatch('alert', [
                 'id' => $record->id,
                 'showAlert' => true,
@@ -686,7 +684,7 @@ class Index extends Component
 
             $record->delete();
     
-            $this->loadRecords();
+            
             
             $this->dispatch('alert', [
                 'id' => $this->selected_id,

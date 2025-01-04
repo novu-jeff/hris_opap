@@ -23,7 +23,7 @@
                                 </div>
                                     <ul class="list-unstyled mb-0">
                                     <li>Employee ID: <strong>{{ format_id($employee['id'], 6) }}</strong></li>
-                                    <li>Biometrics ID: <strong>{{ $employee['biometrics_id'] }}</strong></li>
+                                    <li>Biometrics ID: <strong>{{ $employee['bsd_no'] }}</strong></li>
                                     <li>Full Name: <strong>{{ ucwords($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}</strong></li>
                                     <li>Email: <strong>{{ $employee['account']['email'] }}</strong></li>
                                 </ul>

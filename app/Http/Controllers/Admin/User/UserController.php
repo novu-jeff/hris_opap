@@ -23,4 +23,11 @@ class UserController extends Controller
         return view('admin.user.new');
     }
 
+    public function edit(int $id)
+    {
+        return view('admin.user.update', [
+            'id' => $id
+        ]);
+    }
+
 }

@@ -298,6 +298,8 @@ Route::prefix('admin')->group(function() {
                     ->name('users.index');
                 Route::get('admins/new', [UserController::class, 'create'])
                     ->name('admin.new');
+                Route::get('admins/update/{id}', [UserController::class, 'edit'])
+                    ->name('admin.update');
             });
 
             Route::resource('user-access', RoleController::class)
