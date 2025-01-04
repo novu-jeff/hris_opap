@@ -216,10 +216,11 @@
                     <div class="card-body px-4">
                         <ul class="list-unstyled">
                             @php
-                                $hasDeductions = !empty($records['other_deductions']) && count($records['other_deductions']) > 0;
-                                $hasGsis = !empty($records['employee_gsis']);
+                                $hasDeductions = !empty($records['other_deductions']) && collect($records['other_deductions'])->where('amount', '>', 0)->isNotEmpty();
+                                $hasGsis = !empty($records['employee_gsis']) && $records['employee_gsis']['ps'] > 0;
                             @endphp
                         
+                            {{-- Display Other Deductions --}}
                             @if($hasDeductions)
                                 @foreach ($records['other_deductions'] as $item)
                                     <li class="d-flex align-items-center gap-3 mb-2">
@@ -232,21 +233,42 @@
                                 @endforeach
                             @endif
                         
+                            {{-- Display GSIS Deduction --}}
                             @if($hasGsis)
                                 <li class="d-flex align-items-center gap-3 mb-2">
                                     <div>
-                                        <span>GSIS </span>
+                                        <span>GSIS</span>
                                         <strong>worth ₱{{ number_format($records['employee_gsis']['ps'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
                                     </div>
                                 </li>
                             @endif
                         
+                            {{-- No Deductions Found --}}
                             @if(!$hasDeductions && !$hasGsis)
                                 <li class="text-muted text-uppercase">No other deductions found.</li>
                             @endif
                         </ul>
-                                            
+                                                              
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card mb-4 border-0">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Leave Credits</h5>
+                    </div>
+                    <div class="card-body px-4">
+                        <ul class="list-unstyled">
+                            @foreach ($records['leaveCredits'] as $item)
+                                <li class="d-flex align-items-center gap-3 mb-2">
+                                    <div>
+                                        <span> {{ strtoupper($item['code']) . ' - ' .  ucwords($item['name']) }}</span>
+                                        <strong> ({{ $item['credits'] }})</strong>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>                            
                     </div>
                 </div>
             </div>

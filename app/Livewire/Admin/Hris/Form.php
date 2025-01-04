@@ -63,7 +63,8 @@ class Form extends Component
         $otherServices = new OtherServices();
         $earnings = $otherServices->earnings($this->employee_no) ?? [];
         $deductions = $otherServices->deductions($this->employee_no) ?? [];
-        
+        $leaveCredits = $otherServices->leaves($this->employee_no) ?? [];
+
         // Fetch employee data with relations
         $data = EmployeeInformation::with([
             'department',
@@ -101,6 +102,7 @@ class Form extends Component
             'employee_gsis' => $data->personal?->gsis_item?->toArray() ?? [],
             'other_earnings' => $earnings,
             'other_deductions' => $deductions,
+            'leaveCredits' => $leaveCredits
         ];
 
         if ($data->section_id) {
