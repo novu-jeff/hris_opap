@@ -67,19 +67,18 @@ class Index extends Component
 
         try {
             // Iterate through the deductions array and update or create leave deductions for each employee
+                        
             foreach ($this->deductions as $employeeId => $deduction) {
                 if ($employeeId && $deduction !== null) {
-                    if($deduction != 0) {
-                        $record = EmployeeDeductions::updateOrCreate(
-                            [
-                                'employee_no' => $employeeId,
-                                'deduction_id' => $this->id,
-                            ],
-                            [
-                                'amount' => $deduction ?? 0,
-                            ]
-                        );
-                    }  
+                    $record = EmployeeDeductions::updateOrCreate(
+                        [
+                            'employee_no' => $employeeId,
+                            'deduction_id' => $this->id,
+                        ],
+                        [
+                            'amount' => $deduction ?? 0,
+                        ]
+                    ); 
                 }
             }
 
@@ -128,7 +127,6 @@ class Index extends Component
         }
 
         $records = $model->paginate($this->entries);
-
 
         return view('livewire.admin.settings.hris.emp-deductions.index', [
             'records' => $records

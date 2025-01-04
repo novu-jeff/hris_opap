@@ -65,17 +65,15 @@ class Show extends Component
             // Iterate through the credits array and update or create leave credits for each employee
             foreach ($this->credits as $employeeId => $credit) {
                 if ($employeeId && $credit !== null) {
-                    if($credit != 0) {
-                        LeaveCredits::updateOrCreate(
-                            [
-                                'employee_no' => $employeeId,
-                                'leave_type_id' => $this->id,
-                            ],
-                            [
-                                'credits' => $credit ?? 0,
-                            ]
-                        );
-                    }  
+                    LeaveCredits::updateOrCreate(
+                        [
+                            'employee_no' => $employeeId,
+                            'leave_type_id' => $this->id,
+                        ],
+                        [
+                            'credits' => $credit ?? 0,
+                        ]
+                    );
                 }
             }
 
@@ -89,6 +87,7 @@ class Show extends Component
                 'message' => 'Leave credits updated successfully.',
             ]);
         } catch (\Exception $e) {
+            
             DB::rollBack();
 
             // Error alert if something goes wrong
@@ -106,14 +105,17 @@ class Show extends Component
     {
         $model = EmployeeInformation::with(['personal']);
 
-        // Apply search filters
         if ($this->search) {
-            $this->resetPage();
-            $model->where('employee_no', 'like', '%' . $this->search . '%')
-                ->orWhereHas('personal', function ($query) {
-                    $query->where('firstname', 'like', '%' . $this->search . '%')
-                        ->orWhere('lastname', 'like', '%' . $this->search . '%');
+
+            $this->resetPage(); 
+
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('personal', function ($subQuery) {
+                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
                 });
+            });
+            
         }
 
         $records = $model->paginate($this->entries);

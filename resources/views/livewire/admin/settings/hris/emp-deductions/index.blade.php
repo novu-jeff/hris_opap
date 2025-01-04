@@ -4,7 +4,7 @@
             <div class="row mb-4">
                 <div class="col-md-6 d-flex align-items-center gap-2">
                     <label for="entries" class="form-label mb-0">Show entries:</label>
-                    <select id="entries" wire:model="entries" class="form-select w-auto">
+                    <select id="entries" wire:model.live="entries" class="form-select w-auto">
                         <option value="5">5</option>
                         <option value="10">10</option>
                         <option value="20">20</option>
@@ -15,7 +15,7 @@
                 </div>
                 <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
                     <label for="search" class="form-label mb-0">Search:</label>
-                    <input id="search" wire:model="search" type="text" class="form-control w-50" placeholder="Search something...">
+                    <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
                 </div>
             </div>
             <form wire:submit.prevent="save">
