@@ -247,7 +247,7 @@
                             @if($type === 'applicants')
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
-                                        <td colspan="1">
+                                        <td class="text-center">
                                             <img style="width: 50px; height: 50px;"
                                                 src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->personal->firstname . ' ' . $record->personal->lastname) }}">              
                                         </td>
@@ -299,7 +299,7 @@
                                 @elseif($type === 'admins')
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
-                                        <td colspan="1">
+                                        <td class="text-center">
                                             <img style="width: 50px; height: 50px;"
                                                 src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->name) }}">              
                                         </td>
