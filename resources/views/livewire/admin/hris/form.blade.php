@@ -9,24 +9,13 @@
             </div>
             <div class="card-body px-4">
                 <div class="row my-3">
-                    {{-- <div class="col-12 mb-5">
+                    <div class="col-12 mb-5">
                         <div class="row">
                             <div class="col-12 col-md-6">
-                                <img src="{{
-                                    $records['employee_personal']['profile'] ? Storage::url('employee/users/'.$records['employee_personal']['employee_id'].'/'.$records['employee_personal']['profile']) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                }}" style="width: 180px; height: 180px;">
+                                <img style="width: 180px; height: 180px;" src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($records['employee_personal']['firstname'] . ' ' . $records['employee_personal']['lastname']) }}" style="width: 50px; height: 50px; border-radius: 50%; font-weight: bold;">
                             </div>
                         </div>
                     </div>  
-                    <div class="col-12 col-md-3">
-                        <div class="profile">
-                            <label class="mb-2" for="profile">Employee Image</label>
-                            <input type="file" wire:model="profile" id="profile" class="form-control">
-                        </div>
-                        <div class="error-field">
-                            @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> --}}
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="employee_no">Employee No.</label>
                         <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">

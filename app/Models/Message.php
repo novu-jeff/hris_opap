@@ -17,7 +17,6 @@ class Message extends Model
         'to_role',
         'message',
         'isSeen',
-        'seen_timestamp'
     ];
 
     public function attachments() {

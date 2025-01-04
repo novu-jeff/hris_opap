@@ -26,6 +26,14 @@
     float: left;
 }
 
+.chatlist .scroll {
+    margin-top: 10px;
+    height: calc(100% - 200px);
+    overflow-y: auto;
+    width: 300px;
+    float: left;
+}
+
 .chat-area .modal-content {
     border: none;
     border-radius: 0;

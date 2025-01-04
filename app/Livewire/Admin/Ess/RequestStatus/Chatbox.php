@@ -13,143 +13,130 @@ use Livewire\WithFileUploads;
 
 class Chatbox extends Component
 {
-
     use WithFileUploads;
 
-    public $records;
+    public $records = [];
     public $selected_id;
     public $message;
     public $attachments = [];
     public $preview_attachments;
+
     protected $listeners = ['selected', 'loadRecords'];
 
-    public function mount() {
-        $this->records = [];
-        $this->loadRecords();
+    public function mount()
+    {
+        $this->selected(session('selected_employee_no') ?? null);
         $this->dispatch('showLatest');
     }
 
-    public function selected(int $id) {
-        $this->selected_id = $id;
-        $this->loadRecords($id);
+    public function selected(string $employee_no)
+    {
+        $this->selected_id = $employee_no;
+        $this->loadRecords($employee_no);
         $this->dispatch('showLatest');
     }
 
-    public function loadRecords(int $id = null) {
-        $user = EmployeeInformation::with('personal', 'positions')
-                    ->when($id, fn($query) => $query->where('employee_no', $id))
-                    ->first();
-    
+    public function loadRecords(string $employee_no = null)
+    {
+
+        $user = EmployeeInformation::with(['personal', 'positions'])
+            ->when($employee_no, fn($query) => $query->where('employee_no', $employee_no))
+            ->first();
+
+
         if (!$user) {
             $this->records = [];
             return;
         }
-    
-        $id = $user->employee_no;
-    
+
         $sent = Message::with('attachments')
-            ->where(['from_id' => 0, 'from_role' => 'admin', 'to_id' => $id, 'to_role' => 'employee'])
+            ->where(['from_id' => 0, 'from_role' => 'admin', 'to_id' => $user->employee_no, 'to_role' => 'employee'])
             ->get();
-    
+
         $received = Message::with('attachments')
-            ->where(['from_id' => $id, 'from_role' => 'employee', 'to_id' => 0, 'to_role' => 'admin'])
+            ->where(['from_id' => $user->employee_no, 'from_role' => 'employee', 'to_id' => 0, 'to_role' => 'admin'])
             ->get();
-    
-        $messages = $sent->merge($received)->sortBy('id')->values();
-    
+
         $this->records = [
             'user' => $user,
-            'messages' => $messages
+            'messages' => $sent->merge($received)->sortBy('id')->values(),
         ];
-        
-        $this->selected_id = $id;
-        $this->isFirstTime($id);
-    }
-    
-    public function updated($propertyName) {
-        if ($propertyName === 'attachments' && isset($this->attachments)) {
-            
-            $this->preview_attachments = [];
-    
-            foreach ($this->attachments as $attachment) {
 
-                if ($attachment instanceof \Illuminate\Http\UploadedFile) {
-                    $extension = strtolower($attachment->getClientOriginalExtension());
-    
-                    if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                        $this->preview_attachments[] = [
-                            'type' => 'image',
-                            'url' => $attachment->temporaryUrl(),
-                        ];
-                    } elseif ($extension === 'pdf') {
-                        $filename = $attachment->store('public/temp');
-                        $url = Storage::url($filename);
-    
-                        $this->preview_attachments[] = [
-                            'type' => 'pdf',
-                            'url' => $url,
-                        ];
-                    } 
-                } else {
-                    $this->validate();
-                }
-            }
+        $this->isFirstTime($user->employee_no);
+    }
+
+    public function updated($propertyName)
+    {
+        if ($propertyName === 'attachments') {
+            $this->preview_attachments = collect($this->attachments)
+                ->filter(fn($attachment) => $attachment instanceof \Illuminate\Http\UploadedFile)
+                ->map(fn($attachment) => $this->processAttachmentPreview($attachment))
+                ->values()
+                ->toArray();
         }
     }
 
-    public function rules() {
+    private function processAttachmentPreview($attachment)
+    {
+        $extension = strtolower($attachment->getClientOriginalExtension());
+
+        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+            return ['type' => 'image', 'url' => $attachment->temporaryUrl()];
+        }
+
+        if ($extension === 'pdf') {
+            $filename = $attachment->store('public/temp');
+            return ['type' => 'pdf', 'url' => Storage::url($filename)];
+        }
+
+        return null;
+    }
+
+    public function rules()
+    {
         return [
-            'message' => 'required_without:attachments', 
+            'message' => 'required_without:attachments',
             'attachments' => 'required_without:message|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:2048',
         ];
     }
 
-    public function messages() {
+    public function messages()
+    {
         return [
-            'message.required_without' => 'Message is Required',
-            'attachments.required_without' => 'Attachment is Required'
+            'message.required_without' => 'Message is required',
+            'attachments.required_without' => 'Attachment is required',
         ];
     }
-     
-    public function isFirstTime(string $id) {
-        $model = Message::class;
-        $user = EmployeePersonal::where('employee_no', $id)->first();
-        $record = $model::where('from_id', $id)
-            ->orWhere('to_id', $id)
-            ->count();
 
-        if($record <= 0) {
+    public function isFirstTime(string $id)
+    {
+        if (Message::where('from_id', $id)->orWhere('to_id', $id)->doesntExist()) {
+            $user = EmployeePersonal::where('employee_no', $id)->first();
+            $name = ucwords("{$user->firstname} {$user->lastname}");
 
-            $name = ucwords($user->firstname . ' ' . $user->lastname);
             $messages = [
-                [
-                    'Hello ' . $name
-                ], [
-                    'I\'m Juan Dela Cruz from the HR department. I just wanted to check in and see if there\'s anything we can assist you with. If you have any questions or need support, feel free to reach out. We\'re here to help!'
-                ]
+                "Hello {$name}",
+                "I’m Juan Dela Cruz from the HR department. I just wanted to check in and see if there’s anything we can assist you with. If you have any questions or need support, feel free to reach out. We’re here to help!",
             ];
 
             foreach ($messages as $message) {
-                Message::insert([
+                Message::create([
                     'from_id' => 0,
                     'from_role' => 'admin',
-                    'to_id' => $user->employee_no,
+                    'to_id' => $id,
                     'to_role' => 'employee',
-                    'message' => $message[0] ?? null,
+                    'message' => $message,
                     'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
                 ]);
             }
 
             $this->loadRecords();
-
         }
-
     }
 
-    public function send() {
-
+    public function send()
+    {
         $this->validate();
 
         $message = Message::create([
@@ -157,29 +144,13 @@ class Chatbox extends Component
             'from_role' => 'admin',
             'to_id' => $this->selected_id,
             'to_role' => 'employee',
-            'message' => $this->message ?? null,
+            'message' => $this->message,
         ]);
 
-
         foreach ($this->attachments as $index => $attachment) {
-
             if ($attachment instanceof \Illuminate\Http\UploadedFile) {
-                $extension = $attachment->getClientOriginalExtension();
-                $original_filename = $attachment->getClientOriginalName();
-                $new_filename = time() . '_' . $message->id . '_' . $index . '.' . $extension;
-                
-                $path = 'messages';
-
-                $attachment->storeAs($path, strtolower($new_filename), 'public');
-            
-                MessageAttachments::insert([
-                    'message_id' => $message->id,
-                    'original' => $original_filename,
-                    'attachment' => $new_filename
-                ]);
-            
+                $this->storeAttachment($attachment, $message->id, $index);
             }
-
         }
 
         $this->reset('message', 'preview_attachments', 'attachments');
@@ -187,42 +158,47 @@ class Chatbox extends Component
         $this->dispatch('showLatest');
     }
 
-    public function download($message, $attachment) {
+    private function storeAttachment($attachment, $messageId, $index)
+    {
+        $extension = $attachment->getClientOriginalExtension();
+        $originalFilename = $attachment->getClientOriginalName();
+        $newFilename = time() . "_{$messageId}_{$index}." . strtolower($extension);
+        $path = 'messages';
 
+        $attachment->storeAs($path, $newFilename, 'public');
+
+        MessageAttachments::create([
+            'message_id' => $messageId,
+            'original' => $originalFilename,
+            'attachment' => $newFilename,
+        ]);
+    }
+
+    public function download($message, $attachment)
+    {
         $record = MessageAttachments::where('message_id', $message)
             ->where('id', $attachment)
             ->first();
-        
-        if(is_null($record)) {
+
+        if (!$record || !Storage::disk('public')->exists('messages/' . $record->attachment)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Attachment does not exists'
+                'message' => 'Attachment does not exist',
             ]);
         }
-        
-        $path = 'messages/' . $record->attachment;
-        
-        if(!Storage::disk('public')->exists($path)) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!',
-                'message' => 'Attachment does not exists'
-            ]);
-        } 
 
-        return response()->download(Storage::disk('public')->path($path), $record->original);
+        return response()->download(Storage::disk('public')->path('messages/' . $record->attachment), $record->original);
     }
 
-    public function makeSeen() {
-        return Message::where('from_id', $this->selected_id)
-            ->where('to_id', 0)
-            ->update([
-                'isSeen' => true,
-                'seen_timestamp' => Carbon::now()
-        ]);
+    public function makeSeen()
+    {
+        if ($this->selected_id) {
+            Message::where('from_id', $this->selected_id)
+                ->where('to_id', 0)
+                ->update(['isSeen' => true]);
+        }
     }
 
     public function render()

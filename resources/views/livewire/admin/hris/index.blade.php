@@ -189,11 +189,8 @@
                     @forelse($employees as $key => $item)
                         <tr data-id="{{$item->employee_no}}">
                             <td class="text-center">
-                                <img style="width: 50px; height: 50px;" src="{{
-                                    $item->personal && $item->personal->profile 
-                                        ? Storage::url('employee/users/'.$item->personal->employee_id.'/'.$item->personal->profile) 
-                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                }}">
+                                <img style="width: 50px; height: 50px;"
+                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($item->personal->firstname . ' ' . $item->personal->lastname) }}">              
                             </td>
                             <td>{{$item->employee_no}}</td>
                             <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>

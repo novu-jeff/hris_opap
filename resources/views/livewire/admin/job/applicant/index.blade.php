@@ -87,10 +87,10 @@
                         <div class="col-md-3 mb-3 text-uppercase  d-flex justify-content-end">
                             <div class="profile" style="width: 150px; height: 150px;">
                                 <img src="{{
-                                    isset($applicant_information) && !is_null($applicant_information->image)
+                                    isset($applicant_information) && !is_null($applicant_information) && !is_null($applicant_information->image)
                                         ? Storage::url('applicant/users/' . $applicant_information->id . '/' . $applicant_information->image)
-                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                }}" class="w-100 h-100" style="width: 150px; height: 150px; object-fit:cover" alt="" srcset="">
+                                        : 'https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name=' . urlencode(($applicant_information->firstname ?? '') . ' ' . ($applicant_information->lastname ?? ''))
+                                }}" class="w-100 h-100" style="width: 150px; height: 150px; object-fit:cover" alt="" srcset="">                                                             
                             </div>                            
                         </div>
                         @if (!empty($applicant_information->level))

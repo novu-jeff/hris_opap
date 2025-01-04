@@ -23,6 +23,9 @@
   overflow: hidden;
 }
 
+.navbar .dropdown-toggle::after {
+  margin-top: 7px;
+}
 
 #admin-app {
     position: relative;
@@ -43,7 +46,6 @@
             margin-right: 8px;
             background-color: $light;
             object-fit: cover;
-            border: 2px solid $secondary;
         }
         .email {
             color: $light;

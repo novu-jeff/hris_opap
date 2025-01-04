@@ -206,9 +206,18 @@
 
         // Handle datePicker change
         $('#datePicker').on('change', function () {
-            const date = $(this).val();
+            const date = $(this).val(); 
+            
+            // Split the date into year, month, and day
             const [year, month, day] = date.split('-');
-            const url = '{{ route("timekeeping.index") }}' + `?year=${year}&month=${month}&day=${day}`;
+            
+            // Build the URL with the selected month, day, and year
+            const url = '{{ route("timekeeping.index", ["year" => "__year__", "month" => "__month__", "day" => "__day__"]) }}'
+                        .replace('__year__', year)
+                        .replace('__month__', month)
+                        .replace('__day__', day);
+
+            // Redirect the user to the new URL
             location.href = url;
         });
 

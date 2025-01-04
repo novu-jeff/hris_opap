@@ -60,6 +60,7 @@ use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryContro
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
+use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
 use Illuminate\Support\Facades\Auth;
@@ -381,6 +382,9 @@ Route::prefix('employee')->group(function() {
 
         Route::get('profile', [EmployeeProfileController::class, 'index'])
             ->name('employee.profile');
+
+        Route::get('tutorial', [TutorialController::class, 'index'])
+            ->name('employee.tutorial');
 
     });
 });

@@ -234,7 +234,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Design Studio',
                 'location' => 'New York, USA',
                 'setup' => 'onsite',
-                'employment_type_id' => nu1ll,
+                'employment_type_id' => 1,
                 'min_salary' => 60000,
                 'max_salary' => 80000,
                 'description' => '<p>As a <strong>UX/UI Designer</strong> at <strong>Design Studio</strong>, you will:</p>
