@@ -84,7 +84,6 @@ class Index extends Component
                 ->orWhere('company_name', 'like', '%' . $this->search . '%')
                 ->orWhere('location', 'like', '%' . $this->search . '%')
                 ->orWhere('setup', 'like', '%' . $this->search . '%')
-                ->orWhere('type', 'like', '%' . $this->search . '%')
                 ->orWhere('min_salary', 'like', '%' . $this->search . '%')
                 ->orWhere('max_salary', 'like', '%' . $this->search . '%');
         }

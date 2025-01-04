@@ -192,9 +192,11 @@
                 <li class="nav-item text-uppercase fw-bold" role="presentation">
                     <a href="{{route('users.index', ['type' => 'employees'])}}" class="nav-link {{$type == 'employees' ? 'active' : ''}}" id="pills-employees-tab" type="button" role="tab" aria-controls="pills-employees" aria-selected="false">Employees</a>
                 </li>
-                <li class="nav-item text-uppercase fw-bold" role="presentation">
-                    <a href="{{route('users.index', ['type' => 'admins'])}}" class="nav-link {{$type == 'admins' ? 'active' : ''}}" id="pills-admin-tab" type="button" role="tab" aria-controls="pills-admin" aria-selected="false">Administrators</a>
-                </li>
+                @can('read roles')
+                    <li class="nav-item text-uppercase fw-bold" role="presentation">
+                        <a href="{{route('users.index', ['type' => 'admins'])}}" class="nav-link {{$type == 'admins' ? 'active' : ''}}" id="pills-admin-tab" type="button" role="tab" aria-controls="pills-admin" aria-selected="false">Administrators</a>
+                    </li>
+                @endcan
             </ul>
             <div class="actions d-flex justify-content-end mb-5">
                 @if($type == 'employees')
@@ -310,6 +312,9 @@
                                             <td>{{$record->date_hired}}</td>
                                         @endif
                                         <td>
+                                            <a href="{{route('admin.update', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-edit"></i>
+                                            </a> 
                                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>  
