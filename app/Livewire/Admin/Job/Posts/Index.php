@@ -3,24 +3,38 @@
 namespace App\Livewire\Admin\Job\Posts;
 
 use App\Models\JobPosts;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public $records;
+    use WithPagination;
+
     public $selected_id;
     protected $listeners = ['remove'];
-    public function mount() {
-        $this->records = JobPosts::all();
-    }
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 5;
+    public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write jobs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this job post. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -59,6 +73,25 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.job.posts.index');
+
+        $model = JobPosts::query();
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('position', 'like', '%' . $this->search . '%')
+                ->orWhere('company_name', 'like', '%' . $this->search . '%')
+                ->orWhere('location', 'like', '%' . $this->search . '%')
+                ->orWhere('setup', 'like', '%' . $this->search . '%')
+                ->orWhere('min_salary', 'like', '%' . $this->search . '%')
+                ->orWhere('max_salary', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.job.posts.index', [
+            'records' => $records
+        ]);
     }
 }

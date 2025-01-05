@@ -5,30 +5,38 @@ namespace App\Livewire\Admin\Settings\ShiftSchedule;
 use App\Models\CompanyInformation;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public $selected_id;
-    public $records;
+    use WithPagination;
 
+    public $selected_id;
     protected $listeners = ['remove']; 
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        $this->records = ShiftSchedule::latest()->get();
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
     
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write shift-schedule')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this shift schedule. Once this action is completed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -77,6 +85,21 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.shift-schedule.index');
+
+        $model = ShiftSchedule::query();
+
+        if ($this->search) {
+            $this->resetPage(); 
+            $records = $model->where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('shift_duration', 'like', '%' . $this->search . '%')
+                ->orWhere('work_setup', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+
+        return view('livewire.admin.settings.shift-schedule.index', [
+            'records' => $records
+        ]);
     }
 }

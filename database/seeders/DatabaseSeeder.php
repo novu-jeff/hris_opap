@@ -18,20 +18,22 @@ class DatabaseSeeder extends Seeder
         $product = config('app.product');
 
         $this->call([
-            AdminAccountSeeder::class,
             RequirementSeeder::class,
             InterviewSeeder::class,
+            EmploymentTypesSeeder::class,
             JobPostSeeder::class,
             PositionSeeder::class,
             ViolationSeeder::class,
             SkillListSeeder::class,   
             AnnouncementSeeder::class,
-            JobCategoriesSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
             ShiftScheduleSeeder::class,
             EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
+            PermissionSeeder::class,
+            RolesSeeder::class,
+            AdminAccountSeeder::class,
         ]);
 
         

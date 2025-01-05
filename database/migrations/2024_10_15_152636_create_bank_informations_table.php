@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('account_number');
             $table->foreignId('department_id')
+                ->nullable()
                 ->constrained('departments')
-                ->onDelete('cascade');
-            $table->boolean('isActive')->default(true);
+                ->onDelete('set null');
             $table->timestamps();
         });
     }

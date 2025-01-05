@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 
 class TimekeepingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct() {
+        $this->middleware('permission:read timelogs')->only('index');
+        $this->middleware('permission:write timelogs')->only(['create', 'edit']);
+        $this->middleware('permission:read correction-timelogs')->only(['correction']);
+        $this->middleware('permission:read correction-timelogs')->only(['correction_apply']);
+    }
 
     public function index(string $month = null, int $day = null, int $year = null)
     {
@@ -76,6 +80,10 @@ class TimekeepingController extends Controller
         $setup = request()->query('setup');
 
         return view('admin.timekeeping.correction', compact('month', 'day', 'year', 'setup'));
+    }
+
+    public function correction_apply(int $id = null) {
+        return view('admin.timekeeping.correction-apply', compact('id'));
     }
 
 }

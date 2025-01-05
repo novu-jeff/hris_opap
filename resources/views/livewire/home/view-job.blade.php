@@ -1,28 +1,32 @@
 <div class="container">
     <div class="search-jobs">
-        <div class="content shadow">
-            <div class="search-box">
-                <input type="text" name="search" id="search" class="form-control" wire:model='search_query' placeholder="Job, Title, Keyword">
+        <div>
+            <div class="content shadow {{$isEmptySearch ? 'error'  : '' }}">
+                <div class="search-box">
+                    <input type="text" name="search" id="search" class="form-control" wire:model.defer='search_query' placeholder="Job, Title, Keyword" value="{{$search_query ?? ''}}">
+                </div>
+                <div class="search-submit">
+                    <button class="btn btn-primary px-4 py-2 text-uppercase fw-bold" wire:click='find'>Search 
+                        <span class="ms-1">
+                            <i class="fa-solid fa-magnifying-glass fa-shake"></i>
+                        </span>
+                    </button>
+                </div>
             </div>
-            <div class="search-submit">
-                <button class="btn btn-primary px-4 py-2 text-uppercase fw-bold" wire:click='search'>Search 
-                    <span class="ms-1">
-                        <i class="fa-solid fa-magnifying-glass fa-shake"></i>
-                    </span>
-                </button>
-            </div>
-        </div>
-    </div>
-    @if ($search_query)
-        <div class="searched-query text-muted">
-            <p class="m-0">You're searching for: <span>{{$search_query}}</span></p>
-            @if ($search_result_count > 0)
-                <p class="m-0">Returned <span>{{$search_result_count}} result/s</span></p>
-            @else 
-                <p class="m-0">No Result/s Found</span></p>
+            @if ($isEmptySearch)
+                <div class="error-field" style="color: red; text-transform: uppercase; font-size: 11px; font-weight: 600; margin-top: 8px;">Try searching something...</div>
             @endif
         </div>
-    @endif
+    </div>
+    <div>
+        @if ($search_result && $search_term && !$isEmptySearch)
+            <div class="searched-query text-muted mt-5" wire:ignore>
+                <p class="m-0">You're searching for: <span>{{$search_result['parameter']}}</span></p>
+                <p class="m-0">Returned <span>{{$search_result['total']}} result/s</span></p>
+            </div>
+            <hr class="mt-4">
+        @endif
+    </div>
     <div class="jobs-lists">
         <div class="row">
             @if ($record)
@@ -107,6 +111,22 @@
             @else 
                 <div class="alert alert-info text-uppercase text-center">No jobs found in this search.</div>
             @endif
+        </div>
+    </div>
+    <div>
+        <div class="float-start">
+            @if(!is_null($nextAndPrev['prev']))
+                <a wire:navigate href="{{$nextAndPrev['prev']}}" class="text-uppercase fw-bold text-primary">
+                    <i class="fa-solid fa-arrow-left-long me-2"></i> Previous
+                </a>
+            @endif
+        </div>
+        <div class="float-end">
+            @if(!is_null($nextAndPrev['next']))
+                <a wire:navigate href="{{$nextAndPrev['next']}}" class="text-uppercase fw-bold text-primary">
+                    Next <i class="fa-solid fa-arrow-right-long ms-2"></i>
+                </a>
+            @endif  
         </div>
     </div>
 </div>

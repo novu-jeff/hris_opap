@@ -17,4 +17,8 @@ class LeaveType extends Model
         'isCummulative'
     ];
 
+    public function credits() {
+        return $this->hasOne(LeaveCredits::class, 'leave_type_id', 'id');
+    }
+
 }

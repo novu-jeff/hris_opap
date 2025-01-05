@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Job\Posts;
 
+use App\Models\EmployementTypes;
 use App\Models\JobPosts;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 
@@ -22,8 +24,10 @@ class Edit extends Component
     public $min_salary;
     public $max_salary;
     public $description;
+    public $employment_types;
 
     public function mount() {
+        $this->employment_types = EmployementTypes::all();
         $this->pullRecords();
     }
 
@@ -38,7 +42,7 @@ class Edit extends Component
         $this->company_name = $record->company_name;
         $this->location = $record->location;
         $this->setup = $record->setup;
-        $this->type = $record->type;
+        $this->type = $record->employment_type_id;
         $this->slot = $record->slots;
         $this->min_salary = $record->min_salary;
         $this->max_salary = $record->max_salary;
@@ -56,7 +60,7 @@ class Edit extends Component
             'company_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'setup' => 'required|string|in:work from home,onsite,hybrid',
-            'type' => 'required|string|in:regular,contractual,part time,freelance,project base',
+            'type' => 'required|exists:employment_types,id',
             'slot' => 'required|integer|min:1|max:100',
             'min_salary' => 'required|numeric|min:0',
             'max_salary' => 'required|numeric|min:0|gt:min_salary',
@@ -108,6 +112,16 @@ class Edit extends Component
 
     public function save() {
     
+        if (Gate::denies('write jobs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
         
         DB::beginTransaction();
@@ -120,7 +134,7 @@ class Edit extends Component
                     'company_name' => $this->company_name,
                     'location' => $this->location,
                     'setup' => $this->setup,
-                    'type' => $this->type,
+                    'employment_type_id' => $this->type,
                     'min_salary' => $this->min_salary,
                     'max_salary' => $this->max_salary,
                     'description' => $this->description,

@@ -22,13 +22,10 @@ return new class extends Migration
                     'onsite',
                     'hybrid'
                 ]);
-            $table->enum('type', [
-                    'freelance',
-                    'part time',
-                    'contractual',
-                    'project based',
-                    'regular'
-                ]);
+            $table->foreignId('employment_type_id')
+                ->nullable()
+                ->constrained('employment_types')
+                ->onDelete('set null');
             $table->integer('min_salary');
             $table->integer('max_salary');
             $table->longText('description');

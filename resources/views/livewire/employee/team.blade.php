@@ -18,12 +18,12 @@
                         <div class="col-12 col-md-6 mb-4">
                             <div class="d-md-flex align-items-center gap-3">
                                 <div>
-                                    <img src="{{ $employee['personal']['profile'] ? Storage::url('employee/users/' . $employee['personal']['employee_id'] . '/' . $employee['personal']['profile']) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10' }}" 
-                                         style="width: 120px; height: 120px;">
+                                    <img style="width: 100px; height: 100px;"
+                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}">              
                                 </div>
                                     <ul class="list-unstyled mb-0">
-                                    <li>Employee ID: <strong>{{ format_id($employee['id'], 6) }}</strong></li>
-                                    <li>Biometrics ID: <strong>{{ $employee['biometrics_id'] }}</strong></li>
+                                    <li>Employee No: <strong>{{ $employee['employee_no'] }}</strong></li>
+                                    <li>Biometrics ID: <strong>{{ $employee['bsd_no'] }}</strong></li>
                                     <li>Full Name: <strong>{{ ucwords($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}</strong></li>
                                     <li>Email: <strong>{{ $employee['account']['email'] }}</strong></li>
                                 </ul>

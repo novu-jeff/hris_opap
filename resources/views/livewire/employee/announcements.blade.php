@@ -1,5 +1,27 @@
-<div class="announcements" wire:poll>
+<div class="announcements" >
     @if(is_null($record_id))
+        <div class="row mb-4 mt-5">
+            <div class="col-md-6 d-flex align-items-center gap-2">
+                <label for="entries" class="form-label mb-0">Show entries:</label>
+                <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                <label for="search" class="form-label mb-0">Search:</label>
+                <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+            </div>
+        </div>
         <div class="row">
             @forelse ($records as $item)
                 <div class="col-md-4 mb-4">
@@ -19,23 +41,25 @@
                 </div>
             @empty
                 <div class="col-12">
-                    <div class="alert alert-info mb-0 text-uppercase text-center fw-bold">No Announcements</div>
+                    <div class="alert alert-primary mb-0 text-uppercase text-center fw-bold">No Announcements Found</div>
                 </div>
             @endforelse
         </div>
+        <div class="mt-4 w-100">
+            {{ $records->links(data: ['scrollTo' => false]) }}
+        </div>
     @else
-
         <hr>
         <div class="mt-5">    
             <div class="title">
-                <h1>{{$records->title}}</h1>
-                <h5 class="text-muted mt-3">Posted: {{relative_time($records->created_at)}}</h5>
+                <h1>{{$view->title}}</h1>
+                <h5 class="text-muted mt-3">Posted: {{relative_time($view->created_at)}}</h5>
             </div>
             <div class="banner mt-4">
-                <img src="{{$records->banner === 'default.jpg' ? asset('img/announcement.jpg') : Storage::url('public/announcements/' . $records->banner)}}" alt="">
+                <img src="{{$view->banner === 'default.jpg' ? asset('img/announcement.jpg') : Storage::url('public/announcements/' . $view->banner)}}" alt="">
             </div>
             <div class="content mt-4">
-                {!!$records->content!!}
+                {!!$view->content!!}
             </div>
         </div>
     @endif

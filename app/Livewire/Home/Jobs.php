@@ -9,34 +9,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Jobs extends Component
 {
 
+    use WithPagination;
+
     public $user_id;
-    public $records;
-    public $records_no = 1;
     public $record_info;
     public $applied_job_ids;
     public $saved_job_ids;
     public $search_query;
-    public $search_result;
-    protected $listeners = ['loadMoreRecords'];
+    public $search_term;
+    public $search_result =  [];
+    public $isEmptySearch = false;
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 5;
+    public $search = '';
 
     # load default data needed
     public function mount() {
 
         # initially store user id
 
-        $this->user_id = Auth::guard('applicant')->user()->id ?? null;
-
-        # initially load all job records
-
-        if($this->search_query) {
-            $this->search(true);
-        } else {
-            $this->showRecords();
-        }   
+        $this->user_id = Auth::guard('applicant')
+            ->user()->id ?? null;
 
         # initially load all applied jobs
 
@@ -45,24 +44,12 @@ class Jobs extends Component
         # initially show if jobs are saved or not
         $this->showSavedJobs();
 
-    }
+        # if parameter exists show filter
 
-    # show records
-    public function showRecords() {
-        $this->records_no += 1;
-        $record = JobPosts::with('applicants')
-            ->take($this->records_no);
-
-        if($record->count() > 0) {
-            $this->records = $record->latest()->get();
-        } else {
-            $this->records = null;
+        if($this->search_query) {
+            $this->find();
         }
-    }
 
-    public function loadMoreRecords() {
-        $this->records_no += 1;
-        $this->showRecords();
     }
 
     # show job status if apply or applied
@@ -109,43 +96,6 @@ class Jobs extends Component
         }
     }
 
-    # search logic
-    public function search(bool $isSearched = false) {
-        if(!$isSearched) {
-            $this->dispatch('navigateToSearch', $this->search_query);
-        } else {
-            if(!empty($this->search_query)) {
-                $records = JobPosts::with('applicants')->where('position', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('company_name', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('setup', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('location', 'LIKE', '%' . $this->search_query . '%')
-                    ->orWhere('type', 'LIKE', '%' . $this->search_query . '%');
-
-                    $this->search_result = [
-                        'count' => $records->count(),
-                        'is_empty_parameter' => false,
-                        'parameter' => $this->search_query
-                    ];
-
-                    if($records->count() > 0) {
-                        $this->records = $records->get();
-                        $this->record_info = null;
-                    } else {
-                        $this->records = null;
-                    }
-
-            } else {
-                $this->search_result = [
-                    'count' => 0,
-                    'is_empty_parameter' => true,
-                    'parameter' => $this->search_query
-                ];
-                $this->records = JobPosts::latest()->get();
-            }
-
-        }
-    }
-
     # apply logic
     public function apply(int $job_id) {
 
@@ -154,7 +104,7 @@ class Jobs extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
-                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
+                'message' => 'You must create first an account before applying to any jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
             ]);
         }
 
@@ -247,7 +197,7 @@ class Jobs extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Account Required!', 
-                'message' => 'You must create first an account before applying to our jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
+                'message' => 'You must create first an account before saving any jobs. To register, you can visit <a href="'.route('home.register').'">here.</a>'
             ]);
         }
 
@@ -305,10 +255,53 @@ class Jobs extends Component
         return view('livewire.home.placeholder.jobs');
     }
 
+    public function find() {
+
+        $this->isEmptySearch = empty($this->search_query) ? true : false;
+
+        $this->dispatch('navigateToSearch', $this->search_query);
+
+        $this->search_term = $this->search_query;
+    }
+
     # render view
     
     public function render()
     {
-        return view('livewire.home.jobs');
+
+        $model = JobPosts::with('applicants', 'employment_type');
+
+        if ($this->search_term) {
+
+            $this->resetPage();
+
+            $records = $model->where('position', 'like', '%' . $this->search_query . '%')
+                ->orWhere('company_name', 'like', '%' . $this->search_query . '%')
+                ->orWhere('location', 'like', '%' . $this->search_query . '%')
+                ->orWhere('setup', 'like', '%' . $this->search_query . '%')
+                ->orWhereHas('employment_type', function($query) {
+                    $query->where('name', 'like', '%' . $this->search_query . '%');
+                })
+                ->orWhere('min_salary', 'like', '%' . $this->search_query . '%')
+                ->orWhere('max_salary', 'like', '%' . $this->search_query . '%')
+                ->orWhere('slots', 'like', '%' . $this->search_query . '%');
+
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        if ($records->total() > 0) {
+            $this->search_result['isEmpty'] = false;
+        } else {
+            $this->search_result['isEmpty'] = true;
+            $this->isEmptySearch = false;
+        }
+        
+        $this->search_result['parameter'] = $this->search_term;
+        $this->search_result['total'] = $records->total() ?? 0;
+        
+        return view('livewire.home.jobs', [
+            'records' => $records
+        ]);
     }
 }

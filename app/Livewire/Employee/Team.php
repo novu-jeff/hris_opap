@@ -30,15 +30,15 @@ class Team extends Component
         $groupedRecords = [
             'branch' => [
                 'branch_id' => null,
-                'branch_name' => 'Unknown Branch',
+                'branch_name' => 'Unassigned Branch',
             ],
             'department' => [
                 'department_id' => null,
-                'department_name' => 'Unknown Department',
+                'department_name' => 'Unassigned Department',
             ],
             'section' => [
                 'section_id' => null,
-                'section_name' => 'Unknown Section',
+                'section_name' => 'Unassigned Section',
             ],
             'positions' => []
         ];
@@ -48,15 +48,15 @@ class Team extends Component
             $firstRecord = $records->first();
             $groupedRecords['branch'] = [
                 'branch_id' => $firstRecord->section->branch_id ?? null,
-                'branch_name' => $firstRecord->section->branch->name ?? 'Unknown Branch',
+                'branch_name' => $firstRecord->section->branch->name ?? 'Unassigned Branch',
             ];
             $groupedRecords['department'] = [
                 'department_id' => $firstRecord->section->department_id ?? null,
-                'department_name' => $firstRecord->section->department->name ?? 'Unknown Department',
+                'department_name' => $firstRecord->section->department->name ?? 'Unassigned Department',
             ];
             $groupedRecords['section'] = [
                 'section_id' => $firstRecord->section->id ?? null,
-                'section_name' => $firstRecord->section->name ?? 'Unknown Section',
+                'section_name' => $firstRecord->section->name ?? 'Unassigned Section',
             ];
         }
         
@@ -72,7 +72,7 @@ class Team extends Component
             if ($isSameBranch && $isSameDepartment && $isSameSection) {
                 // Group employees by position.
                 $positionId = $record->position_id;
-                $positionName = $record->positions->name ?? 'Unknown Position';
+                $positionName = $record->positions->name ?? 'Unassigned Position';
         
                 if (!isset($groupedRecords['positions'][$positionId])) {
                     $groupedRecords['positions'][$positionId] = [

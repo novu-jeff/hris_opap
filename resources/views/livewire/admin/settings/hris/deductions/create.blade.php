@@ -27,7 +27,6 @@
                             <select wire:model="fields.source" wire:change="onChangeSelect('source', event.target.value)" id="source" class="form-select">
                                 <option value=""> - Choose - </option>
                                 <option value="entry">Data Entry</option>
-                                <option value="file_upload">File Upload</option>
                             </select>
                             <div class="error-field">
                                 @error('fields.source') <span class="text-danger">{{ $message }}</span> @enderror
@@ -59,7 +58,10 @@
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Proceed</button>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
                 </div>
             </div>
         </div>

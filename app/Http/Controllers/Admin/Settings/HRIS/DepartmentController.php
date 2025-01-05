@@ -7,25 +7,21 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+    public function __construct() {
+        $this->middleware('permission:read departments')->only('index');
+        $this->middleware('permission:write departments')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('admin.settings.hris.department.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.settings.hris.department.create');
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     
     public function edit(int $id)
     {

@@ -3,7 +3,6 @@
 namespace App\Livewire\Home;
 
 use App\Models\JobApplicants;
-use App\Models\JobPosted;
 use App\Models\JobPosts;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +15,12 @@ class ViewJob extends Component
     public $user_id;
     public $slug;
     public $record;
+    public $nextAndPrev;
     public $applied_jobs_id;
     public $search_query;
+    public $search_term;
+    public $search_result =  [];
+    public $isEmptySearch = false;
 
     # load default data needed
     public function mount($slug) {
@@ -37,6 +40,10 @@ class ViewJob extends Component
         # initially load all applied jobs
 
         $this->showAppliedJobs();
+
+        # get previous and next links
+
+        $this->getPreviousNextJobs();
 
     }
 
@@ -148,6 +155,8 @@ class ViewJob extends Component
         $this->applied_jobs_id = Auth::guard('applicant')->user()->applied->pluck('job_id')->toArray();
     }
 
+    # toggle back
+
     public function go_back() {
 
         $previousUrl = url()->previous();
@@ -166,7 +175,37 @@ class ViewJob extends Component
         return redirect()->back(); // Default back redirect if the previous URL is different
     }
     
-    
+    # get previous and next link to view job
+
+    public function getPreviousNextJobs() {
+
+        $currentJobId = JobPosts::where('slug', $this->slug)->value('id');
+
+        $prev = JobPosts::select('slug')->where('id', '<', $currentJobId)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $next =  JobPosts::select('slug')->where('id', '>', $currentJobId)
+            ->orderBy('id', 'asc')
+            ->first();
+        
+        return $this->nextAndPrev = [
+            'prev' => !is_null($prev) ? route('home.view-job', ['slug' => $prev['slug']]) : null,
+            'next' => !is_null($next) ? route('home.view-job', ['slug' => $next['slug']]) : null
+        ];
+
+    }
+
+    public function find() {
+
+        if(empty($this->search_query)) {
+            return $this->isEmptySearch = true;
+        }
+
+        return redirect()->route('home.index', ['search=' . $this->search_query]);
+        
+    }
+
     public function render()
     {
         return view('livewire.home.view-job');

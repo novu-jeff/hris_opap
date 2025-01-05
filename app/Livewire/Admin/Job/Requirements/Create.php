@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Job\Requirements;
 
 use App\Models\JobRequirements;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Create extends Component
@@ -24,6 +25,16 @@ class Create extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write requirements')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->validate();
 

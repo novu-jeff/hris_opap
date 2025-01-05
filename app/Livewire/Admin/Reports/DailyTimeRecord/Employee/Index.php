@@ -9,15 +9,22 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+
+    use WithPagination;
+
     public $date;
-    public $records;
     public $dtr = null;
     public $dtrDate;
     public $employee_id;
     public $isLoading;
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     protected $dailyTimeRecordService;
 
@@ -32,22 +39,34 @@ class Index extends Component
     {
         $this->date = $date ?? now()->format('F, Y');
         $this->dtrDate = $date ?? now()->format('F, Y');
-        $this->loadRecords();
-    }
-
-    public function loadRecords()
-    {
-        $this->records = EmployeeAccount::with('personal')->get();
     }
 
     public function updateDate($newDate)
     {
         $this->dtrDate = $newDate;
-        $this->loadRecords();
     }
 
     public function render()
     {
-        return view('livewire.admin.reports.daily-time-record.employee.index');
+
+        $model = EmployeeAccount::with('personal');
+
+        if ($this->search) {
+
+            $this->resetPage();
+    
+            $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('personal', function($subQuery) {
+                        $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                    });
+            });
+        }
+
+        $records = $model->paginate($this->entries);
+
+        return view('livewire.admin.reports.daily-time-record.employee.index', [
+            'records' => $records
+        ]);
     }
 }

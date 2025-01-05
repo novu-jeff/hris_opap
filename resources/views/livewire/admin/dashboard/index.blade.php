@@ -7,24 +7,30 @@
                         <div class="card-header bg-primary text-white px-4">
                             <h5 class="my-2 text-uppercase fw-bold">Employees</h5>
                         </div>
-                        <div class="card-body px-3 d-flex">
-                            <div class="d-flex gap-3 w-100">
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">RC Employees</p>
-                                    <hr>
-                                    <h1>{{$stats['employee']['rc']}}</h1>
-                                </div>
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">COS Employees</p>
-                                    <hr>
-                                    <h1>{{$stats['employee']['cos']}}</h1>
-                                </div>
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">JO Employees</p>
-                                    <hr>
-                                    <h1>{{$stats['employee']['jo']}}</h1>
+                        <div class="card-body px-3">
+                            <div class="swiper-container">
+                                <div class="swiper-wrapper d-flex">
+                                    @forelse($stats['employee'] as $types)
+                                        <div class="swiper-slide text-uppercase bg-info p-3 rounded-3 text-white">
+                                            <p class="mb-0 fw-bold">{{$types['employment_type']}}</p>
+                                            <hr>
+                                            <h1>{{$types['employee_count']}}</h1>
+                                        </div>
+                                    @empty
+                                        <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
+                                            No employment types to show
+                                        </div>
+                                    @endforelse
                                 </div>
                             </div>
+                            @if(count($stats['employee']) > 3) 
+                                <div class="float-end">
+                                    <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
+                                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                        Swipe left or right to view more
+                                    </small>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -58,7 +64,7 @@
                 <div class="col-12 mb-3">
                     <div class="card">
                         <div class="card-header bg-primary text-white px-4">
-                            <h5 class="my-2 text-uppercase fw-bold">Leave Application</h5>
+                            <h5 class="my-2 text-uppercase fw-bold">Leave Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
                             <div class="d-flex gap-3 w-100">
@@ -90,41 +96,71 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12">
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white px-4">
-                                    <h5 class="my-2 text-uppercase fw-bold">Other Earnings</h5>
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white px-4">
+                            <h5 class="my-2 text-uppercase fw-bold">OBS Applications</h5>
+                        </div>
+                        <div class="card-body px-3 d-flex">
+                            <div class="d-flex gap-3 w-100">
+                                <div class="w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Pending</p>
+                                    <hr>
+                                    <h1>{{$stats['obs']['pending']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.obs', ['status' => 'pending'])}}" class="text-white">View</a>
+                                    </div>
                                 </div>
-                                <div class="card-body px-4 d-flex">
-                                    @if(count($stats['earnings']) > 0)
-                                        <ul class="text-uppercase fw-bold list-unstyled">
-                                            @foreach($stats['earnings'] as $earnings)
-                                                <li style="font-size: 12px">{{$earnings['name']}} <i class="fa fa-check text-primary fs-6 ms-1" aria-hidden="true"></i></li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <small class="text-uppercase text-muted">No Earnings Found.</small>
-                                    @endif
+                                <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Granted</p>
+                                    <hr>
+                                    <h1>{{$stats['obs']['granted']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.obs', ['status' => 'granted'])}}" class="text-white">View</a>
+                                    </div>
+                                </div>
+                                <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Rejected</p>
+                                    <hr>
+                                    <h1>{{$stats['obs']['rejected']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.obs', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white px-4">
-                                    <h5 class="my-2 text-uppercase fw-bold">Other Deductions</h5>
+                    </div>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white px-4">
+                            <h5 class="my-2 text-uppercase fw-bold">ATRO Applications</h5>
+                        </div>
+                        <div class="card-body px-3 d-flex">
+                            <div class="d-flex gap-3 w-100">
+                                <div class="w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Pending</p>
+                                    <hr>
+                                    <h1>{{$stats['atro']['pending']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.atro', ['status' => 'pending'])}}" class="text-white">View</a>
+                                    </div>
                                 </div>
-                                <div class="card-body px-4 d-flex">
-                                    @if(count($stats['deductions']) > 0)
-                                        <ul class="text-uppercase fw-bold list-unstyled">
-                                            @foreach($stats['deductions'] as $deductions)
-                                                <li style="font-size: 12px">{{$deductions['name']}} <i class="fa fa-check text-primary fs-6 ms-1" aria-hidden="true"></i></li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <small class="text-uppercase text-muted">No Earnings Found.</small>
-                                    @endif
+                                <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Granted</p>
+                                    <hr>
+                                    <h1>{{$stats['atro']['granted']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.atro', ['status' => 'granted'])}}" class="text-white">View</a>
+                                    </div>
+                                </div>
+                                <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                    <p class="mb-0 fw-bold">Rejected</p>
+                                    <hr>
+                                    <h1>{{$stats['atro']['rejected']}}</h1>
+                                    <div class="float-end">
+                                        <a href="{{route('ess.atro', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -141,23 +177,41 @@
                             <div class="card-body px-4">
                                 <div class="row">
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-info w-100 text-uppercase fw-bold">Pending: {{$stats['recruitment']['pending']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'pending'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-info w-100 text-uppercase fw-bold">Pending: {{$stats['recruitment']['pending']}}</div>
+                                        </a>
                                     </div>
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-warning w-100 text-uppercase fw-bold">Interview: {{$stats['recruitment']['interview']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'interview'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-warning w-100 text-uppercase fw-bold">Interview: {{$stats['recruitment']['interview']}}</div>
+                                        </a>
                                     </div>
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-secondary w-100 text-uppercase fw-bold">Placement: {{$stats['recruitment']['placement']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'placement'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-secondary w-100 text-uppercase fw-bold">Placement: {{$stats['recruitment']['placement']}}</div>
+                                        </a>
                                     </div>
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-primary w-100 text-uppercase fw-bold">Onboarding: {{$stats['recruitment']['onboarding']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'onboarding'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-primary w-100 text-uppercase fw-bold">Onboarding: {{$stats['recruitment']['onboarding']}}</div>
+                                        </a>
                                     </div>
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-success w-100 text-uppercase fw-bold">Hired: {{$stats['recruitment']['hired']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'hired'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-success w-100 text-uppercase fw-bold">Hired: {{$stats['recruitment']['hired']}}</div>
+                                        </a>
                                     </div>
                                     <div class="col-12 mb-3 col-md-6">
-                                        <div class="mb-0 alert alert-danger w-100 text-uppercase fw-bold">Rejected: {{$stats['recruitment']['rejected']}}</div>
+                                        <a href="{{route('job.applicants.index', ['status' => 'rejected'])}}" class="nav-link">
+                                            <div class="mb-0 alert alert-danger w-100 text-uppercase fw-bold">Rejected: {{$stats['recruitment']['rejected']}}</div>
+                                        </a>
                                     </div>
+                                </div>
+                                <div class="float-end">
+                                    <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
+                                        <i class="fa-regular fa-hand-pointer"></i>
+                                        Click to view more
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -200,6 +254,42 @@
                                     </table>
                                 @else
                                     <small class="text-uppercase text-muted">No GSIS Billing Found.</small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white px-4">
+                                <h5 class="my-2 text-uppercase fw-bold">Other Earnings</h5>
+                            </div>
+                            <div class="card-body px-4 d-flex">
+                                @if(count($stats['earnings']) > 0)
+                                    <ul class="text-uppercase fw-bold list-unstyled">
+                                        @foreach($stats['earnings'] as $earnings)
+                                            <li style="font-size: 12px">{{$earnings['name']}} <i class="fa fa-check text-primary fs-6 ms-1" aria-hidden="true"></i></li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <small class="text-uppercase text-muted">No Earnings Found.</small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white px-4">
+                                <h5 class="my-2 text-uppercase fw-bold">Other Deductions</h5>
+                            </div>
+                            <div class="card-body px-4 d-flex">
+                                @if(count($stats['deductions']) > 0)
+                                    <ul class="text-uppercase fw-bold list-unstyled">
+                                        @foreach($stats['deductions'] as $deductions)
+                                            <li style="font-size: 12px">{{$deductions['name']}} <i class="fa fa-check text-primary fs-6 ms-1" aria-hidden="true"></i></li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <small class="text-uppercase text-muted">No Earnings Found.</small>
                                 @endif
                             </div>
                         </div>

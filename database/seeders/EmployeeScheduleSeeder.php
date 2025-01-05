@@ -27,10 +27,10 @@ class EmployeeScheduleSeeder extends Seeder
                 'thursday_remarks' => null,
                 'friday' => 1,
                 'friday_remarks' => null,
-                'saturday' => 1,
-                'saturday_remarks' => null,
-                'sunday' => 1,
-                'sunday_remarks' => null,
+                'saturday' => 0,
+                'saturday_remarks' => 'Rest Day',
+                'sunday' => 0,
+                'sunday_remarks' => 'Rest Day',
             ],
         ];
         

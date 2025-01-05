@@ -7,26 +7,22 @@ use Illuminate\Http\Request;
 
 class CostCenterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct() {
+        $this->middleware('permission:read cost-center')->only('index');
+        $this->middleware('permission:write cost-center')->only(['create', 'edit']);
+    }
+    
     public function index()
     {
         return view('admin.settings.hris.cost-center.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.settings.hris.cost-center.create');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    
     public function edit(int $id)
     {
         return view('admin.settings.hris.cost-center.edit', compact('id'));

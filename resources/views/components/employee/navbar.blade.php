@@ -1,3 +1,7 @@
+@php
+    $employee = Auth::guard('employee')->user()->load(['personal', 'information.positions']);
+@endphp
+
 <nav class="navbar py-3">
     <div class="container d-flex justify-content-lg-center justify-content-xl-between px-4">
         <a class="navbar-brand text-uppercase" href="{{ route('employee.dashboard') }}">
@@ -8,24 +12,12 @@
                 @php
                     $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);
                 @endphp
-                <div class="dropdown ms-3 d-none d-md-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown">
-                    <img class="profile-img" src="{{
-                        Auth::guard('employee')->user()->image ? Storage::url('public/users/employee/'. $folder . '/'. Auth::guard('employee')->user()->image) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                    }}" alt="Profile Image">
-                    <div class="email">{{ trimEmail(Auth::guard('employee')->user()->email ?? 'Guest')}}</div>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('employee.logout') }}"
-                                onclick="event.preventDefault();
-                                            document.getElementById('logout-form').submit();">
-                                {{ __('Logout') }}
-                            </a>
-
-                            <form id="logout-form" action="{{ route('employee.logout') }}" method="POST" class="d-none">
-                                @csrf
-                            </form>
-                        </li>
-                    </ul>
+                <div class="ms-3 d-none d-md-flex align-items-center gap-1">
+                    <img class="profile-img" style="width: 40px; height: 40px" src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee->personal->firstname . ' ' . $employee->personal->lastname)}}" alt="Profile Image">
+                    <div class="name">
+                        <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{$employee->personal->firstname . ' ' . $employee->personal->lastname}}</p>
+                        <small class="text-uppercase fw-bold text-muted mb-0">{{$employee->information->positions->name ?? 'Employee'}}</small>
+                    </div>                     
                 </div>  
             @endif
             <div class="hamburger-wrapper">

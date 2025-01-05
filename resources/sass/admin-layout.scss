@@ -16,6 +16,17 @@
   min-height: 150px;
 }
 
+.swiper-container {
+  width: 100%;
+  padding: 20px 0;
+  cursor: grab;
+  overflow: hidden;
+}
+
+.navbar .dropdown-toggle::after {
+  margin-top: 7px;
+}
+
 #admin-app {
     position: relative;
     .sidebar {
@@ -35,7 +46,6 @@
             margin-right: 8px;
             background-color: $light;
             object-fit: cover;
-            border: 2px solid $secondary;
         }
         .email {
             color: $light;

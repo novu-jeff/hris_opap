@@ -17,12 +17,14 @@
                 @include('components.admin.sub-navbar-links.recruitment')
 
                 <!-- HRIS -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{route('hris.index')}}">
-                        <i class="fa-solid fa-users"></i>
-                        HRIS
-                    </a>
-                </li>
+                @can('read hris')
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{route('hris.index')}}">
+                            <i class="fa-solid fa-users"></i>
+                            HRIS
+                        </a>
+                    </li>
+                @endcan
 
                 @include('components.admin.sub-navbar-links.timelogs')
 

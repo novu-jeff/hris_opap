@@ -22,6 +22,7 @@ use App\Models\EmployeeUpdateSkillsHobbies;
 use App\Models\EmployeeUpdateTrainings;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Edit extends Component
@@ -136,6 +137,17 @@ class Edit extends Component
     }
 
     public function approve(bool $isNotify = true) {
+
+        if (Gate::denies('write employee-profile-approval')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
@@ -188,6 +200,17 @@ class Edit extends Component
     }
 
     public function reject(bool $isNotify = true) {
+
+        if (Gate::denies('write employee-profile-approval')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';

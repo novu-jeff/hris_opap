@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Deductions;
 
+use App\Models\EmployementTypes;
 use App\Models\JobCategory;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Create extends Component
@@ -18,7 +20,7 @@ class Create extends Component
 
     
     public function mount() {
-        $this->job_category = JobCategory::all();
+        $this->job_category = EmployementTypes::all();
     }
 
     public function populateField($field, $value) {
@@ -52,7 +54,7 @@ class Create extends Component
             'fields.name' => 'required|string|max:255',
             'fields.frequency' => 'required|in:bi_monthly,monthly',
             'fields.eligible' => 'required|array|min:1',
-            'fields.source' => 'required|in:entry,file_upload'
+            'fields.source' => 'required|in:entry'
         ];
     }
 
@@ -73,6 +75,17 @@ class Create extends Component
 
     public function save() {
 
+
+        if (Gate::denies('write other-deductions')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+        
         $this->dispatch('reinitializeSelect');
 
         $this->validate();

@@ -54,6 +54,7 @@ Livewire.on('alert', (event) => {
             confirmButtonText: 'GOT IT',
             confirmButtonColor: '#143953',
         }).then((result) => {
+
             if (result.isConfirmed && alert.isRemoveRowDT) {
                 removeRowDT(alert.id);
             }
@@ -78,6 +79,7 @@ Livewire.on('alert', (event) => {
                 confirmButtonText: 'GOT IT',
                 confirmButtonColor: '#143953',
             });
+
         }        
     }
 
@@ -172,10 +174,6 @@ Livewire.on('showConfirmation', function(data) {
         }
     });  
 });
-
-
-
-
 
 Livewire.on('showModal', function(data) {
     var modal = new bootstrap.Modal($('#'+data[0].modal));

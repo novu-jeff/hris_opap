@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read announcements')->only('index');
+        $this->middleware('permission:write announcements')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('admin.ess.announcements.index', [

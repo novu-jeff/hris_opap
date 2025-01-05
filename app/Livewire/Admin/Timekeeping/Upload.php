@@ -7,6 +7,7 @@ use App\Models\EmployeeInformation;
 use App\Models\ShiftSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -20,14 +21,6 @@ class Upload extends Component
     public $upload_preview;
     public object $records;
     public bool $isParsing, $isUploading = false;
-
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-
-    } 
 
     public function updatedFile() {
 
@@ -67,11 +60,19 @@ class Upload extends Component
             $this->isParsing = true;
         }
 
-        $this->dispatch('reinitializeDataTable');
-
     }
 
     public function upload_file() {
+
+        if (Gate::denies('write timelogs')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if(!($this->upload_preview)) {
             return $this->dispatch('alert', [
@@ -170,7 +171,6 @@ class Upload extends Component
                     foreach ($dateData as &$recordData) {
                         $shift = $this->employeeShift($recordData['bsdno']);
                 
-                        // Skip processing if no shift is found
                         if (!$shift) {
                             continue;
                         }
@@ -358,8 +358,6 @@ class Upload extends Component
                         }
                     }
                 }
-                
-                
                    
                 // Sort the dates and records
                 $formattedData = array_map(function ($dateData) {
@@ -400,16 +398,6 @@ class Upload extends Component
                             // No overtime, calculate regular minutes only
                             $regMins = $clockInTime->diffInMinutes($actualClockOutTime);
                         }
-
-                        $clock_in_am = Carbon::parse($item['clock_in_am']);
-                        $clock_out_am = Carbon::parse($item['clock_out_am']);
-                        $clock_in_pm = Carbon::parse($item['clock_in_pm']);
-                        $clock_out_pm = Carbon::parse($item['clock_out_pm']);
-
-                        $mins_consumed_am = $clock_in_am->diffInMinutes($clock_out_am);
-                        $mins_consumed_pm = $clock_in_pm->diffInMinutes($clock_out_pm);
-
-                        $overallMins = $regMins + $minsOT;
                 
                         // Insert or update record in the database
                         $insertion = EmployeeClockInOut::updateOrInsert(
@@ -421,20 +409,12 @@ class Upload extends Component
                                 'biometricdtrid' => $item['biometricdtrid'] ?? null,
                                 'clock_in_am' => $item['clock_in_am'] ?? null,
                                 'clock_out_am' => $item['clock_out_am'] ?? null,
-                                'mins_consumed_am' => $mins_consumed_am,
                                 'clock_in_pm' => $item['clock_in_pm'] ?? null,
                                 'clock_out_pm' => $item['clock_out_pm'] ?? null,
-                                'mins_consumed_pm' => $mins_consumed_pm,
                                 'captured_image_clockin' => null,
                                 'captured_image_clockout' => null,
                                 'captured_location_clockin' => null,
                                 'captured_location_clockout' => null,
-                                'isLate' => false,
-                                'isHalfDay' => false,
-                                'isUnderTime' => false,
-                                'total_mins_consumed' => $regMins,
-                                'mins_ot' => $minsOT,
-                                'overall_mins' => $overallMins,
                                 'bsd_no' => $item['bsdno'] ?? null,
                                 'isindtr' => !empty($item['isindtr']) ? (bool) $item['isindtr'] : null,
                                 'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
@@ -464,8 +444,6 @@ class Upload extends Component
                 'message' => 'Total of ' . rtrim(number_format($insertedCount, 2), '.00') . ' records has been added to time logs for the month of ' . $formattedDate 
             ]);
             
-            $this->loadRecords();
-
         } catch (\Exception $e) {
             
             DB::rollBack();

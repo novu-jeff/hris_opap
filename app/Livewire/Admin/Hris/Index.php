@@ -10,10 +10,12 @@ use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -21,9 +23,9 @@ class Index extends Component
 {
 
     use WithFileUploads;
+    use WithPagination;
 
     public $employee_no;
-    public $employees;
     public $isParsing;
     public bool $isUploading = false;
     public $file;
@@ -40,37 +42,50 @@ class Index extends Component
     public bool $lazy = true;
 
     protected $listeners = ['remove', 'loading'];
+    
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function mount() {
         $this->loadRecords();
     }
 
     public function loading() {
-        $this->dispatch('reinitializeDataTable');
         $this->lazy = false;
     }
 
     public function loadRecords() {
-        $this->employees = EmployeeInformation::with('personal')->get();
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
     }
 
     public function close_upload_employee() {
-        $this->dispatch('reinitializeDataTable');
         $this->reset('upload_preview', 'file');
     }
 
     public function select_change($property) {
         if($property === 'linkSchedule') {
             $this->isLinkSchedule = !$this->isLinkSchedule ? false : true;
-            $this->dispatch('reinitializeDataTable');
         }
     }
 
     public function updatedFile() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if ($this->file) {
+
             $this->upload_preview;
+            
             $file = $this->file;
 
             if ($file instanceof \Illuminate\Http\UploadedFile) {
@@ -105,11 +120,19 @@ class Index extends Component
             $this->isParsing = true;
         }
 
-        $this->dispatch('reinitializeDataTable');
-
     }
 
     public function upload_file() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->isUploading = true;
     
@@ -279,7 +302,6 @@ class Index extends Component
             $this->reset(['shift_id', 'schedule_id']);
 
             $this->loadRecords();
-            $this->dispatch('reinitializeDataTable');
 
         } catch (\Exception $e) {
             
@@ -361,12 +383,20 @@ class Index extends Component
     
     public function remove(bool $isNotify = true, string $employee_no = null) {
 
-        $this->dispatch('reinitializeDataTable');
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete employee <b>' . strtoupper($employee_no) . '</b>. Once this action is completed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $employee_no;
@@ -405,7 +435,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee ' . strtoupper($record->employee_no) . ' was deleted successfully' 
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' was deleted successfully.' 
                 ]);
 
             } else {
@@ -441,7 +471,28 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.hris.index');
+        
+        $model = EmployeeInformation::with('personal');
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $employees = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('personal', function ($subQuery) {
+                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+            });
+        } else {
+            $employees = $model;
+        }
+
+        $employees = $employees->latest()->paginate($this->entries);
+
+        return view('livewire.admin.hris.index', [
+            'employees' => $employees
+        ]);
     }
 
 }

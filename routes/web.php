@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
 use App\Http\Controllers\Admin\Settings\HRIS\CostCenterController;
 use App\Http\Controllers\Admin\Settings\HRIS\DeductionController;
 use App\Http\Controllers\Admin\Settings\HRIS\DepartmentController;
-use App\Http\Controllers\Admin\Settings\HRIS\EmployeeStatusController;
+use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
 use App\Http\Controllers\Admin\Settings\HRIS\GSISController;
 use App\Http\Controllers\Admin\Settings\HRIS\PositionController;
 use App\Http\Controllers\Admin\Settings\HRIS\ViolationController;
@@ -36,8 +36,10 @@ use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
+use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
+use App\Http\Controllers\Admin\UserAccessController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
 use App\Http\Controllers\Home\HomeController;
@@ -58,7 +60,8 @@ use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryContro
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
-
+use App\Http\Controllers\Employee\TutorialController;
+use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,10 +76,12 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', [HomeController::class, 'index'])
+Route::redirect('/', 'jobs', 301);;
+
+Route::get('jobs', [HomeController::class, 'index'])
         ->name('home.index')
         ->middleware('applicant:guest');
-Route::get('view-job/{slug}', [ViewJobController::class, 'index'])
+Route::get('jobs/view/{slug}', [ViewJobController::class, 'index'])
     ->name('home.view-job')
     ->middleware('applicant:guest');
 
@@ -99,23 +104,30 @@ Route::prefix('register')->group(function() {
         
 
 Route::middleware(['applicant'])->group(function() {
-    Route::get('applied', [AppliedController::class, 'index'])
+    Route::get('my/jobs/applied', [AppliedController::class, 'index'])
         ->name('home.applied');
-    Route::get('applied/view-job/{slug}', [ViewJobController::class, 'index'])
+
+    Route::get('my/jobs/saved', [SavedJobsController::class, 'index'])
+        ->name('home.saved');
+
+    Route::get('jobs/applied/view-job/{slug}', [ViewJobController::class, 'index'])
         ->name('home.applied.view-job');
+    
     Route::get('search/{search?}', [HomeController::class, 'index'])
         ->name('home.search');
-    Route::resource('profile', ProfileController::class)
+    
+    Route::resource('my/profile', ProfileController::class)
         ->names('home.profile');
+    
     Route::get('assessment/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
         ->name('interview-respond');
+    
     Route::get('job/offer/upload/signed/{job_id}', [HomeInterviewController::class, 'offer'])
         ->name('upload-signed-offer');
+    
     Route::get('job/requirements/upload/{job_id}', [HomeInterviewController::class, 'requirements'])
         ->name('upload-requirements');
 });
-
-
     
 Route::prefix('admin')->group(function() {
     Route::get('login', [AdminLoginController::class, 'index'])
@@ -133,22 +145,30 @@ Route::prefix('admin')->group(function() {
 
         Route::prefix('job')->group(function() {
     
-            Route::resource('posts', PostController::class)->names('job.posts');
-            Route::resource('assessments', InterviewController::class)->names('job.interview');
-            Route::resource('requirements', RequirementsController::class)->names('job.requirements');
+            Route::resource('posts', PostController::class)
+                ->only(['index', 'create', 'edit'])
+                ->names('job.posts');
                     
-            Route::get('applicants/{status}', [ApplicantController::class, 'index'])->name('job.applicants.index');
-            Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])->name('job.applicants.create');
-            Route::post('applicants/{status}', [ApplicantController::class, 'store'])->name('job.applicants.store');
-            Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])->name('job.applicants.show');
-            Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])->name('job.applicants.edit');
-            Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])->name('job.applicants.update');
-            Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])->name('job.applicants.destroy');
+            Route::get('applicants/{status}', [ApplicantController::class, 'index'])
+                ->name('job.applicants.index');
+            Route::get('applicants/{status}/create', [ApplicantController::class, 'create'])
+                ->name('job.applicants.create');
+            Route::post('applicants/{status}', [ApplicantController::class, 'store'])
+                ->name('job.applicants.store');
+            Route::get('applicants/{status}/{applicant}', [ApplicantController::class, 'show'])
+                ->name('job.applicants.show');
+            Route::get('applicants/{status}/{applicant}/edit', [ApplicantController::class, 'edit'])
+                ->name('job.applicants.edit');
+            Route::put('applicants/{status}/{applicant}', [ApplicantController::class, 'update'])
+                ->name('job.applicants.update');
+            Route::delete('applicants/{status}/{applicant}', [ApplicantController::class, 'destroy'])
+                ->name('job.applicants.destroy');
         
         });
         
         Route::get('hris', [HRISController::class, 'index'])
             ->name('hris.index');
+            
         Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
             ->name('hris.show');
 
@@ -156,6 +176,7 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
+
             Route::get('logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'index'])
                 ->name('timekeeping.index');
             Route::get('upload', [TimekeepingController::class, 'upload'])
@@ -163,11 +184,15 @@ Route::prefix('admin')->group(function() {
 
             Route::get('correction/logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'correction'])
                 ->name('timekeeping.correction');
+
+            Route::get('correction/{id}', [TimekeepingController::class, 'correction_apply'])
+                ->name('timekeeping.correction-apply');
         });
 
         Route::prefix('ess')->group(function() {
+            
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
-                ->name('ess.obs.index');
+                ->name('ess.obs');
 
             Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
                 ->name('ess.atro');
@@ -205,6 +230,9 @@ Route::prefix('admin')->group(function() {
         
         Route::prefix('settings')->group( function() {
         
+            Route::resource('assessments', InterviewController::class)->names('job.interview');
+            Route::resource('requirements', RequirementsController::class)->names('job.requirements');
+
             Route::get('company-information', [CompanyInformationController::class, 'index'])
                 ->name('company.index');
 
@@ -231,8 +259,8 @@ Route::prefix('admin')->group(function() {
                 Route::resource('batch-configuration', BatchConfigurationController::class)
                     ->names('batch-configuration');           
         
-                Route::resource('employee-status', EmployeeStatusController::class)
-                    ->names('employee-status');
+                Route::resource('employment-type', EmploymentTypeController::class)
+                    ->names('employment-type');
         
                 Route::resource('position', PositionController::class)
                     ->names('position');
@@ -269,7 +297,14 @@ Route::prefix('admin')->group(function() {
             Route::prefix('users')->group(function() {
                 Route::get('{type}', [UserController::class, 'index'])
                     ->name('users.index');
+                Route::get('admins/new', [UserController::class, 'create'])
+                    ->name('admin.new');
+                Route::get('admins/update/{id}', [UserController::class, 'edit'])
+                    ->name('admin.update');
             });
+
+            Route::resource('user-access', RoleController::class)
+                ->names('users.access');
             
             Route::prefix('payroll')->group( function() {
                 Route::resource('/holidays', HolidayController::class)->only('create', 'index', 'edit')
@@ -347,6 +382,9 @@ Route::prefix('employee')->group(function() {
 
         Route::get('profile', [EmployeeProfileController::class, 'index'])
             ->name('employee.profile');
+
+        Route::get('tutorial', [TutorialController::class, 'index'])
+            ->name('employee.tutorial');
 
     });
 });

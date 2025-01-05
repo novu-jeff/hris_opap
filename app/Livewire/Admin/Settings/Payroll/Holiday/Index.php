@@ -3,25 +3,38 @@
 namespace App\Livewire\Admin\Settings\Payroll\Holiday;
 
 use App\Models\Holiday;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public $selected_id;
-    public object $records;
     protected $listeners = ['remove'];
 
-    public function mount() {
-        $this->records = Holiday::where('isActive', true)->get();
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function remove(bool $isNotify = true, int $id = null) {
-        logger()->info('Remove method called with ID:', ['id' => $id]);
+
+        if (Gate::denies('write holidays')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this holiday. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -46,7 +59,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Holiday: ' . strtoupper($record->name) . ' deleted successfully' 
+                    'message' => 'Holiday of ' . strtoupper($record->name) . ' deleted successfully' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -62,6 +75,22 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.payroll.holiday.index');
+
+        $model = Holiday::where('isActive', true);
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('name', 'like', '%' . $this->search . '%')
+                ->orWhereRaw('MONTHNAME(date) like ?', ['%' . $this->search . '%'])
+                ->orWhereRaw('CONCAT(MONTHNAME(date), " ", DAY(date)) like ?', ['%' . $this->search . '%']);
+        }
+        
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.payroll.holiday.index', [
+            'records' => $records
+        ]);
     }
 }

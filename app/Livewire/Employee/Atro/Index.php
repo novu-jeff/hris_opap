@@ -5,30 +5,29 @@ namespace App\Livewire\Employee\Atro;
 use App\Models\EmployeeAtro;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public object $records;
+    use WithPagination;
+
     public $selected_id;
+    public $user_id;
     protected $listeners = ['remove'];
 
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $status = '';
 
     public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
         $user_id = Auth::user()->employee_no;
 
         if(is_null($user_id)) {
             return redirect()->route('employee.leave');
-        };
+        }
 
-        $records = EmployeeAtro::where('employee_no', $user_id)
-            ->get();
-        
-        $this->records = $records;
+        return $this->user_id = $user_id;
     }
 
     public function remove(bool $isNotify = true, int $id = null) {
@@ -36,7 +35,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete your application for rendering overtime <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is completed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -73,9 +72,19 @@ class Index extends Component
         }
     }
 
-
     public function render()
     {
-        return view('livewire.employee.atro.index');
+
+        $model = EmployeeAtro::where('employee_no', $this->user_id);
+
+        if ($this->status) {
+            $records = $model->where('status', $this->status);
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.employee.atro.index', [
+            'records' => $records
+        ]);
     }
 }

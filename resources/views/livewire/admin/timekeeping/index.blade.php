@@ -25,17 +25,39 @@
             </a>
         </div>
     </div>
+    <div class="row mb-5">
+        <div class="col-md-6 d-flex align-items-center gap-2">
+            <label for="entries" class="form-label mb-0">Show entries:</label>
+            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50">50</option>
+                <option value="60">60</option>
+                <option value="70">70</option>
+                <option value="80">80</option>
+                <option value="90">90</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+            <label for="search" class="form-label mb-0">Search:</label>
+            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+        </div>
+    </div>
     <table class="table table-striped w-100" id="logs-table">
         <thead>
             <tr>
                 <th>Employee No</th>
                 <th>BSD No.</th>
                 <th>Employee Name</th>
-                <th>Actions</th> <!-- Added actions column for "View" button -->
+                <th>Actions</th> 
             </tr>
         </thead>
         <tbody>
-            @foreach ($records['data'] as $key => $item)
+            @forelse ($timelogs as $key => $item)
                 @php
                     // Check if the condition is met (avoid repeating the logic)
                     $highlightBG = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
@@ -51,205 +73,167 @@
                     <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
                         <button class="view-log btn btn-primary px-3 text-uppercase fw-medium">View</button>
                     </td>
-                </tr>               
-            @endforeach
+                </tr>   
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                </tr>            
+            @endforelse
         </tbody>        
     </table>
-    
+    <div class="mt-4">
+        {{ $timelogs->links(data: ['scrollTo' => false]) }}
+    </div>
 </div>
 @section('script')
-    <script>
-        $(function() {
+<script>
+    $(function () {
+        // Handle row click to toggle child content
 
-            // Check if DataTable is already initialized, if so, destroy it to reinitialize
-            if ($.fn.DataTable.isDataTable('#logs-table')) {
-                $('#logs-table').DataTable().destroy();
-            }
+        let currentLog;
 
-            // Initialize DataTable
-            const table = $('#logs-table').DataTable({
-                responsive: true,
-                pageLength: 20 ,
-                order: [],
-            });
+        $('#logs-table tbody').on('click', '.view-log', function () {
+            const tr = $(this).closest('tr'); // Get the closest table row
+            const logId = tr.data('log-id'); // Retrieve log ID from the data attribute
+            const logData = @json($timelogs->items()); // Use paginated items
 
-            // Handle row click to toggle child content
-            $('#logs-table tbody').on('click', '.view-log', function () {
-                const tr = $(this).closest('tr'); // Get the closest table row
-                const row = table.row(tr); // Access the DataTable row object
+            console.log(logData);
+            console.log(logId);
 
-                // Hide all other child rows
-                table.rows().every(function () {
-                    if (this.child.isShown() && !$(this.node()).is(tr)) {
-                        this.child.hide();
-                        $(this.node()).removeClass('shown');
+            // Check if the clicked row is already shown
+            const isRowShown = tr.hasClass('shown');
+
+            // If the same row is clicked, just remove the child row and 'shown' class
+            if (isRowShown) {
+                tr.next('.child-row').remove(); // Remove child content
+                tr.removeClass('shown'); // Remove 'shown' class from the row
+            } else {
+                // Hide other child rows and remove the 'shown' class from other rows
+                $('#logs-table .child-row').remove();
+                $('#logs-table tbody tr').removeClass('shown');
+
+                try {
+                    // Find the log entry with the matching ID
+                    const log = logData[logId]; // Find the log by the logId
+
+                    if (!log) {
+                        throw new Error('Log data not found or invalid.');
                     }
-                });
 
-                if (row.child.isShown()) {
-                    // If child row is already shown, hide it
-                    row.child.hide();
-                    tr.removeClass('shown');
-                } else {
-                    const logId = tr.data('log-id'); // Retrieve log ID from the data attribute
-                    const logData = @json($records['data']); // Parse the JSON data from PHP
+                    // Get the log's clock-in, break-out, break-in, and clock-out times
+                    const clockIn = log.clock_in_am;
+                    const breakOut = log.clock_out_am;
+                    const breakIn = log.clock_in_pm;
+                    const clockOut = log.clock_out_pm;
 
-                    try {
-                        // Find the log entry with the matching ID
-                        const log = logData[logId];
-                        if (!log) {
-                            throw new Error('Log data not found or invalid.');
-                        }
+                    // Format the captured images if available
+                    const clockInImage = log.captured_image_clockin ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockin}` : 'https://placehold.co/300x150.png?text=No+Image';
+                    const clockOutImage = log.captured_image_clockout ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockout}` : 'https://placehold.co/300x150.png?text=No+Image';
 
-                        // Get the log's clock-in, break-out, break-in, and clock-out times
-                        const clockIn = log.clock_in_am;
-                        const breakOut = log.clock_out_am;
-                        const breakIn = log.clock_in_pm;
-                        const clockOut = log.clock_out_pm;
+                    // Check if images are available for display
+                    const showCapturedImages = log.captured_image_clockin || log.captured_image_clockout;
 
-                        // Format the captured images if available
-                        const clockInImage = log.captured_image_clockin ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockin}` : 'https://placehold.co/300x150.png?text=No+Image';
-                        const clockOutImage = log.captured_image_clockout ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockout}` : 'https://placehold.co/300x150.png?text=No+Image';
-
-                        // Check if images are available for display
-                        const showCapturedImages = log.captured_image_clockin || log.captured_image_clockout;
-
-                        // Generate the content for the child row in the requested format
-                        const childContent = `
-                            <div class="mb-3">
-                                <hr>
-                                <div class="row">
-                                    <div class="col-12 col-md-5 mb-3">
-                                        <strong>Employee Information:</strong>
-                                        <ul class="my-3">
-                                            <li>Employee No: <strong><u>${log.information.employee_no ?? 'N/A'}</u></strong></li>
-                                            <li>Employee Name: <strong><u>${log.information?.personal?.firstname ?? 'N/A'} ${log.information?.personal?.lastname ?? 'N/A'}</u></strong></li>
-                                            <li>Biometrics ID: <strong><u>${log.information?.bsd_no ?? 'N/A'}</u></strong></li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-12 col-md-7 mb-3">
-                                        <div class="d-flex gap-3">
-                                            ${showCapturedImages ? `
-                                                <div class="mb-4">
-                                                    <p class="fw-bold">Captured Clock In:</p>
-                                                    <img src="${clockInImage}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                </div>
-                                                <div class="mb-4">
-                                                    <p class="fw-bold">Captured Clock Out:</p>
-                                                    <img src="${clockOutImage}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-12">
-                                         <hr>
-                                        <strong>Employee Clock In & Out</strong>
-                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                            <thead class="bg-gray-200">
-                                                <tr>
-                                                    <th class="border px-4 py-2">Clock In</th>
-                                                    <th class="border px-4 py-2">Break Out</th>
-                                                    <th class="border px-4 py-2">Break In</th>
-                                                    <th class="border px-4 py-2">Clock Out</th>
-                                                    <th class="border px-4 py-2">Is Late</th>
-                                                    <th class="border px-4 py-2">Is Under Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(breakIn) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${formatTime(clockOut) ?? 'N/A'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isLate ? 'Yes' : 'No'}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${log.isUnderTime ? 'Yes' : 'No'}</u></strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                            <thead class="bg-gray-200">
-                                                <tr>
-                                                    <th class="border px-4 py-2">Consumed Hours (AM)</th>
-                                                    <th class="border px-4 py-2">Consumed Hours (PM)</th>
-                                                    <th class="border px-4 py-2">Regular Hours Consumed</th>
-                                                    <th class="border px-4 py-2">Overtime Hours</th>
-                                                    <th class="border px-4 py-2">Total Hours</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_am)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_consumed_pm)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.total_mins_consumed)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.mins_ot)}</u></strong>
-                                                    </td>
-                                                    <td class="border px-4 py-2">
-                                                        <strong><u>${convertToHoursAndMinutes(log.overall_mins)}</u></strong>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                    // Generate the content for the child row in the requested format
+                    const childContent = `
+                        <div class="child-row mb-3">
+                            <hr>
+                            <div class="row">
+                                <div class="col-12 col-md-5 mb-3">
+                                    <strong>Employee Information:</strong>
+                                    <ul class="my-3">
+                                        <li>Employee No: <strong><u>${log.information?.employee_no ?? 'N/A'}</u></strong></li>
+                                        <li>Employee Name: <strong><u>${log.information?.personal?.firstname ?? 'N/A'} ${log.information?.personal?.lastname ?? 'N/A'}</u></strong></li>
+                                        <li>Biometrics ID: <strong><u>${log.bsd_no ?? 'N/A'}</u></strong></li>
+                                    </ul>
+                                </div>
+                                <div class="col-12 col-md-7 mb-3">
+                                    <div class="d-flex gap-3">
+                                        ${showCapturedImages ? `
+                                            <div class="mb-4">
+                                                <p class="fw-bold">Captured Clock In:</p>
+                                                <img src="${clockInImage}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
+                                            </div>
+                                            <div class="mb-4">
+                                                <p class="fw-bold">Captured Clock Out:</p>
+                                                <img src="${clockOutImage}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
+                                <div class="col-12 col-md-12">
+                                    <hr>
+                                    <strong>Employee Clock In & Out</strong>
+                                    <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                        <thead class="bg-gray-200">
+                                            <tr>
+                                                <th class="border px-4 py-2">Clock In</th>
+                                                <th class="border px-4 py-2">Break Out</th>
+                                                <th class="border px-4 py-2">Break In</th>
+                                                <th class="border px-4 py-2">Clock Out</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong><u>${clockIn ?? ''}</u></strong></td>
+                                                <td class="border px-4 py-2"><strong><u>${breakOut ?? ''}</u></strong></td>
+                                                <td class="border px-4 py-2"><strong><u>${breakIn ?? ''}</u></strong></td>
+                                                <td class="border px-4 py-2"><strong><u>${clockOut ?? ''}</u></strong></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        `;
+                        </div>
+                    `;
 
-                        // Show the child row with the generated content
-                        row.child(childContent).show();
-                        tr.addClass('shown');
-                    } catch (error) {
-                        console.error(error.message);
+                    // Show the child row with the generated content
+                    tr.after(childContent); // Append content to the row
+                    tr.addClass('shown'); // Add the 'shown' class to the row
+                } catch (error) {
+                    console.error(error.message);
 
-                        // Trigger SweetAlert error message
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: error.message,
-                            confirmButtonText: 'Okay'
-                        });
-                    }
+                    // Trigger SweetAlert error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message,
+                        confirmButtonText: 'Okay'
+                    });
                 }
-            });
-
-
-            $('#datePicker').on('change', function () {
-                const date = $(this).val(); 
-                
-                // Split the date into year, month, and day
-                const [year, month, day] = date.split('-');
-                
-                // Build the URL with the selected month, day, and year
-                const url = '{{ route("timekeeping.index", ["year" => "__year__", "month" => "__month__", "day" => "__day__"]) }}'
-                            .replace('__year__', year)
-                            .replace('__month__', month)
-                            .replace('__day__', day);
-
-                // Redirect the user to the new URL
-                location.href = url;
-            });
-
-            $('#workSetup').on('change', function () {
-                const selectedSetup = $(this).val();
-                const url = new URL(window.location.href);
-
-                // Add or update the 'setup' query parameter in the URL
-                if (selectedSetup) {
-                    url.searchParams.set('setup', selectedSetup);
-                } else {
-                    url.searchParams.delete('setup');
-                }
-
-                // Redirect to the updated URL
-                window.location.href = url.toString();
-            });
-
+            }
         });
-    </script>
+
+
+        // Handle datePicker change
+        $('#datePicker').on('change', function () {
+            const date = $(this).val(); 
+            
+            // Split the date into year, month, and day
+            const [year, month, day] = date.split('-');
+            
+            // Build the URL with the selected month, day, and year
+            const url = '{{ route("timekeeping.index", ["year" => "__year__", "month" => "__month__", "day" => "__day__"]) }}'
+                        .replace('__year__', year)
+                        .replace('__month__', month)
+                        .replace('__day__', day);
+
+            // Redirect the user to the new URL
+            location.href = url;
+        });
+
+        // Handle workSetup change
+        $('#workSetup').on('change', function () {
+            const selectedSetup = $(this).val();
+            const url = new URL(window.location.href);
+
+            if (selectedSetup) {
+                url.searchParams.set('setup', selectedSetup);
+            } else {
+                url.searchParams.delete('setup');
+            }
+
+            window.location.href = url.toString();
+        });
+    });
+</script>
 @endsection

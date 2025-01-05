@@ -106,7 +106,7 @@ class Apply extends Component
 
         if($isNotify) {
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Yes, I am sure that all the information I have provided is accurate and true. This ensures that there will be no issues as we proceed.';
             $action = 'save';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -157,7 +157,7 @@ class Apply extends Component
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
-                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding'
+                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
 
                 } else {
@@ -165,7 +165,7 @@ class Apply extends Component
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
-                        'message' => 'Your application has been updated.'
+                        'message' => 'Your application has been updated. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
                 }
 
@@ -177,10 +177,7 @@ class Apply extends Component
                     'message' => 'Error: ' . $e->getMessage()
                 ]);
             }
-
         }
-
-
     }
 
     public function render()

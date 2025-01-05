@@ -28,7 +28,7 @@ return new class extends Migration
             $table->foreignId('approved_by_id')
                 ->nullable()
                 ->constrained('users')
-                ->onDelete('cascade');
+                ->onDelete('set null');
 
             $table->timestamps();
         });

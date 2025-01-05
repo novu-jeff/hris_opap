@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Settings\Company;
 use App\Models\CompanyBusinessType;
 use App\Models\CompanyInformation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Index extends Component
@@ -41,6 +42,16 @@ class Index extends Component
     
     public function save() {
     
+        if (Gate::denies('write company-information')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
     
         DB::beginTransaction(); // Start the transaction

@@ -18,7 +18,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Tech Innovators Inc.',
                 'location' => 'New York, USA',
                 'setup' => 'work from home',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 60000,
                 'max_salary' => 80000,
                 'description' => '<p>As a <strong>Software Engineer</strong> at <em>Tech Innovators Inc.</em>, you will:</p>
@@ -45,7 +45,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Creative Minds Co.',
                 'location' => 'San Francisco, USA',
                 'setup' => 'hybrid',
-                'type' => 'part time',
+                'employment_type_id' => 2,
                 'min_salary' => 40000,
                 'max_salary' => 55000,
                 'description' => '<p>Join <strong>Creative Minds Co.</strong> as a <strong>Frontend Developer</strong> where you will:</p>
@@ -72,7 +72,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'DataWorks Ltd.',
                 'location' => 'Toronto, Canada',
                 'setup' => 'onsite',
-                'type' => 'contractual',
+                'employment_type_id' => 1,
                 'min_salary' => 70000,
                 'max_salary' => 90000,
                 'description' => '<p>At <strong>DataWorks Ltd.</strong>, the <strong>Data Scientist</strong> will:</p>
@@ -99,7 +99,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Creative Agency',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'freelance',
+                'employment_type_id' => 2,
                 'min_salary' => 35000,
                 'max_salary' => 50000,
                 'description' => '<p>As a <strong>Graphic Designer</strong> for <strong>Creative Agency</strong>, you will:</p>
@@ -126,7 +126,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Business Solutions Inc.',
                 'location' => 'Los Angeles, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 3,
                 'min_salary' => 70000,
                 'max_salary' => 90000,
                 'description' => '<p>As a <strong>Project Manager</strong> at <strong>Business Solutions Inc.</strong>, you will:</p>
@@ -153,7 +153,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Tech Agency',
                 'location' => 'Hybrid',
                 'setup' => 'hybrid',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 50000,
                 'max_salary' => 75000,
                 'description' => '<p>Join <strong>Tech Agency</strong> as a <strong>Web Developer</strong> where you will:</p>
@@ -180,7 +180,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Marketing Pros',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'freelance',
+                'employment_type_id' => 2,
                 'min_salary' => 40000,
                 'max_salary' => 60000,
                 'description' => '<p>As an <strong>SEO Specialist</strong> at <strong>Marketing Pros</strong>, you will:</p>
@@ -207,7 +207,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Writing Co.',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'freelance',
+                'employment_type_id' => 3,
                 'min_salary' => 30000,
                 'max_salary' => 50000,
                 'description' => '<p>Join <strong>Writing Co.</strong> as a <strong>Content Writer</strong> where you will:</p>
@@ -234,7 +234,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Design Studio',
                 'location' => 'New York, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 60000,
                 'max_salary' => 80000,
                 'description' => '<p>As a <strong>UX/UI Designer</strong> at <strong>Design Studio</strong>, you will:</p>
@@ -261,7 +261,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'IT Solutions',
                 'location' => 'Seattle, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 2,
                 'min_salary' => 50000,
                 'max_salary' => 70000,
                 'description' => '<p>Join <strong>IT Solutions</strong> as a <strong>Network Administrator</strong>:</p>
@@ -288,7 +288,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'DataCorp',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'contractual',
+                'employment_type_id' => 1,
                 'min_salary' => 60000,
                 'max_salary' => 80000,
                 'description' => '<p>At <strong>DataCorp</strong>, the <strong>Database Administrator</strong> will:</p>
@@ -315,7 +315,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Cloud Services Inc.',
                 'location' => 'Austin, USA',
                 'setup' => 'hybrid',
-                'type' => 'regular',
+                'employment_type_id' => 2,
                 'min_salary' => 80000,
                 'max_salary' => 100000,
                 'description' => '<p>As a <strong>Cloud Engineer</strong> at <strong>Cloud Services Inc.</strong>, you will:</p>
@@ -342,7 +342,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'DevOps Innovations',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'regular',
+                'employment_type_id' => 3,
                 'min_salary' => 70000,
                 'max_salary' => 90000,
                 'description' => '<p>At <strong>DevOps Innovations</strong>, the <strong>DevOps Engineer</strong> will:</p>
@@ -369,7 +369,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'SecureNet',
                 'location' => 'Boston, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 2,
                 'min_salary' => 80000,
                 'max_salary' => 100000,
                 'description' => '<p>As a <strong>Cybersecurity Analyst</strong> at <strong>SecureNet</strong>, you will:</p>
@@ -396,7 +396,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'App Solutions',
                 'location' => 'Seattle, USA',
                 'setup' => 'hybrid',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 70000,
                 'max_salary' => 90000,
                 'description' => '<p>Join <strong>App Solutions</strong> as a <strong>Mobile App Developer</strong>:</p>
@@ -423,7 +423,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'AI Solutions',
                 'location' => 'Remote',
                 'setup' => 'work from home',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 90000,
                 'max_salary' => 110000,
                 'description' => '<p>As an <strong>Artificial Intelligence Engineer</strong> at <strong>AI Solutions</strong>, you will:</p>
@@ -450,7 +450,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Web Solutions',
                 'location' => 'Chicago, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 1,
                 'min_salary' => 60000,
                 'max_salary' => 80000,
                 'description' => '<p>As a <strong>Frontend Developer</strong> at <strong>Web Solutions</strong>, you will:</p>
@@ -477,7 +477,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Code Factory',
                 'location' => 'Los Angeles, USA',
                 'setup' => 'work from home',
-                'type' => 'contractual',
+                'employment_type_id' => 1,
                 'min_salary' => 70000,
                 'max_salary' => 90000,
                 'description' => '<p>Join <strong>Code Factory</strong> as a <strong>Backend Developer</strong>:</p>
@@ -504,7 +504,7 @@ class JobPostSeeder extends Seeder
                 'company_name' => 'Gaming Studios',
                 'location' => 'San Francisco, USA',
                 'setup' => 'onsite',
-                'type' => 'regular',
+                'employment_type_id' => 2,
                 'min_salary' => 80000,
                 'max_salary' => 100000,
                 'description' => '<p>As a <strong>Game Developer</strong> at <strong>Gaming Studios</strong>, you will:</p>
@@ -538,7 +538,7 @@ class JobPostSeeder extends Seeder
                 ],
                 [
                     'setup' => $item['setup'],
-                    'type' => $item['type'],
+                    'employment_type_id' => $item['employment_type_id'],
                     'min_salary' => $item['min_salary'],
                     'max_salary' => $item['max_salary'],
                     'description' => $item['description'],

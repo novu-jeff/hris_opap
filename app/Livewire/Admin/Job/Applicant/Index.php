@@ -15,20 +15,21 @@ use App\Models\JobApplicantsRequirements;
 use App\Models\JobRequirements;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
     use WithFileUploads;
 
     public $user_id;
-    public $records;
     public $status;
     public $applicant_information;
     public $selected_id;
@@ -38,6 +39,10 @@ class Index extends Component
     public $job_offer = [];
     public $requirements;
     public $selected_requirements = [];
+
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     protected $listeners = [
         'ckeditor', 
@@ -49,18 +54,8 @@ class Index extends Component
         'delete'
     ];
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
     public function ckeditor($data) {
         $this->job_offer['body'] = $data;
-    }
-
-    public function loadRecords() {
-        $this->records = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
-            ->where('status', $this->status)
-            ->get();
     }
 
     # view applicants
@@ -139,6 +134,17 @@ class Index extends Component
     }
 
     public function set_action(string $action, int $id) {
+
+        if (Gate::denies('write applicants')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($this->validate_action($action)) {
             $this->selected_id = $id;
             switch($action) {
@@ -228,7 +234,6 @@ class Index extends Component
             
         }
         
-        $this->loadRecords();
         return $this->dispatch('alert', [
             'id' => $this->selected_id,
             'status' => 'success',
@@ -285,7 +290,6 @@ class Index extends Component
                 'status' => 'interview',
             ]);
 
-            $this->loadRecords();
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -348,7 +352,7 @@ class Index extends Component
                 'status' => 'onboarding',
             ]);
     
-            $this->loadRecords();
+            
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -387,7 +391,7 @@ class Index extends Component
                     'status' => 'hired',
                 ]);
     
-                $this->loadRecords();
+                
 
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
@@ -409,8 +413,8 @@ class Index extends Component
 
             $this->selected_id = $id;  
             
-            $records = JobApplicants::with('applicant', 'job', 'offer')->find($id);
-            
+            $records = JobApplicants::with('applicant', 'job.employment_type', 'offer')->find($id);
+
             $this->job_offer = [
                 'min_salary' => $records->job->min_salary,
                 'max_salary' => $records->job->max_salary,
@@ -423,7 +427,7 @@ class Index extends Component
                 'company_name' => $records->job->company_name,
                 'location' => $records->job->location,
                 'setup' => $records->job->setup,
-                'type' => $records->job->type,
+                'type' => $records->job->employment_type->name ?? 'Unknown',
             ];
 
             $this->job_offer['subject'] = 'Job Offer for ' . ucwords($data['position']) . ' Position at ' . $data['company_name'];
@@ -642,7 +646,7 @@ class Index extends Component
                 'status' => 'rejected'
             ]);
          
-            $this->loadRecords();
+            
             $this->dispatch('alert', [
                 'id' => $record->id,
                 'showAlert' => true,
@@ -680,7 +684,7 @@ class Index extends Component
 
             $record->delete();
     
-            $this->loadRecords();
+            
             
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -829,9 +833,28 @@ class Index extends Component
         }
         
     }
-
+    
     public function render()
     {
-        return view('livewire.admin.job.applicant.index');
+
+        $model = JobApplicants::with(['applicant', 'job', 'offer', 'requirements'])
+            ->where('status', $this->status);
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('applicant_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('job', function($query) {
+                    $query->where('company_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('position', 'like', '%' . $this->search . '%');
+                });
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.job.applicant.index', [
+            'records' => $records
+        ]);
     }
 }

@@ -2,15 +2,20 @@
 
 namespace App\Livewire\Admin\Dashboard;
 
+use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
+use App\Models\EmployeeAtro;
+use App\Models\EmployeeBusinessSlip;
 use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeave;
+use App\Models\EmployementTypes;
 use App\Models\GSISBilling;
 use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class Index extends Component
@@ -29,11 +34,25 @@ class Index extends Component
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
 
-        $employeeCounts = EmployeeInformation::groupBy('job_category_id')
-            ->select('job_category_id', DB::raw('count(*) as total'))
-            ->pluck('total', 'job_category_id')->toArray();
+        $employeeCounts = EmployementTypes::withCount('employees')->get();
 
+        // Format the result for easier readability (optional)
+        $employeeCounts = $employeeCounts->map(function ($type) {
+            return [
+                'employment_type' => $type->name,
+                'employee_count' => $type->employees_count,
+            ];
+        });
+            
         $leaveCounts = EmployeeLeave::groupBy('status')
+            ->select('status', DB::raw('count(*) as total'))
+            ->pluck('total', 'status')->toArray();
+
+        $obsCounts = EmployeeBusinessSlip::groupBy('status')
+            ->select('status', DB::raw('count(*) as total'))
+            ->pluck('total', 'status')->toArray();
+
+        $atroCounts = EmployeeAtro::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
 
@@ -55,11 +74,7 @@ class Index extends Component
                 'hired' => $recruitmentCounts['hired'] ?? 0,
                 'rejected' => $recruitmentCounts['rejected'] ?? 0
             ],
-            'employee' => [
-                'rc' => $employeeCounts[1] ?? 0,
-                'cos' => $employeeCounts[2] ?? 0,
-                'jo' => $employeeCounts[3] ?? 0,
-            ],
+            'employee' => $employeeCounts,
             'clockinout' => [
                 'clockin' => $clockinout->whereNotNull('clock_in')->count(),
                 'inprogress' => $clockinout->whereNotNull('clock_in')->whereNull('clock_out')->count(),
@@ -69,6 +84,16 @@ class Index extends Component
                 'pending' => $leaveCounts['pending'] ?? 0,
                 'granted' => $leaveCounts['granted'] ?? 0,
                 'rejected' => $leaveCounts['rejected'] ?? 0,
+            ],
+            'obs' => [
+                'pending' => $obsCounts['pending'] ?? 0,
+                'granted' => $obsCounts['granted'] ?? 0,
+                'rejected' => $obsCounts['rejected'] ?? 0,
+            ],
+            'atro' => [
+                'pending' => $atroCounts['pending'] ?? 0,
+                'granted' => $atroCounts['granted'] ?? 0,
+                'rejected' => $atroCounts['rejected'] ?? 0,
             ],
             'earnings' => $earnings,
             'deductions' => $deductions,

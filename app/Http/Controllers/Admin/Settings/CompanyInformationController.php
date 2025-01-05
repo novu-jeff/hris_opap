@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 
 class CompanyInformationController extends Controller
 {
-     /**
-     * Display a listing of the resource.
-     */
+    
+    public function __construct() {
+        $this->middleware('permission:read company-information')->only('index');
+    }
+
     public function index()
     {
         return view('admin.settings.company.index');

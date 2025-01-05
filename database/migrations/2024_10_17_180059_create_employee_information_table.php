@@ -19,8 +19,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('bsd_no')
                 ->nullable();
-            $table->string('biometrics_id')
-                ->nullable();
             $table->foreignId('section_id')
                 ->nullable()
                 ->constrained('sections');
@@ -31,15 +29,18 @@ return new class extends Migration
                 ->nullable();
             $table->foreignId('shift_id')
                 ->nullable()
-                ->constrained('shift_schedule');
+                ->constrained('shift_schedule')
+                ->onDelete('set null');
             $table->foreignId('schedule_id')
                 ->nullable()
-                ->constrained('employee_schedules');
+                ->constrained('employee_schedules')
+                ->onDelete('set null');
             $table->string('date_resignation')
                 ->nullable();
-            $table->foreignId('job_category_id')
+            $table->foreignId('employment_type_id')
                 ->nullable()
-                ->constrained('job_categories');
+                ->constrained('employment_types')
+                ->onDelete('set null');
             $table->enum('status', [
                     'active',
                     'inactive'
@@ -53,9 +54,6 @@ return new class extends Migration
                     'e-wallet'
                 ])
                 ->nullable();
-            $table->integer('leave_credits')
-                ->default(0)
-                ->nullable();;
             $table->float('monthly_rate')
                 ->default(0)
                 ->nullable();
@@ -152,6 +150,7 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('tin_no')
                 ->nullable();
+            $table->index(['firstname', 'lastname', 'employee_no']);
         });
 
         Schema::create('employee_parents', function(Blueprint $table) {
@@ -319,8 +318,9 @@ return new class extends Migration
             $table->string('status')
                 ->default('pending');
             $table->foreignId('leave_id')
+                ->nullable()
                 ->constrained('leave_types')
-                ->onDelete('cascade');
+                ->onDelete('set null');
             $table->longtext('reason');
             $table->string('from')
                 ->nullable();

@@ -44,20 +44,6 @@
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="date_hired">Service Duration</label>
-                        <input type="text" wire:model="records.employee_information.service_duration" id="records.employee_information.service_duration" class="form-control restricted" readonly>
-                        <div class="error-field">
-                            @error('records.employee_information.service_duration') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="date_resignation">Date Resignation</label>
-                        <input type="text" wire:model="records.employee_information.date_resignation" id="records.employee_information.date_resignation" class="form-control restricted" readonly>
-                        <div class="error-field">
-                            @error('records.employee_information.date_resignation') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
                     <div class="col-12 mb-4">
                         <hr>
                     </div>
@@ -103,8 +89,8 @@
                         <label class="mb-2" for="type">Employment Type</label>
                         <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            @foreach ($jobCategories as $category)
-                                <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
+                            @foreach ($employmentTypes as $types)
+                                <option value="{{strtolower($types->id)}}">{{$types->name}}</option>
                             @endforeach
                         </select>
                         <div class="error-field">
@@ -133,13 +119,6 @@
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="leave_credits">Leave Credits</label>
-                        <input type="text" wire:model="records.employee_information.leave_credits" id="records.employee_information.leave_credits" class="form-control">
-                        <div class="error-field">
-                            @error('records.employee_information.leave_credits') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
@@ -1202,9 +1181,9 @@
             </div>
             <div class="card-footer d-flex justify-content-end bg-transparent border-0">
                 <div class="text-end">
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                        <span wire:loading.remove>Save</span>    
-                        <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                     </button>
                     <div class="mt-3 pb-5">
                         @if ($errors->any())

@@ -21,8 +21,6 @@ return new class extends Migration
                 ->nullable();
             $table->boolean('isSeen')
                 ->default(false);
-            $table->string('seen_timestamp')
-                ->nullable();
             $table->timestamps();
         });
 
@@ -33,6 +31,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->string('original');
             $table->string('attachment');
+            $table->timestamps();
         });
     }
 

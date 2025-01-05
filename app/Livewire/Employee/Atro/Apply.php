@@ -122,7 +122,7 @@ class Apply extends Component
         if ($isNotify) {
             $this->dispatch('showConfirmation', [
                 'title' => 'Are you sure to continue?',
-                'message' => 'The action cannot be undone or reverted!',
+                'message' => 'Yes, I am sure that all the information I have provided is accurate and true. This ensures that there will be no issues as we proceed.',
                 'action' => 'save',
             ]);
         } else {
@@ -140,15 +140,30 @@ class Apply extends Component
                     );
                 }
     
-                $this->resetExcept('user_id');
 
-                // Dispatch success message
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'success',
-                    'title' => 'Success',
-                    'message' => 'Authority to render overtime application saved successfully!',
-                ]);
+                if(is_null($this->record_id)) {
+                    
+                    $this->resetExcept('user_id');
+
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'success',
+                        'title' => 'Yey!', 
+                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                    ]);
+
+
+                } else {
+                    
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'success',
+                        'title' => 'Yey!', 
+                        'message' => 'Your application has been updated. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                    ]);
+
+                }
+
             } catch (\Exception $e) {
                 // Handle errors and dispatch an error message
                 $this->dispatch('alert', [

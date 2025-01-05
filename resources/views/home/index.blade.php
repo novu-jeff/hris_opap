@@ -1,5 +1,5 @@
 @extends('layouts.app', [
-    'title' => 'Symphony | All Jobs'
+    'title' => 'HRIS | All Jobs'
 ])
 
 @section('content')
@@ -7,9 +7,8 @@
     <div class="mt-5">
         @livewire('home.jobs', [
             'lazy' => true,
-            'search_query' => $search,
+            'search_query' => $parameter,
         ])
-        
     </div>
 </div>
 @endsection

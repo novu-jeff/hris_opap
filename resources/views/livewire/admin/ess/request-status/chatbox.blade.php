@@ -87,7 +87,6 @@
                 <form wire:submit.prevent="send" wire:target="send" class="mb-0">
                     <div class="d-flex gap-3">
                         <div class="form-group w-100">
-                            <!-- Add a label for accessibility -->
                             <label for="message" class="visually-hidden">Message</label>
                             <textarea
                                 wire:model.defer="message"
