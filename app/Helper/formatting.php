@@ -45,7 +45,7 @@ if(!function_exists('relative_time')) {
 
 if (!function_exists('relative_time_duration')) {
     
-    function relative_time_duration(string $date): string
+    function relative_time_duration(string $date)
     {
 
         $date = format_date($date, 'carbon_date');  
