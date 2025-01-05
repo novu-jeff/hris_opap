@@ -8,8 +8,6 @@
         <div class="section-title">
             <h1>Dashboard</h1>
         </div>
-        <div class="actions">
-        </div>
     </div>
     <div class="mt-3">
         @livewire('admin.dashboard.index')
