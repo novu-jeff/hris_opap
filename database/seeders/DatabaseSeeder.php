@@ -34,6 +34,8 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
+            ApplicantTestUserSeeder::class,
+            EmployeeTestUserSeeder::class
         ]);
 
         
