@@ -7,14 +7,17 @@ use App\Models\GSISBilling;
 use App\Models\GSISBillingItems;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
 class Index extends Component
 {
 
+    use WithPagination;
     use WithFileUploads;
 
     public $isParsing;
@@ -22,19 +25,15 @@ class Index extends Component
     public $resultMessage;
     public $file;
     public $upload_preview;
-    public $records;
     public $items;
     public $selected_id;
 
     protected $listeners = ['remove'];
 
-    public function mount() {
-        $this->loadRecords();   
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
-    public function loadRecords() {
-        $this->records = GSISBilling::with('items')->get();
-    }
 
     public function uploadRecords() {
         $this->dispatch('showModal', [
@@ -86,6 +85,16 @@ class Index extends Component
     }
 
     public function upload_file() {
+
+        if (Gate::denies('write gsis-billing')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->isUploading = true;
     
@@ -237,16 +246,25 @@ class Index extends Component
         }
 
         $this->items = $records;
-        $this->records = [];
 
     }
 
     public function remove(bool $isNotify = true, int $id = null) {
 
+        if (Gate::denies('write gsis-billing')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this GSIS Billing. Once this action is completed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -285,6 +303,23 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.gsis.index');
+
+
+        $model = GSISBilling::with('items');
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('remitting_agency', 'like', '%' . $this->search . '%')
+                ->orWhere('office_code', 'like', '%' . $this->search . '%')
+                ->orWhere('billing_month', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.hris.gsis.index', [
+            'records' => $records
+        ]);
     }
 }

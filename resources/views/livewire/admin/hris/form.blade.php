@@ -9,24 +9,13 @@
             </div>
             <div class="card-body px-4">
                 <div class="row my-3">
-                    {{-- <div class="col-12 mb-5">
+                    <div class="col-12 mb-5">
                         <div class="row">
                             <div class="col-12 col-md-6">
-                                <img src="{{
-                                    $records['employee_personal']['profile'] ? Storage::url('employee/users/'.$records['employee_personal']['employee_id'].'/'.$records['employee_personal']['profile']) : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                }}" style="width: 180px; height: 180px;">
+                                <img style="width: 180px; height: 180px;" src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($records['employee_personal']['firstname'] . ' ' . $records['employee_personal']['lastname']) }}" style="width: 50px; height: 50px; border-radius: 50%; font-weight: bold;">
                             </div>
                         </div>
                     </div>  
-                    <div class="col-12 col-md-3">
-                        <div class="profile">
-                            <label class="mb-2" for="profile">Employee Image</label>
-                            <input type="file" wire:model="profile" id="profile" class="form-control">
-                        </div>
-                        <div class="error-field">
-                            @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> --}}
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="employee_no">Employee No.</label>
                         <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">
@@ -131,7 +120,7 @@
                         <label class="mb-2" for="type">Employment Type</label>
                         <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            @foreach ($jobCategories as $category)
+                            @foreach ($employmentTypes as $category)
                                 <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
                             @endforeach
                         </select>
@@ -161,13 +150,6 @@
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="leave_credits">Leave Credits</label>
-                        <input type="text" wire:model="records.employee_information.leave_credits" id="records.employee_information.leave_credits" class="form-control">
-                        <div class="error-field">
-                            @error('records.employee_information.leave_credits') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
@@ -223,10 +205,11 @@
                     <div class="card-body px-4">
                         <ul class="list-unstyled">
                             @php
-                                $hasDeductions = !empty($records['other_deductions']) && count($records['other_deductions']) > 0;
-                                $hasGsis = !empty($records['employee_gsis']);
+                                $hasDeductions = !empty($records['other_deductions']) && collect($records['other_deductions'])->where('amount', '>', 0)->isNotEmpty();
+                                $hasGsis = !empty($records['employee_gsis']) && $records['employee_gsis']['ps'] > 0;
                             @endphp
                         
+                            {{-- Display Other Deductions --}}
                             @if($hasDeductions)
                                 @foreach ($records['other_deductions'] as $item)
                                     <li class="d-flex align-items-center gap-3 mb-2">
@@ -239,21 +222,42 @@
                                 @endforeach
                             @endif
                         
+                            {{-- Display GSIS Deduction --}}
                             @if($hasGsis)
                                 <li class="d-flex align-items-center gap-3 mb-2">
                                     <div>
-                                        <span>GSIS </span>
+                                        <span>GSIS</span>
                                         <strong>worth ₱{{ number_format($records['employee_gsis']['ps'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
                                     </div>
                                 </li>
                             @endif
                         
+                            {{-- No Deductions Found --}}
                             @if(!$hasDeductions && !$hasGsis)
                                 <li class="text-muted text-uppercase">No other deductions found.</li>
                             @endif
                         </ul>
-                                            
+                                                              
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card mb-4 border-0">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Leave Credits</h5>
+                    </div>
+                    <div class="card-body px-4">
+                        <ul class="list-unstyled">
+                            @foreach ($records['leaveCredits'] as $item)
+                                <li class="d-flex align-items-center gap-3 mb-2">
+                                    <div>
+                                        <span> {{ strtoupper($item['code']) . ' - ' .  ucwords($item['name']) }}</span>
+                                        <strong> ({{ $item['credits'] }})</strong>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>                            
                     </div>
                 </div>
             </div>
@@ -1311,9 +1315,9 @@
             @if (!empty($records))
                 <div class="card-footer d-flex justify-content-end bg-transparent border-0">
                     <div class="text-end">
-                        <button type="submit" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                            <span wire:loading.remove>Save</span>    
-                            <span wire:loading>Saving <i class="fa-solid fa-spinner fa-spin"></i>
+                        <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                            <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                            <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                         </button>
                         <div class="mt-3 pb-5">
                             @if ($errors->any())

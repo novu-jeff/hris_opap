@@ -23,7 +23,7 @@
                                     </div>
                                 </div>                 
                                 <div class="note mt-4 mb-3">
-                                    By creating an account or signing in, you agree to Symphony's Terms. You also acknowledge our Cookie and Privacy policies. Symphony will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
+                                    By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
                                 </div>                
                             </div>
                             <hr class="my-2">

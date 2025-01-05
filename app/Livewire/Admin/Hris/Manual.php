@@ -3,9 +3,6 @@
 namespace App\Livewire\Admin\Hris;
 
 use App\Helper\Generate;
-use App\Http\Controllers\Admin\Services\HRISProcessingService;
-use App\Models\Branches;
-use App\Models\Departments;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
 use App\Models\EmployeeCivilService;
@@ -17,10 +14,11 @@ use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
-use App\Models\JobCategory;
+use App\Models\EmployementTypes;
 use App\Models\Positions;
 use App\Models\Sections;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -32,7 +30,7 @@ class Manual extends Component
     public array $records;
     public object $positions;
     public object $sections;
-    public object $jobCategories;
+    public object $employmentTypes;
     public bool $isDualCitizenship = false;
     public array $countries;
     public $activeTab = 'details';
@@ -45,7 +43,7 @@ class Manual extends Component
     public function loadRecords() {
         $this->sections = Sections::all();
         $this->positions = Positions::all();
-        $this->jobCategories = JobCategory::all();
+        $this->employmentTypes = EmployementTypes::all();
     }
 
     private $tabAccordionMappings = [
@@ -190,14 +188,13 @@ class Manual extends Component
             'records.employee_information.biometrics_id' => [
                 Rule::unique('employee_information', 'bsd_no')->ignore($id, 'employee_no')
             ],
-            'records.employee_information.type' => 'nullable|exists:job_categories,id',
-            'records.employee_information.status' => 'nullable|in:active,inactive',
+            'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
-            'records.employee_information.position_id' => 'nullable|exists:positions,id',
+            'records.employee_information.position_id' => 'required|exists:positions,id',
             'records.employee_information.section_id' => 'required|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
-            'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
-            'records.employee_information.type' => 'required|exists:job_categories,id',
+            'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.type' => 'required|exists:employment_types,id',
 
 
             'records.employee_personal.firstname' => 'required|string|max:255',
@@ -257,8 +254,7 @@ class Manual extends Component
             'records.employee_skills.*.recognition' => 'required|string|max:255',
             'records.employee_skills.*.organization' => 'required|string|max:255',
 
-
-            'records.employee_account.password' => 'nullable|min:8|same:records.employee_account.confirm_password',
+            'records.employee_account.password' => 'required|min:8|same:records.employee_account.confirm_password',
             'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
 
         ];
@@ -271,7 +267,8 @@ class Manual extends Component
             'records.employee_information.biometrics_id.required' => 'The biometrics ID is required.',
             'records.employee_information.biometrics_id.unique' => 'The biometrics ID is already taken.',
             'records.employee_information.type.in' => 'The selected employment type does not exists.',
-            'records.employee_information.status.in' => 'The status must be either active or inactive.',
+            'records.employee_information.status.required' => 'The account status is required.',
+            'records.employee_information.status.in' => 'The account status must be either active or inactive.',
             'records.employee_information.date_hired.required' => 'The date hired is required',
             'records.employee_information.date_hired.date' => 'The date hired must be valid date',
             'records.employee_information.monthly_rate.required' => 'The monthly rate is required',
@@ -279,7 +276,9 @@ class Manual extends Component
             'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
             'records.employee_information.section_id.required' => 'The section is required.',
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
+            'records.employee_information.position_id.required' => 'The position is required.',
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
+            'records.employee_information.salary_method.required' => 'The salary method is required',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',
@@ -347,6 +346,7 @@ class Manual extends Component
             'records.employee_skills.*.recognition.required' => 'The recognition field is required for each skill record.',
             'records.employee_skills.*.organization.required' => 'The organization field is required for each skill record.',  
             
+            'records.employee_account.password.required' => 'The password is required.',
             'records.employee_account.password.max' => 'The password must be at least 8 characters.',
             'records.employee_account.password.same' => 'The password and confirmation password must match.',
             'records.employee_account.confirm_password.required_with' => 'The confirm password field is required.',
@@ -355,6 +355,16 @@ class Manual extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         try {
             $this->validate($this->rules());
@@ -410,10 +420,9 @@ class Manual extends Component
             'date_hired' => $data['date_hired'] ?? null,
             'bsd_no' => $data['biometrics_id'] ?? null,
             'date_resignation' => $data['date_resignation'] ?? null,
-            'job_category_id' => $data['type'] ?? null,
+            'employment_type_id' => $data['type'] ?? null,
             'status' => $data['status'] ?? null,
             'salary_method' => $data['salary_method'] ?? null,
-            'leave_credits' => $data['leave_credits'] ?? null,
             'monthly_rate' => $data['monthly_rate'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);

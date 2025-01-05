@@ -3,32 +3,38 @@
 namespace App\Livewire\Admin\Ess\ProfileApproval;
 
 use App\Models\EmployeeUpdatePersonal;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public $selected_id;
-    public $records;
-
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        $records = EmployeeUpdatePersonal::all();     
-        return $this->records = $records;
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function remove(bool $isNotify = true, string $employee_no = null) {
-        $this->dispatch('reinitializeDataTable');
+
+        if (Gate::denies('write employee-profile-approval')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
     
         if ($isNotify) {
             $this->selected_id = $employee_no;
     
             $this->dispatch('showConfirmation', [
                 'title' => 'Are you sure to continue?',
-                'message' => 'This action cannot be undone!',
+                'message' => 'Please be informed that you are about to delete this employee profile update application <b>' . strtoupper($employee_no) . '</b>. Once this action is processed, it cannot be undone or reversed!',
                 'action' => 'remove',
             ]);
     
@@ -96,9 +102,21 @@ class Index extends Component
         }
     }
     
-
     public function render()
     {
-        return view('livewire.admin.ess.profile-approval.index');
+
+        $model = EmployeeUpdatePersonal::query();
+        
+        if ($this->search) {
+            $this->resetPage(); 
+            $records = $model->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+        }
+
+        $records = $model->paginate($this->entries);
+
+        return view('livewire.admin.ess.profile-approval.index', [
+            'records' => $records
+        ]);
     }
 }

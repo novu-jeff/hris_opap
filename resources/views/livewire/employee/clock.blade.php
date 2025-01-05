@@ -33,7 +33,7 @@
                             </div>      
                         </div>  
                         @if (in_array($status, ['Break Out']))
-                            <div class="text-center mt-2">
+                            <div class="text-center mt-3">
                                 <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
                                     Clock Out
                                 </button>
@@ -96,11 +96,6 @@
                                         <th>Break In</th>
                                         <th>Clock Out</th>
 
-                                        <th>Consumed AM</th>
-                                        <th>Consumed PM</th>
-                                        <th>Total Consumed</th>
-                                        <th>OT Mins</th>
-                                        <th>Over All Mins</th>
                                         <th>Accomplishment</th>
 
                                         <th>Remarks</th>
@@ -115,17 +110,14 @@
                                             <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
                                             <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
-                                            
-                                            <td>{{ $item->mins_consumed_am ? \Carbon\CarbonInterval::minutes($item->mins_consumed_am)->cascade()->format('%h hours %i minutes') : '' }}</td>
-                                            <td>{{ $item->mins_consumed_pm ? \Carbon\CarbonInterval::minutes($item->mins_consumed_pm)->cascade()->format('%h hours %i minutes') : '' }}</td>
-                                            <td>{{ $item->total_mins_consumed ? \Carbon\CarbonInterval::minutes($item->total_mins_consumed)->cascade()->format('%h hours %i minutes') : '' }}</td>
-                                            <td>{{ $item->mins_ot ? \Carbon\CarbonInterval::minutes($item->mins_ot)->cascade()->format('%h hours %i minutes') : '' }}</td>
-                                            <td>{{ $item->overall_mins ? \Carbon\CarbonInterval::minutes($item->overall_mins)->cascade()->format('%h hours %i minutes') : '' }}</td>
+                                        
                                             <td>{{ $item->accomplishment }} </td>
                                             <td></td>
                                         </tr>
                                     @empty
-                                        
+                                        <tr>
+                                            <td colspan="12" class="text-center py-4">No logs for this month</td>
+                                        </tr>
                                     @endforelse
                                 </tbody>
                             </table>

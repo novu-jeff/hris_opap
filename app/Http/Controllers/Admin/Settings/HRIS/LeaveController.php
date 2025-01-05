@@ -7,29 +7,31 @@ use Illuminate\Http\Request;
 
 class LeaveController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct() {
+        $this->middleware('permission:read leave-types')->only('index');
+        $this->middleware('permission:write leave-types')->only(['create', 'edit']);
+        $this->middleware('permission:read leave-credits')->only(['show']);
+    }
+
     public function index()
     {
         return view('admin.settings.hris.leave.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */ 
     public function create()
     {
         return view('admin.settings.hris.leave.create');
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     
     public function edit(int $id)
     {
         return view('admin.settings.hris.leave.edit', compact('id'));
+    }
+
+    public function show(int $id)
+    {
+        return view('admin.settings.hris.leave.show', compact('id'));
     }
     
 }

@@ -5,9 +5,12 @@ namespace App\Livewire\Admin\Timekeeping;
 use App\Models\EmployeeClockInOut;
 use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+
+    use WithPagination;
 
     public $month;
     public $day;
@@ -18,15 +21,17 @@ class Index extends Component
 
     public bool $lazy = true;
 
-    protected $listeners = ['loading'];
+    public $entries = 10;
+    public $search = '';
+    protected $paginationTheme = 'bootstrap';
 
+    protected $listeners = ['loading'];
 
     public function mount() {
         $this->loadRecords();
     }
 
     public function loading() {
-        $this->dispatch('reinitializeDataTable');
         $this->lazy = false;
     }
 
@@ -66,23 +71,34 @@ class Index extends Component
             ],
             'data' => []
         ];
-        
-        $this->getData();
-        
+                
     }
 
-    public function getData() {
-        // Create the timestamp for the current date
-        $timestamp = $this->year . '-' . str_pad($this->month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($this->day, 2, '0', STR_PAD_LEFT);
-    
-        // Fetch the clock-in/clock-out records
-        $records = EmployeeClockInOut::with('information.personal')->where('created_at', 'like', '%' . $timestamp . '%')->get();        
-    
-        // Set the data in the records array
-        $this->records['data'] = $records;
-    }
 
     public function render() {
-        return view('livewire.admin.timekeeping.index');
+
+        $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
+
+        $model = EmployeeClockInOut::with('information.personal')
+            ->whereDate('created_at', $timestamp);
+        
+        if ($this->search) {
+            $this->resetPage();
+            $model->where(function ($query) {
+                $query->whereHas('information', function($subQuery) {
+                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('information.personal', function ($subQuery) {
+                        $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                    })
+                    ->orWhere('bsd_no', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        $timelogs = $model->paginate($this->entries);
+
+        return view('livewire.admin.timekeeping.index', [
+            'timelogs' => $timelogs
+        ]);
     }
 }

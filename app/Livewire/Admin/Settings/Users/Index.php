@@ -7,35 +7,29 @@ use App\Models\ApplicantUsers;
 use App\Models\EmployeeInformation;
 use App\Models\JobApplicants;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public $type = 'applicants';
-    public $records;
     public $selected_id;
     public $user_information;
     protected $listeners = ['remove'];
 
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
+
+
     public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        if($this->type === 'applicants') {
-            $record = ApplicantUsers::all();
+        if(!in_array($this->type, ['applicants', 'employees', 'admins'])) {
+            return redirect()->route('users.index', ['type' => 'applicants']);
         }
-
-        if($this->type === 'employees') {
-            $record = EmployeeInformation::with('personal', 'account')->get();
-        }
-
-        if($this->type === 'admin') {
-            $record = User::all();
-        }
-
-        $this->records = $record;
     }
 
     public function view_user(int $id) {
@@ -54,15 +48,25 @@ class Index extends Component
                 'id' => $id,
             ]);
             return redirect()->route('hris.index');
-        }
+        } 
     }
 
     public function remove($isNotify = true, int $id = null) {
         
+        if (Gate::denies('write users')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this '.substr($this->type, 0, -1).'. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -80,6 +84,9 @@ class Index extends Component
                     break;
                 case 'employees':
                     $record = EmployeeInformation::find($this->selected_id);
+                    break;
+                case 'admins':
+                    $record = User::find($this->selected_id);
                     break;
                 default:
                     break;
@@ -110,6 +117,48 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.users.index');
+
+        if($this->type === 'applicants') {
+            $model = ApplicantUsers::query();
+        }
+
+        if($this->type === 'employees') {
+            $model = EmployeeInformation::with('personal', 'account');
+        }
+
+        if($this->type === 'admins') {
+            $model = User::query();
+        }
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            if($this->type === 'applicants') {
+                $records = $model->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%'])
+                    ->orWhere('email', 'like', '%' . $this->search . '%');
+            }
+
+            if($this->type === 'employees') {
+                $records = $model->whereHas('personal', function($query) {
+                    $query->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                })
+                ->orWhereHas('account', function($query) {
+                    $query->where('email', 'like', '%' . $this->search . '%');
+                });
+                    
+            }
+
+            if($this->type === 'admins') {
+                $records = $model->where('name', 'like', '%' . $this->search . '%');
+            }
+
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.settings.users.index', [
+            'records' => $records
+        ]);
     }
 }

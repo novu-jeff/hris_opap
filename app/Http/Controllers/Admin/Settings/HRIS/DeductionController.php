@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 
 class DeductionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+    public function __construct() {
+        $this->middleware('permission:read employee-deductions')->only('index');
+        $this->middleware('permission:write employee-deductions')->only(['create', 'edit']);
+    }
+
     public function index(int $id)
     {
 
@@ -25,17 +28,10 @@ class DeductionController extends Controller
         return view('admin.settings.hris.emp-deductions.index', compact('id', 'header'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(int $id)
     {
         return view('admin.settings.hris.emp-deductions.create', compact('id'));
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
 
     public function edit(int $id)
     {

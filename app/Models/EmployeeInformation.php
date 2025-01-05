@@ -21,10 +21,9 @@ class EmployeeInformation extends Model
         'position_id',
         'date_hired',
         'date_resignation',
-        'job_category_id',
+        'employment_type_id',
         'status',
         'salary_method',
-        'leave_credits',
         'monthly_rate',
         'daily_rate',
         'company_name',
@@ -94,6 +93,12 @@ class EmployeeInformation extends Model
         return $this->hasMany(Message::class, 'from_id', 'id');
     }
 
+    public function leave_credits() {
+        return $this->hasOne(LeaveCredits::class, 'employee_no', 'employee_no');
+    }
 
+    public function deductions() {
+        return $this->hasOne(EmployeeDeductions::class, 'employee_no', 'employee_no');
+    }
 
 }

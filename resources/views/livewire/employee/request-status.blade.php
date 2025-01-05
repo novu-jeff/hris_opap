@@ -82,7 +82,7 @@
                                 </div>
                             </div>
                             <div class="send-box">
-                                <form wire:submit="send" class="mb-0">
+                                <form wire:submit="send" class="mb-0 d-flex gap-3">
                                     <textarea wire:model="message" id="message" cols="30" rows="1" class="form-control @error('message') 'invalid-feed' @enderror" placeholder="Type Something..."></textarea>
                                     <button type="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</button>
                                 </form>

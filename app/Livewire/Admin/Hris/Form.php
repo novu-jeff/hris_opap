@@ -9,6 +9,7 @@ use App\Models\CompanyInformation;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
+use App\Models\EmployementTypes;
 use App\Models\JobCategory;
 use App\Models\Positions;
 use App\Models\Sections;
@@ -16,6 +17,7 @@ use App\Models\ShiftSchedule;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -27,7 +29,7 @@ class Form extends Component
     public string $employee_no;
     public object $sections;
     public object $positions;
-    public object $jobCategories;
+    public object $employmentTypes;
     public object $shiftSchedule;
     public object $employeeSchedule;
     public array $records;
@@ -51,7 +53,7 @@ class Form extends Component
         // Load dropdown data
         $this->sections = Sections::all();
         $this->positions = Positions::all();
-        $this->jobCategories = JobCategory::all();
+        $this->employmentTypes = EmployementTypes::all();
 
         $this->shiftSchedule = ShiftSchedule::all();
         $this->employeeSchedule = EmployeeSchedule::all();
@@ -61,7 +63,8 @@ class Form extends Component
         $otherServices = new OtherServices();
         $earnings = $otherServices->earnings($this->employee_no) ?? [];
         $deductions = $otherServices->deductions($this->employee_no) ?? [];
-        
+        $leaveCredits = $otherServices->leaves($this->employee_no) ?? [];
+
         // Fetch employee data with relations
         $data = EmployeeInformation::with([
             'department',
@@ -99,6 +102,7 @@ class Form extends Component
             'employee_gsis' => $data->personal?->gsis_item?->toArray() ?? [],
             'other_earnings' => $earnings,
             'other_deductions' => $deductions,
+            'leaveCredits' => $leaveCredits
         ];
 
         if ($data->section_id) {
@@ -127,10 +131,9 @@ class Form extends Component
             'date_hired' => $data->date_hired,
             'service_duration' => relative_time_duration($data->date_hired),
             'date_resignation' => $data->date_resignation,
-            'type' => $data->job_category_id,
+            'type' => $data->employment_type_id,
             'status' => $data->status,
             'salary_method' => $data->salary_method,
-            'leave_credits' => $data->leave_credits,
             'monthly_rate' => $data->monthly_rate,
             'payroll_account_number' => $data->payroll_account_number,
         ];
@@ -380,14 +383,13 @@ class Form extends Component
             'records.employee_information.biometrics_id' => [
                 Rule::unique('employee_information', 'bsd_no')->ignore($employee_no, 'employee_no')
             ],
-            'records.employee_information.type' => 'nullable|exists:job_categories,id',
-            'records.employee_information.status' => 'nullable|in:active,inactive',
+            'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
-            'records.employee_information.position_id' => 'nullable|exists:positions,id',
+            'records.employee_information.position_id' => 'required|exists:positions,id',
             'records.employee_information.section_id' => 'nullable|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
-            'records.employee_information.type' => 'required|exists:job_categories,id',
+            'records.employee_information.type' => 'required|exists:employment_types,id',
 
             'records.employee_personal.firstname' => 'required|string|max:255',
             'records.employee_personal.lastname' => 'required|string|max:255',
@@ -460,6 +462,7 @@ class Form extends Component
             'records.employee_information.biometrics_id.required' => 'The biometrics ID is required.',
             'records.employee_information.biometrics_id.unique' => 'The biometrics ID is already taken.',
             'records.employee_information.type.in' => 'The selected employment type does not exists.',
+            'records.employee_information.status.required' => 'The account status is required.',
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
             'records.employee_information.date_hired.required' => 'The date hired is required',
             'records.employee_information.date_hired.date' => 'The date hired must be valid date',
@@ -467,6 +470,7 @@ class Form extends Component
             'records.employee_information.monthly_rate.numeric' => 'The monthly rate must be numbers',
             'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
             'records.employee_information.section_id.required' => 'The section is required.',
+            'records.employee_information.position_id.required' => 'The position is required.',
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
@@ -544,6 +548,17 @@ class Form extends Component
     }
 
     public function save() {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $id = $this->employee_no;
 
         // Check if the employee exists

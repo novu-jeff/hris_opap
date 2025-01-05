@@ -131,12 +131,13 @@ class RequestStatus extends Component
     }
 
     public function makeSeen() {
-        return Message::where('from_id', 0)
-            ->where('to_id', $this->user->employee_no)
+
+        $employee_no = $this->user->employee_no;
+
+        return Message::where('to_id', $employee_no)
             ->update([
-            'isSeen' => true,
-            'seen_timestamp' => Carbon::now()
-        ]);
+                'isSeen' => true,
+            ]);
     }
 
     public function download($message, $attachment) {

@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View Leave Application</h1>
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View ATRO Application</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -14,7 +14,7 @@
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->firstname . ' ' . $view_records->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="date">Date</label>
@@ -40,18 +40,10 @@
                     <div class="row">
                         <div class="col-12 mb-4">
                             <label class="mb-2" for="justification">Justification</label>
-                            <textarea id="justification" class="form-control restricted" readonly>{{ isset($view_records) ? $view_records->justification : '' }}</textarea>                            
-                        </div>
-                        <div class="col-12 mb-4">
-                            <label class="mb-2" for="remarks">Purpose</label>
-                            <textarea id="remarks" class="form-control restricted" readonly>{{ isset($view_records) ? $view_records->remarks : '' }}</textarea>     
+                            <textarea id="justification" class="form-control restricted" rows="5" readonly>{{ isset($view_records) ? $view_records->justification : '' }}</textarea>                            
                         </div>
                     </div>
-
-                                 
                 </div>
-
-                   
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
                         <button wire:click="rejected" class="btn btn-danger text-uppercase fw-medium">Reject</button>
@@ -63,7 +55,7 @@
     </div>
 
     <div class="card border-0 mt-3">
-        <div class="card-body p-0" wire:ignore>
+        <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a href="{{route('ess.atro', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
@@ -77,33 +69,64 @@
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                    <table class="table data-tables w-100" wire:ignore>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Employee Name</th>
-                                <th>Date Applied</th>
-                                <th style="max-width: 200px;">Action</th>
-                            </tr>
-                        </thead>                
-                        <tbody>
-                            @foreach($records as $record)
-                                <tr data-id="{{$record->id}}">
-                                    <td>#{{format_id($record->id, 6)}}</td>
-                                    <td>{{$record->firstname . ' ' . $record->lastname}}</td>
-                                    <td>{{format_date($record->created_at, 'date_string')}}</td>
-                                    <td>
-                                        <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
+                    <div class="row mb-4">
+                        <div class="col-md-6 d-flex align-items-center gap-2">
+                            <label for="entries" class="form-label mb-0">Show entries:</label>
+                            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="40">40</option>
+                                <option value="50">50</option>
+                                <option value="60">60</option>
+                                <option value="70">70</option>
+                                <option value="80">80</option>
+                                <option value="90">90</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                            <label for="search" class="form-label mb-0">Search:</label>
+                            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered w-100">
+                            <thead>
+                                <tr>
+                                    <th>Employee NO.</th>
+                                    <th>Employee Name</th>
+                                    <th>Date Applied</th>
+                                    <th style="max-width: 200px;">Action</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>                
+                            <tbody>
+                                @forelse($records as $record)
+                                    <tr data-id="{{$record->id}}">
+                                        <td>{{$record->employee_no}}</td>
+                                        <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
+                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                        <td>
+                                            <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                    </tr> 
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4">
+                        {{ $records->links(data: ['scrollTo' => false]) }}
+                    </div>
                 </div>
             </div>
         </div>

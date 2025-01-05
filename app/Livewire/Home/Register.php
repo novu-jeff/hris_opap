@@ -17,6 +17,10 @@ class Register extends Component
     public string $activeTab = 'personal';
     public $fields = [];
 
+    public function setActiveTab(string $tab) {
+        $this->activeTab = $tab;
+    }
+
     public function rules() {
         return [
             'fields.personal.firstname' => 'required',
@@ -143,8 +147,6 @@ class Register extends Component
             throw $e; 
     
         }
-
-        
     }
 
     public function render()

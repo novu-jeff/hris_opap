@@ -1,6 +1,7 @@
-<div class="chat-list" wire:poll="loadRecords">
+@persist('scrollbar')
+<div class="chat-list" wire:poll>
     @forelse ($employees as $employee)
-        <a href="javascript:void(0)" wire:click="select({{$employee->employee_no}})" class="d-flex align-items-center {{$selected_id === $employee->employee_no ? 'selected' : ''}}">
+        <a href="javascript:void(0)" wire:click="select('{{$employee->employee_no}}')" class="d-flex align-items-center {{$selected_id === $employee->employee_no ? 'selected' : ''}}">
             <div class="flex-shrink-0">
                 <img src="
                    {{ isset($records['user']) && $records['user']['personal']['profile']
@@ -23,6 +24,9 @@
             </div>
         </a>
     @empty
-        <div class="alert alert-info text-uppercase fw-bold text-center">No Employees</div>
+        <div class="alert alert-primary mt-2 text-uppercase fw-bold text-center rounded-0 border-0">No Employees</div>
     @endforelse
+    <div class="mt-4">
+    </div>
 </div>
+@endpersist

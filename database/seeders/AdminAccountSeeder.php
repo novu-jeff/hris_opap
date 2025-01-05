@@ -15,14 +15,33 @@ class AdminAccountSeeder extends Seeder
     public function run(): void
     {
         $admins = [
-            ['name' => 'Admin', 'email' => 'admin@hris.com', 'password' => Hash::make('password')],
+            [
+                'name' => 'Carl Llemos', 
+                'username' => 'superadmin01',
+                'role' => 'superadmin',
+                'email' => 'superadmin@hris.com', 
+                'password' => Hash::make('password')
+            ],
+            [
+                'name' => 'Kim Mariano', 
+                'username' => 'admin01',
+                'role' => 'admin',
+                'email' => 'admin@hris.com', 
+                'password' => Hash::make('password')
+            ],
         ];
 
         foreach ($admins as $admin) {
-            User::updateOrCreate(
+            $user = User::updateOrCreate(
                 ['name' => $admin['name'], 'email' => $admin['email'], 'email' => $admin['password']], 
-                $admin
+                [
+                    'name' => $admin['name'],
+                    'username' => $admin['username'],
+                    'email' => $admin['email'],
+                    'password' => $admin['password']
+                ]
             );
+            $user->assignRole($admin['role']);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\ShiftSchedule;
 
 use App\Models\ShiftSchedule;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use PhpParser\Node\Expr\AssignOp\ShiftLeft;
 
@@ -155,6 +156,16 @@ class Create extends Component
 
     public function save(bool $isNotify = true)
     {
+
+        if (Gate::denies('write shift-schedule')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if ($isNotify) {
             $this->dispatch('showConfirmation', [

@@ -3,54 +3,39 @@
 namespace App\Livewire\Admin\Settings\EmployeeSchedule;
 
 use App\Models\EmployeeSchedule;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
+    use WithPagination;
+
     public $selected_id;
-    public $records;
 
     protected $listeners = ['remove']; 
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords() {
-        $records = EmployeeSchedule::all();  // Get all employee schedules
-    
-        $data = [];
-    
-        foreach ($records as $record) {
-            // Create an object for each record
-            $obj = new \stdClass();
-            $obj->id = $record->id;  // Add the 'id' property
-            $obj->name = $record->name;
-    
-            // Get the days that are true (1) and store them in an array
-            $days = [];
-            foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
-                if ($record->$day == 1) {
-                    $days[] = ucfirst($day);  // Add the day name to the array if it's true (1)
-                }
-            }
-    
-            $obj->days = implode(', ', $days);  // Implode the array into a comma-separated string
-    
-            // Add the object to the data array
-            $data[] = $obj;
-        }
-    
-        $this->records = $data;
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
     
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write employee-schedule')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this employee schedule. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -99,6 +84,29 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.settings.employee-schedule.index');
+        $model = EmployeeSchedule::query();
+
+        if ($this->search) {
+            $this->resetPage();
+        
+            $model->where('name', 'like', '%' . $this->search . '%');
+
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        $records->getCollection()->transform(function ($record) {
+            $record->days = collect(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+                ->filter(fn($day) => $record->$day == 1)
+                ->map(fn($day) => ucfirst($day))
+                ->implode(', ');
+
+            return $record;
+        });
+
+        return view('livewire.admin.settings.employee-schedule.index', [
+            'records' => $records, 
+        ]);
     }
+
 }

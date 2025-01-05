@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class LeaveController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read leave')->only('index');
+        $this->middleware('permission:write leave')->only(['create', 'edit']);
+    }
+
     public function index(Request $request) {
 
         $status = $request->status ?? 'pending';

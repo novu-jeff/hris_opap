@@ -47,11 +47,9 @@
                     <label class="mb-2" for="type">Employment Type <span class="text-danger">*</span></label>
                     <select wire:model="type" id="type" class="form-select">
                         <option value=""> - CHOOSE - </option>
-                        <option value="regular">Regular</option>
-                        <option value="contractual">Contractual</option>
-                        <option value="part time">Part Time</option>
-                        <option value="freelance">Freelance</option>
-                        <option value="project base">Project Base</option>
+                        @foreach ($employment_types as $item)
+                            <option value="{{$item->id}}">{{$item->name . ' - (' . $item->code . ')'}}</option>
+                        @endforeach
                     </select>  
                     <div class="error-field">
                         @error('type') <span class="text-danger">{{ $message }}</span> @enderror
@@ -95,7 +93,10 @@
         </div>
         <hr class="mx-3">
         <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Proceed</button>
+            <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+            </button>
         </div>
     </div>
 </form>

@@ -10,34 +10,20 @@ class Index extends Component
 {
     
     public $status;
-    public $records;
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'rejected', 'granted'];
 
-    public function mount() {
-        $this->loadRecords();
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
+
 
     public function loadRecords(int $id = null) {
-        $records = DB::table('employee_atro')
-            ->leftJoin('employee_personal', 'employee_atro.employee_no', '=', 'employee_personal.employee_no')
-            ->leftJoin('employee_information', 'employee_atro.employee_no', '=', 'employee_information.employee_no')
-            ->select(
-                'employee_atro.*',
-                'employee_personal.firstname',
-                'employee_personal.middlename',
-                'employee_personal.lastname',
-            )
-            ->where('employee_atro.status',  $this->status);
-            
-        if(!is_null($id)) {
-            $records->where('employee_atro.id', $id);
-            return $this->view_records = $records->first();
-        }
-
-        return $this->records = $records->get();
+        $this->view_records = EmployeeAtro::with('employment', 'employee')
+            ->where('id', $id)
+            ->first();
     }
 
     public function view(int $id) {
@@ -55,7 +41,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to reject this Authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'rejected';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -89,7 +75,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to grant this Authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'granted';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -123,7 +109,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this Authority to render overtime application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -146,7 +132,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
+                    'message' => 'ATRO Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -162,6 +148,26 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.ess.atro.index');
+
+        $model = EmployeeAtro::with('employment', 'employee')
+            ->where('status', $this->status);
+
+        if ($this->search) {
+            
+            $this->resetPage(); 
+
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('employee', function ($subQuery) {
+                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+            });
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.ess.atro.index', [
+            'records' => $records
+        ]);
     }
 }

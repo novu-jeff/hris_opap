@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\Hris\Leave;
 
 use App\Models\LeaveType;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -70,6 +71,16 @@ class Edit extends Component
 
     public function save() {
         
+        if (Gate::denies('write leave-types')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
         $this->validate();
 
         DB::beginTransaction();

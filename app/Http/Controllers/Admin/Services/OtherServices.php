@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin\Services;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeDeductions;
 use App\Models\EmployeeInformation;
+use App\Models\LeaveCredits;
+use App\Models\LeaveType;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Exception;
@@ -13,7 +15,7 @@ class OtherServices extends Controller
 {
 
     public function earnings(string $employee_no) {
-        // Fetch employee details
+
         $emp = EmployeeInformation::where('employee_no', $employee_no)->first();
         if (!$emp) {
             session()->forget('target');
@@ -21,12 +23,14 @@ class OtherServices extends Controller
         }
 
         $dateHired = format_date($emp->date_hired, 'carbon_date');
-        $empJobCategory = $emp->job_category_id;
+        $empJobCategory = $emp->employment_type_id;
         $otherEarnings = OtherEarnings::all();
         $result = [];
 
+
         foreach ($otherEarnings as $earning) {
             $eligibleIds = explode(',', $earning->eligible);
+
             $amount = 0;
 
             // Calculate the amount based on the amount basis
@@ -104,6 +108,34 @@ class OtherServices extends Controller
         
         return $otherDeductions ?? [];
     
+    }
+
+    public function leaves(string $employee_no) {
+
+        $leaves = LeaveType::with('credits')
+            ->get()
+            ->toArray();
+
+        $leaveCredits = [];
+
+        foreach($leaves as $leave) {
+            if(!is_null($leave['credits'])) {
+                $leaveCredits[] = [
+                    'code' => $leave['code'],
+                    'name' => $leave['name'],
+                    'credits' => $leave['credits']['credits']
+                ];
+            } else {
+                $leaveCredits[] = [
+                    'code' => $leave['code'],
+                    'name' => $leave['name'],
+                    'credits' => 0
+                ];
+            }
+        }
+
+        return $leaveCredits;
+
     }
 
     

@@ -6,6 +6,7 @@ use App\Models\Interview;
 use App\Models\InterviewItems;
 use App\Models\InterviewItemsOptions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 
@@ -83,12 +84,19 @@ class Create extends Component
         $this->dispatch('hideModal', [
             'modal' => 'add-item'
         ]);
-
-        
-
     }
 
     public function save() {
+
+        if (Gate::denies('write assessments')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         $this->validate([
             'name' => 'required|unique:job_interview,name|string|max:255',

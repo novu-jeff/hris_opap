@@ -14,7 +14,7 @@ export function copy_link() {
         Swal.fire({
             icon: "success",
             title: 'Job Link Copied',
-            html: 'You can now paste or send the link you copied!',  
+            html: 'You can now share the job link you copied!',  
             confirmButtonText: 'GOT IT',   
             confirmButtonColor: '#143953', 
             cancelButtonColor: '#d33',      
@@ -82,14 +82,19 @@ export function ckeditor(isReadOnly = false) {
 
 
 export function removeRowDT(id) {
-    var table = $('table').DataTable();
-    var row = table.row($('tr[data-id="' + id + '"]'));
-    if (row.node()) {
-        row.remove().draw(false); 
+    var row = $('tr[data-id="' + id + '"]');
+    
+    if (row.length) {
+        row.remove();
+        
+        if ($('tr').length === 1) {
+            location.reload(); 
+        }
     } else {
         console.log('Row not found!');
     }
 }
+
 
 export function reloadDT() {
     location.reload();

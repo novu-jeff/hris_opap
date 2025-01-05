@@ -7,26 +7,22 @@ use Illuminate\Http\Request;
 
 class GSISController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct() {
+        $this->middleware('permission:read gsis-billing')->only('index');
+        $this->middleware('permission:write gsis-billing')->only(['create', 'edit']);
+    }
+   
     public function index()
     {
         return view('admin.settings.hris.gsis.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.settings.hris.gsis.create');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    
     public function edit(int $id)
     {
         return view('admin.settings.hris.gsis.edit', compact('id'));

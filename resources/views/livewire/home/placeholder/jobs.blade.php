@@ -14,7 +14,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-12 col-lg-7 col-xl-7 mb-4" wire:poll='showAppliedJobs'>
+        <div class="col-12 col-md-12 col-lg-7 col-xl-7 mb-4">
             <div class="placeholder__box preview"></div>
         </div>
     </div>

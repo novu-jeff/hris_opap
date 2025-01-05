@@ -6,173 +6,130 @@ use App\Models\EmployeeDeductions;
 use App\Models\EmployeeInformation;
 use App\Models\OtherDeductions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public int $id;
-    public object $records;
-    public object $employees;
-    public array $fields;
-    public int $selected_id;
+    use WithPagination;
+
+    public $id;
+    public $entries = 10;
+    public $search = '';
+    public $deductions = [];
+
+    protected $paginationTheme = 'bootstrap';
 
     protected $listeners = ['remove'];
 
     public function mount() {
-        $this->loadRecords($this->id);
+        $this->loadRecords();
     }
 
-    public function loadRecords($id) {
 
-        $this->records = EmployeeDeductions::with('personal')
-            ->where('deduction_id', $id)
+    public function loadRecords() {
+
+   
+        $employees = EmployeeInformation::with(['personal'])
             ->get();
+            
+        // Retrieve the leave deductions based on the leave type ID
+        $deductions = EmployeeDeductions::where('deduction_id', $this->id)->get();
 
-        $this->employees = EmployeeInformation::with('personal')->get();
-    }
+        // Initialize the deductions array
+        $this->deductions = [];
 
-    public function addRecords() {
-        $this->dispatch('showModal', [
-            'modal' => 'add_new_modal'
-        ]);
-    }
-
-    public function close_upload() {
-        $this->reset('fields');
-    }
-
-    public function select_change(string $field) {
-        if ($field === 'employee_no') {
-            $employeeNo = $this->fields['employee_no'];
-
-            $record = EmployeeDeductions::where('employee_no', $employeeNo)
-                ->where('deduction_id', $this->id)
-                ->first();
-
-            $this->fields['amount'] = $record ? $record->amount : '';
+        // Loop through the employees
+        foreach ($employees as $employee) {
+            // Find the leave credit matching the employee's employee_no
+            $leaveCredit = $deductions->firstWhere('employee_no', $employee['employee_no']);
+            
+            // If a matching leave credit is found, set the deductions value, otherwise set it to 0
+            $this->deductions[$employee['employee_no']] = $leaveCredit ? $leaveCredit->amount : 0;
         }
     }
 
-    public function rules() {
-        return [
-            'fields.employee_no' => 'required|exists:employee_information,employee_no',
-            'fields.amount' => 'required|numeric'
-        ];
-    }
-
-    public function messages() {
-        return [
-            'fields.employee_no.required' => 'The Employee Number is required.',
-            'fields.employee_no.exists' => 'The provided Employee Number does not exist in our records.',
-            'fields.amount.required' => 'The Amount field is required.',
-            'fields.amount.numeric' => 'The Amount must be a numeric value.',
-        ];
-    }
-
     public function save() {
-        $this->validate();
+        
+        if (Gate::denies('write employee-deductions')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         DB::beginTransaction();
 
         try {
+            // Iterate through the deductions array and update or create leave deductions for each employee
+                        
+            foreach ($this->deductions as $employeeId => $deduction) {
+                if ($employeeId && $deduction !== null) {
+                    $record = EmployeeDeductions::updateOrCreate(
+                        [
+                            'employee_no' => $employeeId,
+                            'deduction_id' => $this->id,
+                        ],
+                        [
+                            'amount' => $deduction ?? 0,
+                        ]
+                    ); 
+                }
+            }
+
+            DB::commit();
 
             $deduction = OtherDeductions::find($this->id);
 
-            if(!$deduction) {
-                return redirect()->route('deductions.index');
-            }
-            
-            $record = EmployeeDeductions::updateOrCreate(
-                [
-                    'employee_no' => $this->fields['employee_no'],
-                    'deduction_id' => $this->id,
-                ],
-                [
-                    'employee_no' => $this->fields['employee_no'],
-                    'deduction_id' => $this->id,
-                    'amount' => $this->fields['amount'],
-                ]
-            );
-
             $action = $record->wasRecentlyCreated ? 'added' : 'updated';
 
+            // Success alert after saving the deductions
             $this->dispatch('alert', [
                 'status' => 'success',
-                'title' => 'Success!', 
+                'title' => 'Saved!',
                 'showAlert' => true,
-                'message' => $deduction->name .  ' was ' . $action . ' to employee #' . $this->fields['employee_no'],
-                'redirect' => route('deductions.index', ['id' => $this->id])
+                'message' => 'Deduction for ' . $deduction->name . ' was ' . $action . '.',
             ]);
-            
-            DB::commit();
-        
-            $this->reset('fields');
-
         } catch (\Exception $e) {
-            
             DB::rollBack();
 
+            // Error alert if something goes wrong
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops!', 
+                'title' => 'Error!',
                 'showAlert' => true,
-                'message' => 'Error occured: ' . $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
 
-    }
-
-    public function remove(bool $isNotify = true, int $id = null) {
-
-        if($isNotify) {
-
-            $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
-            $action = 'remove';
-
-            $this->selected_id = $id;
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
-
-        }  else {
-
-            $record = EmployeeDeductions::find($this->selected_id);
-                
-            if($record) {
-                
-                $record->delete();
-
-                $deduction = OtherDeductions::find($this->id);
-
-                if(!$deduction) {
-                    return redirect()->route('deductions.index');
-                }
-                
-                $this->dispatch('alert', [
-                    'status' => 'success',
-                    'title' => 'Success!',
-                    'id' => $this->selected_id,
-                    'isRemoveRowDT' => true,
-                    'message' => $deduction->name .  ' was deleted ' . ' to employee #' . $record->employee_no,
-                ]);
-            } else {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
-                ]);
-            }
-        }
     }
 
     public function render()
     {
-        return view('livewire.admin.settings.hris.emp-deductions.index');
+
+        $model = EmployeeInformation::with(['personal']);
+
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhere('amount', 'like', '%' . $this->search . '%')
+                ->orWhereHas('personal', function($query) {
+                    $query->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+        }
+
+        $records = $model->paginate($this->entries);
+
+        return view('livewire.admin.settings.hris.emp-deductions.index', [
+            'records' => $records
+        ]);
     }
 }

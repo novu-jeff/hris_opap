@@ -15,7 +15,7 @@ class Dashboard extends Component
     }
 
     public function loadRecords() {
-        $this->announcements = EmployeeAnnouncements::orderBy('created_at', 'desc')->take(10)->get();
+        $this->announcements = EmployeeAnnouncements::latest()->take(10)->get();
     }
 
     public function render()

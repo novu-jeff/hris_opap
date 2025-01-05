@@ -53,8 +53,30 @@
     </div>
 
     @if(empty($items))
-        <div class="table-responsive" wire:ignore>
-            <table class="table data-tables w-100">
+        <div class="row mb-4">
+            <div class="col-md-6 d-flex align-items-center gap-2">
+                <label for="entries" class="form-label mb-0">Show entries:</label>
+                <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                <label for="search" class="form-label mb-0">Search:</label>
+                <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered w-100">
                 <thead>
                     <tr>
                         <th>Billing Month</th>
@@ -65,7 +87,7 @@
                     </tr>
                 </thead>                
                 <tbody>
-                    @foreach($records as $record)
+                    @forelse($records as $record)
                         <tr data-id="{{$record->id}}">
                             <td>{{$record->billing_month}}</td>
                             <td>{{$record->remitting_agency}}</td>
@@ -80,9 +102,16 @@
                                 </button>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="mt-4">
+            {{ $records->links(data: ['scrollTo' => false]) }}
         </div>
     @else
         <ul class="list-unstyled">

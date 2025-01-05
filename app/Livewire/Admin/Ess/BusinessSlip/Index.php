@@ -5,56 +5,22 @@ namespace App\Livewire\Admin\Ess\BusinessSlip;
 use App\Models\EmployeeBusinessSlip;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+
+    use WithPagination;
+
     public $status;
-    public $records;
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'rejected', 'granted'];
 
-    public function mount() {
-        $this->loadRecords();
-    }
-
-    public function loadRecords(int $id = null) {
-        $records = DB::table('employee_business_slips')
-            ->leftJoin('employee_personal', 'employee_business_slips.employee_no', '=', 'employee_personal.employee_no')
-            ->leftJoin('employee_information', 'employee_business_slips.employee_no', '=', 'employee_information.employee_no')
-            ->leftJoin('positions', 'employee_information.position_id', '=', 'positions.id')
-            ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
-            ->leftJoin('branches', 'sections.branch_id', '=', 'branches.id')
-            ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
-            ->select(
-                'employee_business_slips.*',
-                'employee_personal.firstname',
-                'employee_personal.middlename',
-                'employee_personal.lastname',
-
-                'positions.code as position_code',
-                'positions.name as position_name',
-                
-                'sections.name as section_name',
-                'sections.code as section_code',
-
-                'branches.name as branch_name',
-                'branches.code as branch_code',
-
-                'departments.name as department_name',
-                'departments.code as department_code',
-
-            )
-            ->where('employee_business_slips.status',  $this->status);
-            
-        if(!is_null($id)) {
-            $records->where('employee_business_slips.id', $id);
-            return $this->view_records = $records->first();
-        }
-
-        return $this->records = $records->get();
-    }
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
     public function view(int $id) {
         $this->selected_id = $id;
@@ -66,12 +32,18 @@ class Index extends Component
         }
     }
 
+    public function loadRecords(int $id) {
+        $this->view_records = EmployeeBusinessSlip::with('employment.section', 'employment.section.branch', 'employment.section.department', 'employee', 'employment.positions')
+            ->where('id', $id)
+            ->first();
+    }
+
     public function rejected(bool $isNotify = true) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to reject this OBS application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'rejected';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -105,7 +77,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to grant this OBS application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'granted';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
@@ -142,7 +114,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this OBS application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -165,7 +137,7 @@ class Index extends Component
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
+                    'message' => 'OBS Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -181,6 +153,26 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.ess.business-slip.index');
+
+        $model = EmployeeBusinessSlip::with('employment', 'employee')
+            ->where('status', $this->status);
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                ->orWhereHas('employee', function ($subQuery) {
+                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                });
+            });
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.ess.business-slip.index', [
+            'records' => $records
+        ]);
     }
 }

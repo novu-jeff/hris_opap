@@ -3,25 +3,38 @@
 namespace App\Livewire\Admin\Job\Interview;
 
 use App\Models\Interview;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
 
-    public $records;
+    use WithPagination;
+
     public $selected_id;
     protected $listeners = ['remove'];
+    protected $paginationTheme = 'bootstrap';
+    public $entries = 10;
+    public $search = '';
 
-    public function mount(): void {
-        $this->records = Interview::with('items')->get();
-    }
 
     public function remove(bool $isNotify = true, int $id = null) {
+
+        if (Gate::denies('write assessments')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'The action cannot be undone or reverted!';
+            $message = 'Please be informed that you are about to delete this interview questionnaire. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -60,6 +73,20 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.job.interview.index');
+
+        $model = Interview::with('items');
+
+        if ($this->search) {
+
+            $this->resetPage(); 
+
+            $records = $model->where('name', 'like', '%' . $this->search . '%');
+        }
+
+        $records = $model->latest()->paginate($this->entries);
+
+        return view('livewire.admin.job.interview.index', [
+            'records' => $records
+        ]);
     }
 }
