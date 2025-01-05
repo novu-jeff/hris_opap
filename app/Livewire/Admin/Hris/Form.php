@@ -381,6 +381,7 @@ class Form extends Component
                 Rule::unique('employee_information', 'employee_no')->ignore($employee_no, 'employee_no')
             ],
             'records.employee_information.biometrics_id' => [
+                'required',
                 Rule::unique('employee_information', 'bsd_no')->ignore($employee_no, 'employee_no')
             ],
             'records.employee_information.status' => 'required|in:active,inactive',

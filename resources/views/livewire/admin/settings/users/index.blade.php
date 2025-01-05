@@ -97,11 +97,12 @@
                                     </div>
                                     <div class="col-md-3 mb-3 text-uppercase  d-flex justify-content-end">
                                         <div class="profile" style="width: 150px; height: 150px;">
-                                            <img src="{{
-                                                isset($user_information) && !is_null($user_information->image)
-                                                    ? Storage::url('applicant/users/' . $user_information->id . '/' . $user_information->image)
-                                                    : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10'
-                                            }}" class="w-100 h-100" style="width: 150px; height: 150px; object-fit:cover" alt="" srcset="">
+                                            <img 
+                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(($user_information->firstname ?? '') . ' ' . ($user_information->lastname ?? '')) }}" 
+                                                class="w-100 h-100" 
+                                                style="width: 150px; height: 150px; object-fit:cover" 
+                                                alt="User Avatar"
+                                            >
                                         </div>                            
                                     </div>
                                     @if (!empty($user_information->level))
@@ -249,7 +250,7 @@
                                     <tr data-id="{{$record->id}}">
                                         <td class="text-center">
                                             <img style="width: 50px; height: 50px;"
-                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->personal->firstname . ' ' . $record->personal->lastname) }}">              
+                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->firstname . ' ' . $record->lastname) }}">              
                                         </td>
                                         <td>{{$record->firstname . ' ' . $record->lastname}}</td>
                                         <td>{{$record->email}}</td>
