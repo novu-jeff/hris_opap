@@ -33,7 +33,7 @@ class AdminAccountSeeder extends Seeder
 
         foreach ($admins as $admin) {
             $user = User::updateOrCreate(
-                ['name' => $admin['name'], 'email' => $admin['email'], 'email' => $admin['password']], 
+                [ 'email' => $admin['email']], 
                 [
                     'name' => $admin['name'],
                     'username' => $admin['username'],
