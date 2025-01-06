@@ -10,6 +10,7 @@ use App\Models\LeaveType;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Exception;
+use PDO;
 
 class OtherServices extends Controller
 {
@@ -112,29 +113,22 @@ class OtherServices extends Controller
 
     public function leaves(string $employee_no) {
 
-        $leaves = LeaveType::with('credits')
-            ->get()
-            ->toArray();
+        $leaves = LeaveType::all();
 
-        $leaveCredits = [];
+        $credits = LeaveCredits::where('employee_no', $employee_no)->get();
 
-        foreach($leaves as $leave) {
-            if(!is_null($leave['credits'])) {
-                $leaveCredits[] = [
-                    'code' => $leave['code'],
-                    'name' => $leave['name'],
-                    'credits' => $leave['credits']['credits']
-                ];
-            } else {
-                $leaveCredits[] = [
-                    'code' => $leave['code'],
-                    'name' => $leave['name'],
-                    'credits' => 0
-                ];
-            }
-        }
+        $leaveCredits = $leaves->map(function ($leave) use ($credits) {
 
-        return $leaveCredits;
+            $credit = $credits->firstWhere('leave_type_id', $leave->id);
+
+            $leave->credits = $credit ? $credit->credits : 0;
+
+            return $leave;
+        });
+
+        $credits = $leaveCredits->toArray();
+
+        return $credits;
 
     }
 
