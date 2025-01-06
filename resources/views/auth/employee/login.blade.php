@@ -34,14 +34,14 @@
                                     @endif
                                     <div class="col-12 mb-3">
                                         <label for="email" class="mb-2">Login <span class="text-danger">*</span></label>
-                                        <input type="text" name="email" id="email" class="form-control" value="{{old('email')}}" placeholder="Employee ID or Employeye No.">
+                                        <input type="text" name="email" id="email" class="form-control" value="{{old('email')}}" placeholder="Enter Employee ID or Employee No.">
                                         <div class="error-field mt-1">
                                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                     <div class="col-12 mb-3">
                                         <label for="password" class="mb-2">Password <span class="text-danger">*</span></label>
-                                        <input type="password" name="password" id="password" class="form-control">
+                                        <input type="password" name="password" id="password" class="form-control" placeholder="••••••••">
                                         <div class="error-field mt-1">
                                             @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
