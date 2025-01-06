@@ -171,20 +171,13 @@ class Upload extends Component
                     foreach ($dateData as &$recordData) {
                         $shift = $this->employeeShift($recordData['bsdno']);
                 
+                        // Skip processing if no shift is found
                         if (!$shift) {
                             continue;
                         }
                 
                         $breaktime_from = Carbon::parse($shift->break_out);
                         $breaktime_to = Carbon::parse($shift->break_in);
-                
-                        if ($shift->shift_duration == 'flexible') {
-                            $earliest_in = $shift->earliest_in;
-                            $latest_in = $shift->latest_in;
-                        } else {
-                            $start_shift = $shift->start_shift;
-                            $endShift = $shift->end_shift; 
-                        }
                 
                         // Sort times by actual time
                         usort($recordData['times'], function ($a, $b) {
