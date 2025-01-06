@@ -34,7 +34,7 @@
                                     @endif
                                     <div class="col-12 mb-3">
                                         <label for="email" class="mb-2">Login <span class="text-danger">*</span></label>
-                                        <input type="text" name="email" id="email" class="form-control" value="{{old('email')}}">
+                                        <input type="text" name="email" id="email" class="form-control" value="{{old('email')}}" placeholder="Employee ID or Employeye No.">
                                         <div class="error-field mt-1">
                                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
