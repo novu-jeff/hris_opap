@@ -91,11 +91,16 @@ class Add extends Component
 
 
     public function rules() {
-        return [
-            'banner' => 'required|image|mimes:jpg,jpeg,png,gif',
+        $rules = [
             'title' => 'required',
             'content' => 'required',
         ];
+
+        if ($this->banner instanceof \Illuminate\Http\UploadedFile) {
+            $rules['banner'] = 'required|image|mimes:jpg,jpeg,png,gif';
+        }
+
+        return $rules;
     }
 
     public function message() {

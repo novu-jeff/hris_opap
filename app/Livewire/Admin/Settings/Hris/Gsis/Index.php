@@ -205,9 +205,7 @@ class Index extends Component
                     $data
                 );
 
-                $this->loadRecords();
             }
-
                     
             DB::commit();
 
