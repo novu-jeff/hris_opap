@@ -83,9 +83,6 @@
                     @can('read bank-information')
                         <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
                     @endcan
-                    @can('read batch-configuration')
-                        <li><a class="dropdown-item" href="{{route('batch-configuration.index')}}">Batch Configuration</a></li>
-                    @endcanany
                     @can('read employment-type')
                         <li><a class="dropdown-item" href="{{route('employment-type.index')}}">Employment Type</a></li>
                     @endcan

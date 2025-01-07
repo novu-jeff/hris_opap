@@ -26,13 +26,13 @@
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="start_time">Start Time</label>
                             <input type="text" id="start_time" class="form-control restricted" 
-                                   value="{{ isset($view_records) ? $view_records->start_time : '' }}" 
+                                   value="{{ isset($view_records) ? format_time($view_records->start_time ): '' }}" 
                                    readonly>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="end_time">End Time</label>
                             <input type="text" id="end_time" class="form-control restricted" 
-                                   value="{{ isset($view_records) ? $view_records->end_time : '' }}" 
+                                   value="{{ isset($view_records) ? format_time($view_records->end_time) : '' }}" 
                                    readonly>
                         </div>
                     </div>    
