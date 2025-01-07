@@ -67,22 +67,22 @@
                             <div class="socials">
                                 <ul class="list-inline">
                                     <li class="list-inline-item">
-                                        <a href="#">
+                                        <a href="https://novulutions.com/">
                                             <i class="fa-solid fa-earth-asia"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="#">
+                                        <a href="https://www.facebook.com/novulutionsinc">
                                             <i class="fa-brands fa-facebook"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="#">
+                                        <a href="https://www.linkedin.com/company/novulutions-inc/">
                                             <i class="fa-brands fa-linkedin"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="#">
+                                        <a href="https://www.youtube.com/@NovulutionsInc">
                                             <i class="fa-brands fa-youtube"></i>
                                         </a>
                                     </li>
