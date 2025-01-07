@@ -129,6 +129,9 @@ Route::middleware(['applicant'])->group(function() {
 });
     
 Route::prefix('admin')->group(function() {
+
+    Route::redirect('/', 'admin/login', 302);
+
     Route::get('login', [AdminLoginController::class, 'index'])
         ->name('admin.index');
     Route::post('login', [AdminLoginController::class, 'login'])
@@ -312,6 +315,9 @@ Route::prefix('admin')->group(function() {
 });
 
 Route::prefix('employee')->group(function() {
+
+    Route::redirect('/', 'employee/login', 302);
+
     Route::prefix('login')->group(function() {
         Route::get('/', [EmployeeLoginController::class, 'index'])
             ->name('employee.login');
