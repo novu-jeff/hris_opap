@@ -45,7 +45,7 @@
         <div class="footer mt-5">
             <div class="container mt-3 py-5">
                 <div class="row">
-                    <div class="col-12 col-lg-6 mb-4">
+                    <div class="col-12 col-lg-4 mb-4">
                         <div class="mx-5">
                             <div class="logo">
                                 <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
@@ -80,7 +80,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 mb-4">
+                    <div class="col-12 col-lg-8 mb-4">
                         <div class="useful-links">
                             <div>
                                 <h5 class="text-muted">Site Links</h5>
@@ -106,23 +106,37 @@
                                 </ul>
                             </div>
                             <div>
-                                <h5 class="text-muted">Other Products and Services</h5>
+                                <h5 class="text-muted">Services</h5>
                                 <ul class="list-unstyled">
                                     <li class="list-unstyled-item">
-                                        <a href="https://novulutions.com/">Novulutions-Nebulon Node (N³)</a>
+                                        Novulutions-Nebulon Node
                                     </li>
                                     <li class="list-unstyled-item">
-                                        <a href="https://novulutions.com/">Novulutions Cloud Platform (NPC)</a>
+                                        Novulutions Cloud Platform
                                     </li>
                                     <li class="list-unstyled-item">
-                                        <a href="https://novulutions.com/">Corporate Digital Nervous System (CDNS)</a>
+                                        Corporate Digital Nervous System
                                     </li>
                                     <li class="list-unstyled-item">
-                                        <a href="https://novulutions.com/">SambaNova Systems</a>
+                                        SambaNova Systems
                                     </li>
                                     <li class="list-unstyled-item">
-                                        <a href="https://novulutions.com/">Scality</a>
+                                        Scality
                                     </li>                                    
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-muted">Products</h5>
+                                <ul class="list-unstyled">
+                                    <li class="list-unstyled-item">
+                                        Human Resources Information System
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        N-Gas
+                                    </li>    
+                                    <li class="list-unstyled-item">
+                                        N-Boss
+                                    </li>                            
                                 </ul>
                             </div>
                         </div>
