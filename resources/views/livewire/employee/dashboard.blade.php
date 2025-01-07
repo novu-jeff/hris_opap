@@ -1,6 +1,6 @@
 <div>
     <div class="latest-announcements">
-        <div class="wrapper d-flex gap-4">
+        <div class="wrapper d-flex gap-5">
             @if($announcements)
                 <div class="card bg-primary text-white shadow text-decoration-none text-uppercase fw-bold me-1">
                     <div class="card-body d-flex justify-content-center align-items-center">

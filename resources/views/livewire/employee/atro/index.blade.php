@@ -61,10 +61,6 @@
                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
-                                @else
-                                    <button class="btn btn-primary w-100 mx-1">
-                                        <i class="fa-solid fa-eye"></i>  View
-                                    </button>
                                 @endif
                             </td>
                         </tr>
