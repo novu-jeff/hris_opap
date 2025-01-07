@@ -84,7 +84,7 @@ class Upload extends Component
             ]);
         }
 
-        $this->isUploading = true;
+        $this->isUploading = false;
     
         DB::beginTransaction();
     
@@ -436,6 +436,7 @@ class Upload extends Component
                 'status' => 'success',
                 'title' => 'Yey!', 
                 'isRemoveRowDT' => false,
+                'redirect' => route('timekeeping.upload'),
                 'message' => 'Total of ' . rtrim(number_format($insertedCount, 2), '.00') . ' records has been added to time logs for the month of ' . $formattedDate 
             ]);
             
