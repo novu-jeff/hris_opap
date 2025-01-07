@@ -99,7 +99,7 @@
                                 @endif
                             </div>
                             <div class="form-check my-3">
-                                <input class="form-check-input" type="checkbox" wire:change="select_change('linkSchedule')" wire:model="isLinkSchedule">
+                                <input class="form-check-input" type="checkbox" wire:change="select_change('linkSchedule')" wire:model="isLinkSchedule" wire:loading.attr="disabled" wire:target="upload_file">
                                 <label class="form-check-label">
                                     Link Shift and Schedule
                                 </label>
@@ -109,7 +109,7 @@
                                 <div class="row">
                                     <div class="col-12 col-md-6">
                                         <label class="mb-2">Link Shift Schedule</label>
-                                        <select wire:model="shift_id" id="shift_id" class="form-select">
+                                        <select wire:model="shift_id" id="shift_id" class="form-select" wire:loading.attr="disabled" wire:target="upload_file">
                                             <option value=""> - CHOOSE - </option>
                                             @foreach($shifts as $shift)
                                                 <option value="{{$shift->id}}">{{$shift->name . ' (' . $shift->shift_duration . ')'}}</option>
@@ -118,7 +118,7 @@
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="mb-2">Link Employee Schedule</label>
-                                        <select wire:model="schedule_id" id="schedule_id" class="form-select">
+                                        <select wire:model="schedule_id" id="schedule_id" class="form-select" wire:loading.attr="disabled" wire:target="upload_file">
                                             <option value=""> - CHOOSE - </option>
                                             @foreach($schedules as $schedule)
                                                 <option value="{{$schedule->id}}">{{$schedule->name}}</option>
@@ -130,16 +130,24 @@
                             @error('file') 
                                 <span class="text-danger">{{ $message }}</span> 
                             @enderror
-                            <div class="mt-4 d-flex justify-content-end">
-                                @if($upload_preview)
+                            @if($upload_preview)
+                                <div class="mt-4 d-flex justify-content-end">
                                     <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
                                             wire:click="upload_file"
                                             wire:loading.attr="disabled">
                                         <span wire:loading.remove>Upload File</span>
-                                        <span wire:loading>Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
+                                        <span wire:loading wire:target="upload_file">Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
                                     </button>
-                                @endif
-                            </div>
+                                </div>
+                            @endif    
+                            <div class="w-100 mt-5" wire:loading wire:target="upload_file">
+                                <div class="alert alert-danger d-flex justify-content-center gap-3 align-items-center" role="alert">
+                                    <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                                    <div class="text-uppercase fw-bold">
+                                        Please do not close the modal or reload the page to prevent errors during the upload process.
+                                    </div>
+                                </div>  
+                            </div> 
                         </div>
                     </div>
                 </div>
