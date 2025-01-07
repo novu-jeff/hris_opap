@@ -29,16 +29,24 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 d-flex justify-content-end">
-                        @if($upload_preview)
+                    @if($upload_preview)
+                        <div class="mt-4 d-flex justify-content-end">
                             <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
                                     wire:click="upload_file"
                                     wire:loading.attr="disabled">
                                 <span wire:loading.remove>Upload File</span>
-                                <span wire:loading>Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
+                                <span wire:loading wire:target="upload_file">Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
                             </button>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
+                    <div class="w-100 mt-5" wire:loading wire:target="upload_file">
+                        <div class="alert alert-danger d-flex justify-content-center gap-3 align-items-center" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                            <div class="text-uppercase fw-bold">
+                                Please do not close the modal or reload the page to prevent errors during the upload process.
+                            </div>
+                        </div>  
+                    </div> 
                 </div>
             </div>
         </div>

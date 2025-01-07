@@ -170,14 +170,16 @@ class Upload extends Component
                 foreach ($formattedData as &$dateData) {
                     foreach ($dateData as &$recordData) {
                         $shift = $this->employeeShift($recordData['bsdno']);
-                
-                        // Skip processing if no shift is found
+                        
+                        // If no shift is found, assign default values (or skip, depending on your business logic)
                         if (!$shift) {
-                            continue;
+                            // You can choose to use a default shift or just proceed with null values for break times
+                            $breaktime_from = null;
+                            $breaktime_to = null;
+                        } else {
+                            $breaktime_from = Carbon::parse($shift->break_out);
+                            $breaktime_to = Carbon::parse($shift->break_in);
                         }
-                
-                        $breaktime_from = Carbon::parse($shift->break_out);
-                        $breaktime_to = Carbon::parse($shift->break_in);
                 
                         // Sort times by actual time
                         usort($recordData['times'], function ($a, $b) {
@@ -243,9 +245,9 @@ class Upload extends Component
                             $recordData['clock_out_pm'] = $latestTime;
                 
                             // Handle middle time based on its position (before or after break)
-                            if (strtotime($middleTime) < strtotime($breaktime_from)) {
+                            if ($breaktime_from && strtotime($middleTime) < strtotime($breaktime_from)) {
                                 $recordData['clock_out_am'] = $middleTime; // Before break, assign to clock_out_am
-                            } elseif (strtotime($middleTime) >= strtotime($breaktime_to)) {
+                            } elseif ($breaktime_to && strtotime($middleTime) >= strtotime($breaktime_to)) {
                                 $recordData['clock_in_pm'] = $middleTime; // After break, assign to clock_in_pm
                             } else {
                                 // If between breaktime, assign it as clock_out_am or clock_out_pm
@@ -357,7 +359,7 @@ class Upload extends Component
                     ksort($dateData);
                     return $dateData;
                 }, $formattedData);
-            
+                
                 $insertedCount = 0;
 
                 foreach ($formattedData as $index => $data) {
