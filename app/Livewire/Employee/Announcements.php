@@ -14,6 +14,7 @@ class Announcements extends Component
 
     public $record_id;
     public $user_id;
+    public $nextAndPrev;
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 6;
@@ -42,8 +43,29 @@ class Announcements extends Component
                 return redirect()->route('employee.announcements.index');
             }
 
+            $this->getPreviousNextAnnouncements($records->id);
+
             return $this->view = $records;
         }
+
+    }
+
+    public function getPreviousNextAnnouncements($id) {
+
+        $currentJobId = EmployeeAnnouncements::where('id', $id)->value('id');
+
+        $prev = EmployeeAnnouncements::select('id')->where('id', '<', $currentJobId)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $next =  EmployeeAnnouncements::select('id')->where('id', '>', $currentJobId)
+            ->orderBy('id', 'asc')
+            ->first();
+        
+        return $this->nextAndPrev = [
+            'prev' => !is_null($prev) ? route('employee.announcements.view', ['id' => $prev['id']]) : null,
+            'next' => !is_null($next) ? route('employee.announcements.view', ['id' => $next['id']]) : null
+        ];
 
     }
 
