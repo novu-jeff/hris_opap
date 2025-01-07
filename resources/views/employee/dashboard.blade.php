@@ -13,20 +13,3 @@
     @livewire('employee.dashboard')
 </div>
 @endsection
-
-@section('script')
-    <script>
-        $(function() {
-            // Initialize Swiper.js
-            new Swiper('.swiper-container', {
-                slidesPerView: 4, // Number of visible slides
-                spaceBetween: 20, // Space between slides in pixels
-                pagination: {
-                    el: '.swiper-pagination', // Selector for pagination bullets
-                    clickable: true, // Allow users to click on bullets to navigate
-                },
-                freeMode: false, // Enable free scrolling without snapping
-            });
-        });
-    </script>
-@endsection

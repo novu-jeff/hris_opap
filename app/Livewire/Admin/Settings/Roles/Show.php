@@ -38,7 +38,7 @@ class Show extends Component
             'reports' => ['dtr'],
             'settings' => [
                 'company-information', 'branches', 'departments', 'sections', 'assessments', 'requirements',
-                'users', 'roles', 'bank-information', 'batch-configuration', 'employment-type', 'positions', 'violations',
+                'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
                 'leave-types', 'leave-credits', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
             ]

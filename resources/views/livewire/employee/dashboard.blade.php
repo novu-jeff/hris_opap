@@ -1,29 +1,25 @@
 <div>
     <div class="latest-announcements">
-        <div class="swiper-container">
-            <div class="swiper-wrapper d-flex">
-                @if($announcements)
-                    <div class="card bg-primary text-white shadow text-decoration-none text-uppercase fw-bold me-4">
-                        <div class="card-body d-flex justify-content-center align-items-center">
-                            <div class="text-center">
-                                <small class="card-title text-clamp clamp-3">Latest Announcements</small>
-                                <small>(Scroll Horizontally) <i class="fa-solid fa-arrow-right-long ms-3"></i></small>
-                            </div>
+        <div class="wrapper d-flex gap-4">
+            @if($announcements)
+                <div class="card bg-primary text-white shadow text-decoration-none text-uppercase fw-bold me-1">
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <div class="text-center">
+                            <small class="card-title text-clamp clamp-3">Latest Announcements</small>
+                            <small>(Scroll Horizontally) <i class="fa-solid fa-arrow-right-long ms-3"></i></small>
                         </div>
                     </div>
-                @endif
-                @foreach($announcements as $announcement)
-                    <div class="swiper-slide">
-                        <a href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
-                            <div class="card shadow">
-                                <div class="card-body d-flex align-items-center">
-                                    <small class="card-title text-clamp clamp-3">{{$announcement->title}}</small>
-                                </div>
-                            </div>
-                        </a>
+                </div>
+            @endif
+            @foreach($announcements as $announcement)
+                <a href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
+                    <div class="card shadow">
+                        <div class="card-body d-flex align-items-center">
+                            <small class="card-title text-clamp clamp-3">{{$announcement->title}}</small>
+                        </div>
                     </div>
-                @endforeach
-            </div>
+                </a>
+            @endforeach
         </div>          
     </div>
     @if($announcements)

@@ -27,24 +27,19 @@ table {
   }
 
   .latest-announcements {
-    .swiper-container {
+
+    .wrapper {
       width: 100%;
       padding: 20px 0;
       cursor: grab;
+      overflow-x: auto;
     }
-    
-    .swiper-slide {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
+
     .card {
       min-height: 100px !important;
       width: 300px;
       flex-shrink: 0;
       cursor: pointer;
-
     }
     
   }
