@@ -42,6 +42,97 @@
                 @yield('content')
             </div>
         </main>
+        <div class="footer mt-5">
+            <div class="container mt-3 py-5">
+                <div class="row">
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="mx-5">
+                            <div class="logo">
+                                <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
+                            </div>
+                            <div class="logo-phrase">
+                                <p>Transform IT: Unify your data silos</p>
+                            </div>
+                            <hr class="mt-3 mb-2">
+                            <div class="socials">
+                                <ul class="list-inline">
+                                    <li class="list-inline-item">
+                                        <a target="_blank" href="https://novulutions.com/">
+                                            <i class="fa-solid fa-earth-asia"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a target="_blank" href="https://www.facebook.com/novulutionsinc">
+                                            <i class="fa-brands fa-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a target="_blank" href="https://www.linkedin.com/company/novulutions-inc/">
+                                            <i class="fa-brands fa-linkedin"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a target="_blank" href="https://www.youtube.com/@NovulutionsInc">
+                                            <i class="fa-brands fa-youtube"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="useful-links">
+                            <div>
+                                <h5 class="text-muted">Site Links</h5>
+                                <ul class="list-unstyled">
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('home.index')}}">Find Jobs</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('home.saved')}}">Saved Jobs</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('home.profile')}}">Profile</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('home.login')}}">Login</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('home.register')}}">Register</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.dashboard')}}">Employee</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-muted">Other Products and Services</h5>
+                                <ul class="list-unstyled">
+                                    <li class="list-unstyled-item">
+                                        <a href="https://novulutions.com/">Novulutions-Nebulon Node (N³)</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="https://novulutions.com/">Novulutions Cloud Platform (NPC)</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="https://novulutions.com/">Corporate Digital Nervous System (CDNS)</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="https://novulutions.com/">SambaNova Systems</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="https://novulutions.com/">Scality</a>
+                                    </li>                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="ending text-center mb-0 text-muted mt-5">
+                    &copy; 2024. All rights reserved Novulutions Inc.
+                </p>
+            </div>
+        </div class="footer">
     </div>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

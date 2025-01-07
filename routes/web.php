@@ -115,8 +115,8 @@ Route::middleware(['applicant'])->group(function() {
     Route::get('search/{search?}', [HomeController::class, 'index'])
         ->name('home.search');
     
-    Route::resource('my/profile', ProfileController::class)
-        ->names('home.profile');
+    Route::get('my/profile', [ProfileController::class, 'index'])
+        ->name('home.profile');
     
     Route::get('assessment/respond/{job_id}/{interview_id}', [HomeInterviewController::class, 'interview'])
         ->name('interview-respond');
