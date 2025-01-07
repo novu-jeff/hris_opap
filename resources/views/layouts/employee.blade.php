@@ -52,8 +52,8 @@
                 @yield('content')
             </div>
         </main>
-        <div class="footer">
-            <div class="container py-5">
+        <div class="footer mt-5">
+            <div class="container mt-3 py-5">
                 <div class="row">
                     <div class="col-12 col-lg-6 mb-4">
                         <div class="mx-5">
@@ -67,22 +67,22 @@
                             <div class="socials">
                                 <ul class="list-inline">
                                     <li class="list-inline-item">
-                                        <a href="https://novulutions.com/">
+                                        <a target="_blank" href="https://novulutions.com/">
                                             <i class="fa-solid fa-earth-asia"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="https://www.facebook.com/novulutionsinc">
+                                        <a target="_blank" href="https://www.facebook.com/novulutionsinc">
                                             <i class="fa-brands fa-facebook"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="https://www.linkedin.com/company/novulutions-inc/">
+                                        <a target="_blank" href="https://www.linkedin.com/company/novulutions-inc/">
                                             <i class="fa-brands fa-linkedin"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a href="https://www.youtube.com/@NovulutionsInc">
+                                        <a target="_blank" href="https://www.youtube.com/@NovulutionsInc">
                                             <i class="fa-brands fa-youtube"></i>
                                         </a>
                                     </li>
