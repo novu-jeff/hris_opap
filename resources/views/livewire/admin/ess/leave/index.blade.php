@@ -9,17 +9,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-12 col-md-4 mb-4">
+                        <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_no">Employee No.</label>
                             <input type="text" id="employee_no" class="form-control restricted" value="{{ isset($view_records->employee) ? ($view_records->employee->employee_no) : '' }}" readonly>
                         </div>
-                        <div class="col-12 col-md-4 mb-4">
+                        <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
                             <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records->employee) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
-                        </div>
-                        <div class="col-12 col-md-4 mb-4">
-                            <label class="mb-2" for="employee_credit">Remaining Leave Credit</label>
-                            <input type="text" id="employee_credit" class="form-control restricted" value="{{ isset($view_records->employment) ?  $view_records->employment->leave_credits : 0 }}" readonly>
                         </div>
                         <div class="col-12 mb-4">
                             <hr>

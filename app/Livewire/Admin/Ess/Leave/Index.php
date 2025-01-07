@@ -3,6 +3,9 @@
 namespace App\Livewire\Admin\Ess\Leave;
 
 use App\Models\EmployeeLeave;
+use App\Models\LeaveCredits;
+use App\Models\LeaveType;
+use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -89,22 +92,53 @@ class Index extends Component
             $record = EmployeeLeave::with('employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
+
+            if(is_null($record)) {
+                return redirect()->route('ess.leave');
+            }
+
+
+            $from = Carbon::parse($record->from);
+            $to = Carbon::parse($record->to);
+
+            if ($to) {
+                $daysCovered = $from->diffInDays($to) + 1; 
+            } else {
+                $daysCovered = 1; 
+            }
+
+            $leaveCreditsModel = LeaveCredits::class;
+            $leaveTypeModel = LeaveType::find($record->leave_id);
+
+            $leaveCredits = $leaveCreditsModel::where('leave_type_id', $record->leave_id)
+                    ->where('employee_no', $record->employee_no)
+                    ->first();
             
-            if ($record && $record->employment && (is_null($record->employment->leave_credits) || $record->employment->leave_credits <= 0)) {
+            // if no credits left
+            if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
                 return $this->dispatch('alert', [
-                    'id' => $this->selected_id,
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Ooops',
-                    'message' => 'Unable to grant leave because there\'s no leave credit left to this employee.'
+                    'title' => 'Oops', 
+                    'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                ]);
+            } 
+
+            // if leave days covered is greater than leave credits remaining
+            if($daysCovered > $leaveCredits->credits) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops', 
+                    'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying to leave for '.$daysCovered.' days(s) but only have ' . $leaveCredits->credits . ' remaining leave credits.'
                 ]);
             }
             
-            // Deduct 1 leave credit and save the Employment model
-            $employment = $record->employment;
-            $employment->leave_credits -= 1;
-            $employment->save();
-            
+            // deduct leave credits
+
+            $leaveCredits->credits -= $daysCovered;
+            $leaveCredits->save();
+
             // Update the EmployeeLeave record's status
             $record->update([
                 'status' => 'granted'

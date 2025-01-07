@@ -24,19 +24,19 @@
                     <div class="row">
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="section">Section</label>
-                            <input type="text" id="section" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->name . ' (' . $view_records->employment->section->code . ') ') : '' }}" readonly>
+                            <input type="text" id="section" class="form-control restricted" value="{{ isset($view_records->employment->section->name) ? ($view_records->employment->section->name . ' (' . $view_records->employment->section->code . ') ') : 'No Data Provided' }}" readonly>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="branch">Branch</label>
-                            <input type="text" id="branch" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->branch->name . ' (' . $view_records->employment->section->branch->code . ') ') : '' }}" readonly>
+                            <input type="text" id="branch" class="form-control restricted" value="{{ isset($view_records->employment->section->branch->name) ? ($view_records->employment->section->branch->name . ' (' . $view_records->employment->section->branch->code . ') ') : 'No Data Provided' }}" readonly>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="department">Department</label>
-                            <input type="text" id="department" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->section->department->name . ' (' . $view_records->employment->section->department->code . ') ') : '' }}" readonly>
+                            <input type="text" id="department" class="form-control restricted" value="{{ isset($view_records->employment->section->department->name) ? ($view_records->employment->section->department->name . ' (' . $view_records->employment->section->department->code . ') ') : 'No Data Provided' }}" readonly>
                         </div>
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="position">Position</label>
-                            <input type="text" id="position" class="form-control restricted" value="{{ isset($view_records) ? ($view_records->employment->positions['name'] . ' (' . $view_records->employment->positions['code'] . ') ') : '' }}" readonly>
+                            <input type="text" id="position" class="form-control restricted" value="{{ isset($view_records->employment->positions['name']) ? ($view_records->employment->positions['name'] . ' (' . $view_records->employment->positions['code'] . ') ') : 'No Data Provided' }}" readonly>
                         </div>
                     </div>
                     <div class="row">

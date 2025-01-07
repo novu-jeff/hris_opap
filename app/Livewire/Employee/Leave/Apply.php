@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee\Leave;
 
 use App\Models\EmployeeLeave;
+use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -121,13 +122,28 @@ class Apply extends Component
                 $to = $this->isMoreThanOne ? Carbon::parse($this->to) : null;
                 $consumed_hours = $to ? $to->diffInHours($from) : 24;
 
-                $model = EmployeeLeave::class;
-                $pending = $model::where('employee_no', $this->user_id)
+                if ($to) {
+                    $daysCovered = $from->diffInDays($to) + 1; 
+                } else {
+                    $daysCovered = 1; 
+                }
+
+                $employeeLeaveModel = EmployeeLeave::class;
+                $leaveTypeModel = LeaveType::find($this->type);
+                $leaveCreditsModel = LeaveCredits::class;
+
+
+                $pending = $employeeLeaveModel::where('employee_no', $this->user_id)
                     ->where('status', false)
                     ->count();
 
+                $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
+                    ->where('employee_no', $this->user_id)
+                    ->first();
+
                 $max_pending = env('MAX_PENDING_LEAVE_APPLICATION');
 
+                // maximum pending leaves
                 if($pending >= $max_pending) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
@@ -137,7 +153,27 @@ class Apply extends Component
                     ]);
                 }
 
-                $model::updateOrCreate([
+                // if no credits left
+                if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                    ]);
+                } 
+
+                // if leave days covered is greater than leave credits remaining
+                if($daysCovered > $leaveCredits->credits) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying to leave for '.$daysCovered.' days(s) but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                    ]);
+                }
+
+                $employeeLeaveModel::updateOrCreate([
                     'id' => $this->record_id,
                 ], [
                     'employee_no' => $this->user_id,

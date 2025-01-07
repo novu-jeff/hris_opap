@@ -49,7 +49,6 @@ class PermissionSeeder extends Seeder
                 'users',
                 'roles',
                 'bank-information',
-                'batch-configuration',
                 'employment-type',
                 'positions',
                 'violations',
