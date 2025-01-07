@@ -52,6 +52,93 @@
                 @yield('content')
             </div>
         </main>
+        <div class="footer">
+            <div class="container py-5">
+                <div class="row">
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="mx-5">
+                            <div class="logo">
+                                <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
+                            </div>
+                            <div class="logo-phrase">
+                                <p>Transform IT: Unify your data silos</p>
+                            </div>
+                            <hr class="mt-3 mb-2">
+                            <div class="socials">
+                                <ul class="list-inline">
+                                    <li class="list-inline-item">
+                                        <a href="#">
+                                            <i class="fa-solid fa-earth-asia"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="#">
+                                            <i class="fa-brands fa-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="#">
+                                            <i class="fa-brands fa-linkedin"></i>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="#">
+                                            <i class="fa-brands fa-youtube"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-9">
+                        <h5 class="text-muted">Employee Navigation Links</h5>
+                        <div class="useful-links">
+                            <div>
+                                <ul class="list-unstyled">
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.leave')}}">Apply Leave</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.atro')}}">Apply Authority to render overtime</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.obs.index')}}">Apply Official BusinessSlip</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="#">My Payslip</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.request-status')}}">Request Status</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <ul class="list-unstyled">
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.team')}}">My Team</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.directory')}}">My directory</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.announcements.index')}}">Announcements</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.profile')}}">My Profile</a>
+                                    </li>
+                                    <li class="list-unstyled-item">
+                                        <a href="{{route('employee.tutorial')}}">Tutorial</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="ending text-center mb-0 text-muted mt-5">
+                    &copy; 2024. All rights reserved Novulutions Inc.
+                </p>
+            </div>
+        </div class="footer">
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
