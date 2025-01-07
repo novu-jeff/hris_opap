@@ -27,7 +27,7 @@ class Index extends Component
 
     public $employee_no;
     public $isParsing;
-    public bool $isUploading = false;
+    public $isUploading = false;
     public $file;
     public $upload_preview;
     public $resultMessage;
@@ -61,7 +61,7 @@ class Index extends Component
     }
 
     public function close_upload_employee() {
-        $this->reset('upload_preview', 'file');
+        $this->reset('upload_preview', 'file', 'isLinkSchedule');
     }
 
     public function select_change($property) {
@@ -134,7 +134,7 @@ class Index extends Component
             return;
         }
 
-        $this->isUploading = true;
+        $this->isUploading = 'true';
     
         DB::beginTransaction();
     
@@ -299,7 +299,7 @@ class Index extends Component
                 'modal' => 'alert_employee'
             ]);
 
-            $this->reset(['shift_id', 'schedule_id']);
+            $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
 
             $this->loadRecords();
 
