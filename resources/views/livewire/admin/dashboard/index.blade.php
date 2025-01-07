@@ -8,17 +8,21 @@
                             <h5 class="my-2 text-uppercase fw-bold">Employees</h5>
                         </div>
                         <div class="card-body px-3">
-                            @forelse($stats['employee'] as $types)
-                                    <div class="swiper-slide text-uppercase bg-info p-3 rounded-3 text-white">
-                                        <p class="mb-0 fw-bold">{{$types['employment_type']}}</p>
-                                        <hr>
-                                        <h1>{{$types['employee_count']}}</h1>
-                                    </div>
-                                @empty
-                                    <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
-                                        No employment types to show
-                                    </div>
-                                @endforelse
+                            <div class="swiper-container">
+                                <div class="swiper-wrapper d-flex">
+                                    @forelse($stats['employee'] as $types)
+                                        <div class="swiper-slide text-uppercase bg-info p-3 rounded-3 text-white">
+                                            <p class="mb-0 fw-bold">{{$types['employment_type']}}</p>
+                                            <hr>
+                                            <h1>{{$types['employee_count']}}</h1>
+                                        </div>
+                                    @empty
+                                        <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
+                                            No employment types to show
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
                             @if(count($stats['employee']) > 3) 
                                 <div class="float-end">
                                     <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
@@ -292,6 +296,7 @@
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
 </div>
