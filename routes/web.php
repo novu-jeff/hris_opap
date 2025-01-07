@@ -18,7 +18,6 @@ use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
-use App\Http\Controllers\Admin\Settings\HRIS\BatchConfigurationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
 use App\Http\Controllers\Admin\Settings\HRIS\CostCenterController;
 use App\Http\Controllers\Admin\Settings\HRIS\DeductionController;
@@ -189,7 +188,7 @@ Route::prefix('admin')->group(function() {
                 ->name('timekeeping.correction-apply');
         });
 
-        Route::prefix('ess')->group(function() {
+        Route::prefix('employees')->group(function() {
             
             Route::get('official-business-slip', [OfficialBusinessSlipController::class, 'index'])
                 ->name('ess.obs');
@@ -254,10 +253,7 @@ Route::prefix('admin')->group(function() {
             Route::prefix('hris')->group( function() {
         
                 Route::resource('bank-information', BankInformationController::class)
-                    ->names('bank-information');    
-        
-                Route::resource('batch-configuration', BatchConfigurationController::class)
-                    ->names('batch-configuration');           
+                    ->names('bank-information');             
         
                 Route::resource('employment-type', EmploymentTypeController::class)
                     ->names('employment-type');
