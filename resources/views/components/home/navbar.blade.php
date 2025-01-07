@@ -43,7 +43,7 @@
                         <small class="text-uppercase fw-bold text-muted mb-0">Applicant</small>
                     </div>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{{route('home.profile.index')}}" wire:navigate>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{route('home.profile')}}" wire:navigate>Profile</a></li>
                         <li>
                             <a class="dropdown-item" href="{{ route('home.logout') }}"
                                 onclick="event.preventDefault();
