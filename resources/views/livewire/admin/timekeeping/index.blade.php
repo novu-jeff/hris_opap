@@ -63,17 +63,83 @@
                     $highlightBG = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
                     $highlightColor = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
                 @endphp
-                <tr data-log-id="{{ $key }}" class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
-                    <!-- Display Employee No, BSD No., and Employee Name -->
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->information->employee_no ?? '' }}</td>
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->bsd_no ?? '' }}</td>
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                        {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
-                    </td>                    
-                    <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                        <button class="view-log btn btn-primary px-3 text-uppercase fw-medium">View</button>
-                    </td>
-                </tr>   
+                    <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
+                        <!-- Display Employee No, BSD No., and Employee Name -->
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->information->employee_no ?? '' }}</td>
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->bsd_no ?? '' }}</td>
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
+                            {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
+                        </td>                    
+                        <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
+                            <button wire:click="findLogs({{$item->bsd_no}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                        </td>
+                    </tr>   
+                    @if($view_log && $item->bsd_no == $viewLogBsdNo)
+                        @php
+                            // Define captured image URLs
+                            $clockInImage = $view_log->captured_image_clockin
+                                ? asset('storage/clockinout/' . $view_log->captured_image_clockin)
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+                            $clockOutImage = $view_log->captured_image_clockout
+                                ? asset('storage/clockinout/' . $view_log->captured_image_clockout)
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+
+                            $showCapturedImages = $view_log->captured_image_clockin || $view_log->captured_image_clockout;
+                        @endphp
+                        <tr class="child-row">
+                            <td colspan="100%">
+                                <div class="mb-3">
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-12 col-md-5 mb-3">
+                                            <strong>Employee Information:</strong>
+                                            <ul class="my-3">
+                                                <li>Employee No: <strong><u>{{ $view_log->information->employee_no ?? 'N/A' }}</u></strong></li>
+                                                <li>Employee Name: <strong><u>{{ $view_log->information->personal->firstname ?? 'N/A' }} {{ $view_log->information->personal->lastname ?? 'N/A' }}</u></strong></li>
+                                                <li>Biometrics ID: <strong><u>{{ $view_log->bsd_no ?? 'N/A' }}</u></strong></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-12 col-md-7 mb-3">
+                                            <div class="d-flex gap-3">
+                                                @if ($showCapturedImages)
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock In:</p>
+                                                        <img src="{{ $clockInImage }}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock Out:</p>
+                                                        <img src="{{ $clockOutImage }}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-12">
+                                            <hr>
+                                            <strong>Employee Clock In & Out</strong>
+                                            <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                                <thead class="bg-gray-200">
+                                                    <tr>
+                                                        <th class="border px-4 py-2">Clock In</th>
+                                                        <th class="border px-4 py-2">Break Out</th>
+                                                        <th class="border px-4 py-2">Break In</th>
+                                                        <th class="border px-4 py-2">Clock Out</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_am }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_am }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_pm }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_pm }}</u></strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
             @empty
                 <tr>
                     <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
@@ -88,122 +154,7 @@
 @section('script')
 <script>
     $(function () {
-        // Handle row click to toggle child content
-
-        let currentLog;
-
-        $('#logs-table tbody').on('click', '.view-log', function () {
-            const tr = $(this).closest('tr'); // Get the closest table row
-            const logId = tr.data('log-id'); // Retrieve log ID from the data attribute
-            const logData = @json($timelogs->items()); // Use paginated items
-
-            console.log(logData);
-            console.log(logId);
-
-            // Check if the clicked row is already shown
-            const isRowShown = tr.hasClass('shown');
-
-            // If the same row is clicked, just remove the child row and 'shown' class
-            if (isRowShown) {
-                tr.next('.child-row').remove(); // Remove child content
-                tr.removeClass('shown'); // Remove 'shown' class from the row
-            } else {
-                // Hide other child rows and remove the 'shown' class from other rows
-                $('#logs-table .child-row').remove();
-                $('#logs-table tbody tr').removeClass('shown');
-
-                try {
-                    // Find the log entry with the matching ID
-                    const log = logData[logId]; // Find the log by the logId
-
-                    if (!log) {
-                        throw new Error('Log data not found or invalid.');
-                    }
-
-                    // Get the log's clock-in, break-out, break-in, and clock-out times
-                    const clockIn = log.clock_in_am;
-                    const breakOut = log.clock_out_am;
-                    const breakIn = log.clock_in_pm;
-                    const clockOut = log.clock_out_pm;
-
-                    // Format the captured images if available
-                    const clockInImage = log.captured_image_clockin ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockin}` : 'https://placehold.co/300x150.png?text=No+Image';
-                    const clockOutImage = log.captured_image_clockout ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockout}` : 'https://placehold.co/300x150.png?text=No+Image';
-
-                    // Check if images are available for display
-                    const showCapturedImages = log.captured_image_clockin || log.captured_image_clockout;
-
-                    // Generate the content for the child row in the requested format
-                    const childContent = `
-                        <div class="child-row mb-3">
-                            <hr>
-                            <div class="row">
-                                <div class="col-12 col-md-5 mb-3">
-                                    <strong>Employee Information:</strong>
-                                    <ul class="my-3">
-                                        <li>Employee No: <strong><u>${log.information?.employee_no ?? 'N/A'}</u></strong></li>
-                                        <li>Employee Name: <strong><u>${log.information?.personal?.firstname ?? 'N/A'} ${log.information?.personal?.lastname ?? 'N/A'}</u></strong></li>
-                                        <li>Biometrics ID: <strong><u>${log.bsd_no ?? 'N/A'}</u></strong></li>
-                                    </ul>
-                                </div>
-                                <div class="col-12 col-md-7 mb-3">
-                                    <div class="d-flex gap-3">
-                                        ${showCapturedImages ? `
-                                            <div class="mb-4">
-                                                <p class="fw-bold">Captured Clock In:</p>
-                                                <img src="${clockInImage}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
-                                            </div>
-                                            <div class="mb-4">
-                                                <p class="fw-bold">Captured Clock Out:</p>
-                                                <img src="${clockOutImage}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-12">
-                                    <hr>
-                                    <strong>Employee Clock In & Out</strong>
-                                    <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                        <thead class="bg-gray-200">
-                                            <tr>
-                                                <th class="border px-4 py-2">Clock In</th>
-                                                <th class="border px-4 py-2">Break Out</th>
-                                                <th class="border px-4 py-2">Break In</th>
-                                                <th class="border px-4 py-2">Clock Out</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="border px-4 py-2"><strong><u>${clockIn ?? ''}</u></strong></td>
-                                                <td class="border px-4 py-2"><strong><u>${breakOut ?? ''}</u></strong></td>
-                                                <td class="border px-4 py-2"><strong><u>${breakIn ?? ''}</u></strong></td>
-                                                <td class="border px-4 py-2"><strong><u>${clockOut ?? ''}</u></strong></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    // Show the child row with the generated content
-                    tr.after(childContent); // Append content to the row
-                    tr.addClass('shown'); // Add the 'shown' class to the row
-                } catch (error) {
-                    console.error(error.message);
-
-                    // Trigger SweetAlert error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message,
-                        confirmButtonText: 'Okay'
-                    });
-                }
-            }
-        });
-
-
+    
         // Handle datePicker change
         $('#datePicker').on('change', function () {
             const date = $(this).val(); 
