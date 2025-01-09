@@ -81,17 +81,18 @@ class Index extends Component
 
         $model = EmployeeClockInOut::with('information.personal')
             ->whereDate('created_at', $timestamp);
+            
         
         if ($this->search) {
             $this->resetPage();
             $model->where(function ($query) {
                 $query->whereHas('information', function($subQuery) {
-                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%');
+                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%')
+                            ->orWhere('bsd_no', 'like', '%' . $this->search . '%');
                     })
                     ->orWhereHas('information.personal', function ($subQuery) {
                         $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
-                    })
-                    ->orWhere('bsd_no', 'like', '%' . $this->search . '%');
+                    });
             });
         }
         

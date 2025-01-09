@@ -46,6 +46,11 @@
 </head>
 <body>
     <div id="app">
+
+        <div class="scroll-top">
+            <i class="fa-solid fa-arrow-up fa-bounce"></i>
+        </div>
+
         @include('components.employee.navbar')
         <main>
             <div class="content">

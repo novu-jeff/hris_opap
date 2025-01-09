@@ -95,13 +95,15 @@ class EmployeeTestUserSeeder extends Seeder
                 ]
             );
         
-            EmployeeAccount::updateOrCreate(
+            $user = EmployeeAccount::updateOrCreate(
                 ['email' => $employee['email']],
                 [
                     'employee_no' => $employee['employee_no'],
                     'password' => $employee['password'],
                 ]
             );
+            
+            $user->assignRole('employee');
         }
     }
 }
