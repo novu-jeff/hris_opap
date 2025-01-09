@@ -34,7 +34,7 @@
                                     @endif
                                     <div class="col-12 mb-3">
                                         <label for="email" class="mb-2">Email <span class="text-danger">*</span></label>
-                                        <input type="text" name="email" id="email" class="form-control" placeholder="Enter Email ID">
+                                        <input type="text" name="email" id="email" class="form-control" placeholder="E-ID">
                                         <div class="error-field mt-1">
                                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>

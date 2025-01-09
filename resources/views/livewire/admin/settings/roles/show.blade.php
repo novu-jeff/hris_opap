@@ -11,22 +11,27 @@
             </thead>
             <tbody>
                 @foreach ($permissions as $module => $actions)
-                    @foreach ($actions as $action)
-                        <tr>
-                            <td class="px-4 py-2 border">{{ ucfirst($module) }}</td>
-                            <td class="px-4 py-2 border">{{ ucfirst($action) }}</td>
-                            <td class="px-4 py-2 border">
-                                <input 
-                                    type="checkbox" 
-                                    id="read-{{ $module . '.' . $action }}"
-                                    class="permission-checkbox"
-                                    data-module="{{ $module }}"
-                                    data-action="{{ $action }}"
-                                    data-permission="read"
-                                    {{ isset($selectedPermissions["$module.$action"]['read']) && $selectedPermissions["$module.$action"]['read'] ? 'checked' : '' }}
-                                    onclick="updatePermission(event)" />
-                            </td>
-                            <td class="px-4 py-2 border">
+                @foreach ($actions as $action)
+                    <tr>
+                        <td class="px-4 py-2 border">{{ ucfirst($module) }}</td>
+                        <td class="px-4 py-2 border">{{ ucfirst($action) }}</td>
+                        
+                        <!-- Read Permission -->
+                        <td class="px-4 py-2 border">
+                            <input 
+                                type="checkbox" 
+                                id="read-{{ $module . '.' . $action }}"
+                                class="permission-checkbox"
+                                data-module="{{ $module }}"
+                                data-action="{{ $action }}"
+                                data-permission="read"
+                                {{ isset($selectedPermissions["$module.$action"]['read']) && $selectedPermissions["$module.$action"]['read'] ? 'checked' : '' }}
+                                onclick="updatePermission(event)" />
+                        </td>
+                        
+                        <!-- Write Permission (Only show write checkbox for actions other than 'my-directory', 'my-team', 'employee-announcements', 'payslip') -->
+                        <td class="px-4 py-2 border">
+                            @if (!in_array($action, ['my-directory', 'my-team', 'employee-announcements', 'payslip']))
                                 <input 
                                     type="checkbox" 
                                     id="write-{{ $module . '.' . $action }}"
@@ -36,10 +41,14 @@
                                     data-permission="write"
                                     {{ isset($selectedPermissions["$module.$action"]['write']) && $selectedPermissions["$module.$action"]['write'] ? 'checked' : '' }}
                                     onclick="updatePermission(event)" />
-                            </td>
-                        </tr>
-                    @endforeach
+                            @else
+                                <!-- If the action is in the list, don't show the write permission checkbox -->
+                                <input type="hidden" id="write-{{ $module . '.' . $action }}">
+                            @endif
+                        </td>
+                    </tr>
                 @endforeach
+            @endforeach
             </tbody>
         </table>
         <div class="mt-5 d-flex justify-content-end">

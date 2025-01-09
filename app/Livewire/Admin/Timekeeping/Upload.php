@@ -194,13 +194,15 @@ class Upload extends Component
                 
                         // Only check for duplicates if there are more than 4 records in the 'times' array
                         if ($timesCount > 4) {
-                            // Check for duplicates in the 'times' array
+                            // Check for duplicates in the 'times' array, but allow valid cases (e.g., clock_out_am and clock_in_pm being the same)
                             $uniqueTimes = [];
                             foreach ($recordData['times'] as $key => $timeRecord) {
-                                if (!in_array($timeRecord['time'], $uniqueTimes)) {
+                                // Allow duplicate times only if they are consecutive
+                                if (!in_array($timeRecord['time'], $uniqueTimes) || 
+                                    (isset($recordData['times'][$key - 1]) && $recordData['times'][$key - 1]['time'] === $timeRecord['time'])) {
                                     $uniqueTimes[] = $timeRecord['time'];
                                 } else {
-                                    // Remove the duplicate time record
+                                    // Remove the truly duplicate time record
                                     unset($recordData['times'][$key]);
                                 }
                             }
@@ -208,7 +210,7 @@ class Upload extends Component
                             $recordData['times'] = array_values($recordData['times']);
                             // Update timesCount after duplicates are removed
                             $timesCount = count($recordData['times']);
-                        }
+                        }                        
                 
                         // Handle 4 times (standard in and out times)
                         if ($timesCount == 4) {

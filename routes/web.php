@@ -63,6 +63,7 @@ use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 
 /*
 |--------------------------------------------------------------------------
