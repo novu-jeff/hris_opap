@@ -10,16 +10,18 @@
             <p>{{$sub}}</p>
         </div>
         <div class="action">
-            @if ($action === 'view')
-                
-            @else
-                <a href="{{route('ess.request-status.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            @if ($action === 'send')
+                <a href="{{route('ess.request-status')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
             @endif
         </div>
     </div>
     <div class="mt-3">
         @if ($action == 'view')
             @livewire('admin.ess.request-status.index')
+        @elseif($action == 'send')
+            @livewire('admin.ess.request-status.chatbox', [
+                'employee_no' => $employee_no
+            ])
         @endif
     </div>
 </div>

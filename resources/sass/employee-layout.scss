@@ -40,6 +40,7 @@ table {
     transition: all ease 0.3s;
     transform: translateY(100px);
     cursor: pointer;
+    z-index: 999;
   }
 
   .scroll-top.show {
@@ -47,12 +48,21 @@ table {
   }
 
   .latest-announcements {
+    margin-top: 20px;
+    min-height: 150px;
+    display: flex;
 
     .wrapper {
       width: 100%;
-      padding: 20px 0;
-      cursor: grab;
-      overflow-x: auto;
+      padding: 10px 0;
+      overflow-x: hidden;
+      transform: translateY(20px);
+      transition: all ease 0.3s;
+    }
+
+    .wrapper:hover {
+      overflow: auto;
+      cursor: pointer;
     }
 
     .card {

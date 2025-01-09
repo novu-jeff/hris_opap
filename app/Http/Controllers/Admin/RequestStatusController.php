@@ -12,14 +12,26 @@ class RequestStatusController extends Controller
         $this->middleware('permission:read request-status')->only('index');
     }
 
-    public function index(int $id = null)
+    public function index(string $employee_no = null)
     {
+
+        if(is_null($employee_no)) {
+            return view('admin.ess.request-status.index', [
+                'employee_no' => $employee_no,
+                'action' => 'view',
+                'title' => 'Request Status',
+                'header' => 'Manage Request Status | Messages',
+                'sub' => 'View all request status and concerns of employees.'
+            ]);
+        }
+
         return view('admin.ess.request-status.index', [
-            'id' => $id,
-            'action' => 'view',
+            'employee_no' => $employee_no,
+            'action' => 'send',
             'title' => 'Request Status',
             'header' => 'Manage Request Status | Messages',
             'sub' => 'View all request status and concerns of employees.'
         ]);
+        
     }
 }
