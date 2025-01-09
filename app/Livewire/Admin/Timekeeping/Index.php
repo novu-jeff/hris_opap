@@ -25,6 +25,9 @@ class Index extends Component
     public $search = '';
     protected $paginationTheme = 'bootstrap';
 
+    public $view_log;
+    public $viewLogBsdNo;
+
     protected $listeners = ['loading'];
 
     public function mount() {
@@ -74,6 +77,25 @@ class Index extends Component
                 
     }
 
+    public function findLogs(int $id) {
+        // Check if the same log is being clicked again
+        if ($this->viewLogBsdNo === $id) {
+            // Toggle visibility (hide)
+            $this->viewLogBsdNo = null;
+            $this->view_log = null;
+        } else {
+            // Set new log to be viewed
+            $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
+            $data = EmployeeClockInOut::with('information.personal')
+                ->orWhere('bsd_no', $id)
+                ->whereDate('created_at', $timestamp)
+                ->first();
+    
+            $this->viewLogBsdNo = $id;
+            $this->view_log = $data;
+        }
+    }
+    
 
     public function render() {
 
@@ -87,12 +109,12 @@ class Index extends Component
             $this->resetPage();
             $model->where(function ($query) {
                 $query->whereHas('information', function($subQuery) {
-                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%')
-                            ->orWhere('bsd_no', 'like', '%' . $this->search . '%');
+                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%');
                     })
                     ->orWhereHas('information.personal', function ($subQuery) {
                         $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
-                    });
+                    })
+                    ->orWhere('bsd_no', $this->search);
             });
         }
         
