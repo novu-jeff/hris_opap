@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DirectoryController as ApiDirectoryController;
 use App\Http\Controllers\Api\TeamController as ApiTeamController;
 use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\RequestStatusController as ApiRequestStatusController;
 
 use Illuminate\Http\Request;
@@ -57,3 +58,7 @@ Route::middleware(['auth:sanctum', 'api_employee'])->group(function() {
         Route::get('/download/{messageId}/{attachmentId}', [ApiRequestStatusController::class, 'download']);
     });
 });
+
+
+
+Route::post('test', [MonitoringController::class, 'post']);
