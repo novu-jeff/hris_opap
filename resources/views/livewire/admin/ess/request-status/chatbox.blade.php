@@ -1,21 +1,22 @@
 <div class="modal-dialog-scrollable" wire:click="makeSeen">
     <div class="modal-content">
         @if(!is_null($selected_id))
+
+            @php
+                $fullname = $records['user']['personal']->firstname . ' ' . $records['user']['personal']->lastname;
+            @endphp
             <div class="msg-head">
-                <div class="row">
+                <div class="row px-5">
                     <div class="col-8">
                         <div class="d-flex align-items-center">
                             <span class="chat-icon"><img class="img-fluid" src="https://mehedihtml.com/chatbox/assets/img/arroleftt.svg" alt="image title"></span>
-                            <div class="flex-shrink-0">
-                                <img src="
-                                {{ isset($records['user']) && $records['user']['personal']['profile']
-                                        ? Storage::url('employee/users/' . $records['user']['employee_id'] . '/' . $records['user']['profile']) 
-                                        : 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=10' 
-                                    }}" style="width: 60px; height: 60px;">
-                            </div>
+                            <td class="text-center">
+                                <img style="width: 50px; height: 50px;"
+                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname) }}">              
+                            </td>
                             <div class="flex-grow-1 ms-3">
-                                <h3>{{ (isset($records['user']) ? ucwords($records['user']['personal']->firstname . ' ' . $records['user']['personal']->lastname) : '')}}</h3>
-                                <p>{{ (isset($records['user']) ? ucwords($records['user']['positions']->name ?? 'Unassigned') : '')}}</p>
+                                <h3>{{ (isset($records['user']) ? ucwords($fullname) : '')}}</h3>
+                                <p>{{ (isset($records['user']) ? strtoupper($records['user']['positions']->name ?? 'Employee') : '')}}</p>
                             </div>
                         </div>
                     </div>

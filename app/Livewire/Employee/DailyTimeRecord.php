@@ -41,7 +41,10 @@ class DailyTimeRecord extends Component
 
             $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
         } catch (\Exception $e) {
-            $this->errors = explode("\n", $e->getMessage());
+            $this->errors = [
+                'Employee ' . $this->employee_id . ' has no shifting schedule',
+                'Employee ' . $this->employee_id . ' has no employee schedule',
+            ];
         }
         
     }

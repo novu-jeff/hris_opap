@@ -213,7 +213,7 @@ Route::prefix('admin')->group(function() {
             });
 
             Route::prefix('request-status')->group(function() {
-                Route::get('{id?}', [ESSRequestStatusController::class, 'index'])
+                Route::get('{employee_no?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
             });
 
