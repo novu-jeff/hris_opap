@@ -29,6 +29,15 @@ $(document).on('livewire:poll', function() {
     reinitializeDataTable();
 })
 
+$(window).scroll(function() {
+    $(this).scrollTop() > 150 ?
+        $('.scroll-top').addClass('show')
+    :   $('.scroll-top').removeClass('show');
+});
+
+$('.scroll-top').on('click', function() {
+    $('html, body').animate({ scrollTop: 0 });
+})
 
 $(function() {
     $('.select-2').select2();

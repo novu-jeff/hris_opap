@@ -28,7 +28,10 @@ class Show extends Component
 
     public function loadDefaultPermissions() {
         $this->roleId = $this->id;
-
+    
+        $role = Role::find($this->roleId);
+    
+        // Initialize the full set of permissions
         $this->permissions = [
             'recruitment' => ['jobs', 'applicants'],
             'hris' => ['hris'],
@@ -41,20 +44,58 @@ class Show extends Component
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
                 'leave-types', 'leave-credits', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
+            ],
+            'employee' => [
+                'apply-leave', 'clock-in-out', 'apply-atro', 'payslip', 'employee-request-status',
+                'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
             ]
         ];
-        
-
+    
+        // Check if the role is 'employee'
+        if ($role->name === 'employee') {
+            // Show only 'employee' permissions
+            $this->permissions = [
+                'employee' => [
+                    'apply-leave', 'clock-in-out', 'apply-atro', 'payslip', 'employee-request-status',
+                    'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
+                ]
+            ];
+        } else {
+            // If not 'employee', remove 'employee' permissions
+            unset($this->permissions['employee']);
+        }
+    
         // Initialize default values for selectedPermissions
         foreach ($this->permissions as $module => $actions) {
             foreach ($actions as $action) {
-                $this->selectedPermissions["$module.$action"] = [
-                    'read' => false,
-                    'write' => false,
-                ];
+                // Apply the condition only for the 'employee' module
+                if ($module === 'employee') {
+                    // Check if the action is one of the specified ones
+                    if (in_array($action, ['my-directory', 'my-team', 'employee-announcements', 'payslip'])) {
+                        // Only set 'read' for these actions
+                        $this->selectedPermissions["$module.$action"] = [
+                            'read' => true,
+                            'write' => 'disabled',
+                        ];
+                    } else {
+                        // Set both 'read' and 'write' to false for other actions in the 'employee' module
+                        $this->selectedPermissions["$module.$action"] = [
+                            'read' => false,
+                            'write' => false,
+                        ];
+                    }
+                } else {
+                    // For other modules, set both 'read' and 'write' to false (default behavior)
+                    $this->selectedPermissions["$module.$action"] = [
+                        'read' => false,
+                        'write' => false,
+                    ];
+                }
             }
         }
     }
+    
+    
 
     public function loadSavedPermissions()
     {
@@ -101,7 +142,6 @@ class Show extends Component
 
     public function savePermissions()
     {
-
         if (Gate::denies('write roles')) {
             $this->dispatch('alert', [
                 'status' => 'error',
@@ -126,6 +166,11 @@ class Show extends Component
                     // Check if the key is properly formatted with two parts
                     if (count($parts) === 2) {
                         list($module, $action) = $parts;
+
+                        // Exclude 'write' permission for specified actions
+                        if (in_array($action, ['my-directory', 'my-team', 'employee-announcements', 'payslip']) && $permission === 'write') {
+                            continue; // Skip the write permission for these actions
+                        }
 
                         // Format the permission name
                         $permissionName = "$permission $action";

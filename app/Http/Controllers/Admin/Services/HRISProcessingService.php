@@ -138,6 +138,8 @@ class HRISProcessingService extends Controller
                 'email' => $email,
             ]);
 
+            $record->assignRole('employee');
+
             return $record;
         }
 
