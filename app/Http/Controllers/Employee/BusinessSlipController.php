@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class BusinessSlipController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read apply-obs')->only('index');
+        $this->middleware('permission:write apply-obs')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('employee.business-slip', [

@@ -13,7 +13,9 @@
             @if ($action === 'view')
                 <div class="d-flex gap-3">
                     <a href="{{route('employee.dashboard')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-                    <a href="{{route('employee.leave.apply')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Apply Now</a>
+                    @can('write apply-leave')
+                        <a href="{{route('employee.leave.apply')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Apply Now</a>
+                    @endcan
                 </div>
             @else
                 <a href="{{route('employee.leave')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
