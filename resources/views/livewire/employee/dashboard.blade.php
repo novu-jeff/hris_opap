@@ -13,7 +13,7 @@
         </div>          
     </div>
     @if($announcements)
-        <hr class="mt-3">
+        <hr class="mt-5">
     @endif
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
         <div class="grid">

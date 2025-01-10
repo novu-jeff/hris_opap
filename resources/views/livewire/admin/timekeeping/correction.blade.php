@@ -72,9 +72,78 @@
                             {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
                         </td>                    
                         <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                            <button class="view-log btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                            <button wire:click="findLogs({{$item->bsd_no}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
                         </td>
-                    </tr>            
+                    </tr>   
+                    @if($view_log && $item->bsd_no == $viewLogBsdNo)
+                        @php
+                            // Define captured image URLs
+                            $clockInImage = $view_log->captured_image_clockin
+                                ? asset('storage/clockinout/' . $view_log->captured_image_clockin)
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+                            $clockOutImage = $view_log->captured_image_clockout
+                                ? asset('storage/clockinout/' . $view_log->captured_image_clockout)
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+
+                            $showCapturedImages = $view_log->captured_image_clockin || $view_log->captured_image_clockout;
+                        @endphp
+                        <tr class="child-row">
+                            <td colspan="100%">
+                                <div class="mb-3">
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-12 col-md-5 mb-3">
+                                            <strong>Employee Information:</strong>
+                                            <ul class="my-3">
+                                                <li>Employee No: <strong><u>{{ $view_log->information->employee_no ?? 'N/A' }}</u></strong></li>
+                                                <li>Employee Name: <strong><u>{{ $view_log->information->personal->firstname ?? 'N/A' }} {{ $view_log->information->personal->lastname ?? 'N/A' }}</u></strong></li>
+                                                <li>Biometrics ID: <strong><u>{{ $view_log->bsd_no ?? 'N/A' }}</u></strong></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-12 col-md-7 mb-3">
+                                            <div class="d-flex gap-3">
+                                                @if ($showCapturedImages)
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock In:</p>
+                                                        <img src="{{ $clockInImage }}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock Out:</p>
+                                                        <img src="{{ $clockOutImage }}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-12">
+                                            <hr>
+                                            <strong>Employee Clock In & Out</strong>
+                                            <div class="d-flex justify-content-end">
+                                                <a href="{{route('timekeeping.correction-apply', ['id' => $view_log->id])}}" type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
+                                            </div>
+                                            <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                                <thead class="bg-gray-200">
+                                                    <tr>
+                                                        <th class="border px-4 py-2">Clock In</th>
+                                                        <th class="border px-4 py-2">Break Out</th>
+                                                        <th class="border px-4 py-2">Break In</th>
+                                                        <th class="border px-4 py-2">Clock Out</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_am }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_am }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_pm }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_pm }}</u></strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif         
                 @empty
                     <tr>
                         <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
@@ -90,141 +159,6 @@
 @section('script')
     <script>
         $(function() {
-
-            // Check if DataTable is already initialized, if so, destroy it to reinitialize
-            if ($.fn.DataTable.isDataTable('#logs-table')) {
-                $('#logs-table').DataTable().destroy();
-            }
-
-            // Initialize DataTable
-            const table = $('#logs-table').DataTable({
-                responsive: true,
-                pageLength: 20 ,
-                order: [],
-            });
-
-            // Handle row click to toggle child content
-            $('#logs-table tbody').on('click', '.view-log', function () {
-                const tr = $(this).closest('tr'); // Get the closest table row
-                const row = table.row(tr); // Access the DataTable row object
-
-                // Hide all other child rows
-                table.rows().every(function () {
-                    if (this.child.isShown() && !$(this.node()).is(tr)) {
-                        this.child.hide();
-                        $(this.node()).removeClass('shown');
-                    }
-                });
-
-                if (row.child.isShown()) {
-                    // If child row is already shown, hide it
-                    row.child.hide();
-                    tr.removeClass('shown');
-                } else {
-                    const logId = tr.data('log-id'); // Retrieve log ID from the data attribute
-                    const logData = @json($records['data']); // Parse the JSON data from PHP
-
-                    try {
-                        // Find the log entry with the matching ID
-                        const log = logData[logId];
-                        if (!log) {
-                            throw new Error('Log data not found or invalid.');
-                        }
-
-                        // Get the log's clock-in, break-out, break-in, and clock-out times
-                        const clockIn = log.clock_in_am;
-                        const breakOut = log.clock_out_am;
-                        const breakIn = log.clock_in_pm;
-                        const clockOut = log.clock_out_pm;
-
-                        // Format the captured images if available
-                        const clockInImage = log.captured_image_clockin ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockin}` : 'https://placehold.co/300x150.png?text=No+Image';
-                        const clockOutImage = log.captured_image_clockout ? `{{ asset('storage/clockinout/') }}/${log.captured_image_clockout}` : 'https://placehold.co/300x150.png?text=No+Image';
-
-                        // Check if images are available for display
-                        const showCapturedImages = log.captured_image_clockin || log.captured_image_clockout;
-
-                        // Generate the content for the child row in the requested format
-                        const childContent = `
-                            <div class="mb-3">
-                                <hr>
-                                <div class="row">
-                                    <div class="col-12 col-md-5 mb-3">
-                                        <strong>Employee Information:</strong>
-                                        <ul class="my-3">
-                                            <li>Employee No: <strong><u>${log.information.employee_no ?? 'N/A'}</u></strong></li>
-                                            <li>Employee Name: <strong><u>${log.information?.personal?.firstname ?? 'N/A'} ${log.information?.personal?.lastname ?? 'N/A'}</u></strong></li>
-                                            <li>Biometrics ID: <strong><u>${log.information?.bsd_no ?? 'N/A'}</u></strong></li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-12 col-md-7 mb-3">
-                                        <div class="d-flex gap-3">
-                                            ${showCapturedImages ? `
-                                                <div class="mb-4">
-                                                    <p class="fw-bold">Captured Clock In:</p>
-                                                    <img src="${clockInImage}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                </div>
-                                                <div class="mb-4">
-                                                    <p class="fw-bold">Captured Clock Out:</p>
-                                                    <img src="${clockOutImage}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-12">
-                                         <hr>
-                                        <strong>Employee Clock In & Out</strong>
-                                        <div class="d-flex justify-content-end">
-                                            <button type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink" data-id="${log.id}">Apply Correction</a>
-                                        </div>
-                                        <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                            <thead class="bg-gray-200">
-                                                <tr>
-                                                    <th class="border px-4 py-2">Clock In</th>
-                                                    <th class="border px-4 py-2">Break Out</th>
-                                                    <th class="border px-4 py-2">Break In</th>
-                                                    <th class="border px-4 py-2">Clock Out</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="border px-4 py-2"><strong><u>${clockIn ?? ''}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${breakOut ?? ''}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${breakIn ?? ''}</u></strong></td>
-                                                    <td class="border px-4 py-2"><strong><u>${clockOut ?? ''}</u></strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-
-                        // Show the child row with the generated content
-                        row.child(childContent).show();
-                        tr.addClass('shown');
-
-                        $(document).on('click', '#applyCorrectionLink', function(e) {
-                            e.preventDefault(); 
-                            const log_id = $(this).data('id');
-                            const url = '{{ route("timekeeping.correction-apply", ["id" => "__id__"]) }}'.replace('__id__', log_id);
-                            window.open(url, '_blank'); 
-                        });
-
-                    } catch (error) {
-                        console.error(error.message);
-
-                        // Trigger SweetAlert error message
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: error.message,
-                            confirmButtonText: 'Okay'
-                        });
-                    }
-                }
-            });
-
 
             $('#datePicker').on('change', function () {
                 const date = $(this).val(); 

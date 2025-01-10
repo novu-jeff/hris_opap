@@ -13,17 +13,15 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->string('from_id');
+            $table->string('from_id')->index(); // Add index for 'from_id'
             $table->string('from_role');
-            $table->string('to_id');
+            $table->string('to_id')->index(); // Add index for 'to_id'
             $table->string('to_role');
-            $table->longText('message')
-                ->nullable();
-            $table->boolean('isSeen')
-                ->default(false);
+            $table->longText('message')->nullable();
+            $table->boolean('isSeen')->default(false);
             $table->timestamps();
         });
-
+        
         Schema::create('messages_attachments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('message_id')
@@ -32,7 +30,7 @@ return new class extends Migration
             $table->string('original');
             $table->string('attachment');
             $table->timestamps();
-        });
+        });        
     }
 
     /**
