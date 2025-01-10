@@ -18,10 +18,8 @@ class Correction extends Component
     public $setup;
 
     public $records;
-
-    public bool $lazy = true;
-
-    protected $listeners = ['loading'];
+    public $view_log;
+    public $viewLogBsdNo;
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -29,10 +27,6 @@ class Correction extends Component
 
     public function mount() {
         $this->loadRecords();
-    }
-
-    public function loading() {
-        $this->lazy = false;
     }
 
     public function loadRecords() {
@@ -74,6 +68,25 @@ class Correction extends Component
                 
     }
 
+    public function findLogs(int $id) {
+        // Check if the same log is being clicked again
+        if ($this->viewLogBsdNo === $id) {
+            // Toggle visibility (hide)
+            $this->viewLogBsdNo = null;
+            $this->view_log = null;
+        } else {
+            // Set new log to be viewed
+            $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
+            $data = EmployeeClockInOut::with('information.personal')
+                ->orWhere('bsd_no', $id)
+                ->whereDate('created_at', $timestamp)
+                ->first();
+    
+            $this->viewLogBsdNo = $id;
+            $this->view_log = $data;
+        }
+    }
+
     public function render() {
 
         $timestamp = $this->year . '-' . str_pad($this->month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($this->day, 2, '0', STR_PAD_LEFT);
@@ -82,6 +95,8 @@ class Correction extends Component
             ->whereDate('created_at', $timestamp)
             ->where(function ($query) {
                 $query->whereNull('clock_in_am')
+                    ->orWhereNull('clock_out_pm')
+                    ->orWhereNull('clock_in_pm')
                     ->orWhereNull('clock_out_pm');
             });
         
