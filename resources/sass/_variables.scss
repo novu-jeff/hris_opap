@@ -21,3 +21,8 @@ $line-height-base: 1.6;
 .form-control:focus-within {
     box-shadow: none;
 }
+
+.form-control:disabled {
+    background-color: transparent !important;
+    opacity: 1;
+}
