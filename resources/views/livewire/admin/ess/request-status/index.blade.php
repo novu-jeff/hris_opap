@@ -22,13 +22,13 @@
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped table-bordered w-100">
+        <table class="table table-striped table-bordered w-100" wire:poll.visible>
             <thead>
                 <tr>
                     <th></th>
                     <th>Employee No.</th>
                     <th>Employee Name</th>
-                    <th></th>
+                    <th>Last Activty</th>
                     <th></th>
                 </tr>
             </thead>                
@@ -41,6 +41,13 @@
                         </td>
                         <td>{{$record->employee_no}}</td>
                         <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
+                        <td>
+                            @if ($record->latest_message_date)
+                                {{ relative_time($record->latest_message_date) }}
+                            @else
+                                No messages
+                            @endif
+                        </td>
                         <td>
                             <a href="{{route('ess.request-status', ['employee_no' => $record->employee_no])}}" class="btn btn-primary mx-1">
                                 <i class="fa-solid fa-paper-plane"></i>

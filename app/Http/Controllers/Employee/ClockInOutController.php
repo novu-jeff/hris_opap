@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class ClockInOutController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read clock-in-out')->only('index');
+    }
+
     public function index() {
         return view('employee.clock', [
             'action' => 'index',

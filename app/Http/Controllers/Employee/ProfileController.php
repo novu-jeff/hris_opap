@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read my-profile')->only('index');
+    }
+
     public function index() {
         return view('employee.profile', [
             'action' => 'view',

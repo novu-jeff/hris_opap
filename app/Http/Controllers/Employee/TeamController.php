@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read my-team')->only('index');
+    }
+
     public function index() {
         return view('employee.team', [
             'action' => 'index',

@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class EmployeeDailyTimeRecordController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read employee-dtr')->only('index');
+    }
+
     public function index()
     {
         return view('employee.daily-time-record', [

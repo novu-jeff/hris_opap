@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 class LeaveController extends Controller
 {
 
+    public function __construct() {
+        $this->middleware('permission:read apply-leave')->only('index');
+        $this->middleware('permission:write apply-leave')->only(['create', 'edit']);
+    }
+
     public function index()
     {
         return view('employee.leave', [
