@@ -89,10 +89,6 @@ class EmployeeInformation extends Model
         return $this->hasOne(Positions::class, 'id', 'position_id');
     }
 
-    public function messages() {
-        return $this->hasMany(Message::class, 'from_id', 'id');
-    }
-
     public function leave_credits() {
         return $this->hasOne(LeaveCredits::class, 'employee_no', 'employee_no');
     }

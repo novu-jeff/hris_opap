@@ -18,24 +18,15 @@ class Index extends Component
     public $setup;
 
     public $records;
-
-    public bool $lazy = true;
+    public $view_log;
+    public $viewLogBsdNo;
 
     public $entries = 10;
     public $search = '';
     protected $paginationTheme = 'bootstrap';
 
-    public $view_log;
-    public $viewLogBsdNo;
-
-    protected $listeners = ['loading'];
-
     public function mount() {
         $this->loadRecords();
-    }
-
-    public function loading() {
-        $this->lazy = false;
     }
 
     public function loadRecords() {

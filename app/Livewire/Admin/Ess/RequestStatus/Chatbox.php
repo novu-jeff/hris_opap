@@ -15,6 +15,7 @@ class Chatbox extends Component
 {
     use WithFileUploads;
 
+    public $employee_no;
     public $records = [];
     public $selected_id;
     public $message;
@@ -25,7 +26,7 @@ class Chatbox extends Component
 
     public function mount()
     {
-        $this->selected(session('selected_employee_no') ?? null);
+        $this->selected($this->employee_no);
         $this->dispatch('showLatest');
     }
 
@@ -38,15 +39,14 @@ class Chatbox extends Component
 
     public function loadRecords(string $employee_no = null)
     {
-
+        
         $user = EmployeeInformation::with(['personal', 'positions'])
             ->when($employee_no, fn($query) => $query->where('employee_no', $employee_no))
             ->first();
 
 
         if (!$user) {
-            $this->records = [];
-            return;
+            return redirect()->route('ess.request-status');
         }
 
         $sent = Message::with('attachments')
