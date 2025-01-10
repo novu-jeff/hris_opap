@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read employee-announcements')->only('index');
+    }
+
     public function index() {
         return view('employee.announcements', [
             'action' => 'index',

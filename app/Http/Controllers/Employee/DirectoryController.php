@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class DirectoryController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read my-directory')->only('index');
+    }
+
     public function index() {
         return view('employee.directory', [
             'action' => 'index',
