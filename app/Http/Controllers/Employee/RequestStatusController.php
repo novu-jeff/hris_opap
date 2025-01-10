@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class RequestStatusController extends Controller
 {
+
+    public function __construct() {
+        $this->middleware('permission:read employee-request-status')->only('index');
+    }
+
     public function index() {
         return view('employee.request-status', [
             'action' => 'index',
