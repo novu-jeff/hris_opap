@@ -13,7 +13,7 @@ class Create extends Component
     public $id;
     public $name;
     public $description;
-    public $shift_duration = 'standard';
+    public $shift_duration = '';
     public $earliest_in = '07:00';
     public $latest_in = '09:00';
     public $start_shift = '07:00';
