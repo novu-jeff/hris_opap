@@ -677,13 +677,15 @@ class EmployeeUploadService extends Controller
             'cost' => 10,
         ]);
 
-        EmployeeAccount::updateOrCreate(
+        $user = EmployeeAccount::updateOrCreate(
             ['employee_no' => $employeeNo],
             [
                 'email' => $email,
                 'password' => $hash
             ]
         );
+
+        $user->assignRole('employee');
     }
 
 
