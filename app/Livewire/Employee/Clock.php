@@ -177,11 +177,15 @@ class Clock extends Component
             ->first();
 
 
-        if ($records && $records->clock_in_am !== $records->clock_out_am && $records->clock_in_am !== $records->clock_in_pm) {
-            $clockInTime = $records->clock_in_am;
-            $maxClockOut = Carbon::parse($clockInTime)->addHours(9);
+        if($shift->shift_duration == 'flexible') {
+            if ($records && $records->clock_in_am !== $records->clock_out_am && $records->clock_in_am !== $records->clock_in_pm) {
+                $clockInTime = $records->clock_in_am;
+                $maxClockOut = Carbon::parse($clockInTime)->addHours(9);
+            } else {
+                $maxClockOut = Carbon::createFromTime(17, 0, 0);
+            }
         } else {
-            $maxClockOut = Carbon::createFromTime(17, 0, 0);
+            $maxClockOut = Carbon::parse($shift->end_shift);
         }
 
         // If notifications are enabled, show alerts accordingly
@@ -231,11 +235,18 @@ class Clock extends Component
             $expectedClockOut = $clockInTime->copy()->addHours(9);  
             $expectedClockOutMins = $expectedClockOut->diffInMinutes($timestamp);
             
-            if($expectedClockOut->gt($maxClockOut)) {
-                $formattedExpectedClockOut = $maxClockOut->format('g:i A'); 
+            if($shift->shift_duration == 'flexible') {
+                if($expectedClockOut->gt($maxClockOut)) {
+                    $formattedExpectedClockOut = $maxClockOut->format('g:i A'); 
+                } else {
+                    $formattedExpectedClockOut = $expectedClockOut->format('g:i A');
+                }
             } else {
+                $expectedClockOut = Carbon::parse($shift->end_shift);
                 $formattedExpectedClockOut = $expectedClockOut->format('g:i A');
             }
+
+            
 
             # If records has been populated
 
