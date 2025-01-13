@@ -148,8 +148,6 @@ class HRISProcessingService extends Controller
                 'password' => Hash::make($data['password']),
             ]);
         }
-
-        $record->assignRole('employee');
         
     }
 
