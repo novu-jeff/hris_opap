@@ -119,9 +119,7 @@ class HRISProcessingService extends Controller
     }
 
     public function employee_account(string $employee_no, array $data, bool $isFirstTime = false)  {
-        
-
-
+    
         if ($isFirstTime) {
 
             $generate = new Generate;
@@ -150,6 +148,8 @@ class HRISProcessingService extends Controller
                 'password' => Hash::make($data['password']),
             ]);
         }
+
+        $record->assignRole('employee');
         
     }
 
