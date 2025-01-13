@@ -19,7 +19,7 @@ class LeaveController extends Controller
             'action' => 'view',
             'title' => 'ESS | Leave Applications',
             'header' => 'Manage Leaves',
-            'sub' => 'Track and monitor youe employment records.'
+            'sub' => 'Track and monitor your leave applications.'
         ]);
     }
 

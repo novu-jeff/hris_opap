@@ -19,7 +19,7 @@ class BusinessSlipController extends Controller
             'action' => 'view',
             'title' => 'ESS | Business Slip Applications',
             'header' => 'Manage Business Slip',
-            'sub' => 'Track and monitor youe employment records.'
+            'sub' => 'Track and monitor your OB applications.'
         ]);
     }
 

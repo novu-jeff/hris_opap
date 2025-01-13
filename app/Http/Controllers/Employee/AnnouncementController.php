@@ -17,7 +17,7 @@ class AnnouncementController extends Controller
             'action' => 'index',
             'title' => 'ESS | Announcements',
             'header' => 'Announcements ',
-            'sub' => 'Latest Happennings'
+            'sub' => 'View Latest News and Happennings'
         ]);
     }
 
