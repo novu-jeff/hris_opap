@@ -60,7 +60,7 @@ class EmployeeUploadService extends Controller
     
             // Handle Position
     
-            if (!empty($employeeData[17])) { // Adjusted index
+            if (!empty($employeeData[17])) {
                 $position = Positions::firstOrCreate(
                     ['name' => $employeeData[17]],
                     ['code' => $employeeData[17]]
@@ -68,7 +68,7 @@ class EmployeeUploadService extends Controller
             }
     
             // Handle Job Category (optional)
-            $jobCategory = EmployementTypes::where('name', $employeeData[19])->first(); // Adjusted index
+            $jobCategory = EmployementTypes::where('name', $employeeData[19])->first();
     
             // Create or Update Employee Information
             $employeeInfo = EmployeeInformation::updateOrCreate(
@@ -77,12 +77,12 @@ class EmployeeUploadService extends Controller
                     'shift_id' => $schedules['shift'] ?? null,
                     'schedule_id' => $schedules['schedule'] ?? null, 
                     'bsd_no' => $employeeData[1],
-                    'date_hired' => $this->transformDate($employeeData[16]), // Adjusted index
+                    'date_hired' => $this->transformDate($employeeData[16]),
                     'department_id' => null,
                     'position_id' => $position->id ?? null,
                     'employment_type_category' => $jobCategory?->id ?? null,
-                    'bank_account_no' => $employeeData[15], // Adjusted index
-                    'monthly_rate' => $employeeData[18], // Adjusted index
+                    'bank_account_no' => $employeeData[15],
+                    'monthly_rate' => $employeeData[18],
                 ]
             );
     
@@ -91,13 +91,13 @@ class EmployeeUploadService extends Controller
                 $result['employee_information']['inserted']['total']++;
                 $result['employee_information']['inserted']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
+                    'name' => $employeeData[3] . ' ' . $employeeData[2],
                 ];
             } else {
                 $result['employee_information']['updated']['total']++;
                 $result['employee_information']['updated']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
+                    'name' => $employeeData[3] . ' ' . $employeeData[2],
                 ];
             }
     
@@ -106,20 +106,19 @@ class EmployeeUploadService extends Controller
                 ['employee_no' => $employeeData[0]],
                 [
                     'bsd_no' => $employeeData[1],
-                    'lastname' => $employeeData[2], // Adjusted index
-                    'firstname' => $employeeData[3], // Adjusted index
-                    'middlename' => $employeeData[4], // Adjusted index
-                    'present_address' => $employeeData[5], // Adjusted index
-                    'sex' => strtolower($employeeData[6]), // Adjusted index
-                    'civil_status' => strtolower($employeeData[7]), // Adjusted index
-                    'birthday' => $this->transformDate($employeeData[8]), // Adjusted index
-                    'age' => is_numeric($employeeData[9]) ? $employeeData[9] : null, // Adjusted index
-                    'gsis_no' => $employeeData[10], // Adjusted index
-                    'pagibig_no' => $employeeData[11], // Adjusted index
-                    'philhealth_no' => $employeeData[12], // Adjusted index
-                    'sss_no' => $employeeData[13], // Adjusted index
-                    'tin_no' => $employeeData[14], // Adjusted index
-                    'email' => $employeeData[20], // Adjusted index
+                    'lastname' => $employeeData[2],
+                    'firstname' => $employeeData[3],
+                    'middlename' => $employeeData[4],
+                    'present_address' => $employeeData[5],
+                    'sex' => strtolower($employeeData[6]),
+                    'civil_status' => strtolower($employeeData[7]),
+                    'birthday' => $this->transformDate($employeeData[8]),
+                    'age' => is_numeric($employeeData[9]) ? $employeeData[9] : null,
+                    'gsis_no' => $employeeData[10],
+                    'pagibig_no' => $employeeData[11],
+                    'philhealth_no' => $employeeData[12],
+                    'sss_no' => $employeeData[13],
+                    'tin_no' => $employeeData[14],
                 ]
             );
     
@@ -128,18 +127,18 @@ class EmployeeUploadService extends Controller
                 $result['employee_personal']['inserted']['total']++;
                 $result['employee_personal']['inserted']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
+                    'name' => $employeeData[3] . ' ' . $employeeData[2],
                 ];
             } else {
                 $result['employee_personal']['updated']['total']++;
                 $result['employee_personal']['updated']['data'][] = [
                     'employee_no' => $employeeData[0],
-                    'name' => $employeeData[3] . ' ' . $employeeData[2], // Adjusted index
+                    'name' => $employeeData[3] . ' ' . $employeeData[2],
                 ];
             }
     
             // For new accounts
-            $this->createAccount($employeeData[0], $employeeData[3], $employeeData[2]); // Adjusted index
+            $this->createAccount($employeeData[0], $employeeData[3], $employeeData[2], $employeeData[20],);
         }
     
         return $result;
@@ -666,12 +665,12 @@ class EmployeeUploadService extends Controller
         return $result;
     }  
     
-    private function createAccount($employeeNo, $firstName, $lastName) {
+    private function createAccount($employeeNo, $firstName, $lastName, $email) {
 
         set_time_limit(0);
         
         $generate = new Generate;
-        $email = $generate->email($employeeNo, $firstName, $lastName);
+        $email_id = $generate->email($employeeNo, $firstName, $lastName);
 
         $hash = password_hash('password', PASSWORD_BCRYPT, [
             'cost' => 10,
@@ -681,6 +680,7 @@ class EmployeeUploadService extends Controller
             ['employee_no' => $employeeNo],
             [
                 'email' => $email,
+                'email_id' => $email_id,
                 'password' => $hash
             ]
         );
