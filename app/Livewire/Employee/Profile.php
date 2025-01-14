@@ -27,6 +27,7 @@ class Profile extends Component
 {
 
     public $employee_no;
+    public $employee_id;
     public $employees;
     public array $records;
     public array $countries;
@@ -41,7 +42,9 @@ class Profile extends Component
     }
 
     public function loadRecords() {
+
         $this->employee_no = Auth::user()->employee_no;
+        $this->employee_id = Auth::user()->id;
     
         // Fetch employee data with relations
         $updating = EmployeeUpdatePersonal::with([
@@ -53,7 +56,7 @@ class Profile extends Component
         $data = $updating ?? EmployeeInformation::with([
             'personal', 'education', 'parents', 'children', 
             'employment_history', 'civil_service', 'trainings', 
-            'others', 'skills'
+            'others', 'skills', 'account'
         ])->where('employee_no', $this->employee_no)->first();
     
         // Handle cases where no data is found
@@ -86,19 +89,31 @@ class Profile extends Component
     }
 
     protected function formatEmployeePersonal($data) {
+        // Determine if it's an update or from the given data
         $personal = $this->isFromUpdate ? $data : $data->personal;
     
+        // Extract the email from the 'account' array if it exists
+        $email = $data->account['email'] ?? null;
+    
+        // Define the fields for personal data
         $fields = [
             'profile', 'firstname', 'middlename', 'lastname', 'suffix', 'birthday',
             'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
             'present_address', 'present_province', 'present_city', 'permanent_address',
-            'permanent_province', 'permanent_city', 'mobile_number', 'tel_no', 'email',
-            'height', 'weight', 'blood_type', 'gsis_no', 'pagibig_no', 'philhealth_no',
-            'sss_no', 'tin_no',
+            'permanent_province', 'permanent_city', 'mobile_number', 'tel_no', 'height',
+            'weight', 'blood_type', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
+            'tin_no', 'email'  // email will be set from the account data
         ];
     
-        return array_combine($fields, array_map(fn($field) => $personal->$field ?? null, $fields));
+        // Generate the array with the personal fields and their values
+        $formattedPersonal = array_combine(
+            $fields, 
+            array_map(fn($field) => $field === 'email' ? $email : ($personal[$field] ?? null), $fields)
+        );
+    
+        return $formattedPersonal;
     }
+    
     
     protected function formatEmployeeParents($data) {
         $parents = $data->parents;
@@ -160,7 +175,7 @@ class Profile extends Component
             'accordions' => [
                 'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
                 'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
-                'contact' => ['mobile_number', 'tel_no', 'company_email'],
+                'contact' => ['mobile_number', 'tel_no', 'email'],
                 'appearance' => ['height', 'weight', 'blood_type'],
                 'identification' => ['gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no']
             ]
@@ -286,8 +301,11 @@ class Profile extends Component
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
-            'records.employee_personal.email' => 'nullable|email',
-
+            'records.employee_personal.email' => 'required|email|unique:employee_account,email',
+            'records.employee_personal.email' => [
+                'nullable',
+                Rule::unique('employee_account', 'email')->ignore($employee_no, 'employee_no')
+            ],
 
             'records.employee_children.*.firstname' => 'required|string|max:255',
             'records.employee_children.*.middlename' => 'nullable|string|max:255',
@@ -350,6 +368,8 @@ class Profile extends Component
 
             'records.employee_personal.mobile_number.regex' => 'The mobile number format is invalid. It should start with 09 and be followed by 9 digits.',
             'records.employee_personal.email.email' => 'The email must be a valid email address.',
+            'records.employee_personal.email.required' => 'The email is required.',
+            'records.employee_personal.email.unique' => 'The email is already taken.',
 
             'records.employee_children.*.firstname.required' => 'Each child must have a first name.',
             'records.employee_children.*.middlename.string' => 'The middle name must be a string.',
@@ -450,9 +470,8 @@ class Profile extends Component
                 'message' => 'You\'re profile is now in pending for HR\'s approval. We\'ll sent you a notification once approved. Thank you!',
             ]);
 
-            $user = auth()->user();
-            $user = EmployeeAccount::find($user->id);
-            $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted his/her updated <strong>profile information</strong>.';
+            $user = EmployeeAccount::find($this->employee_id);
+            $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted his/her updated <strong>profile information</strong>.';
             $redirect = route('ess.approval-profile.edit', ['employee_no', $user->employee_no]);
             $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
