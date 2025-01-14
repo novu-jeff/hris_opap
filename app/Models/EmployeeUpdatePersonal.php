@@ -77,6 +77,7 @@ class EmployeeUpdatePersonal extends Model
     public function skills() {
         return $this->hasMany(EmployeeUpdateSkillsHobbies::class, 'employee_no', 'employee_no');
     }
+    
 
 
 }

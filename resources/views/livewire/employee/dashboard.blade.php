@@ -2,7 +2,7 @@
     <div class="latest-announcements">
         <div class="wrapper d-flex gap-4">
             @foreach($announcements as $announcement)
-                <a wire:navigate href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
+                <a href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
                     <div class="card shadow">
                         <div class="card-body d-flex align-items-center">
                             <small class="card-title text-clamp clamp-3">{{$announcement->title}}</small>
@@ -18,7 +18,7 @@
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
         <div class="grid">
             @canany(['read apply-leave', 'write apply-leave'])
-                <a wire:navigate href="{{ route('employee.leave') }}" class="nav-link">
+                <a href="{{ route('employee.leave') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/leave.png') }}" class="w-100">
                         <p>Leave Application</p>
@@ -27,7 +27,7 @@
             @endcanany
         
             @canany(['read clock-in-out', 'write clock-in-out'])
-                <a wire:navigate href="{{ route('employee.clock') }}" class="nav-link">
+                <a href="{{ route('employee.clock') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/clockinout.png') }}" class="w-100">
                         <p>Clock In/Out</p>
@@ -36,7 +36,7 @@
             @endcanany
         
             @canany(['read apply-atro', 'write apply-atro'])
-                <a wire:navigate href="{{ route('employee.atro') }}" class="nav-link">
+                <a href="{{ route('employee.atro') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/overtime.png') }}" class="w-100">
                         <p>Authority to Render Overtime</p>
@@ -45,7 +45,7 @@
             @endcanany
         
             @canany(['read payslip', 'write payslip'])
-                <a wire:navigate href="#" class="nav-link">
+                <a href="#" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/payslip.png') }}" class="w-100">
                         <p>Payslip</p>
@@ -54,7 +54,7 @@
             @endcanany
         
             @canany(['read employee-request-status', 'write employee-request-status'])
-                <a wire:navigate href="{{ route('employee.request-status') }}" class="nav-link">
+                <a href="{{ route('employee.request-status') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/request.png') }}" class="w-100">
                         <p>Request Status</p>
@@ -63,7 +63,7 @@
             @endcanany
         
             @canany(['read apply-obs', 'write apply-obs'])
-                <a wire:navigate href="{{ route('employee.obs.index') }}" class="nav-link">
+                <a href="{{ route('employee.obs.index') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/business-slip.png') }}" class="w-100">
                         <p>Official Business Slip</p>
@@ -72,7 +72,7 @@
             @endcanany
         
             @canany(['read employee-dtr', 'write employee-dtr'])
-                <a wire:navigate href="{{ route('employee.dtr') }}" class="nav-link">
+                <a href="{{ route('employee.dtr') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/dtr.png') }}" class="w-100">
                         <p>Daily Time Record</p>
@@ -81,7 +81,7 @@
             @endcanany
         
             @canany(['read my-directory', 'write my-directory'])
-                <a wire:navigate href="{{ route('employee.directory') }}" class="nav-link">
+                <a href="{{ route('employee.directory') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/directory.png') }}" class="w-100">
                         <p>My Directory</p>
@@ -90,7 +90,7 @@
             @endcanany
         
             @canany(['read my-team', 'write my-team'])
-                <a wire:navigate href="{{ route('employee.team') }}" class="nav-link">
+                <a href="{{ route('employee.team') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/team.png') }}" class="w-100">
                         <p>My Team</p>
@@ -99,7 +99,7 @@
             @endcanany
         
             @canany(['read employee-announcements', 'write employee-announcements'])
-                <a wire:navigate href="{{ route('employee.announcements.index') }}" class="nav-link">
+                <a href="{{ route('employee.announcements.index') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/announcement.png') }}" class="w-100">
                         <p>Announcements</p>
@@ -108,7 +108,7 @@
             @endcanany
         
             @canany(['read my-profile', 'write my-profile'])
-                <a wire:navigate href="{{ route('employee.profile') }}" class="nav-link">
+                <a href="{{ route('employee.profile') }}" class="nav-link">
                     <div class="item">
                         <img src="{{ asset('/img/profile.png') }}" class="w-100">
                         <p>My Profile</p>
@@ -116,14 +116,14 @@
                 </a>
             @endcanany
         
-            <a wire:navigate href="{{ route('employee.tutorial') }}" class="nav-link">
+            <a href="{{ route('employee.tutorial') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/tutorial.png') }}" class="w-100">
                     <p>Tutorial</p>
                 </div>
             </a>
         
-            <a wire:navigate href="{{ route('employee.logout') }}" class="nav-link">
+            <a href="{{ route('employee.logout') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/logout.png') }}" class="w-100">
                     <p>Logout</p>
