@@ -48,7 +48,7 @@ class Notifications extends Component
                 'read_at' => Carbon::now()
             ]);
 
-        return $this->redirect($redirect, navigate: true);
+        return $this->redirect($redirect);
         
     }
 
@@ -56,12 +56,13 @@ class Notifications extends Component
     {    
         // Determine base query based on user role
         $query = Notification::query();
+
+
         if ($this->user->roles[0]->name === 'employee') {
             $query->where('notifiable_id', $this->user->id)
                   ->whereJsonContains('data->audience', 'employee'); // Filter JSON audience
         } else {
-            $query->where('notifiable_id', $this->user->id)
-                  ->whereJsonContains('data->audience', 'admin');
+            $query->whereJsonContains('data->audience', 'admin');
         }
     
         // Fetch all notifications from the query

@@ -12,12 +12,12 @@ use Livewire\Component;
 
 class Apply extends Component
 {
-    public $employee_no;
+    public $employee_no, $employee_id;
 
     public $firstname, $middlename, $lastname, $section, 
-    $position, $branch, $department; // constant data
+    $position, $branch, $department; 
     
-    public $date_filed, $destination, //  input data
+    public $date_filed, $destination, 
     $purpose, $departure_time, $arrival_time, $requested_by, $status, 
     $approved_by_id;
 
@@ -33,8 +33,10 @@ class Apply extends Component
     public function loadRecords() {
 
         $employee_no = Auth::user()->employee_no;
+        $employee_id = Auth::user()->id;
 
         $this->employee_no = $employee_no;
+        $this->employee_id = $employee_id;
         
         $employee = DB::table('employee_account')
             ->leftJoin('employee_personal', 'employee_account.employee_no', '=', 'employee_personal.employee_no')
@@ -65,8 +67,8 @@ class Apply extends Component
             ->where('employee_account.employee_no', $this->employee_no)
             ->get();
 
-        // for edit
-        if(!is_null($this->record_id)) {
+
+            if(!is_null($this->record_id)) {
             $dataToEdit = EmployeeBusinessSlip::where('id', $this->record_id)
                 ->where('employee_no', $employee_no)
                 ->first();
@@ -135,7 +137,7 @@ class Apply extends Component
 
                 // reset form if not edit
                 if(is_null($this->record_id)){
-                    $this->resetExcept('user_id');
+
 
                     $this->dispatch('alert', [
                         'showAlert' => true,
@@ -144,11 +146,12 @@ class Apply extends Component
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
 
-                    $user = auth()->user();
-                    $user = EmployeeAccount::find($user->id);
-                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application <strong>official business slip </strong>.';
+                    $user = EmployeeAccount::find($this->employee_id);
+                    $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted an application <strong>official business slip </strong>.';
                     $redirect = route('ess.obs');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    $this->resetExcept('user_id');
 
                     return;
 
