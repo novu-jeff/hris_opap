@@ -83,6 +83,7 @@ return new class extends Migration
                 ->nullable()
                 ->unique();
             $table->string('email')
+                ->nullable()
                 ->unique();
             $table->string('password')
                 ->nullable();
