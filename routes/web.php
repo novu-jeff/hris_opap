@@ -39,6 +39,8 @@ use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\UserAccessController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Home\LoginController as HomeLoginController;
 use App\Http\Controllers\Home\AppliedController;
 use App\Http\Controllers\Home\HomeController;
@@ -217,7 +219,7 @@ Route::prefix('admin')->group(function() {
                     ->name('ess.request-status');
             });
 
-            Route::resource('employee/profile/approval', ESSApprovalProfile::class)
+            Route::resource('profile/approval', ESSApprovalProfile::class)
                 ->names('ess.approval-profile');
         });
 
@@ -316,6 +318,12 @@ Route::prefix('admin')->group(function() {
 });
 
 Route::prefix('employee')->group(function() {
+
+
+    Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
     Route::redirect('/', 'employee/login', 302);
 

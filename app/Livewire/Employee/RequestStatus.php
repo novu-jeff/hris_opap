@@ -3,8 +3,10 @@
 namespace App\Livewire\Employee;
 
 use App\Livewire\Admin\Ess\RequestStatus\Chatbox;
+use App\Models\EmployeeAccount;
 use App\Models\Message;
 use App\Models\MessageAttachments;
+use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -173,13 +175,17 @@ class RequestStatus extends Component
 
         $this->validate();
 
-        $message = Message::create([
-            'from_id' => $this->user->employee_no,
-            'from_role' => 'employee',
-            'to_id' => '0',
-            'to_role' => 'admin',
-            'message' => $this->message ?? null,
-        ]);
+        // $message = Message::create([
+        //     'from_id' => $this->user->employee_no,
+        //     'from_role' => 'employee',
+        //     'to_id' => '0',
+        //     'to_role' => 'admin',
+        //     'message' => $this->message ?? null,
+        // ]);
+
+        $sender_name = $this->user->firstname . ' ' . $this->user->lastname  . '(employee)';
+        $user = EmployeeAccount::find($this->user->id);
+        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('ess.request-status', ['employee_no' => $this->user->employee_no]), 'admin'));
 
 
         foreach ($this->attachments as $index => $attachment) {

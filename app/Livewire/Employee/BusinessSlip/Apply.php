@@ -4,6 +4,7 @@ namespace App\Livewire\Employee\BusinessSlip;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeBusinessSlip;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -136,12 +137,21 @@ class Apply extends Component
                 if(is_null($this->record_id)){
                     $this->resetExcept('user_id');
 
-                    return $this->dispatch('alert', [
+                    $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
+
+                    $user = auth()->user();
+                    $user = EmployeeAccount::find($user->id);
+                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application <strong>official business slip </strong>.';
+                    $redirect = route('ess.obs');
+                    $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    return;
+
                 } else {
                     return $this->dispatch('alert', [
                         'showAlert' => true,

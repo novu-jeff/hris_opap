@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Employee\Leave;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
+use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -21,6 +23,7 @@ class Apply extends Component
     public $user_id;
     public $leaveTypes;
     public $isMoreThanOne = null;
+    public $notification;
 
     protected $listeners = ['save'];
 
@@ -106,6 +109,7 @@ class Apply extends Component
         $this->validate();
 
         if($isNotify) {
+            
             $title = 'Are you sure to continue?';
             $message = 'Yes, I am sure that all the information I have provided is accurate and true. This ensures that there will be no issues as we proceed.';
             $action = 'save';
@@ -114,6 +118,7 @@ class Apply extends Component
                 'message' => $message,
                 'action' => $action
             ]);
+
         } else {
 
             try {
@@ -189,12 +194,20 @@ class Apply extends Component
 
                     $this->resetExcept('user_id', 'leaveTypes');
 
-                    return $this->dispatch('alert', [
+                    $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
+                    
+                    $user = auth()->user();
+                    $user = EmployeeAccount::find($user->id);
+                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application for <strong>leave</strong>.';
+                    $redirect = route('ess.leave');
+                    $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    return;
 
                 } else {
                     return $this->dispatch('alert', [
