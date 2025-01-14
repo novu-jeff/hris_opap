@@ -7,7 +7,7 @@
         <a class="navbar-brand text-uppercase" href="{{ route('employee.dashboard') }}">
             <img src="{{asset('img/logo.png')}}" alt="logo">
         </a>
-        <div class="d-flex align-items-center gap-5 pt-3">
+        <div class="menu d-flex align-items-center gap-5">
             @if (Auth::guard('employee')->user())
                 @php
                     $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);
@@ -20,8 +20,16 @@
                     </div>                     
                 </div>  
             @endif
-            <div class="hamburger-wrapper">
-                <div class="hamburger"></div>
+            <div class="d-flex align-items-center gap-4">
+                @livewire('notifications')
+                @if(!Route::is('employee.dashboard'))
+                    <a wire:navigate href="{{ route('employee.dashboard') }}" class="notification ms-4">
+                        <i class="fa-solid fa-house"></i>
+                    </a>
+                @endif
+                <a href="{{ route('employee.logout') }}" class="notification ms-3">
+                    <i class="fa-solid fa-door-open"></i>
+                </a>
             </div>
         </div>        
     </div>

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Hris;
 
 use App\Helper\Generate;
+use App\Mail\SendEmployeeAccount;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
 use App\Models\EmployeeCivilService;
@@ -19,6 +20,8 @@ use App\Models\Positions;
 use App\Models\Sections;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -52,7 +55,7 @@ class Manual extends Component
             'accordions' => [
                 'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
                 'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
-                'contact' => ['mobile_number', 'tel_no', 'company_email'],
+                'contact' => ['mobile_number', 'tel_no', 'email'],
                 'appearance' => ['height', 'weight', 'blood_type'],
                 'identification' => ['gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no']
             ]
@@ -206,7 +209,7 @@ class Manual extends Component
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
-            'records.employee_personal.email' => 'nullable|email',
+            'records.employee_personal.email' => 'required|email',
 
 
             'records.employee_children.*.firstname' => 'required|string|max:255',
@@ -293,7 +296,7 @@ class Manual extends Component
 
             'records.employee_personal.mobile_number.regex' => 'The mobile number format is invalid. It should start with 09 and be followed by 9 digits.',
             'records.employee_personal.email.email' => 'The email must be a valid email address.',
-
+            'records.employee_personal.email.required' => 'The email is required.',
             'records.employee_children.*.firstname.required' => 'Each child must have a first name.',
             'records.employee_children.*.middlename.string' => 'The middle name must be a string.',
             'records.employee_children.*.lastname.required' => 'Each child must have a last name.',
@@ -377,9 +380,14 @@ class Manual extends Component
 
         try {
             
+
+            $this->records['employee_personal']['email'] = $this->records['employee_personal']['email'];
+            $this->records['employee_personal']['password'] = $this->records['employee_account']['password'];
+
+
             $record = $this->employee_information($this->records['employee_information']);
-            $this->employee_account($record->employee_no, $this->records['employee_personal'] ?? []);
             $this->employee_personal($record->employee_no, $this->records['employee_personal'] ?? []);
+            $this->employee_account($record->employee_no, $this->records['employee_personal'] ?? []);
             $this->employee_parents($record->employee_no, $this->records['employee_parents'] ?? []);
             $this->employee_children($record->employee_no, $this->records['employee_children'] ?? []);
             $this->employee_education($record->employee_no, $this->records['employee_education'] ?? []);
@@ -388,6 +396,7 @@ class Manual extends Component
             $this->employee_trainings($record->employee_no, $this->records['employee_trainings'] ?? []);
             $this->employee_others($record->employee_no, $this->records['employee_others'] ?? []);
             $this->employee_skills($record->employee_no, $this->records['employee_skills'] ?? []);
+
 
             DB::commit();
 
@@ -435,14 +444,44 @@ class Manual extends Component
         $applicant_id = $data['applicant_id'] ?? null;
         $firstname = $data['firstname'] ?? null;
         $lastname = $data['lastname'] ?? null;
-        $email = $generate->email($employee_no, $firstname, $lastname);
-        
-        return EmployeeAccount::create([
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+        $email_id = $generate->email($employee_no, $firstname, $lastname);
+
+        $user = EmployeeAccount::create([
             'employee_no' => $employee_no,
             'applicant_id' => $applicant_id,
+            'email_id' => $email_id,
             'email' => $email,
+            'password' => Hash::make($password)
         ]);
 
+        $user->assignRole('employee');
+
+        $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $employee_no)->first();
+
+
+        if (!$record || empty($record->account->email)) {
+            return $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!',
+                'isRemoveRowDT' => false,
+                'showAlert' => true,
+                'message' => 'Unable to notify this employee, their email address is invalid or empty. Please update it first!'
+            ]);
+        }
+
+        $data = [
+            'is_newly_hired' => false,
+            'employee_no' => $record->employee_no,
+            'email' => $email_id,
+            'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
+            'password' => $password
+        ];
+
+        Mail::to($email)->send(new SendEmployeeAccount($data));
+
+        return;
     }
 
     public function employee_personal(string $employee_no, array $data) {
@@ -467,7 +506,6 @@ class Manual extends Component
             'permanent_city' => $data['permanent_city'] ?? null,
             'mobile_number' => $data['mobile_number'] ?? null,
             'tel_no' => $data['tel_no'] ?? null,
-            'email' => $data['email'] ?? null,
             'height' => $data['height'] ?? null,
             'weight' => $data['weight'] ?? null,
             'blood_type' => $data['blood_type'] ?? null,

@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Admin\Ess\Leave;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
+use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -55,11 +57,12 @@ class Index extends Component
 
         } else {
 
-            EmployeeLeave::where('id', $this->selected_id)
+            $record = EmployeeLeave::where('id', $this->selected_id)
                 ->where('status', 'pending')
-                ->update([
-                    'status' => 'rejected'
-                ]);
+                ->first();
+
+            $record->status = 'rejected';
+            $record->save();
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -71,6 +74,8 @@ class Index extends Component
             ]);
 
 
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.leave'), 'employee'));
         }
     }
 
@@ -92,11 +97,10 @@ class Index extends Component
             $record = EmployeeLeave::with('employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
-
+                
             if(is_null($record)) {
                 return redirect()->route('ess.leave');
             }
-
 
             $from = Carbon::parse($record->from);
             $to = Carbon::parse($record->to);
@@ -153,6 +157,10 @@ class Index extends Component
                 'message' => 'Application has been granted'
             ]);
 
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('success', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
+
+            return;
 
         }
     }
@@ -178,6 +186,9 @@ class Index extends Component
                 
             if($record) {
                 
+                $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+                $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
+
                 $record->delete();
 
                 $this->dispatch('alert', [
@@ -187,6 +198,7 @@ class Index extends Component
                     'isRemoveRowDT' => true,
                     'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
                 ]);
+            
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,

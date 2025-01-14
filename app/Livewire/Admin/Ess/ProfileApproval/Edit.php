@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Ess\ProfileApproval;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
 use App\Models\EmployeeCivilService;
 use App\Models\EmployeeEducation;
@@ -20,6 +21,7 @@ use App\Models\EmployeeUpdateParents;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployeeUpdateSkillsHobbies;
 use App\Models\EmployeeUpdateTrainings;
+use App\Notifications\Notifications;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -178,6 +180,9 @@ class Edit extends Component
 
                 DB::commit();
 
+                $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong> APPROVED </strong>.', route('employee.profile'), 'employee'));
+
                 return $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!',
@@ -224,9 +229,13 @@ class Edit extends Component
             DB::beginTransaction();
 
             try {
+
                 $this->remove();
 
                 DB::commit();
+
+                $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong>REJECTED</strong>. Click this notification to view more details.', route('employee.profile'), 'employee'));
 
                 return $this->dispatch('alert', [
                     'status' => 'success',
