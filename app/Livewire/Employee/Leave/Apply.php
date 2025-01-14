@@ -20,7 +20,8 @@ class Apply extends Component
     public $to;
     public $reason;
     public $record_id;
-    public $user_id;
+    public $employee_no;
+    public $employee_id;
     public $leaveTypes;
     public $isMoreThanOne = null;
     public $notification;
@@ -35,12 +36,15 @@ class Apply extends Component
 
         $this->leaveTypes = LeaveType::all();
 
-        $user_id = Auth::user()->employee_no;
-        $this->user_id = $user_id;
+        $employee_no = Auth::user()->employee_no;
+        $employee_id = Auth::user()->id;
+
+        $this->employee_no = $employee_no;
+        $this->employee_id = $employee_id;
  
         if(!is_null($this->record_id)) {
             $records = EmployeeLeave::where('id', $this->record_id)
-                ->where('employee_no', $user_id)
+                ->where('employee_no', $employee_no)
                 ->first();
         
             if(!$records) {
@@ -138,12 +142,12 @@ class Apply extends Component
                 $leaveCreditsModel = LeaveCredits::class;
 
 
-                $pending = $employeeLeaveModel::where('employee_no', $this->user_id)
+                $pending = $employeeLeaveModel::where('employee_no', $this->employee_no)
                     ->where('status', false)
                     ->count();
 
                 $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
-                    ->where('employee_no', $this->user_id)
+                    ->where('employee_no', $this->employee_no)
                     ->first();
 
                 $max_pending = env('MAX_PENDING_LEAVE_APPLICATION');
@@ -181,7 +185,7 @@ class Apply extends Component
                 $employeeLeaveModel::updateOrCreate([
                     'id' => $this->record_id,
                 ], [
-                    'employee_no' => $this->user_id,
+                    'employee_no' => $this->employee_no,
                     'leave_id' => $this->type,
                     'reason' => $this->reason,
                     'from' => $from->format('Y-m-d'),
@@ -192,20 +196,19 @@ class Apply extends Component
 
                 if(is_null($this->record_id)) {
 
-                    $this->resetExcept('user_id', 'leaveTypes');
-
                     $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
-                    
-                    $user = auth()->user();
-                    $user = EmployeeAccount::find($user->id);
-                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application for <strong>leave</strong>.';
+
+                    $user = EmployeeAccount::find($this->employee_id);
+                    $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted an application for <strong>leave</strong>.';
                     $redirect = route('ess.leave');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    $this->resetExcept('employee_no', 'leaveTypes');
 
                     return;
 

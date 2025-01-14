@@ -12,7 +12,8 @@ class Apply extends Component
 {
 
     public $record_id;
-    public $user_id;
+    public $employee_id;
+    public $employee_no;
     public array $fields = [
         [
             'date' => '',
@@ -30,13 +31,16 @@ class Apply extends Component
 
     public function loadRecords() {
 
-        $user_id = Auth::user()->employee_no;
-        $this->user_id = $user_id;
+        $employee_no = Auth::user()->employee_no;
+        $employee_id = Auth::user()->id;
+
+        $this->employee_id = $employee_id;
+        $this->employee_no = $employee_no;
 
         if(!is_null($this->record_id)) {
 
             $records = EmployeeAtro::where('id', $this->record_id)
-                ->where('employee_no', $user_id)
+                ->where('employee_no', $employee_no)
                 ->get();
         
             if(!$records) {
@@ -81,7 +85,7 @@ class Apply extends Component
                 'before:today',
                 function ($attribute, $value, $fail) {
                     if(is_null($this->record_id)) {
-                        $employeeNo = $this->user_id; 
+                        $employeeNo = $this->employee_no; 
                     
                         $exists = EmployeeAtro::where('employee_no', $employeeNo)
                             ->where('date', $value)
@@ -133,7 +137,7 @@ class Apply extends Component
                     EmployeeAtro::updateOrCreate(
                         ['id' => $this->record_id], 
                         [
-                            'employee_no' =>  $this->user_id,
+                            'employee_no' =>  $this->employee_no,
                             'date' => $field['date'],
                             'start_time' => $field['start_time'],
                             'end_time' => $field['end_time'],
@@ -145,7 +149,6 @@ class Apply extends Component
 
                 if(is_null($this->record_id)) {
                     
-                    $this->resetExcept('user_id');
 
                     $this->dispatch('alert', [
                         'showAlert' => true,
@@ -154,11 +157,12 @@ class Apply extends Component
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
 
-                    $user = auth()->user();
-                    $user = EmployeeAccount::find($user->id);
-                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application for <strong>authority to render overtime</strong>.';
+                    $user = EmployeeAccount::find($this->employee_id);
+                    $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted an application for <strong>authority to render overtime</strong>.';
                     $redirect = route('ess.atro');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    $this->resetExcept('employee_no');
 
                     return;
 

@@ -261,9 +261,10 @@ class Edit extends Component
 
     public function updatePersonalData($employee_no) {
         $employeePersonal = EmployeePersonal::where('employee_no', $employee_no)->first();
-        $employeeUpdatePersonal = EmployeeUpdatePersonal::where('employee_no', $employee_no)->first();
+        $employeeAccount = EmployeeAccount::where('employee_no', $employee_no)->first();
 
-        if ($employeePersonal && $employeeUpdatePersonal) {
+        $employeeUpdatePersonal = EmployeeUpdatePersonal::where('employee_no', $employee_no)->first();
+        if ($employeePersonal && $employeeUpdatePersonal && $employeeAccount) {
             // Update fields from the update table to the personal table, only if they are present in update data
             $employeePersonal->update([
                 'profile' => $employeeUpdatePersonal->profile ?? $employeePersonal->profile,
@@ -286,7 +287,6 @@ class Edit extends Component
                 'permanent_city' => $employeeUpdatePersonal->permanent_city ?? $employeePersonal->permanent_city,
                 'mobile_number' => $employeeUpdatePersonal->mobile_number ?? $employeePersonal->mobile_number,
                 'tel_no' => $employeeUpdatePersonal->tel_no ?? $employeePersonal->tel_no,
-                'email' => $employeeUpdatePersonal->email ?? $employeePersonal->email,
                 'height' => $employeeUpdatePersonal->height ?? $employeePersonal->height,
                 'weight' => $employeeUpdatePersonal->weight ?? $employeePersonal->weight,
                 'blood_type' => $employeeUpdatePersonal->blood_type ?? $employeePersonal->blood_type,
@@ -296,6 +296,11 @@ class Edit extends Component
                 'sss_no' => $employeeUpdatePersonal->sss_no ?? $employeePersonal->sss_no,
                 'tin_no' => $employeeUpdatePersonal->tin_no ?? $employeePersonal->tin_no,
             ]);
+
+            $employeeAccount->update([
+                'email' => $employeeUpdatePersonal->email,
+            ]);
+
         }    
 
     }

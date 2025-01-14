@@ -210,7 +210,10 @@ class Manual extends Component
 
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
             'records.employee_personal.email' => 'required|email',
-
+            'records.employee_personal.email' => [
+                'nullable',
+                Rule::unique('employee_account', 'email')->ignore($id, 'employee_no')
+            ],
 
             'records.employee_children.*.firstname' => 'required|string|max:255',
             'records.employee_children.*.middlename' => 'nullable|string|max:255',
@@ -297,6 +300,7 @@ class Manual extends Component
             'records.employee_personal.mobile_number.regex' => 'The mobile number format is invalid. It should start with 09 and be followed by 9 digits.',
             'records.employee_personal.email.email' => 'The email must be a valid email address.',
             'records.employee_personal.email.required' => 'The email is required.',
+            'records.employee_personal.email.unique' => 'The email is already taken.',
             'records.employee_children.*.firstname.required' => 'Each child must have a first name.',
             'records.employee_children.*.middlename.string' => 'The middle name must be a string.',
             'records.employee_children.*.lastname.required' => 'Each child must have a last name.',
