@@ -47,9 +47,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="text-uppercase fw-bold" style="font-size: 12px; letter-spacing: 1px;">
+                                    Forgot Password? Click <a href="{{route('password.request')}}">Here</a>
+                                </div>
                             </div>
-                            <div class="card-footer bg-transparent border-0 d-flex gap-2 justify-content-end">
-                                <button class="btn btn-primary px-4 py-2">Proceed</button>
+                            <div class="card-footer bg-transparent border-0 d-flex gap-2 justify-content-end pb-3">
+                                <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Proceed</button>
                             </div>
                         </div>
                     </form>

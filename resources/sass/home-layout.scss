@@ -68,7 +68,13 @@
       border-bottom: 1px solid #cecece;
 
       .container {
-        align-items: end !important;
+        align-items: center !important;
+
+        .menu {
+          position: relative;
+          top: 20px;
+        }
+
       }
         .navbar-nav {
 

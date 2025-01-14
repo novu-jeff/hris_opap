@@ -20,7 +20,8 @@ class EmployeeTestUserSeeder extends Seeder
                 'employee_no' => 'EMP-TEST-01',
                 'bsd_no' => '01',
                 'company_name' => 'Test Company A',
-                'email' => 'employee.test01@hris.com',
+                'email_id' => 'employee.test01@hris.com',
+                'email' => 'employee01@gmail.com',
                 'password' => Hash::make('password'),
                 'firstname' => 'Test',
                 'middlename' => 'A.',
@@ -38,7 +39,8 @@ class EmployeeTestUserSeeder extends Seeder
                 'employee_no' => 'EMP-TEST-02',
                 'bsd_no' => '02',
                 'company_name' => 'Test Company B',
-                'email' => 'employee.test02@hris.com',
+                'email_id' => 'employee.test02@hris.com',
+                'email' => 'employee02@gmail.com',
                 'password' => Hash::make('password'),
                 'firstname' => 'Lorem',
                 'middlename' => null,
@@ -56,7 +58,8 @@ class EmployeeTestUserSeeder extends Seeder
                 'employee_no' => 'EMP-TEST-03',
                 'bsd_no' => '03',
                 'company_name' => 'Test Company C',
-                'email' => 'employee.test03@hris.com',
+                'email_id' => 'employee.test03@hris.com',
+                'email' => 'employee03@gmail.com',
                 'password' => Hash::make('password'),
                 'firstname' => 'Demo',
                 'middlename' => 'B.',
@@ -91,13 +94,14 @@ class EmployeeTestUserSeeder extends Seeder
                     'lastname' => $employee['lastname'],
                     'birthday' => $employee['birthday'],
                     'sex' => $employee['sex'],
-                    'email' => $employee['email'],
                 ]
             );
         
             $user = EmployeeAccount::updateOrCreate(
                 ['email' => $employee['email']],
                 [
+                    'email_id' => $employee['email_id'],
+                    'email' => $employee['email'],
                     'employee_no' => $employee['employee_no'],
                     'password' => $employee['password'],
                 ]

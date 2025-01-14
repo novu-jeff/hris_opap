@@ -144,7 +144,7 @@ class Form extends Component
      */
     protected function formatEmployeeAccount($data) {
         return [
-            'email' => $data->account->email ?? null,
+            'email' => $data->account->email_id ?? null,
         ];
     }
 
@@ -152,36 +152,35 @@ class Form extends Component
      * Format employee personal data
      */
     protected function formatEmployeePersonal($data) {
-        $personal = $data->personal;
         return [
-            'profile' => $personal->profile ?? null,
-            'firstname' => $personal->firstname ?? null,
-            'middlename' => $personal->middlename ?? null,
-            'lastname' => $personal->lastname ?? null,
-            'suffix' => $personal->suffix ?? null,
-            'birthday' => $personal->birthday ?? null,
-            'civil_status' => $personal->civil_status ?? null,
-            'sex' => $personal->sex ?? null,
-            'citizenship' => $personal->citizenship ?? null,
-            'citizenship_type' => $personal->citizenship_type ?? null,
-            'country' => $personal->country ?? null,
-            'present_address' => $personal->present_address ?? null,
-            'present_province' => $personal->present_province ?? null,
-            'present_city' => $personal->present_city ?? null,
-            'permanent_address' => $personal->permanent_address ?? null,
-            'permanent_province' => $personal->permanent_province ?? null,
-            'permanent_city' => $personal->permanent_city ?? null,
-            'mobile_number' => $personal->mobile_number ?? null,
-            'tel_no' => $personal->tel_no ?? null,
-            'email' => $personal->email ?? null,
-            'height' => $personal->height ?? null,
-            'weight' => $personal->weight ?? null,
-            'blood_type' => $personal->blood_type ?? null,
-            'gsis_no' => $personal->gsis_no ?? null,
-            'pagibig_no' => $personal->pagibig_no ?? null,
-            'philhealth_no' => $personal->philhealth_no ?? null,
-            'sss_no' => $personal->sss_no ?? null,
-            'tin_no' => $personal->tin_no ?? null,
+            'profile' => $data->personal->profile ?? null,
+            'firstname' => $data->personal->firstname ?? null,
+            'middlename' => $data->personal->middlename ?? null,
+            'lastname' => $data->personal->lastname ?? null,
+            'suffix' => $data->personal->suffix ?? null,
+            'birthday' => $data->personal->birthday ?? null,
+            'civil_status' => $data->personal->civil_status ?? null,
+            'sex' => $data->personal->sex ?? null,
+            'citizenship' => $data->personal->citizenship ?? null,
+            'citizenship_type' => $data->personal->citizenship_type ?? null,
+            'country' => $data->personal->country ?? null,
+            'present_address' => $data->personal->present_address ?? null,
+            'present_province' => $data->personal->present_province ?? null,
+            'present_city' => $data->personal->present_city ?? null,
+            'permanent_address' => $data->personal->permanent_address ?? null,
+            'permanent_province' => $data->personal->permanent_province ?? null,
+            'permanent_city' => $data->personal->permanent_city ?? null,
+            'mobile_number' => $data->personal->mobile_number ?? null,
+            'tel_no' => $data->personal->tel_no ?? null,
+            'email' => $data->account->email ?? null,
+            'height' => $data->personal->height ?? null,
+            'weight' => $data->personal->weight ?? null,
+            'blood_type' => $data->personal->blood_type ?? null,
+            'gsis_no' => $data->personal->gsis_no ?? null,
+            'pagibig_no' => $data->personal->pagibig_no ?? null,
+            'philhealth_no' => $data->personal->philhealth_no ?? null,
+            'sss_no' => $data->personal->sss_no ?? null,
+            'tin_no' => $data->personal->tin_no ?? null,
         ];
     }
 
@@ -202,7 +201,7 @@ class Form extends Component
             'father_surname' => $parents->father_surname ?? null,
             'father_firstname' => $parents->father_firstname ?? null,
             'father_middlename' => $parents->father_middlename ?? null,
-            'father_suffix' => $parents->suffix ?? null,
+            'father_suffix' => $parents->father_suffix ?? null,
             'mother_surname' => $parents->mother_surname ?? null,
             'mother_firstname' => $parents->mother_firstname ?? null,
             'mother_middlename' => $parents->mother_middlename ?? null,
@@ -594,7 +593,7 @@ class Form extends Component
             if (!empty($account['notify_user']) && !empty($account['password'])) {
                 $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $id)->first();
 
-                if (!$record || empty($record->personal->email)) {
+                if (!$record || empty($record->account->email)) {
                     return $this->dispatch('alert', [
                         'status' => 'error',
                         'title' => 'Oops!',
@@ -607,12 +606,12 @@ class Form extends Component
                 $data = [
                     'is_newly_hired' => false,
                     'employee_no' => $record->employee_no,
-                    'email' => $record->account->email,
+                    'email' => $record->account->email_id,
                     'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
                     'password' => $account['password']
                 ];
 
-                Mail::to($record->personal->email)->send(new SendEmployeeAccount($data));
+                Mail::to($record->account->email)->send(new SendEmployeeAccount($data));
             }
 
             DB::commit();

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Ess\ProfileApproval;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeUpdatePersonal;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -90,6 +92,7 @@ class Index extends Component
                 'isRemoveRowDT' => true,
                 'message' => 'Profile update has been removed.',
             ]);
+
         } catch (\Exception $e) {
             // Handle any errors during deletion
             return $this->dispatch('alert', [
