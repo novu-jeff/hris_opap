@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Ess\Atro;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeAtro;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -51,11 +53,12 @@ class Index extends Component
 
         } else {
 
-            EmployeeAtro::where('id', $this->selected_id)
+            $record = EmployeeAtro::where('id', $this->selected_id)
                 ->where('status', 'pending')
-                ->update([
-                    'status' => 'denied'
-                ]);
+                ->first();
+
+            $record->status = 'rejected';
+            $record->save();
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -66,6 +69,8 @@ class Index extends Component
                 'message' => 'Application has been rejected'
             ]);
 
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.atro'), 'employee'));
 
         }
     }
@@ -85,7 +90,7 @@ class Index extends Component
 
         } else {
 
-            EmployeeAtro::where('id', $this->selected_id)
+            $record = EmployeeAtro::where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->update([
                     'status' => 'approve'
@@ -100,6 +105,8 @@ class Index extends Component
                 'message' => 'Application has been granted'
             ]);
 
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('success', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.atro'), 'employee'));
 
         }
     }
@@ -124,7 +131,10 @@ class Index extends Component
             $record = EmployeeAtro::find($this->selected_id);
                 
             if($record) {
-                
+
+                $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+                $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.atro'), 'employee'));
+
                 $record->delete();
 
                 $this->dispatch('alert', [
@@ -134,6 +144,7 @@ class Index extends Component
                     'isRemoveRowDT' => true,
                     'message' => 'ATRO Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
                 ]);
+
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,

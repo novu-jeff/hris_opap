@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Employee\Atro;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeAtro;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -145,13 +147,20 @@ class Apply extends Component
                     
                     $this->resetExcept('user_id');
 
-                    return $this->dispatch('alert', [
+                    $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
                         'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
                     ]);
 
+                    $user = auth()->user();
+                    $user = EmployeeAccount::find($user->id);
+                    $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted an application for <strong>authority to render overtime</strong>.';
+                    $redirect = route('ess.atro');
+                    $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+                    return;
 
                 } else {
                     

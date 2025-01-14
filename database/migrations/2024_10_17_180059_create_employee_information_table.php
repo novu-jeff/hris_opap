@@ -79,6 +79,9 @@ return new class extends Migration
             $table->foreignId('applicant_id')
                 ->nullable()
                 ->constrained('applicant_users');
+            $table->string('email_id')
+                ->nullable()
+                ->unique();
             $table->string('email')
                 ->unique();
             $table->string('password')
@@ -131,8 +134,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('tel_no')
                 ->nullable();
-            $table->string('email')
-                ->nullable(); 
             $table->string('height')
                 ->nullable(); 
             $table->string('weight')

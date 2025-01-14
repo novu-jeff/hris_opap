@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Admin\Ess\RequestStatus;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\Message;
 use App\Models\MessageAttachments;
+use App\Notifications\Notifications;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -152,6 +155,11 @@ class Chatbox extends Component
                 $this->storeAttachment($attachment, $message->id, $index);
             }
         }
+
+        $sender = Auth::user();
+        $sender_name = $sender->name . ' (' . $sender->roles[0]->name . ')';
+        $user = EmployeeAccount::where('employee_no', $this->selected_id)->first();
+        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('employee.request-status'), 'employee'));
 
         $this->reset('message', 'preview_attachments', 'attachments');
         $this->loadRecords($this->selected_id);

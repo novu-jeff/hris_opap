@@ -119,6 +119,12 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+        'employees' => [
+            'provider' => 'employees',
+            'table' => 'password_reset_tokens',
+            'expire' => 2,
+            'throttle' => 60,
+        ],
     ],
 
     /*

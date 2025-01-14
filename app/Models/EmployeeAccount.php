@@ -11,11 +11,12 @@ use Spatie\Permission\Traits\HasRoles;
 class EmployeeAccount extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
-
+    
     protected $table = 'employee_account';
     protected $fillable = [
         'employee_no',
         'applicant_id',
+        'email_id',
         'email',
         'password',
         'isLoggedIn',

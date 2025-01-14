@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Ess\BusinessSlip;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeBusinessSlip;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,11 +55,15 @@ class Index extends Component
 
         } else {
 
-            EmployeeBusinessSlip::where('id', $this->selected_id)
+            $record = EmployeeBusinessSlip::where('id', $this->selected_id)
                 ->where('status', 'pending')
-                ->update([
-                    'status' => 'rejected'
-                ]);
+                ->first();
+            
+            $record->status = 'rejected';
+            $record->save();
+
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('error', 'You\'re official business slip application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.obs.index'), 'employee'));
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -95,6 +101,9 @@ class Index extends Component
             $record->update([
                 'status' => 'granted'
             ]);
+
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('success', 'You\'re official business slip application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.obs.index'), 'employee'));
         
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -130,6 +139,9 @@ class Index extends Component
                 
             if($record) {
                 
+                $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+                $user?->notify(new Notifications('error', 'You\'re official business slip application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.obs.index'), 'employee'));
+
                 $record->delete();
 
                 $this->dispatch('alert', [

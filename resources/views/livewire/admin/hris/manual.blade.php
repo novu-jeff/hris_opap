@@ -14,15 +14,6 @@
                           
                         </div>
                     </div>  
-                    {{-- <div class="col-12 col-md-3">
-                        <div class="profile">
-                            <label class="mb-2" for="profile">Employee Image</label>
-                            <input type="file" wire:model="profile" id="profile" class="form-control">
-                        </div>
-                        <div class="error-field">
-                            @error('profile') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> --}}
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="employee_no">Employee No.</label>
                         <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">
@@ -1174,6 +1165,9 @@
                                         @error('records.employee_account.confirm_password') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
+                                <div class="col-12 col-md-12 mb-3">
+                                    <p class="text-uppercase fw-bold text-muted" style="font-size:10px">By saving this account, we will send a notification to the employee's email associated with their username and password.</p>
+                                </div>    
                             </div>
                         </div>
                     </div>

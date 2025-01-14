@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee;
 
 use App\Livewire\Admin\Hris\Manual;
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeUpdateChildren;
 use App\Models\EmployeeUpdateCivilService;
@@ -13,6 +14,7 @@ use App\Models\EmployeeUpdateParents;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployeeUpdateSkillsHobbies;
 use App\Models\EmployeeUpdateTrainings;
+use App\Notifications\Notifications;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -447,6 +449,14 @@ class Profile extends Component
                 'isReloadDT' => false,
                 'message' => 'You\'re profile is now in pending for HR\'s approval. We\'ll sent you a notification once approved. Thank you!',
             ]);
+
+            $user = auth()->user();
+            $user = EmployeeAccount::find($user->id);
+            $message = 'Employee <strong>' . $user->employee_no . '</strong> has submitted his/her updated <strong>profile information</strong>.';
+            $redirect = route('ess.approval-profile.edit', ['employee_no', $user->employee_no]);
+            $user->notify(new Notifications('info', $message, $redirect, 'admin'));
+
+            return;
 
         } catch (\Exception $e) {
             DB::rollBack();

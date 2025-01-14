@@ -57,7 +57,7 @@ class Generate {
         $counter = 1;
     
         // Check if the email already exists
-        while (EmployeeAccount::where('email', $email)->exists()) {
+        while (EmployeeAccount::where('email_id', $email)->exists()) {
             // If it exists, append a counter to make it unique
             $email = "{$emailPrefix}.{$counter}@{$suffix}";
             $counter++;

@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Ess\Announcements;
 
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeAnnouncements;
 use App\Models\EmployeeLeave;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -128,43 +130,66 @@ class Add extends Component
 
             try {
 
-
                 $banner = $this->banner;
                 $model = EmployeeAnnouncements::class;
 
                 if ($banner instanceof \Illuminate\Http\UploadedFile) {
 
-                    $extension = $banner->getClientOriginalExtension(); 
-                    $filename = strtolower('announcement'  . '_' . time() . '.' . $extension);
+                    $extension = $banner->getClientOriginalExtension();
+                    $filename = strtolower('announcement' . '_' . time() . '.' . $extension);
                     $banner->storeAs('announcements', strtolower($filename), 'public');
-
-                    $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)
-                        ->first();
-
-                    if ($existingRecord && $existingRecord->banner && $existingRecord !== 'default.jpg') {
+                    
+                    // Fetch the existing record if any
+                    $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)->first();
+                
+                    // If there's an existing record and a banner, delete the old file if it's not 'default.jpg'
+                    if ($existingRecord && $existingRecord->banner && $existingRecord->banner !== 'default.jpg') {
                         $previousPath = 'announcements/' . $existingRecord->banner;
-                        Storage::disk('public')->delete($previousPath); 
+                        Storage::disk('public')->delete($previousPath);
                     }
-
-
-                    $model::updateOrCreate([
+                
+                    // Update or create the record with the new banner
+                    $model = EmployeeAnnouncements::updateOrCreate([
                         'id' => $this->record_id,
                     ], [
                         'banner' => $filename,
                         'title' => $this->title,
                         'content' => $this->content,
                     ]);
-
+                
+                    // Determine action: added or updated
+                    $action = $existingRecord ? 'updated' : 'added';
+                
+                    // Fetch all employee_no and send notifications to them
+                    $user = EmployeeAccount::pluck('employee_no')->toArray();
+                    EmployeeAccount::whereIn('employee_no', $user)->get()->each(function ($userModel) use ($model, $action) {
+                        $message = '"' . $model->title . '" was ' . $action . ' to announcements.';
+                        $redirect = route('employee.announcements.view', ['id' => $model->id]);
+                        $userModel->notify(new Notifications('info', $message, $redirect, 'employee'));
+                    });
+                
                 } else {
-                    $model::updateOrCreate([
+                    // If no file is uploaded, update or create without a new banner
+                    $model = EmployeeAnnouncements::updateOrCreate([
                         'id' => $this->record_id,
                     ], [
                         'banner' => $banner,
                         'title' => $this->title,
                         'content' => $this->content,
                     ]);
+                
+                    // Determine action: added or updated
+                    $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)->first();
+                    $action = $existingRecord ? 'updated' : 'added';
+                
+                    // Fetch all employee_no and send notifications to them
+                    $user = EmployeeAccount::pluck('employee_no')->toArray();
+                    EmployeeAccount::whereIn('employee_no', $user)->get()->each(function ($userModel) use ($model, $action) {
+                        $message = '"' . ucwords($model->title) . '" was ' . $action . ' to announcements.';
+                        $redirect = route('employee.announcements.view', ['id' => $model->id]);
+                        $userModel->notify(new Notifications('info', $message, $redirect, 'employee'));
+                    });
                 }
-
                 
 
                 if(is_null($this->record_id)) {
