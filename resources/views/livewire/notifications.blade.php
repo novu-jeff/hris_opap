@@ -6,8 +6,13 @@
         @endif
     </div>
     <div class="content {{$isOpened ? 'd-block' : 'd-none'}}">
-        <div class="header">
-            <h6 class="m-0">All Notifications</h6>
+        <div class="header d-flex align-items-center justify-content-between">
+            <div>
+                <h6 class="m-0">All Notifications</h6>
+            </div>
+            @if($notifications['unread'] > 0) 
+                <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
+            @endif
         </div>
         <div class="scrollable" id="notificationList">
             @forelse ($notifications['data'] as $key => $item)
@@ -15,7 +20,7 @@
                     $data = json_decode($item['data'], true);
                 @endphp
                 <div wire:click="read('{{$item['id']}}', '{{$data['redirect']}}')" class="item nav-link {{is_null($item['read_at']) ? 'active' : ''}}">
-                    <div class="d-flex gap-3">
+                    <div class="d-flex align-items-center gap-3">
                         <div class="icon">
                             @if($data['type'] == 'info')
                                 <i class="fa-regular fa-lightbulb" style="color: #d3b404"></i>
@@ -28,7 +33,7 @@
                             @endif
                         </div>
                         <div class="message">
-                            <div class="mb-2"> {!! $data['message'] !!}</div>
+                            <div> {!! $data['message'] !!}</div>
                             <small class="text-muted fw-medium">(click this notification to view more details)</small>
                         </div>
                     </div>
@@ -41,17 +46,34 @@
             @endforelse
         </div>
     </div>
+    <video id="notification-video" controls width="400" class="d-none">
+        <source src="{{ asset('sounds/notification.mp3') }}" type="video/mp4">
+        Your browser does not support the video element.
+    </video>      
 </div>
 
 @section('script')
 <script>
   $(function() {
+
         var notificationList = $('#notificationList');
         notificationList.on('scroll', function() {
             if (notificationList.scrollTop() + 300) {
                 Livewire.dispatch('loadNotifications');
             }
         });
+
+        Livewire.on('notify', function(event) {
+            const videoPlayer = document.getElementById('notification-video'); // Select the <video> element
+            videoPlayer.play().catch((error) => {
+                console.error('Video playback failed:', error);
+            });
+        });
+
+        Livewire.on('refreshPage', () => {
+            location.reload();  
+        });
+
     });
 
 </script>

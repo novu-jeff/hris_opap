@@ -29,7 +29,7 @@ class LoginController extends Controller
         }
 
         if(Auth::guard('employee')->attempt([
-            filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'employee_no' => $request->email,
+            filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email_id' : 'employee_no' => $request->email,
             'password' => $request->password
         ])) {
 

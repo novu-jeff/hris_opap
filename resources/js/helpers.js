@@ -29,7 +29,7 @@ export function reinitializeDataTable() {
     }
     $('.data-tables').DataTable({
         scrollX: true,
-        pageLength: 20 
+        pageLength: 10 
     });
 }
 

@@ -24,7 +24,7 @@
             </div>
 
             <div class="modal-body" wire:click="makeSeen">
-                <div class="msg-body" wire:poll="loadRecords({{$selected_id}})" wire:poll.keep-alive>
+                <div class="msg-body" wire:poll='loadRecords("{{$selected_id}}")' wire:poll.keep-alive>
                     <ul>
                         @if(isset($records['messages']))
                             @foreach ($records['messages'] as $message)
