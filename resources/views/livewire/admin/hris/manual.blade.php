@@ -618,7 +618,7 @@
                                     </div>
                                     <div class="accordion-item mb-4">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button text-uppercase fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-children" aria-expanded="false" aria-controls="flush-children">
+                                            <button class="accordion-button text-uppercase fw-bold collapsed" type="button" wire:click="setActiveAccordion('children')" data-bs-toggle="collapse" data-bs-target="#flush-children" aria-expanded="false" aria-controls="flush-children">
                                                 Children Details
                                             </button>
                                         </h2>

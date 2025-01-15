@@ -45,88 +45,207 @@ class Edit extends Component
         $this->loadRecords();
     }
 
-    public function loadRecords() {
-        // Fetch employee data with relations
-        $data = EmployeeUpdatePersonal::with([
-            'education', 'parents', 'children', 'employment_history', 
-            'civil_service', 'trainings', 'others', 'skills'
+    public function loadRecords()
+    {
+        // Load updated and stored records with their relationships
+        $updated = EmployeeUpdatePersonal::with([
+            'education', 'children', 'employment_history',
+            'civil_service', 'trainings', 'others', 'skills', 
         ])->where('employee_no', $this->employee_no)->first();
     
-        if (!$data) {
-            return redirect()->route('ess.approval-profile.index');
+        $stored = EmployeePersonal::with([
+            'education', 'children', 'employment_history',
+            'civil_service', 'trainings', 'others', 'skills', 'account'
+        ])->where('employee_no', $this->employee_no)->first();
+    
+
+        // Initialize result array
+        $data = [];
+    
+        if (!$stored || !$updated) {
+            // Return an empty result if either of the records is missing
+            return $data;
         }
     
-        // Populate employee records
-        $this->records = [
-            'employee_personal' => $this->formatEmployeePersonal($data),
-            'employee_education' => $data->education ? $data->education->toArray() : [],
-            'employee_parents' => $this->formatEmployeeParents($data),
-            'employee_children' => $data->children ? $data->children->toArray() : [],
-            'employee_employment_history' => $data->employment_history ? $data->employment_history->toArray() : [],
-            'employee_civil_service' => $data->civil_service ? $data->civil_service->toArray() : [],
-            'employee_trainings' => $data->trainings ? $data->trainings->toArray() : [],
-            'employee_others' => $data->others ? $data->others->toArray() : [],
-            'employee_skills' => $data->skills ? $data->skills->toArray() : [],
+        // Compare fields dynamically based on attributes in the personal record
+        $personalFields = array_keys($stored->getAttributes());
+        $data['personal'] = $this->compareFields($stored, $updated, $personalFields);
+    
+        // Handle parents comparison directly, since it's not a 'hasMany' relationship
+        $parentFields = [
+            'spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix',
+            'spouse_occupation', 'spouse_business_name_employer', 'spouse_business_address',
+            'spouse_contact_no', 'father_surname', 'father_firstname', 'father_middlename',
+            'father_suffix', 'mother_surname', 'mother_firstname', 'mother_middlename',
         ];
     
-        // Handle citizenship logic
-        if ($data->citizenship === 'dual_citizenship') {
-            $this->select_change('citizenship');
+        // Ensure that you check for both 'stored' and 'updated' parents data
+        $data['parents'] = $this->compareFields($stored->parents, $updated->parents, $parentFields);
+    
+        // Relationships to include (excluding parents as it's handled separately)
+        $relationships = [
+            'education', 'children', 'employment_history',
+            'civil_service', 'trainings', 'others', 'skills',
+        ];
+    
+
+        foreach ($relationships as $relationship) {
+            $oldRelations = $stored->$relationship ?? collect();
+            $newRelations = $updated->$relationship ?? collect();
+    
+            // Handle null for old relations by converting to empty collection
+            if (is_null($oldRelations)) {
+                $oldRelations = collect();
+            }
+    
+            $relationshipData = [];
+    
+            foreach ($oldRelations as $index => $oldRecord) {
+                $newRecord = $newRelations[$index] ?? null;
+    
+                // Ensure valid records for comparison
+                if (!is_object($oldRecord) || !method_exists($oldRecord, 'getAttributes')) {
+                    continue;
+                }
+    
+                // Get dynamic fields from the record attributes
+                $fields = array_keys($oldRecord->getAttributes());
+                $relationshipData[] = $this->compareFields($oldRecord, $newRecord, $fields);
+            }
+    
+            // If new relations have additional entries, handle them
+            foreach ($newRelations as $index => $newRecord) {
+                if (!isset($relationshipData[$index]) && is_object($newRecord) && method_exists($newRecord, 'getAttributes')) {
+                    $fields = array_keys($newRecord->getAttributes());
+                    $relationshipData[] = $this->compareFields(null, $newRecord, $fields);
+                }
+            }
+    
+            $data[$relationship] = $relationshipData;
+
         }
-        
+
+        $data['personal']['email'] = [
+            'old' => $stored->account['email'],
+            'new' => $updated['email'],
+        ];
+
+        $this->records = [
+            'employee_personal' => $this->formatEmployeePersonal($data),
+            'employee_education' => $data['education'] ? $data['education'] : [],
+            'employee_parents' => $this->formatEmployeeParents($data),
+            'employee_children' => $data['children'] ? $data['children'] : [],
+            'employee_employment_history' => $data['employment_history'] ? $data['employment_history'] : [],
+            'employee_civil_service' => $data['civil_service'] ? $data['civil_service'] : [],
+            'employee_trainings' => $data['trainings'] ? $data['trainings'] : [],
+            'employee_others' => $data['others'] ? $data['others'] : [],
+            'employee_skills' => $data['skills'] ? $data['skills'] : [],
+        ];
+
+        return $data;
     }
     
+    private function compareFields($oldRecord, $newRecord, $fields)
+    {
+        $result = [];
+        foreach ($fields as $field) {
+            // Use null coalescing operator to ensure we don't get null if data is missing
+            $oldValue = $oldRecord ? $oldRecord->$field : '';
+            $newValue = $newRecord ? $newRecord->$field : '';
+    
+            // Store the results of comparison
+            $result[$field] = [
+                'old' => $oldValue,
+                'new' => $newValue,
+            ];
+        }
+        return $result;
+    }
+    
+    
+    // public function loadRecords() {
+
+    //     $data = EmployeeUpdatePersonal::with([
+    //         'education', 'parents', 'children', 'employment_history', 
+    //         'civil_service', 'trainings', 'others', 'skills'
+    //     ])->where('employee_no', $this->employee_no)->first();
+    
+        
+    //     if (!$data) {
+    //         return redirect()->route('ess.approval-profile.index');
+    //     }
+    
+    //     // Populate employee records
+    //     $this->records = [
+    //         'employee_personal' => $this->formatEmployeePersonal($data),
+    //         'employee_education' => $data->education ? $data->education->toArray() : [],
+    //         'employee_parents' => $this->formatEmployeeParents($data),
+    //         'employee_children' => $data->children ? $data->children->toArray() : [],
+    //         'employee_employment_history' => $data->employment_history ? $data->employment_history->toArray() : [],
+    //         'employee_civil_service' => $data->civil_service ? $data->civil_service->toArray() : [],
+    //         'employee_trainings' => $data->trainings ? $data->trainings->toArray() : [],
+    //         'employee_others' => $data->others ? $data->others->toArray() : [],
+    //         'employee_skills' => $data->skills ? $data->skills->toArray() : [],
+    //     ];
+    
+    //     // Handle citizenship logic
+    //     if ($data->citizenship === 'dual_citizenship') {
+    //         $this->select_change('citizenship');
+    //     }
+        
+    // }
+    
     protected function formatEmployeePersonal($data) {
+        $data = $data['personal'];
         return [
-            'profile' => $data->profile ?? null,
-            'firstname' => $data->firstname ?? null,
-            'middlename' => $data->middlename ?? null,
-            'lastname' => $data->lastname ?? null,
-            'suffix' => $data->suffix ?? null,
-            'birthday' => $data->birthday ?? null,
-            'civil_status' => $data->civil_status ?? null,
-            'sex' => $data->sex ?? null,
-            'citizenship' => $data->citizenship ?? null,
-            'citizenship_type' => $data->citizenship_type ?? null,
-            'country' => $data->country ?? null,
-            'present_address' => $data->present_address ?? null,
-            'present_province' => $data->present_province ?? null,
-            'present_city' => $data->present_city ?? null,
-            'permanent_address' => $data->permanent_address ?? null,
-            'permanent_province' => $data->permanent_province ?? null,
-            'permanent_city' => $data->permanent_city ?? null,
-            'mobile_number' => $data->mobile_number ?? null,
-            'tel_no' => $data->tel_no ?? null,
-            'email' => $data->email ?? null,
-            'height' => $data->height ?? null,
-            'weight' => $data->weight ?? null,
-            'blood_type' => $data->blood_type ?? null,
-            'gsis_no' => $data->gsis_no ?? null,
-            'pagibig_no' => $data->pagibig_no ?? null,
-            'philhealth_no' => $data->philhealth_no ?? null,
-            'sss_no' => $data->sss_no ?? null,
-            'tin_no' => $data->tin_no ?? null,
+            'firstname' => $data['firstname'] ?? null,
+            'middlename' => $data['middlename'] ?? null,
+            'lastname' => $data['lastname'] ?? null,
+            'suffix' => $data['suffix'] ?? null,
+            'birthday' => $data['birthday'] ?? null,
+            'civil_status' => $data['civil_status'] ?? null,
+            'sex' => $data['sex'] ?? null,
+            'citizenship' => $data['citizenship'] ?? null,
+            'citizenship_type' => $data['citizenship_type'] ?? null,
+            'country' => $data['country'] ?? null,
+            'present_address' => $data['present_address'] ?? null,
+            'present_province' => $data['present_province'] ?? null,
+            'present_city' => $data['present_city'] ?? null,
+            'permanent_address' => $data['permanent_address'] ?? null,
+            'permanent_province' => $data['permanent_province'] ?? null,
+            'permanent_city' => $data['permanent_city'] ?? null,
+            'mobile_number' => $data['mobile_number'] ?? null,
+            'tel_no' => $data['tel_no'] ?? null,
+            'email' => $data['email'] ?? null,
+            'height' => $data['height'] ?? null,
+            'weight' => $data['weight'] ?? null,
+            'blood_type' => $data['blood_type'] ?? null,
+            'gsis_no' => $data['gsis_no'] ?? null,
+            'pagibig_no' => $data['pagibig_no'] ?? null,
+            'philhealth_no' => $data['philhealth_no'] ?? null,
+            'sss_no' => $data['sss_no'] ?? null,
+            'tin_no' => $data['tin_no'] ?? null,
         ];
     }    
     
     protected function formatEmployeeParents($data) {
-        $parents = $data->parents;
+        $parents = $data['parents'];
         return [
-            'spouse_surname' => $parents->spouse_surname ?? null,
-            'spouse_firstname' => $parents->spouse_firstname ?? null,
-            'spouse_middlename' => $parents->spouse_middlename ?? null,
-            'spouse_suffix' => $parents->spouse_suffix ?? null,
-            'spouse_occupation' => $parents->spouse_occupation ?? null,
-            'spouse_business_name_employer' => $parents->spouse_business_name_employer ?? null,
-            'spouse_business_address' => $parents->spouse_business_address ?? null,
-            'spouse_contact_no' => $parents->spouse_contact_no ?? null,
-            'father_surname' => $parents->father_surname ?? null,
-            'father_firstname' => $parents->father_firstname ?? null,
-            'father_middlename' => $parents->father_middlename ?? null,
-            'father_suffix' => $parents->suffix ?? null,
-            'mother_surname' => $parents->mother_surname ?? null,
-            'mother_firstname' => $parents->mother_firstname ?? null,
-            'mother_middlename' => $parents->mother_middlename ?? null,
+            'spouse_surname' => $parents['spouse_surname'] ?? null,
+            'spouse_firstname' => $parents['spouse_firstname'] ?? null,
+            'spouse_middlename' => $parents['spouse_middlename'] ?? null,
+            'spouse_suffix' => $parents['spouse_suffix'] ?? null,
+            'spouse_occupation' => $parents['spouse_occupation'] ?? null,
+            'spouse_business_name_employer' => $parents['spouse_business_name_employer'] ?? null,
+            'spouse_business_address' => $parents['spouse_business_address'] ?? null,
+            'spouse_contact_no' => $parents['spouse_contact_no'] ?? null,
+            'father_surname' => $parents['father_surname'] ?? null,
+            'father_firstname' => $parents['father_firstname'] ?? null,
+            'father_middlename' => $parents['father_middlename'] ?? null,
+            'father_suffix' => $parents['father_suffix'] ?? null,
+            'mother_surname' => $parents['mother_surname'] ?? null,
+            'mother_firstname' => $parents['mother_firstname'] ?? null,
+            'mother_middlename' => $parents['mother_middlename'] ?? null,
         ];
     }
 
@@ -151,6 +270,7 @@ class Edit extends Component
         }
 
         if($isNotify) {
+
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
             $action = 'approve';
@@ -159,6 +279,7 @@ class Edit extends Component
                 'message' => $message,
                 'action' => $action
             ]);
+
         } else {
 
             DB::beginTransaction();
@@ -177,7 +298,6 @@ class Edit extends Component
 
                 $this->remove();
                 
-
                 DB::commit();
 
                 $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();

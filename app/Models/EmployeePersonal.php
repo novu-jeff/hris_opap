@@ -49,4 +49,40 @@ class EmployeePersonal extends Model
         return $this->hasOne(GSISBillingItems::class, 'bp_no', 'gsis_no');
     }
 
+    public function account() {
+        return $this->hasOne(EmployeeAccount::class, 'employee_no', 'employee_no');
+    }
+
+    public function education() {
+        return $this->hasMany(EmployeeEducation::class, 'employee_no', 'employee_no');
+    }
+
+    public function parents() {
+        return $this->hasOne(EmployeeParents::class, 'employee_no', 'employee_no');
+    }
+
+    public function children() {
+        return $this->hasMany(EmployeeChildren::class, 'employee_no', 'employee_no');
+    }
+
+    public function employment_history() {
+        return $this->hasMany(EmployeeEmploymentHistory::class, 'employee_no', 'employee_no');
+    }
+
+    public function civil_service() {
+        return $this->hasMany(EmployeeCivilService::class, 'employee_no', 'employee_no');
+    }
+
+    public function trainings() {
+        return $this->hasMany(EmployeeTrainings::class, 'employee_no', 'employee_no');
+    }
+
+    public function others() {
+        return $this->hasMany(EmployeeOtherWorks::class, 'employee_no', 'employee_no');
+    }
+
+    public function skills() {
+        return $this->hasMany(EmployeeSkillsHobbies::class, 'employee_no', 'employee_no');
+    }
+
 }

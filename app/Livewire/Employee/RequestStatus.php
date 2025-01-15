@@ -187,7 +187,6 @@ class RequestStatus extends Component
         $user = EmployeeAccount::find($this->user->id);
         $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('ess.request-status', ['employee_no' => $this->user->employee_no]), 'admin'));
 
-
         foreach ($this->attachments as $index => $attachment) {
 
             if ($attachment instanceof \Illuminate\Http\UploadedFile) {

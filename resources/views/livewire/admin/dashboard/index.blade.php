@@ -234,7 +234,7 @@
                             </div>
                             <div class="card-body">
                                 @if(!empty($stats['gsis_billing']['items']) && count($stats['gsis_billing']['items']) > 0)
-                                    <table class="table text-uppercase fw-bold w-100">
+                                    <table class="table text-uppercase fw-bold w-100 data-tables">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>BP No</th>
