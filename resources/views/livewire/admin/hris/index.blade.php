@@ -190,7 +190,7 @@
                         <th>Employee No</th>
                         <th>Employee Name</th>
                         <th>Date Hired</th>
-                        <th></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
