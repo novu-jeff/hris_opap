@@ -175,13 +175,13 @@ class RequestStatus extends Component
 
         $this->validate();
 
-        // $message = Message::create([
-        //     'from_id' => $this->user->employee_no,
-        //     'from_role' => 'employee',
-        //     'to_id' => '0',
-        //     'to_role' => 'admin',
-        //     'message' => $this->message ?? null,
-        // ]);
+        $message = Message::create([
+            'from_id' => $this->user->employee_no,
+            'from_role' => 'employee',
+            'to_id' => '0',
+            'to_role' => 'admin',
+            'message' => $this->message ?? null,
+        ]);
 
         $sender_name = $this->user->firstname . ' ' . $this->user->lastname  . '(employee)';
         $user = EmployeeAccount::find($this->user->id);

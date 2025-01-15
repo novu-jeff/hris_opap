@@ -39,14 +39,6 @@ $('.scroll-top').on('click', function() {
     $('html, body').animate({ scrollTop: 0 });
 })
 
-document.addEventListener('livewire:load', function () {
-    $('html, body').animate({ scrollTop: 0 });
-});
-
-document.addEventListener('livewire:update', function () {
-    $('html, body').animate({ scrollTop: 0 });
-});
-
 $(function() {
     $('.select-2').select2();
     $('.select-2').on('change', function() {
