@@ -84,7 +84,6 @@ Livewire.on('alert', (event) => {
     }
 
     if(alert.status === 'processing') {
-        alert();
         Swal.fire({
             title: alert.title,
             text: alert.message,

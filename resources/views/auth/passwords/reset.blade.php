@@ -41,12 +41,6 @@
                         </form>
                     @else
                         <div class="alert alert-info text-uppercase fw-bold text-center">{{__('auth.passwords.token')}}</div>
-                    
-                        <div class="d-flex justify-content-end my-4">
-                            <a href="{{route('employee.login')}}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                                {{ __('Login') }}
-                            </a>   
-                        </div> 
                     @endif
                 </div>
             </div>

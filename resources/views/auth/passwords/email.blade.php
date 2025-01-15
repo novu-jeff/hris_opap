@@ -34,9 +34,6 @@
                         </div>
 
                         <div class="form-group mb-0 d-flex gap-3 justify-content-end mt-5 mb-3">
-                            <a href="{{route('employee.login')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase fw-bold">
-                                {{ __('Login') }}
-                            </a>
                             <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                                 {{ __('Proceed') }}
                             </button>

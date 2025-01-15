@@ -50,6 +50,10 @@ class EmployeeUpdatePersonal extends Model
         return $this->hasMany(EmployeeUpdateEducation::class, 'employee_no', 'employee_no');
     }
 
+    public function account() {
+        return $this->hasOne(EmployeeUpdatedAccount::class, 'employee_no', 'employee_no');
+    }
+
     public function parents() {
         return $this->hasOne(EmployeeUpdateParents::class, 'employee_no', 'employee_no');
     }

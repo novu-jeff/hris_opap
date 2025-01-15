@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 
 class Notifications extends Component
@@ -16,10 +17,11 @@ class Notifications extends Component
     ];
     public $chunkSize = 5;
     public $loadedNotifications = 0;
+    public $firstLoadUnreadCount;
 
     public $user;
 
-    public $listeners = ['loadNotifications'];
+    public $listeners = ['loadNotifications', 'notify'];
 
     public function mount()
     {
@@ -57,7 +59,6 @@ class Notifications extends Component
         // Determine base query based on user role
         $query = Notification::query();
 
-
         if ($this->user->roles[0]->name === 'employee') {
             $query->where('notifiable_id', $this->user->id)
                   ->whereJsonContains('data->audience', 'employee'); // Filter JSON audience
@@ -84,9 +85,38 @@ class Notifications extends Component
     
         // Update the count of loaded notifications
         $this->loadedNotifications += $newNotifications->count();
+        
+        // Check if this is the first load
+        if (!isset($this->firstLoadUnreadCount)) {
+            // Store the initial unread count
+            $this->firstLoadUnreadCount = $this->notifications['unread'];
+        } else {
+            // Check if the unread count has increased since the first load
+            if ($this->notifications['unread'] > $this->firstLoadUnreadCount) {
+            // Dispatch the 'notify' event if there are new unread notifications
+                $this->firstLoadUnreadCount = $this->notifications['unread'];
+                $this->dispatch('notify', ['sample']);
+            }
+        }
     }
-    
-    
+
+    public function markAsRead() {
+
+        $query = Notification::query();
+
+        if ($this->user->roles[0]->name === 'employee') {
+            $query->where('notifiable_id', $this->user->id)
+                  ->whereJsonContains('data->audience', 'employee'); // Filter JSON audience
+        } else {
+            $query->whereJsonContains('data->audience', 'admin');
+        }
+
+        $query->update([
+            'read_at' => Carbon::now()
+        ]);
+
+        $this->dispatch('refreshPage');
+    }
 
 
     public function render()

@@ -49,7 +49,7 @@ class Profile extends Component
         // Fetch employee data with relations
         $updating = EmployeeUpdatePersonal::with([
             'education', 'parents', 'children', 'employment_history', 
-            'civil_service', 'trainings', 'others', 'skills'
+            'civil_service', 'trainings', 'others', 'skills', 
         ])->where('employee_no', $this->employee_no)->first();
     
         // Determine the data source
@@ -89,11 +89,12 @@ class Profile extends Component
     }
 
     protected function formatEmployeePersonal($data) {
+
         // Determine if it's an update or from the given data
         $personal = $this->isFromUpdate ? $data : $data->personal;
     
         // Extract the email from the 'account' array if it exists
-        $email = $data->account['email'] ?? null;
+        $email = $data->email ? $data->email : $data->account['email'];
     
         // Define the fields for personal data
         $fields = [
@@ -426,8 +427,10 @@ class Profile extends Component
     }
 
     public function save() {
+
         $id = $this->employee_no;
         $record = EmployeeInformation::where('employee_no', $id)->first();
+        
         if (!$record) {
             return $this->dispatch('alert', [
                 'status' => 'error',
@@ -448,6 +451,7 @@ class Profile extends Component
         DB::beginTransaction();
 
         try {
+
 
             $this->employee_personal($record->employee_no, $this->records['employee_personal'] ?? []);
             $this->employee_parents($record->employee_no, $this->records['employee_parents'] ?? []);
@@ -487,11 +491,10 @@ class Profile extends Component
                 'message' => 'Error: ' . $e->getMessage()
             ]);
         }
-
-
     }
 
     public function employee_personal(string $employee_no, array $data) {
+
         return EmployeeUpdatePersonal::updateOrCreate([
             'employee_no' => $employee_no
         ],[
@@ -552,14 +555,13 @@ class Profile extends Component
 
     public function employee_children(string $employee_no, array $data) {
         $model = EmployeeUpdateChildren::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
                     'firstname' => $value['firstname'] ?? null,
-                    'lastname' => $value['lastname'] ?? null, // Adjust keys based on uniqueness
-                ],
-                [
+                    'lastname' => $value['lastname'] ?? null, 
                     'middlename' => $value['middlename'] ?? null,
                     'birthdate' => $value['birthdate'] ?? null,
                 ]
@@ -569,14 +571,13 @@ class Profile extends Component
     
     public function employee_education(string $employee_no, array $data) {
         $model = EmployeeUpdateEducation::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
                     'level' => $value['level'] ?? null,
-                    'school_name' => $value['school_name'] ?? null, // Adjust keys for uniqueness
-                ],
-                [
+                    'school_name' => $value['school_name'] ?? null,
                     'course' => $value['course'] ?? null,
                     'from_year' => $value['from_year'] ?? null,
                     'to_year' => $value['to_year'] ?? null,
@@ -587,14 +588,13 @@ class Profile extends Component
     
     public function employee_employment_history(string $employee_no, array $data) {
         $model = EmployeeUpdateEmploymentHistory::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
                     'company_name' => $value['company_name'] ?? null,
-                    'position' => $value['position'] ?? null, // Adjust keys for uniqueness
-                ],
-                [
+                    'position' => $value['position'] ?? null,
                     'department' => $value['department'] ?? null,
                     'monthly_salary' => $value['monthly_salary'] ?? null,
                     'employment_status' => $value['employment_status'] ?? null,
@@ -608,13 +608,12 @@ class Profile extends Component
     
     public function employee_civil_service(string $employee_no, array $data) {
         $model = EmployeeUpdateCivilService::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
-                    'certification' => $value['certification'] ?? null, // Adjust keys for uniqueness
-                ],
-                [
+                    'certification' => $value['certification'] ?? null, 
                     'rating' => $value['rating'] ?? null,
                     'date_exam' => $value['date_exam'] ?? null,
                     'place_exam' => $value['place_exam'] ?? null,
@@ -627,14 +626,13 @@ class Profile extends Component
     
     public function employee_trainings(string $employee_no, array $data) {
         $model = EmployeeUpdateTrainings::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
-                    'name' => $value['name'] ?? null, // Adjust keys for uniqueness
+                    'name' => $value['name'] ?? null,
                     'type' => $value['type'] ?? null,
-                ],
-                [
                     'date_from' => $value['date_from'] ?? null,
                     'date_to' => $value['date_to'] ?? null,
                     'consumed_hours' => $value['consumed_hours'] ?? null,
@@ -646,13 +644,12 @@ class Profile extends Component
     
     public function employee_others(string $employee_no, array $data) {
         $model = EmployeeUpdateOtherWorks::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
-                    'organization' => $value['organization'] ?? null, // Adjust keys for uniqueness
-                ],
-                [
+                    'organization' => $value['organization'] ?? null, 
                     'address' => $value['address'] ?? null,
                     'date_from' => $value['date_from'] ?? null,
                     'date_to' => $value['date_to'] ?? null,
@@ -665,13 +662,12 @@ class Profile extends Component
     
     public function employee_skills(string $employee_no, array $data) {
         $model = EmployeeUpdateSkillsHobbies::class;
+        $model::where('employee_no', $employee_no)->delete();
         foreach ($data as $value) {
-            $model::updateOrCreate(
+            $model::create(
                 [
                     'employee_no' => $employee_no,
-                    'name' => $value['name'] ?? null, // Adjust keys for uniqueness
-                ],
-                [
+                    'name' => $value['name'] ?? null, 
                     'recognition' => $value['recognition'] ?? null,
                     'organization' => $value['organization'] ?? null,
                 ]
