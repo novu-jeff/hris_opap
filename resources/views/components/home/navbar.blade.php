@@ -8,23 +8,31 @@
                 <div class="close-icon d-lg-none">
                     <i class="fa-solid fa-xmark"></i>
                 </div>
-                <li class="nav-item">
-                    <a wire:navigate href="{{route('home.index')}}" class="nav-link 
-                    {{ request()->routeIs('home.index') || 
-                        request()->routeIs('home.search.*') ||
-                        request()->routeIs('home.view-job') ? 'active' : '' 
-                    }}">
-                        Find Jobs
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{route('home.applied')}}" class="nav-link {{request()->routeIs('home.applied') || request()->routeIs('home.applied.*') == 'home.applied' ? 'active' : ''}}">
-                        My Jobs
-                    </a>
-                </li>
-                @if (!Auth::guard('applicant')->user())
+                @if(!Route::is('password.request') && !Route::is('password.reset'))
                     <li class="nav-item">
-                        <a wire:navigate href="{{route('home.login')}}" class="btn btn-primary py-2 px-4">
+                        <a wire:navigate href="{{route('home.index')}}" class="nav-link 
+                        {{ request()->routeIs('home.index') || 
+                            request()->routeIs('home.search.*') ||
+                            request()->routeIs('home.view-job') ? 'active' : '' 
+                        }}">
+                            Find Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{route('home.applied')}}" class="nav-link {{request()->routeIs('home.applied') || request()->routeIs('home.applied.*') == 'home.applied' ? 'active' : ''}}">
+                            My Jobs
+                        </a>
+                    </li>
+                    @if (!Auth::guard('applicant')->user())
+                        <li class="nav-item">
+                            <a wire:navigate href="{{route('home.login')}}" class="btn btn-primary py-2 px-4">
+                                Login
+                            </a>
+                        </li>
+                    @endif
+                @else
+                    <li class="nav-item">
+                        <a wire:navigate href="{{route('employee.login')}}" class="btn btn-primary py-2 px-4">
                             Login
                         </a>
                     </li>

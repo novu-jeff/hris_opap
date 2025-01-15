@@ -46,28 +46,28 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-3 mb-3">
                                                     <label class="mb-2" for="lastname">Surname</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.lastname" id="lastname" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.lastname.new" id="lastname" class="form-control restricted {{$records['employee_personal']['lastname']['new'] !== $records['employee_personal']['lastname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.lastname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.lastname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="firstname">First Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.firstname" id="firstname" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.firstname.new" id="firstname" class="form-control restricted {{$records['employee_personal']['firstname']['new'] !== $records['employee_personal']['firstname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.firstname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.firstname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-3 mb-3">
                                                     <label class="mb-2" for="middlename">Middle Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.middlename" id="middlename" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.middlename.new" id="middlename" class="form-control restricted {{$records['employee_personal']['middlename']['new'] !== $records['employee_personal']['middlename']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.middlename') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.middlename.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-2 mb-3">
                                                     <label class="mb-2" for="suffix">Suffix</label>
-                                                    <select disabled wire:model="records.employee_personal.suffix" id="suffix" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_personal.suffix.new" id="suffix" class="form-select restricted {{$records['employee_personal']['suffix']['new'] !== $records['employee_personal']['suffix']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="jr">Jr</option>
                                                         <option value="sr">Sr</option>
@@ -78,19 +78,19 @@
                                                         <option value="V">V</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.suffix') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.suffix.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="birthday">Date of Birth</label>
-                                                    <input type="text" wire:model="records.employee_personal.birthday" id="birthday" class="form-control restricted">
+                                                    <input type="text" wire:model="records.employee_personal.birthday.new" id="birthday" class="form-control restricted {{$records['employee_personal']['birthday']['new'] !== $records['employee_personal']['birthday']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.birthday') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.birthday.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="civil_status">Civil Status</label>
-                                                    <select disabled wire:model="records.employee_personal.civil_status" id="civil_status" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_personal.civil_status.new" id="civil_status" class="form-select restricted {{$records['employee_personal']['civil_status']['new'] !== $records['employee_personal']['civil_status']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="single">Single</option>
                                                         <option value="married">Married</option>
@@ -100,18 +100,18 @@
                                                         <option value="annulled">Annulled</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.civil_status') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.civil_status.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="sex">Sex</label>
-                                                    <select disabled wire:model="records.employee_personal.sex" id="sex" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_personal.sex.new" id="sex" class="form-select restricted {{$records['employee_personal']['sex']['new'] !== $records['employee_personal']['sex']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="male">Male</option>
                                                         <option value="female">Female</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.sex') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.sex.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 mb-3">
@@ -121,38 +121,38 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="citizenship">Citizenship</label>
-                                                    <select disabled wire:model="records.employee_personal.citizenship" wire:change="select_change('citizenship')"  id="citizenship" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_personal.citizenship.new" wire:change="select_change('citizenship')"  id="citizenship" class="form-select restricted {{$records['employee_personal']['citizenship']['new'] !== $records['employee_personal']['citizenship']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="filipino">Filipino</option>
                                                         <option value="dual_citizenship">Dual Citizenship</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.citizenship') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.citizenship.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 @if ($isDualCitizenship)
                                                     <div class="col-12 col-md-4 mb-3">    
                                                         <label class="mb-2" for="country">Country (Dual Citizenship)</label>
-                                                            <select disabled wire:model="records.employee_personal.country" id="citizenship_type" class="form-select restricted">
+                                                            <select disabled wire:model="records.employee_personal.country.new" id="citizenship_type" class="form-select restricted {{$records['employee_personal']['country']['new'] !== $records['employee_personal']['country']['old'] ? 'border-primary' : ''}}">
                                                                 <option value=""> - CHOOSE - </option>
                                                                 @foreach ($countries as $country)
                                                                     <option value="{{$country['name']['common']}}">{{$country['name']['common']}}</option>
                                                                 @endforeach
                                                             </select>
                                                             <div class="error-field">
-                                                                @error('records.employee_personal.country') <span class="text-danger">{{ $message }}</span> @enderror
+                                                                @error('records.employee_personal.country.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                             </div>
                                                         </div>
                                                     @endif
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="citizenship_type">Citizenship Type</label>
-                                                    <select disabled wire:model="records.employee_personal.citizenship_type" id="citizenship_type" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_personal.citizenship_type.new" id="citizenship_type" class="form-select restricted {{$records['employee_personal']['citizenship_type']['new'] !== $records['employee_personal']['citizenship_type']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="by_birth">By Birth</option>
                                                         <option value="by_naturalization">By Naturalization</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.citizenship_type') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.citizenship_type.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                             </div>
@@ -170,23 +170,23 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-12 mb-3">
                                                     <label class="mb-2" for="present_address">Residential Address</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.present_address" id="present_address" class="form-control restricted" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                                    <input type="text" readonly wire:model="records.employee_personal.present_address.new" id="present_address" class="form-control restricted {{$records['employee_personal']['present_address']['new'] !== $records['employee_personal']['present_address']['old'] ? 'border-primary' : ''}}" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.present_address') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.present_address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="present_province">State / Province</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.present_province" id="present_province" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.present_province.new" id="present_province" class="form-control restricted {{$records['employee_personal']['present_province']['new'] !== $records['employee_personal']['present_province']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.present_province') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.present_province.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="present_city">City / Municipality</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.present_city" id="present_city" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.present_city.new" id="present_city" class="form-control restricted {{$records['employee_personal']['present_city']['new'] !== $records['employee_personal']['present_city']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.present_city') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.present_city.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div> 
                                                 <div class="col-12 mb-3">
@@ -194,23 +194,23 @@
                                                 </div> 
                                                 <div class="col-12 col-md-12 mb-3">
                                                     <label class="mb-2" for="permanent_address">Permanent Address</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_address" id="permanent_address" class="form-control restricted" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_address.new" id="permanent_address" class="form-control restricted {{$records['employee_personal']['permanent_address']['new'] !== $records['employee_personal']['permanent_address']['old'] ? 'border-primary' : ''}}" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.permanent_address') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.permanent_address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="permanent_province">State / Province</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_province" id="permanent_province" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_province.new" id="permanent_province" class="form-control restricted {{$records['employee_personal']['permanent_province']['new'] !== $records['employee_personal']['permanent_province']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.permanent_province') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.permanent_province.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="permanent_city">City / Municipality</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_city" id="permanent_city" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.permanent_city.new" id="permanent_city" class="form-control restricted {{$records['employee_personal']['permanent_city']['new'] !== $records['employee_personal']['permanent_city']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.permanent_city') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.permanent_city.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>    
                                             </div>
@@ -228,23 +228,23 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="mobile_number">Mobile No.</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.mobile_number" id="mobile_number" class="form-control restricted" data-mask="mobile">
+                                                    <input type="text" readonly wire:model="records.employee_personal.mobile_number.new" id="mobile_number" class="form-control restricted {{$records['employee_personal']['mobile_number']['new'] !== $records['employee_personal']['mobile_number']['old'] ? 'border-primary' : ''}}" data-mask="mobile">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.mobile_number') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.mobile_number.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="tel_no">Telephone No.</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.tel_no" id="tel_no" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.tel_no.new" id="tel_no" class="form-control restricted {{$records['employee_personal']['tel_no']['new'] !== $records['employee_personal']['tel_no']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.tel_no') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.tel_no.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                                 <div class="col-12 col-md-4 mb-3">
                                                     <label class="mb-2" for="email">Email</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.email" id="email" class="form-control restricted text-lowercase">
+                                                    <input type="text" readonly wire:model="records.employee_personal.email.new" id="email" class="form-control restricted text-lowercase {{$records['employee_personal']['email']['new'] !== $records['employee_personal']['email']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.email') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.email.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>  
                                             </div>
@@ -262,23 +262,23 @@
                                             <div class="row">
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="height">Height</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.height" id="height" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.height.new" id="height" class="form-control restricted {{$records['employee_personal']['height']['new'] !== $records['employee_personal']['height']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.height') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.height.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="weight">Weight</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.weight" id="weight" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.weight.new" id="weight" class="form-control restricted {{$records['employee_personal']['weight']['new'] !== $records['employee_personal']['weight']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.weight') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.weight.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="mb-2" for="blood_type">Blood Type</label>
-                                                    <input type="text" readonly wire:model="records.employee_personal.blood_type" id="blood_type" class="form-control restricted">
+                                                    <input type="text" readonly wire:model="records.employee_personal.blood_type.new" id="blood_type" class="form-control restricted {{$records['employee_personal']['blood_type']['new'] !== $records['employee_personal']['blood_type']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_personal.blood_type') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_personal.blood_type.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                             </div>
@@ -304,29 +304,29 @@
                                             <div class="row">
 
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_surname">Spouse's Surname</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_surname" id="records.employee_parents.spouse_surname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_surname.new">Spouse's Surname</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_surname.new" id="records.employee_parents.spouse_surname.new" class="form-control restricted {{$records['employee_parents']['spouse_surname']['new'] !== $records['employee_parents']['spouse_surname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_surname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_surname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_firstname">First Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_firstname" id="records.employee_parents.spouse_firstname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_firstname.new">First Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_firstname.new" id="records.employee_parents.spouse_firstname.new" class="form-control restricted {{$records['employee_parents']['spouse_firstname']['new'] !== $records['employee_parents']['spouse_firstname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_firstname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_firstname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_middlename">Middle Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_middlename" id="records.employee_parents.spouse_middlename" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_middlename.new">Middle Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_middlename.new" id="records.employee_parents.spouse_middlename.new" class="form-control restricted {{$records['employee_parents']['spouse_middlename']['new'] !== $records['employee_parents']['spouse_middlename']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_middlename') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_middlename.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
                                                     <label class="mb-2" for="suffix">Suffix</label>
-                                                    <select disabled wire:model="records.employee_parents.spouse_suffix" id="records.employee_parents.spouse_suffix" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_parents.spouse_suffix.new" id="records.employee_parents.spouse_suffix.new" class="form-select restricted {{$records['employee_parents']['spouse_suffix']['new'] !== $records['employee_parents']['spouse_suffix']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="jr">Jr</option>
                                                         <option value="sr">Sr</option>
@@ -337,35 +337,35 @@
                                                         <option value="V">V</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_suffix') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_suffix.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-12 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_occupation">Occupation</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_occupation" id="records.employee_parents.spouse_occupation" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_occupation.new">Occupation</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_occupation.new" id="records.employee_parents.spouse_occupation.new" class="form-control restricted {{$records['employee_parents']['spouse_occupation']['new'] !== $records['employee_parents']['spouse_occupation']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_occupation') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_occupation.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_business_name_employer">Employer / Business Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_business_name_employer" id="records.employee_parents.spouse_business_name_employer" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_business_name_employer.new">Employer / Business Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_business_name_employer.new" id="records.employee_parents.spouse_business_name_employer.new" class="form-control restricted {{$records['employee_parents']['spouse_business_name_employer']['new'] !== $records['employee_parents']['spouse_business_name_employer']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_business_name_employer') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_business_name_employer.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_business_address">Business Address</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_business_address" id="records.employee_parents.spouse_business_address" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_business_address.new">Business Address</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_business_address.new" id="records.employee_parents.spouse_business_address.new" class="form-control restricted {{$records['employee_parents']['spouse_business_address']['new'] !== $records['employee_parents']['spouse_business_address']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_business_address') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_business_address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.spouse_contact_no">Contact Number</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_contact_no" id="records.employee_parents.spouse_contact_no" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.spouse_contact_no.new">Contact Number</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.spouse_contact_no.new" id="records.employee_parents.spouse_contact_no.new" class="form-control restricted {{$records['employee_parents']['spouse_contact_no']['new'] !== $records['employee_parents']['spouse_contact_no']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.spouse_contact_no') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.spouse_contact_no.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 mb-4">
@@ -373,29 +373,29 @@
                                                 </div>
 
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.father_surname">Father's Surname</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.father_surname" id="records.employee_parents.father_surname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.father_surname.new">Father's Surname</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.father_surname.new" id="records.employee_parents.father_surname.new" class="form-control restricted {{$records['employee_parents']['father_surname']['new'] !== $records['employee_parents']['father_surname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.father_surname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.father_surname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.father_firstname">First Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.father_firstname" id="records.employee_parents.father_firstname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.father_firstname.new">First Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.father_firstname.new" id="records.employee_parents.father_firstname.new" class="form-control restricted {{$records['employee_parents']['father_firstname']['new'] !== $records['employee_parents']['father_firstname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.father_firstname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.father_firstname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.father_middlename">Middle Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.father_middlename" id="records.employee_parents.father_middlename" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.father_middlename.new">Middle Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.father_middlename.new" id="records.employee_parents.father_middlename.new" class="form-control restricted {{$records['employee_parents']['father_middlename']['new'] !== $records['employee_parents']['father_middlename']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.father_middlename') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.father_middlename.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-3 mb-3">
                                                     <label class="mb-2" for="suffix">Suffix</label>
-                                                    <select disabled wire:model="records.employee_parents.father_suffix" id="records.employee_parents.father_suffix" class="form-select restricted">
+                                                    <select disabled wire:model="records.employee_parents.father_suffix.new" id="records.employee_parents.father_suffix.new" class="form-select restricted {{$records['employee_parents']['father_suffix']['new'] !== $records['employee_parents']['father_suffix']['old'] ? 'border-primary' : ''}}">
                                                         <option value=""> - CHOOSE - </option>
                                                         <option value="jr">Jr</option>
                                                         <option value="sr">Sr</option>
@@ -406,31 +406,31 @@
                                                         <option value="V">V</option>
                                                     </select>
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.father_suffix') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.father_suffix.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 mb-4">
                                                     <hr>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.records.employee_parents.mother_surname">Mother's Surname</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.mother_surname" id="records.employee_parents.mother_surname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.records.new.employee_parents.mother_surname.new">Mother's Surname</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.mother_surname.new" id="records.employee_parents.mother_surname.new" class="form-control restricted {{$records['employee_parents']['mother_surname']['new'] !== $records['employee_parents']['mother_surname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.mother_surname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.mother_surname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.mother_firstname">First Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.mother_firstname" id="records.employee_parents.mother_firstname" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.mother_firstname.new">First Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.mother_firstname.new" id="records.employee_parents.mother_firstname.new" class="form-control restricted {{$records['employee_parents']['mother_firstname']['new'] !== $records['employee_parents']['mother_firstname']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.mother_firstname') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.mother_firstname.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-md-4 mb-3">
-                                                    <label class="mb-2" for="records.employee_parents.mother_middlename">Middle Name</label>
-                                                    <input type="text" readonly wire:model="records.employee_parents.mother_middlename" id="records.employee_parents.mother_middlename" class="form-control restricted">
+                                                    <label class="mb-2" for="records.employee_parents.mother_middlename.new">Middle Name</label>
+                                                    <input type="text" readonly wire:model="records.employee_parents.mother_middlename.new" id="records.employee_parents.mother_middlename.new" class="form-control restricted {{$records['employee_parents']['mother_middlename']['new'] !== $records['employee_parents']['mother_middlename']['old'] ? 'border-primary' : ''}}">
                                                     <div class="error-field">
-                                                        @error('records.employee_parents.mother_middlename') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        @error('records.employee_parents.mother_middlename.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </div>
                                             </div>
@@ -460,25 +460,25 @@
                                                             @foreach ($records['employee_children'] as $key => $item)
                                                                 <tr>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control restricted">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control restricted {{$records['employee_children'][$key]['firstname'] !== $records['employee_children'][$key]['firstname'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control restricted">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control restricted {{$records['employee_children'][$key]['middlename'] !== $records['employee_children'][$key]['middlename'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control restricted">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control restricted {{$records['employee_children'][$key]['lastname'] !== $records['employee_children'][$key]['lastname'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control restricted">
+                                                                        <input type="text" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control restricted {{$records['employee_children'][$key]['birthdate'] !== $records['employee_children'][$key]['birthdate'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
@@ -516,7 +516,7 @@
                                     @foreach ($records['employee_education'] as $key => $item)
                                     <tr>
                                         <td>
-                                            <select disabled style="width: 300px" wire:model="records.employee_education.{{$key}}.level" id="records.employee_education.{{$key}}.level" class="form-select restricted">
+                                            <select disabled style="width: 300px" wire:model="records.employee_education.{{$key}}.level.new" id="records.employee_education.{{$key}}.level.new" class="form-select restricted {{$records['employee_education'][$key]['level']['new'] !== $records['employee_education'][$key]['level']['old'] ? 'border-primary' : ''}}">
                                                 <option value=""> - CHOOSE - </option>
                                                 <option value="elementary">Elementary</option>
                                                 <option value="secondary">Secondary</option>
@@ -528,31 +528,31 @@
                                                 <option value="doctoral">Doctoral</option>
                                             </select>                                                
                                             <div class="error-field">
-                                                @error('records.employee_education.'.$key.'.level') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('records.employee_education.'.$key.'.level.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" readonly style="width: 300px" wire:model="records.employee_education.{{$key}}.school_name" id="records.employee_education.{{$key}}.school_name" class="form-control restricted">
+                                            <input type="text" readonly style="width: 300px" wire:model="records.employee_education.{{$key}}.school_name.new" id="records.employee_education.{{$key}}.school_name.new" class="form-control restricted {{$records['employee_education'][$key]['school_name']['new'] !== $records['employee_education'][$key]['school_name']['old'] ? 'border-primary' : ''}}">
                                             <div class="error-field">
-                                                @error('records.employee_education.'.$key.'.school_name') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('records.employee_education.'.$key.'.school_name.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" readonly style="width: 300px" wire:model="records.employee_education.{{$key}}.course" id="records.employee_education.{{$key}}.course" class="form-control restricted">
+                                            <input type="text" readonly style="width: 300px" wire:model="records.employee_education.{{$key}}.course.new" id="records.employee_education.{{$key}}.course.new" class="form-control restricted {{$records['employee_education'][$key]['course']['new'] !== $records['employee_education'][$key]['course']['old'] ? 'border-primary' : ''}}">
                                             <div class="error-field">
-                                                @error('records.employee_education.'.$key.'.course') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('records.employee_education.'.$key.'.course.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year" id="records.employee_education.{{$key}}.from_year" class="form-control restricted">
+                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.from_year.new" id="records.employee_education.{{$key}}.from_year.new" class="form-control restricted {{$records['employee_education'][$key]['from_year']['new'] !== $records['employee_education'][$key]['from_year']['old'] ? 'border-primary' : ''}}">
                                             <div class="error-field">
-                                                @error('records.employee_education.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('records.employee_education.'.$key.'.from_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year" id="records.employee_education.{{$key}}.to_year" class="form-control restricted">
+                                            <input type="text" style="width: 300px" wire:model="records.employee_education.{{$key}}.to_year.new" id="records.employee_education.{{$key}}.to_year.new" class="form-control restricted {{$records['employee_education'][$key]['to_year']['new'] !== $records['employee_education'][$key]['to_year']['old'] ? 'border-primary' : ''}}">
                                             <div class="error-field">
-                                                @error('records.employee_education.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                                @error('records.employee_education.'.$key.'.to_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
                                     </tr>
@@ -585,31 +585,31 @@
                                     @foreach ($records['employee_employment_history'] as $key => $item)
                                         <tr>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.position" id="records.employee_employment_history.{{$key}}.position" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.position.new" id="records.employee_employment_history.{{$key}}.position.new" class="form-control restricted {{$records['employee_employment_history'][$key]['position']['new'] !== $records['employee_employment_history'][$key]['position']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.position.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.department" id="records.employee_employment_history.{{$key}}.department" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.department.new" id="records.employee_employment_history.{{$key}}.department.new" class="form-control restricted {{$records['employee_employment_history'][$key]['department']['new'] !== $records['employee_employment_history'][$key]['department']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.department') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.department.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.company_name" id="records.employee_employment_history.{{$key}}.company_name" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.company_name.new" id="records.employee_employment_history.{{$key}}.company_name.new" class="form-control restricted {{$records['employee_employment_history'][$key]['company_name']['new'] !== $records['employee_employment_history'][$key]['company_name']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.company_name') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.company_name.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.monthly_salary" id="records.employee_employment_history.{{$key}}.monthly_salary" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.monthly_salary.new" id="records.employee_employment_history.{{$key}}.monthly_salary.new" class="form-control restricted {{$records['employee_employment_history'][$key]['monthly_salary']['new'] !== $records['employee_employment_history'][$key]['monthly_salary']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.monthly_salary') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.monthly_salary.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status" id="records.employee_employment_history.{{$key}}.employment_status" class="form-select restricted">
+                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.employment_status.new" id="records.employee_employment_history.{{$key}}.employment_status.new" class="form-select restricted {{$records['employee_employment_history'][$key]['employment_status']['new'] !== $records['employee_employment_history'][$key]['employment_status']['old'] ? 'border-primary' : ''}}">
                                                     <option value=""> - CHOOSE - </option>
                                                     <option value="regular">Regular</option>
                                                     <option value="part time">Part Time</option>
@@ -617,29 +617,29 @@
                                                     <option value="project base">Project Base</option>
                                                 </select>
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.employment_status') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.employment_status.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment" id="records.employee_employment_history.{{$key}}.isGovernment" class="form-select restricted">
+                                                <select disabled style="width: 300px" wire:model="records.employee_employment_history.{{$key}}.isGovernment.new" id="records.employee_employment_history.{{$key}}.isGovernment.new" class="form-select restricted {{$records['employee_employment_history'][$key]['isGovernment']['new'] !== $records['employee_employment_history'][$key]['isGovernment']['old'] ? 'border-primary' : ''}}">
                                                     <option value=""> - CHOOSE - </option>
                                                     <option value="yes">Yes</option>
                                                     <option value="no">No</option>
                                                 </select>
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.isGovernment') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.isGovernment.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                                
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.from_year" id="records.employee_employment_history.{{$key}}.from_year" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.from_year.new" id="records.employee_employment_history.{{$key}}.from_year.new" class="form-control restricted {{$records['employee_employment_history'][$key]['from_year']['new'] !== $records['employee_employment_history'][$key]['from_year']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.from_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.to_year" id="records.employee_employment_history.{{$key}}.to_year" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_employment_history.{{$key}}.to_year.new" id="records.employee_employment_history.{{$key}}.to_year.new" class="form-control restricted {{$records['employee_employment_history'][$key]['to_year']['new'] !== $records['employee_employment_history'][$key]['to_year']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_employment_history.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_employment_history.'.$key.'.to_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                                
                                         </tr>
@@ -652,7 +652,6 @@
                     @endif
 
                 </div>
-
                 <div class="tab-pane fade {{$activeTab == 'civil_service' ? 'active show' : ''}}" id="pills-civil-service" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                 
                     @if (!empty($records['employee_civil_service']))
@@ -672,39 +671,39 @@
                                     @foreach ($records['employee_civil_service'] as $key => $item)
                                         <tr>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.certification" id="records.employee_civil_service.{{$key}}.certification" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.certification.new" id="records.employee_civil_service.{{$key}}.certification.new" class="form-control restricted {{$records['employee_civil_service'][$key]['certification']['new'] !== $records['employee_civil_service'][$key]['certification']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.certification') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.certification.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.rating" id="records.employee_civil_service.{{$key}}.rating" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.rating.new" id="records.employee_civil_service.{{$key}}.rating.new" class="form-control restricted {{$records['employee_civil_service'][$key]['rating']['new'] !== $records['employee_civil_service'][$key]['rating']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.rating') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.rating.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_exam" id="records.employee_civil_service.{{$key}}.date_exam" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_exam.new" id="records.employee_civil_service.{{$key}}.date_exam.new" class="form-control restricted {{$records['employee_civil_service'][$key]['date_exam']['new'] !== $records['employee_civil_service'][$key]['date_exam']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.date_exam') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.date_exam.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.place_exam" id="records.employee_civil_service.{{$key}}.place_exam" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.place_exam.new" id="records.employee_civil_service.{{$key}}.place_exam.new" class="form-control restricted {{$records['employee_civil_service'][$key]['place_exam']['new'] !== $records['employee_civil_service'][$key]['place_exam']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.place_exam') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.place_exam.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                         
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no" id="records.employee_civil_service.{{$key}}.license_no" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.license_no.new" id="records.employee_civil_service.{{$key}}.license_no.new" class="form-control restricted {{$records['employee_civil_service'][$key]['license_no']['new'] !== $records['employee_civil_service'][$key]['license_no']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.license_no') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.license_no.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_validity" id="records.employee_civil_service.{{$key}}.date_validity" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_civil_service.{{$key}}.date_validity.new" id="records.employee_civil_service.{{$key}}.date_validity.new" class="form-control restricted {{$records['employee_civil_service'][$key]['date_validity']['new'] !== $records['employee_civil_service'][$key]['date_validity']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_civil_service.'.$key.'.date_validity') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_civil_service.'.$key.'.date_validity.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                                
                                         </tr>
@@ -717,7 +716,6 @@
                     @endif
 
                 </div>
-
                 <div class="tab-pane fade {{$activeTab == 'trainings' ? 'active show' : ''}}" id="pills-trainings" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                     
                     @if (!empty($records['employee_trainings']))
@@ -737,39 +735,39 @@
                                     @foreach ($records['employee_trainings'] as $key => $item)
                                         <tr>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.type" id="records.employee_trainings.{{$key}}.type" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.type.new" id="records.employee_trainings.{{$key}}.type.new" class="form-control restricted {{$records['employee_trainings'][$key]['type']['new'] !== $records['employee_trainings'][$key]['type']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.type') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.type.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.name" id="records.employee_trainings.{{$key}}.name" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.name.new" id="records.employee_trainings.{{$key}}.name.new" class="form-control restricted {{$records['employee_trainings'][$key]['name']['new'] !== $records['employee_trainings'][$key]['name']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.name') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.name.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_from" id="records.employee_trainings.{{$key}}.date_from" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_from.new" id="records.employee_trainings.{{$key}}.date_from.new" class="form-control restricted {{$records['employee_trainings'][$key]['date_from']['new'] !== $records['employee_trainings'][$key]['date_from']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.date_from.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_to" id="records.employee_trainings.{{$key}}.date_to" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.date_to.new" id="records.employee_trainings.{{$key}}.date_to.new" class="form-control restricted {{$records['employee_trainings'][$key]['date_to']['new'] !== $records['employee_trainings'][$key]['date_to']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.date_to.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>  
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.consumed_hours" id="records.employee_trainings.{{$key}}.consumed_hours" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.consumed_hours.new" id="records.employee_trainings.{{$key}}.consumed_hours.new" class="form-control restricted {{$records['employee_trainings'][$key]['consumed_hours']['new'] !== $records['employee_trainings'][$key]['consumed_hours']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.consumed_hours.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                         
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.sponsored_by" id="records.employee_trainings.{{$key}}.sponsored_by" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_trainings.{{$key}}.sponsored_by.new" id="records.employee_trainings.{{$key}}.sponsored_by.new" class="form-control restricted {{$records['employee_trainings'][$key]['sponsored_by']['new'] !== $records['employee_trainings'][$key]['sponsored_by']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_trainings.'.$key.'.sponsored_by') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_trainings.'.$key.'.sponsored_by.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                        
                                         </tr>
@@ -782,10 +780,7 @@
                     @endif
 
                 </div>
-
                 <div class="tab-pane fade {{$activeTab == 'others' ? 'active show' : ''}}" id="pills-others" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
-                
-
                     @if (!empty($records['employee_others']))
                         <div class="table-responsive">
                             <table class="table table-bordered mt-3">
@@ -803,39 +798,39 @@
                                     @foreach ($records['employee_others'] as $key => $item)
                                         <tr>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.organization" id="records.employee_others.{{$key}}.organization" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.organization.new" id="records.employee_others.{{$key}}.organization.new" class="form-control restricted {{$records['employee_others'][$key]['organization']['new'] !== $records['employee_others'][$key]['organization']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.organization.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.address" id="records.employee_others.{{$key}}.address" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.address.new" id="records.employee_others.{{$key}}.address.new" class="form-control restricted {{$records['employee_others'][$key]['address']['new'] !== $records['employee_others'][$key]['address']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.address') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_from" id="records.employee_others.{{$key}}.date_from" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_from.new" id="records.employee_others.{{$key}}.date_from.new" class="form-control restricted {{$records['employee_others'][$key]['date_from']['new'] !== $records['employee_others'][$key]['date_from']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.date_from.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_to" id="records.employee_others.{{$key}}.date_to" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.date_to.new" id="records.employee_others.{{$key}}.date_to.new" class="form-control restricted {{$records['employee_others'][$key]['date_to']['new'] !== $records['employee_others'][$key]['date_to']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.date_to.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>  
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.consumed_hours" id="records.employee_others.{{$key}}.consumed_hours" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.consumed_hours.new" id="records.employee_others.{{$key}}.consumed_hours.new" class="form-control restricted {{$records['employee_others'][$key]['consumed_hours']['new'] !== $records['employee_others'][$key]['consumed_hours']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.consumed_hours.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                         
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.position" id="records.employee_others.{{$key}}.position" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_others.{{$key}}.position.new" id="records.employee_others.{{$key}}.position.new" class="form-control restricted {{$records['employee_others'][$key]['position']['new'] !== $records['employee_others'][$key]['position']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_others.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_others.'.$key.'.position.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                        
                                         </tr>
@@ -848,7 +843,6 @@
                     @endif
 
                 </div>
-
                 <div class="tab-pane fade {{$activeTab == 'skills' ? 'active show' : ''}}" id="pills-skills" role="tabpanel" aria-labelledby="pills-history-tab" tabindex="0">
                 
                     @if (!empty($records['employee_skills']))
@@ -865,21 +859,21 @@
                                     @foreach ($records['employee_skills'] as $key => $item)
                                         <tr>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.name" id="records.employee_skills.{{$key}}.name" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.name.new" id="records.employee_skills.{{$key}}.name.new" class="form-control restricted {{$records['employee_skills'][$key]['name']['new'] !== $records['employee_skills'][$key]['name']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_skills.'.$key.'.name') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_skills.'.$key.'.name.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.recognition" id="records.employee_skills.{{$key}}.recognition" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.recognition.new" id="records.employee_skills.{{$key}}.recognition.new" class="form-control restricted {{$records['employee_skills'][$key]['recognition']['new'] !== $records['employee_skills'][$key]['recognition']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_skills.'.$key.'.recognition') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_skills.'.$key.'.recognition.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
                                             <td>
-                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control restricted">
+                                                <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization.new" id="records.employee_skills.{{$key}}.organization.new" class="form-control restricted {{$records['employee_skills'][$key]['organization']['new'] !== $records['employee_skills'][$key]['organization']['old'] ? 'border-primary' : ''}}">
                                                 <div class="error-field">
-                                                    @error('records.employee_skills.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    @error('records.employee_skills.'.$key.'.organization.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>                                
                                         </tr>
@@ -890,7 +884,6 @@
                     @else
                         <div class="alert alert-info text-uppercase fw-medium text-center">No Voluntary Works Found</div>
                     @endif
-
                 </div>
             </div>
         </div>
