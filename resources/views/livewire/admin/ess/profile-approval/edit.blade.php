@@ -3,7 +3,7 @@
         <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
     </div>
     <div class="card mb-4">
-        <div class="card-body">
+        <div class="card-body px-5">
             <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button wire:target="setActiveTab('details')" wire:click="setActiveTab('details')" class="nav-link text-uppercase fw-bold {{$activeTab == 'details' ? 'active' : ''}}" id="pills-details-tab" data-bs-toggle="pill" data-bs-target="#pills-details" type="button" role="tab" aria-controls="pills-details" aria-selected="true">Employee Details</button>
@@ -34,6 +34,7 @@
                 <div class="tab-pane fade {{$activeTab == 'details' ? 'active show' : ''}} p-0" id="pills-details" role="tabpanel" aria-labelledby="pills-details-tab" tabindex="0">
                     <div class="row mt-3">
                         <div class="col-12 mb-4">
+                            <div class="alert alert-info mb-5 mt-3 text-uppercase fw-bold text-center fst-italic">Note: Fields highlighted with a border indicate recent updates made by the employee.</div>
                             <div class="accordion" id="accordionTabPersonal">
                                 <div class="accordion-item mb-4">
                                     <h2 class="accordion-header">
@@ -888,7 +889,7 @@
             </div>
         </div>
         @if (!empty($records))
-            <div class="card-footer d-flex gap-3 justify-content-end bg-transparent border-0">
+            <div class="card-footer px-5 d-flex gap-3 justify-content-end bg-transparent border-0">
                 <div class="text-end">
                     <button type="submit" wire:click="reject" wire:target="reject" wire:loading.attr="disabled" class="btn btn-danger py-3 px-5 mt-2 text-uppercase fw-bold">
                         <span wire:loading.remove>Reject</span>    
