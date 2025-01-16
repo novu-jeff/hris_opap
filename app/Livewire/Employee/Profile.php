@@ -39,6 +39,7 @@ class Profile extends Component
 
     public function mount() {
         $this->loadRecords();
+        $this->loadCountries();
     }
 
     public function loadRecords() {
@@ -88,6 +89,7 @@ class Profile extends Component
         }
     }
 
+    
     protected function formatEmployeePersonal($data) {
 
         // Determine if it's an update or from the given data
