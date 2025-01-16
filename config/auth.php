@@ -122,7 +122,7 @@ return [
         'employees' => [
             'provider' => 'employees',
             'table' => 'password_reset_tokens',
-            'expire' => 2,
+            'expire' => 5,
             'throttle' => 60,
         ],
     ],

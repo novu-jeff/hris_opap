@@ -27,7 +27,7 @@ class ClearReadNotifications extends Command
     public function handle()
     {
 
-        $cutoffTime = \Carbon\Carbon::now()->subHours(12);
+        $cutoffTime = \Carbon\Carbon::now()->subHours(1);
         $delete = Notification::whereNotNull('read_at')
             ->whereDate('read_at', '<=', $cutoffTime->format('Y-m-d H:i:s'))
             ->delete();
