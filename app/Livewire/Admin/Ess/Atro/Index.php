@@ -57,8 +57,11 @@ class Index extends Component
                 ->where('status', 'pending')
                 ->first();
 
-            $record->status = 'rejected';
+            $record->status = 'denied';
             $record->save();
+
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.atro'), 'employee'));
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -68,9 +71,6 @@ class Index extends Component
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been rejected'
             ]);
-
-            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.atro'), 'employee'));
 
         }
     }
@@ -92,10 +92,14 @@ class Index extends Component
 
             $record = EmployeeAtro::where('id', $this->selected_id)
                 ->where('status', 'pending')
-                ->update([
-                    'status' => 'approve'
-                ]);
-                
+                ->first();
+            
+            $record->status = 'approve';
+            $record->save();
+
+            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+            $user?->notify(new Notifications('success', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.atro'), 'employee'));
+
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -104,9 +108,6 @@ class Index extends Component
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been granted'
             ]);
-
-            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('success', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.atro'), 'employee'));
 
         }
     }
