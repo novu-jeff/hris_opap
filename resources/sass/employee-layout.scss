@@ -4,6 +4,26 @@ body {
   overflow-x: hidden;
 }
 
+
+.change-password {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 80px;
+
+  .content {
+    width: calc(40%);
+    display: none;
+  }
+
+}
+
 table {
     width: 100%; 
     table-layout: auto;

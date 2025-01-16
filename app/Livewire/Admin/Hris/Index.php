@@ -8,6 +8,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\Message;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -422,9 +423,12 @@ class Index extends Component
                 $record->trainings()->delete();
                 $record->others()->delete();
                 $record->skills()->delete();
-                $record->messages()->delete();
             
                 $record->delete();
+
+                Message::where('to_id', $this->employee_no)
+                    ->orWhere('from_id', $this->employee_no)
+                    ->delete();
 
                 $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
 
