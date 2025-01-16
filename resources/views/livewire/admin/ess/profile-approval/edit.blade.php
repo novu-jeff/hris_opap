@@ -461,25 +461,25 @@
                                                             @foreach ($records['employee_children'] as $key => $item)
                                                                 <tr>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control restricted {{$records['employee_children'][$key]['firstname'] !== $records['employee_children'][$key]['firstname'] ? 'border-primary' : ''}}">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.firstname.new" id="records.employee_children.{{$key}}.firstname.new" class="form-control restricted {{$records['employee_children'][$key]['firstname']['new'] !== $records['employee_children'][$key]['firstname']['old'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control restricted {{$records['employee_children'][$key]['middlename'] !== $records['employee_children'][$key]['middlename'] ? 'border-primary' : ''}}">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.middlename.new" id="records.employee_children.{{$key}}.middlename.new" class="form-control restricted {{$records['employee_children'][$key]['middlename']['new'] !== $records['employee_children'][$key]['middlename']['old'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control restricted {{$records['employee_children'][$key]['lastname'] !== $records['employee_children'][$key]['lastname'] ? 'border-primary' : ''}}">
+                                                                        <input type="text" readonly wire:model="records.employee_children.{{$key}}.lastname.new" id="records.employee_children.{{$key}}.lastname.new" class="form-control restricted {{$records['employee_children'][$key]['lastname']['new'] !== $records['employee_children'][$key]['lastname']['old'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="text" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control restricted {{$records['employee_children'][$key]['birthdate'] !== $records['employee_children'][$key]['birthdate'] ? 'border-primary' : ''}}">
+                                                                        <input type="text" wire:model="records.employee_children.{{$key}}.birthdate.new" id="records.employee_children.{{$key}}.birthdate.new" class="form-control restricted {{$records['employee_children'][$key]['birthdate']['new'] !== $records['employee_children'][$key]['birthdate']['old'] ? 'border-primary' : ''}}">
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
@@ -892,8 +892,8 @@
             <div class="card-footer px-5 d-flex gap-3 justify-content-end bg-transparent border-0">
                 <div class="text-end">
                     <button type="submit" wire:click="reject" wire:target="reject" wire:loading.attr="disabled" class="btn btn-danger py-3 px-5 mt-2 text-uppercase fw-bold">
-                        <span wire:loading.remove>Reject</span>    
-                        <span wire:loading>Rejecting <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span wire:loading.remove wire:target="reject">Reject</span>    
+                        <span wire:loading wire:target="reject">Rejecting <i class="fa-solid fa-spinner fa-spin"></i>
                     </button>
                     <div class="mt-3 pb-5">
                         @if ($errors->any())
@@ -903,8 +903,8 @@
                 </div>
                 <div class="text-end">
                     <button type="submit" wire:click="approve" wire:target="approve" wire:loading.attr="disabled" class="btn btn-primary py-3 px-5 mt-2 text-uppercase fw-bold">
-                        <span wire:loading.remove>Aprrove</span>    
-                        <span wire:loading>Approving <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span wire:loading.remove wire:target="approve">Aprrove</span>    
+                        <span wire:loading wire:target="approve">Approving <i class="fa-solid fa-spinner fa-spin"></i>
                     </button>
                     <div class="mt-3 pb-5">
                         @if ($errors->any())
