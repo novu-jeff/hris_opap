@@ -95,7 +95,7 @@ class Notifications extends Component
             if ($this->notifications['unread'] > $this->firstLoadUnreadCount) {
             // Dispatch the 'notify' event if there are new unread notifications
                 $this->firstLoadUnreadCount = $this->notifications['unread'];
-                $this->dispatch('notify', ['sample']);
+                $this->dispatch('notify');
             }
         }
     }
