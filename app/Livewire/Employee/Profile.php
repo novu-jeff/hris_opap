@@ -94,7 +94,7 @@ class Profile extends Component
         $personal = $this->isFromUpdate ? $data : $data->personal;
     
         // Extract the email from the 'account' array if it exists
-        $email = $data->email ? $data->email : $data->account['email'];
+        $email = $data->email ? $data->email  : $data->account['email'];
     
         // Define the fields for personal data
         $fields = [
@@ -302,9 +302,8 @@ class Profile extends Component
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
-            'records.employee_personal.email' => 'required|email|unique:employee_account,email',
             'records.employee_personal.email' => [
-                'nullable',
+                'required',
                 Rule::unique('employee_account', 'email')->ignore($employee_no, 'employee_no')
             ],
 

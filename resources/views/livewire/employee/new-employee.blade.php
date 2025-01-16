@@ -13,14 +13,14 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="mb-2" for="password">Password <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" wire:model="password" placeholder="••••••••">
+                            <input type="password" class="form-control" wire:model="password" placeholder="••••••••">
                                 <div class="error-field mt-2">
                                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="mb-2" for="confirm-password">Confirm Password <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" wire:model="confirm_password" placeholder="••••••••">
+                            <input type="password" class="form-control" wire:model="confirm_password" placeholder="••••••••">
                                 <div class="error-field mt-2">
                                     @error('confirm_password') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
