@@ -208,7 +208,7 @@ class Apply extends Component
                     $redirect = route('ess.leave');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
-                    $this->resetExcept('employee_no', 'leaveTypes');
+                    $this->resetExcept('employee_no', 'employee_id', 'leaveTypes');
 
                     return;
 

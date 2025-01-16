@@ -162,7 +162,7 @@ class Apply extends Component
                     $redirect = route('ess.atro');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
-                    $this->resetExcept('employee_no');
+                    $this->resetExcept('employee_no', 'employee_id');
 
                     return;
 
