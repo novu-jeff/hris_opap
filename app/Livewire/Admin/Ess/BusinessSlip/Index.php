@@ -96,11 +96,9 @@ class Index extends Component
             $record = EmployeeBusinessSlip::with('employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
-            
-            // Update the EmployeeLeave record's status
-            $record->update([
-                'status' => 'granted'
-            ]);
+
+            $record->status = 'granted';
+            $record->save();
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
             $user?->notify(new Notifications('success', 'You\'re official business slip application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.obs.index'), 'employee'));

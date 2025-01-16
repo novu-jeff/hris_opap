@@ -476,7 +476,7 @@ class Profile extends Component
 
             $user = EmployeeAccount::find($this->employee_id);
             $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted his/her updated <strong>profile information</strong>.';
-            $redirect = route('ess.approval-profile.edit', ['employee_no', $user->employee_no]);
+            $redirect = route('ess.approval-profile.edit', ['approval' => $user->employee_no]);
             $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
             return;

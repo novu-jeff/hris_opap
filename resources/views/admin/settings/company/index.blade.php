@@ -9,9 +9,6 @@
             <h1>Update Company Information</h1>
             <p>Modify or update company related informations</p>
         </div>
-        <div class="actions">
-            <a href="{{route('branch.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Create New</a>
-        </div>
     </div>
     <div class="mt-3">
         @livewire('admin.settings.company.index')
