@@ -107,7 +107,7 @@ class HRISProcessingService extends Controller
         
         
         return $record->update([
-            'section_id' => $data['section_id'],
+            'section_id' => $data['section_id'] ? $data['section_id'] : null,
             'position_id' => $data['position_id'],
             'bsd_no' => $data['biometrics_id'],
             'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
