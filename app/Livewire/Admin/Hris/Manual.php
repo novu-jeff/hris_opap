@@ -209,9 +209,8 @@ class Manual extends Component
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
-            'records.employee_personal.email' => 'required|email',
             'records.employee_personal.email' => [
-                'nullable',
+                'required',
                 Rule::unique('employee_account', 'email')->ignore($id, 'employee_no')
             ],
 
