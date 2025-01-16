@@ -18,6 +18,8 @@ use App\Models\EmployeeTrainings;
 use App\Models\EmployementTypes;
 use App\Models\Positions;
 use App\Models\Sections;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -41,12 +43,46 @@ class Manual extends Component
 
     public function mount() {
         $this->loadRecords();
+        $this->loadCountries();
     }
 
     public function loadRecords() {
         $this->sections = Sections::all();
         $this->positions = Positions::all();
         $this->employmentTypes = EmployementTypes::all();
+    }
+
+    public function loadCountries() {
+        // Check cache first (e.g., using Laravel Cache)
+        if (Cache::has('countries')) {
+            return $this->countries = Cache::get('countries');
+        }
+
+        try {
+            $client = new Client();
+            $response = $client->get('https://restcountries.com/v3.1/all?fields=name');
+            $countries = json_decode($response->getBody(), true);
+
+            // Validate response structure
+            if (!is_array($countries)) {
+                throw new \Exception('Invalid API response');
+            }
+
+            // Sort countries by common name
+            usort($countries, fn($a, $b) => strcmp($a['name']['common'], $b['name']['common']));
+
+            // Cache the result for 24 hours
+            Cache::put('countries', $countries, now()->addHours(24));
+
+            $this->countries = $countries;
+            return $this->countries;
+        } catch (\Exception $e) {
+            // Log the error
+            logger()->error('Failed to load countries: ' . $e->getMessage());
+
+            // Provide a default empty array if an error occurs
+            return $this->countries = [];
+        }
     }
 
     private $tabAccordionMappings = [
@@ -115,7 +151,7 @@ class Manual extends Component
     }
 
     public function select_change(string $property) {
-        
+        $this->setActiveAccordion('personal');
         if($property == 'citizenship') {
             $this->setActiveAccordion('personal');
             if($this->records['employee_personal']['citizenship'] == 'dual_citizenship') {
