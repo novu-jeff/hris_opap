@@ -207,10 +207,9 @@
                                         </a>
                                     </div>
                                 </div>
-                                <div class="float-end">
+                                <div class="d-flex justify-content-center">
                                     <small class="text-uppercase text-muted fw-bold d-flex gap-2 align-items-center">
-                                        <i class="fa-regular fa-hand-pointer"></i>
-                                        Click to view more
+                                        Click the recruitement status above to view more
                                     </small>
                                 </div>
                             </div>
