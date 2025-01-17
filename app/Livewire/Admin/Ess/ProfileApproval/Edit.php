@@ -63,8 +63,7 @@ class Edit extends Component
         $data = [];
     
         if (!$stored || !$updated) {
-            // Return an empty result if either of the records is missing
-            return $data;
+            return redirect()->route('ess.approval-profile.index');
         }
     
         // Compare fields dynamically based on attributes in the personal record
