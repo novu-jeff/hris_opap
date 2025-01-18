@@ -5,7 +5,7 @@
                 <div class="search-box">
                     <input type="text" name="search" id="search" class="form-control" wire:model.defer='search_query' placeholder="Job, Title, Keyword" value="{{$search_query ?? ''}}">
                 </div>
-                <div class="search-submit">
+                <div class="search-submit" class="d-flex">
                     <button class="btn btn-primary px-4 py-2 text-uppercase fw-bold" wire:click='find'>Search 
                         <span class="ms-1">
                             <i class="fa-solid fa-magnifying-glass fa-shake"></i>
@@ -153,7 +153,7 @@
                     </div>
                 </div>
                 @if($records->count() > 0)
-                    <div class="col-12 col-md-12 col-lg-7 col-xl-7 mb-4">
+                    <div class="col-12 col-md-12 col-lg-7 col-xl-7 mb-4 d-none d-lg-block">
                         <div class="job-info">
                             @if ($record_info)
                                 <div class="card px-2" wire:click="show_more({{$record_info->id}})">

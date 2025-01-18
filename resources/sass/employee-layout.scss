@@ -265,3 +265,21 @@ table {
   }
 
 }
+
+@media(min-width: 0px) and (max-width: 992px) {
+
+  .dashboard .item {
+    min-height: 350px !important;
+  }
+
+  .container .action {
+    margin-top: 40px;
+
+    a {
+      width: 100% !important;
+      margin-bottom: 20px;
+    }
+
+  }
+
+}

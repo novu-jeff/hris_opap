@@ -69,6 +69,7 @@
             <div class="hamburger-wrapper">
                 <div class="hamburger"></div>
             </div>
+            @include('components.home.sidebar')
         </div>        
     </div>
 </nav>

@@ -19,31 +19,51 @@ window.reinitializeDataTable = reinitializeDataTable;
 window.formatTime = formatTime;
 window.convertToHoursAndMinutes = convertToHoursAndMinutes;
 
-reinitializeDataTable();
-
-$(document).on('livewire:navigated', function() {
-    reinitializeDataTable();
-})
-
-$(document).on('livewire:poll', function() {
-    reinitializeDataTable();
-})
-
-$(window).scroll(function() {
-    $(this).scrollTop() > 150 ?
-        $('.scroll-top').addClass('show')
-    :   $('.scroll-top').removeClass('show');
-});
-
-$('.scroll-top').on('click', function() {
-    $('html, body').animate({ scrollTop: 0 });
-})
 
 $(function() {
-    $('.select-2').select2();
-    $('.select-2').on('change', function() {
-        var field = $(this).attr('id');
-        var value = $(this).val(); 
-        Livewire.dispatch('populateField', [field, value]);
+
+    reinitializeDataTable();
+
+    $(document).on('livewire:navigated', function() {
+        reinitializeDataTable();
+    })
+
+    $(document).on('livewire:poll', function() {
+        reinitializeDataTable();
+    })
+
+    $(window).scroll(function() {
+        $(this).scrollTop() > 150 ?
+            $('.scroll-top').addClass('show')
+        :   $('.scroll-top').removeClass('show');
     });
+
+    $('.scroll-top').on('click', function() {
+        $('html, body').animate({ scrollTop: 0 });
+    })
+
+    if ($.fn.select2) {
+        $('.select-2').select2();
+        $('.select-2').on('change', function() {
+            var field = $(this).attr('id');
+            var value = $(this).val(); 
+            Livewire.dispatch('populateField', [field, value]);
+        });
+    }
+
+    if($('.sidebar').hasClass('active')) {
+        toggleSidebar();
+    }
+
+    $('.sidebar .close-icon, .hamburger-wrapper').on('click', function() {
+        toggleSidebar();
+    });
+
+    function toggleSidebar() {
+        $('.sidebar').toggleClass('active');
+        setTimeout(() => {
+            $('.overlay').css('background-color', $('.sidebar').hasClass('active') ? 'rgba(0, 0, 0, 0.5)' : '');
+        }, 300);
+    }
+
 });

@@ -80,9 +80,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-8 mb-4">
-                        <div class="useful-links">
-                            <div>
+                    <div class="col-12 col-lg-8 mb-4 text-center text-lg-start">
+                        <div class="useful-links d-block d-md-flex mt-5 mt-md-0">
+                            <div class="mb-5">
                                 <h5 class="text-muted">Site Links</h5>
                                 <ul class="list-unstyled">
                                     <li class="list-unstyled-item">
@@ -105,7 +105,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <div>
+                            <div class="mb-5">
                                 <h5 class="text-muted">Services</h5>
                                 <ul class="list-unstyled">
                                     <li class="list-unstyled-item">
@@ -125,7 +125,7 @@
                                     </li>                                    
                                 </ul>
                             </div>
-                            <div>
+                            <div class="mb-5">
                                 <h5 class="text-muted">Products</h5>
                                 <ul class="list-unstyled">
                                     <li class="list-unstyled-item">
@@ -143,7 +143,7 @@
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2024. All rights reserved Novulutions Inc.
+                    &copy; 2025. All rights reserved Novulutions Inc.
                 </p>
             </div>
         </div class="footer">
