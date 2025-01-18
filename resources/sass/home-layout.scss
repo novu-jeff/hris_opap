@@ -54,13 +54,6 @@
 
 #app {
     position: relative;
-    .sidebar {
-        position: absolute;
-        width: 320px;
-        min-height: 100vh;
-        height: 100%;
-        border-right: 1px solid rgba($color: $dark, $alpha: 0.2);
-    }
 
     .navbar {
 
@@ -610,13 +603,18 @@
 @media (min-width: 0px) and (max-width: 992px) {
   
   .close-icon {
-    display: block;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     z-index: 9;
     top: 30px;
-    right: 30px;
+    right: 15px;
     font-size: 30px;
     cursor: pointer;
+    z-index: 9999 !important;
   }
 
   .navbar-nav {
@@ -685,7 +683,7 @@
     gap: 10px;
 
     .content {
-      display: block !important;
+      display: flex !important;
       justify-content: space-between;
       align-items: center;
       border: 2px solid #939393;
@@ -695,7 +693,6 @@
       .search-submit {
         button {
           width: 100%;
-          margin-bottom: 10px;
         }
       }
 
@@ -704,6 +701,132 @@
 
   
 
+}
+
+@media(min-width: 0px) and (max-width: 992px) {
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    z-index: 999 !important;
+    
+
+    &.active {
+      display: flex;
+      transform: translateX(0);
+    }
+
+    &.active .overlay {
+      transition: all ease 0.3s;
+      width: 100%;
+      position: absolute;
+      height: 100%;
+    }
+
+  }
+
+  .sidebar-content {
+
+    position: relative;
+    width: 350px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding-top: 20px;
+    z-index: 999 !important;
+
+
+    .content {
+      position: relative;
+      top: 40px;
+      padding: 0 15px 0 15px;
+    }
+
+    .name  {
+        font-size: 15px !important;
+    }
+
+    .profile-img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    ul {
+      font-size: 20px;
+    }
+    
+    li {
+      line-height: 40px;
+    }
+
+    .btn {
+      font-size: 20px !important;
+      background-color: transparent;
+      color: $dark;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+    }
+
+    .footer {
+      height: 0 !important;
+      position: absolute;
+      bottom: 35px;
+      padding: 20px;
+      text-align: center;
+      z-index: 999 !important;
+      border-top: none !important;
+      box-shadow: none !important;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 600;
+      color: #676767;
+    }
+
+  }
+
+  .search-jobs {
+    width: 100% !important;       
+    gap: 10px;
+
+    .content {
+      display: block !important;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid #939393;
+      border-radius: 10px;
+      padding: 0;
+      width: 100%;
+
+      .search-submit {
+        button {
+          width: 100% !important;
+          margin-bottom: 10px;
+        }
+      }
+
+    }
+  }
+
+  .jobs-lists .nav.nav-tabs a {
+    width: 100% !important;
+  }
+
+}
+
+@media(min-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.sidebar {
+  transition: all ease 0.3s;
+  transform: translateX(-200%);
 }
 
 label {

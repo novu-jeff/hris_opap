@@ -16,120 +16,146 @@
         <hr class="mt-5">
     @endif
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
-        <div class="grid">
+        <div class="row">
             @canany(['read apply-leave', 'write apply-leave'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.leave') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/leave.png') }}" class="w-100">
-                        <p>Leave Application</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/leave.png') }}" class="w-100">
+                    <p>Leave Application</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read clock-in-out', 'write clock-in-out'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.clock') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/clockinout.png') }}" class="w-100">
-                        <p>Clock In/Out</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/clockinout.png') }}" class="w-100">
+                    <p>Clock In/Out</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read apply-atro', 'write apply-atro'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.atro') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/overtime.png') }}" class="w-100">
-                        <p>Authority to Render Overtime</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/overtime.png') }}" class="w-100">
+                    <p>Authority to Render Overtime</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read payslip', 'write payslip'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="#" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/payslip.png') }}" class="w-100">
-                        <p>Payslip</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/payslip.png') }}" class="w-100">
+                    <p>Payslip</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read employee-request-status', 'write employee-request-status'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.request-status') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/request.png') }}" class="w-100">
-                        <p>Request Status</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/request.png') }}" class="w-100">
+                    <p>Request Status</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read apply-obs', 'write apply-obs'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.obs.index') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/business-slip.png') }}" class="w-100">
-                        <p>Official Business Slip</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/business-slip.png') }}" class="w-100">
+                    <p>Official Business Slip</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read employee-dtr', 'write employee-dtr'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.dtr') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/dtr.png') }}" class="w-100">
-                        <p>Daily Time Record</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/dtr.png') }}" class="w-100">
+                    <p>Daily Time Record</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read my-directory', 'write my-directory'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.directory') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/directory.png') }}" class="w-100">
-                        <p>My Directory</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/directory.png') }}" class="w-100">
+                    <p>My Directory</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read my-team', 'write my-team'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.team') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/team.png') }}" class="w-100">
-                        <p>My Team</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/team.png') }}" class="w-100">
+                    <p>My Team</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read employee-announcements', 'write employee-announcements'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.announcements.index') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/announcement.png') }}" class="w-100">
-                        <p>Announcements</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/announcement.png') }}" class="w-100">
+                    <p>Announcements</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
             @canany(['read my-profile', 'write my-profile'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.profile') }}" class="nav-link">
-                    <div class="item">
-                        <img src="{{ asset('/img/profile.png') }}" class="w-100">
-                        <p>My Profile</p>
-                    </div>
+                <div class="item">
+                    <img src="{{ asset('/img/profile.png') }}" class="w-100">
+                    <p>My Profile</p>
+                </div>
                 </a>
+            </div>
             @endcanany
         
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
             <a href="{{ route('employee.tutorial') }}" class="nav-link">
                 <div class="item">
-                    <img src="{{ asset('/img/tutorial.png') }}" class="w-100">
-                    <p>Tutorial</p>
+                <img src="{{ asset('/img/tutorial.png') }}" class="w-100">
+                <p>Tutorial</p>
                 </div>
             </a>
+            </div>
         
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
             <a href="{{ route('employee.logout') }}" class="nav-link">
                 <div class="item">
-                    <img src="{{ asset('/img/logout.png') }}" class="w-100">
-                    <p>Logout</p>
+                <img src="{{ asset('/img/logout.png') }}" class="w-100">
+                <p>Logout</p>
                 </div>
             </a>
-        </div>        
+            </div>
+        </div>
     </div>
     @livewire('employee.new-employee')
 </div>

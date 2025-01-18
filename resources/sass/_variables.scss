@@ -118,3 +118,14 @@ $line-height-base: 1.6;
     text-align: right;
 }
 
+.text-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.clamp-1 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}

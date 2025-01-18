@@ -53,8 +53,10 @@
 
         @include('components.employee.navbar')
         <main>
-            <div class="content">
-                @yield('content')
+            <div class="container">
+                <div class="content">
+                    @yield('content')
+                </div>
             </div>
         </main>
         <div class="footer mt-5">
@@ -95,9 +97,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 mb-9">
+                    <div class="col-12 col-lg-6 mb-9 text-center text-lg-start">
                         <h5 class="text-muted">Employee Navigation Links</h5>
-                        <div class="useful-links">
+                        <div class="useful-links d-block d-md-flex mt-4 mt-md-0">
                             <div>
                                 <ul class="list-unstyled">
                                     <li class="list-unstyled-item">
@@ -140,7 +142,7 @@
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2024. All rights reserved Novulutions Inc.
+                    &copy; 2025. All rights reserved Novulutions Inc.
                 </p>
             </div>
         </div class="footer">

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container pb-5">
-    <div class="mt-5 d-flex justify-content-between align-items-start">
+    <div class="mt-5 d-lg-flex justify-content-between align-items-start">
         <div class="section-title">
             <h1>{{$header}}</h1>
             <p>{{$sub}}</p>
