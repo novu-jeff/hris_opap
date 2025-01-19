@@ -3,14 +3,19 @@
         $monthNumeric = \Carbon\Carbon::parse($records['current']['month'].' 1')->format('m');
         $currentDate = \Carbon\Carbon::create($records['current']['year'], $monthNumeric, $records['current']['day'])->toDateString();
     @endphp
-    <div class="text-center mb-3">
-        <h2 class="mb-0 text-uppercase fw-bold">{{$records['current']['month'] . ' ' . $records['current']['day'] . ', ' . $records['current']['year']}}</h2>
+    <div class="text-center my-5">
+        <h2 class="mb-0 text-uppercase fw-bold">{{$records['current']['day_of_week'] . ', ' . $records['current']['month'] . ' ' . $records['current']['day'] . ', ' . $records['current']['year']}}</h2>
     </div>
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <a href="{{ route('timekeeping.correction', ['year' => $records['previous']['year'], 'month' => $records['previous']['month'], 'day' => $records['previous']['day']]) }}" class="btn btn-info px-5 py-3 text-uppercase fw-bold">
-            Previous Day
-        </a>
-        <div class="d-flex gap-2">
+    <div class="timekeeping d-lg-flex justify-content-between align-items-center mb-5">
+        <div class="d-md-flex justify-content-between gap-3">
+            <a href="{{ route('timekeeping.index', ['year' => $records['previous']['year'], 'month' => $records['previous']['month'], 'day' => $records['previous']['day']]) }}" class="btn btn-info px-5 py-3 text-uppercase fw-bold">
+                Previous Day
+            </a>
+            <a href="{{ route('timekeeping.index', ['year' => $records['next']['year'], 'month' => $records['next']['month'], 'day' => $records['next']['day']]) }}" class="d-block d-lg-none btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                Next Day
+            </a>
+        </div>
+        <div class="d-md-flex justify-content-center gap-3 mt-4">
             <input type="date" id="datePicker" class="form-control" style="width: 300px" value="{{$currentDate}}">
             <select id="workSetup" class="form-select" style="width: 300px">
                 <option value=""> - CHOOSE WORK SETUP -</option>
@@ -19,11 +24,9 @@
                 <option value="wfh" {{$setup == 'wfh' ? 'selected' : '' }}>Work From Home</option>
             </select>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('timekeeping.correction', ['year' => $records['next']['year'], 'month' => $records['next']['month'], 'day' => $records['next']['day']]) }}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                Next Day
-            </a>
-        </div>
+        <a href="{{ route('timekeeping.index', ['year' => $records['next']['year'], 'month' => $records['next']['month'], 'day' => $records['next']['day']]) }}" class="d-none d-lg-block btn btn-primary px-5 py-3 text-uppercase fw-bold">
+            Next Day
+        </a>
     </div>
     <div class="row mb-4">
         <div class="col-md-6 d-flex align-items-center gap-2">

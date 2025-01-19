@@ -6,9 +6,9 @@
                     <div class="modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="msg-head">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="px-4 d-flex align-items-center">
+                                <div class="row ">
+                                    <div class="col-12 col-lg-8">
+                                        <div class="px-lg-4 d-flex align-items-center">
                                             <span class="chat-icon"><img class="img-fluid" src="{{asset('img/logo.png')}}" alt="image title"></span>
                                             <div class="flex-shrink-0">
                                                 <img class="img-fluid" src="{{asset('img/logo.png')}}" alt="user img" style="width: 80px;">
@@ -21,8 +21,6 @@
                                     </div>
                                 </div>
                             </div>
-
-
                             <div class="modal-body">
                                 <div class="msg-body" wire:poll="loadRecords" wire:poll.keep-alive>
                                     <ul>
@@ -82,7 +80,7 @@
                                 </div>
                             </div>
                             <div class="send-box">
-                                <form wire:submit="send" class="mb-0 d-flex gap-3">
+                                <form wire:submit="send" class="mb-0 d-lg-flex gap-3">
                                     <textarea wire:model="message" id="message" cols="30" rows="1" class="form-control @error('message') 'invalid-feed' @enderror" placeholder="Type Something..."></textarea>
                                     <button type="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send</button>
                                 </form>

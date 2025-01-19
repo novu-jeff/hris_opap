@@ -29,13 +29,6 @@
 
 #admin-app {
     position: relative;
-    .sidebar {
-        position: absolute;
-        width: 320px;
-        min-height: 100vh;
-        height: 100%;
-        border-right: 1px solid rgba($color: $dark, $alpha: 0.2);
-    }
 
     .navbar {
 
@@ -369,4 +362,186 @@
       }
   }
 
+}
+
+@media(min-width: 0px) and (max-width: 1199px) {
+  .hamburger-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+  
+    .hamburger {
+      width: 100%;
+      height: 5px;
+      background-color: #0a3842;
+      position: relative;
+  
+      &::after {
+        content: '';
+        width: 100%;
+        height: 5px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #0a3842;
+        transform: translateY(-12px);
+      }
+  
+      &::before {
+        content: '';
+        width: 100%;
+        height: 5px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #0a3842;
+        transform: translateY(12px);
+      }
+  
+    }
+  }
+}
+
+@media(min-width: 0px) and (max-width: 1199px) {
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    z-index: 999 !important;
+    
+
+    &.active {
+      display: flex;
+      transform: translateX(0);
+    }
+
+    &.active .overlay {
+      transition: all ease 0.3s;
+      width: 100%;
+      position: absolute;
+      height: 100%;
+    }
+
+  }
+
+  .sidebar-content {
+
+    position: relative;
+    width: 350px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding-top: 20px;
+    z-index: 999 !important;
+
+
+    .content {
+      position: relative;
+      padding: 0 15px 0 15px;
+
+      .scrollable {
+        height: 300px !important;
+        max-height: 500px !important;
+        overflow-y: auto;
+      }
+
+    }
+
+    .name  {
+        font-size: 15px !important;
+    }
+
+    .profile-img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    ul li {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #333333;
+      a {
+        i {
+          margin-right: 10px;
+        }
+      }
+    }
+    
+    li {
+      line-height: 40px;
+    }
+
+    .btn {
+      font-size: 20px !important;
+      background-color: transparent;
+      color: $dark;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+    }
+
+    .footer {
+      height: 0 !important;
+      position: absolute;
+      bottom: 35px;
+      padding: 20px;
+      text-align: center;
+      z-index: 999 !important;
+      border-top: none !important;
+      box-shadow: none !important;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 600;
+      color: #676767;
+    }
+
+  }
+
+  .timekeeping a.btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .timekeeping .form-control, .timekeeping .form-select {
+    width: 100% !important;
+    margin-bottom: 10px;
+  }
+}
+
+@media(min-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.sidebar {
+  transition: all ease 0.3s;
+  transform: translateX(-200%);
+}
+
+.close-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  z-index: 9;
+  top: 30px;
+  right: 15px;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 9999 !important;
+}
+
+.navbar-brand img {
+  width: 120px;
 }

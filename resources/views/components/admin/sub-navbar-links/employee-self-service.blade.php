@@ -12,7 +12,7 @@
         Employee Self Service
     </a>
     <ul class="dropdown-menu">
-    @can('read leave')
+        @can('read leave')
             <li><a class="dropdown-item" href="{{route('ess.leave')}}">Leave Applications</a></li>
         @endcan
 
@@ -35,7 +35,6 @@
         @can('read request-status')
             <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
         @endcan
-
     </ul>
 </li>
 @endcanany
