@@ -1,4 +1,4 @@
-<div class="notification" wire:poll="loadNotifications" wire:poll.keep-alive wire:visible>
+<div class="notification d-none d-md-block" wire:poll="loadNotifications" wire:poll.keep-alive wire:visible>
     <div wire:click="toggle">
         <i class="fa-regular fa-bell"></i>
         @if($notifications['unread'] > 0)
@@ -7,12 +7,19 @@
     </div>
     <div class="content {{$isOpened ? 'd-block' : 'd-none'}}">
         <div class="header d-flex align-items-center justify-content-between">
-            <div>
-                <h6 class="m-0">All Notifications</h6>
+            <div class="d-lg-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="m-0">All Notifications</h6>
+                </div>
             </div>
-            @if($notifications['unread'] > 0) 
-                <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
-            @endif
+            <div class="d-flex gap-3 align-items-center">
+                @if($notifications['unread'] > 0) 
+                    <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
+                @endif
+                <div class="overlay close d-lg-none">
+                    <i class="fa-solid fa-xmark" wire:click="toggle"></i>
+                </div>
+            </div>
         </div>
         <div class="scrollable" id="notificationList">
             @forelse ($notifications['data'] as $key => $item)

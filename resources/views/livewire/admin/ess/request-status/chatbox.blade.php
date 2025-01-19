@@ -85,8 +85,8 @@
             </div>
 
             <div class="send-box w-100" wire:click="makeSeen">
-                <form wire:submit.prevent="send" wire:target="send" class="mb-0">
-                    <div class="d-flex gap-3">
+                <form wire:submit.prevent="send" wire:target="send" class="mb-0 ">
+                    <div class="d-lg-flex gap-3">
                         <div class="form-group w-100">
                             <label for="message" class="visually-hidden">Message</label>
                             <textarea

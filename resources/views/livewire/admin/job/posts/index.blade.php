@@ -27,8 +27,8 @@
     <div wire:loading.remove>
         <div class="row">
             @if(empty($search))
-                <div class="col-12 col-md-4 mb-4">
-                    <a href="{{route('job.posts.create')}}" class="text-decoration-none">
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <a href="{{route('job.posts.create')}}" class="text-decoration-none">
                         <div class="card create">
                             <div class="card-body d-flex justify-content-center align-items-center">
                                 <div class="text-center">
@@ -50,7 +50,7 @@
                 </div>
             @endif
             @forelse ($records as $record)
-                <div class="col-12 col-md-4 mb-4">
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
                     <div class="card shadow px-2">
                         <a href="{{route('home.view-job', ['slug' => $record->slug])}}" class="nav-link" wire:ignore.self>
                             <div class="card-header border-0 bg-transparent">

@@ -118,3 +118,36 @@ $line-height-base: 1.6;
     text-align: right;
 }
 
+.text-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+.clamp-1 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+@media(min-width: 0px) and (max-width: 992px) {
+
+    .notification {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .notification .content {
+        display: flex;
+        width: calc(100% - 20px);
+        margin-left: 10px;
+        position: fixed;
+        left: 0;
+        cursor: pointer;
+
+        .header button {
+            text-transform: uppercase;
+        }
+    }
+}

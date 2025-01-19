@@ -1,7 +1,10 @@
 <form wire:submit.prevent='login'>
     <div class="card shadow p-3">
         <div class="card-header bg-transparent py-2 border-0">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-lg-flex justify-content-between align-items-center">  
+                <div class="logo">
+                    <img src="{{asset('img/logo.png')}}" alt="logo">
+                </div>
                 <ul class="nav nav-pills" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button type="button" class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Applicant Login</button>
@@ -9,10 +12,7 @@
                     <li class="nav-item" role="presentation">
                         <a href="{{route('home.register')}}" class="nav-link">Register</a>
                     </li>
-                </ul>     
-                <div class="logo">
-                    <img src="{{asset('img/logo.png')}}" alt="logo">
-                </div>
+                </ul>   
             </div>                 
             <div class="note mt-4 mb-3">
                 By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
@@ -41,8 +41,8 @@
                 </div>
             </div>
         </div>
-        <div class="card-footer bg-transparent border-0 d-flex gap-2 justify-content-end">
-            <button class="btn btn-primary px-4 py-2">Proceed</button>
+        <div class="card-footer bg-transparent border-0 d-flex gap-2 justify-content-end pb-3">
+            <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Proceed</button>
         </div>
     </div>
 </form>

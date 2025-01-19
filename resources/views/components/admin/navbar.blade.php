@@ -1,5 +1,5 @@
 <nav class="navbar navbar-dark text-dark bg-light shadow-sm">
-    <div class="container">
+    <div class="container px-5">
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
             <img src="{{asset('img/logo.png')}}" alt="" srcset="" style="width: 120px;">
         </a>
@@ -23,7 +23,13 @@
                     </li>
                 </ul>
             </div>    
+            <div>
+                <div class="hamburger-wrapper">
+                    <div class="hamburger"></div>
+                </div>
+            </div>
             @livewire('notifications')
+            @include('components.admin.sidebar')
         </div>
     </div>
 </nav>

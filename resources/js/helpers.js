@@ -24,13 +24,17 @@ export function copy_link() {
 }
 
 export function reinitializeDataTable() {
-    if ($.fn.DataTable.isDataTable('.data-tables')) {
+    if ($.fn.DataTable && $.fn.DataTable.isDataTable('.data-tables')) {
         $('.data-tables').DataTable().destroy();
     }
-    $('.data-tables').DataTable({
-        scrollX: true,
-        pageLength: 10 
-    });
+    if ($.fn.DataTable) {
+        $('.data-tables').DataTable({
+            scrollX: true,
+            pageLength: 10 
+        });
+    } else {
+        console.error('DataTable plugin is not loaded.');
+    }
 }
 
 export function resetErrorsAndFields() {

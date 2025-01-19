@@ -160,7 +160,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="choose-first px-5">
+                        <div class="choose-first px-5 d-none d-lg-block">
                             <div class="d-flex gap-3">
                                 <div>
                                     <i class="fa-solid fa-arrow-left-long"></i>

@@ -3,24 +3,24 @@
 ])
 
 @section('content')
-    <div class="login d-flex justify-content-center align-items-center">
-        <div class="row py-5 d-flex justify-content-center align-items-center w-100">
-            <div class="col-12 col-md-5">
+    <div class="login">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-10 col-lg-5">
                 <div class="container">
                     <form method="POST" action="{{route('employee.login')}}">
                         @method('POST')
                         @csrf
                         <div class="card shadow p-3">
                             <div class="card-header bg-transparent py-2 border-0">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-lg-flex justify-content-between align-items-center">  
+                                    <div class="logo">
+                                        <img src="{{asset('img/logo.png')}}" alt="logo">
+                                    </div>
                                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button type="button" class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Employee Login</button>
                                         </li>
-                                    </ul>     
-                                    <div class="logo">
-                                        <img src="{{asset('img/logo.png')}}" alt="logo">
-                                    </div>
+                                    </ul>   
                                 </div>                 
                                 <div class="note mt-4 mb-3">
                                     By logging in, you can access and monitor your salary, attendance, and other employment-related information.
