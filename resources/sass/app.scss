@@ -19,6 +19,27 @@ $theme-colors: (
 @import 'bootstrap/scss/bootstrap';
 
 
+.scroll-top {
+  width: 50px;
+  height: 50px;
+  background-color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  color: #fff;
+  transition: all ease 0.3s;
+  transform: translateY(100px);
+  cursor: pointer;
+  z-index: 999;
+}
+
+.scroll-top.show {
+  transform: translateY(0);
+}
+
 .d-revert {
   display: revert !important;
 }

@@ -46,27 +46,6 @@ table {
     }
   }
 
-  .scroll-top {
-    width: 50px;
-    height: 50px;
-    background-color: $primary;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    color: #fff;
-    transition: all ease 0.3s;
-    transform: translateY(100px);
-    cursor: pointer;
-    z-index: 999;
-  }
-
-  .scroll-top.show {
-    transform: translateY(0);
-  }
-
   .latest-announcements {
     margin-top: 20px;
     min-height: 160px;
@@ -264,4 +243,39 @@ table {
     z-index: 9;
   }
 
+}
+
+@media(min-width: 0px) and (max-width: 992px) {
+
+  .dashboard .item {
+    min-height: 350px !important;
+  }
+
+  .container .action {
+    margin-top: 40px;
+
+    a {
+      width: 100% !important;
+      margin-bottom: 20px;
+    }
+
+  }
+
+}
+
+.sidebar-menu {
+  width: 250px;
+  background: #f8f9fa;
+  padding: 10px;
+}
+.list-item {
+  list-style: none;
+}
+.submenu {
+  margin-left: 20px;
+}
+.toggle-link {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }

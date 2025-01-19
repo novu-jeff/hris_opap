@@ -137,3 +137,12 @@
     }
 
 }
+
+@media(min-width: 0px) and (max-width: 768px) {
+    .login {
+        height: auto !important;
+        padding: 100px 0 100px;
+    }
+
+}
+

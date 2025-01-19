@@ -38,7 +38,7 @@
                     </li>
                 @endif
             </ul>
-            @if (Auth::guard('applicant')->user())
+            @if (Auth::guard('applicant')->user() && !Route::is('password.request') && !Route::is('password.reset'))
                 @php
                     $folder = strtolower(Auth::user()->firstname . '_' . Auth::user()->lastname . '_' . Auth::user()->id);
                 @endphp
@@ -69,6 +69,7 @@
             <div class="hamburger-wrapper">
                 <div class="hamburger"></div>
             </div>
+            @include('components.home.sidebar')
         </div>        
     </div>
 </nav>

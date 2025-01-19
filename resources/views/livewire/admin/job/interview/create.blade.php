@@ -1,6 +1,6 @@
 <form wire:submit.prevent="save">
     <div class="row">
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-lg-5 mb-5">
             <div class="card shadow p-4">
                 <div class="card-header bg-transparent border-0">
                     <p class="text-muted mb-0 text-uppercase fst-italic">All <span class="text-danger">*</span> is required</p>
@@ -35,7 +35,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-7">
+        <div class="col-12 col-lg-7 mb-5">
             @if (empty($interview))
                 <div class="actions d-flex justify-content-end mb-3">
                     <button type="button" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium" wire:click="add_item">Add Item</button>
