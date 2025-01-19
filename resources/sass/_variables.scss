@@ -147,16 +147,7 @@ $line-height-base: 1.6;
         cursor: pointer;
 
         .header button {
-            margin-top: 10px;
             text-transform: uppercase;
         }
-
-        .header .overlay.close {
-            position: absolute;
-            top: 16px;
-            right: 25px;
-        }
-
     }
-
 }

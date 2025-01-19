@@ -7,16 +7,18 @@
     </div>
     <div class="content {{$isOpened ? 'd-block' : 'd-none'}}">
         <div class="header d-flex align-items-center justify-content-between">
-            <div class="d-lg-flex">
+            <div class="d-lg-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="m-0">All Notifications</h6>
                 </div>
+            </div>
+            <div class="d-flex gap-3 align-items-center">
                 @if($notifications['unread'] > 0) 
                     <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
                 @endif
-            </div>
-            <div class="overlay close">
-                <i class="fa-solid fa-xmark" wire:click="toggle"></i>
+                <div class="overlay close d-lg-none">
+                    <i class="fa-solid fa-xmark" wire:click="toggle"></i>
+                </div>
             </div>
         </div>
         <div class="scrollable" id="notificationList">
