@@ -24,6 +24,11 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/sass/admin-layout.scss', 'resources/sass/chat.scss'])
 </head>
 <body>
+
+    <div class="scroll-top">
+        <i class="fa-solid fa-arrow-up fa-bounce"></i>
+    </div>
+
     <div id="admin-app">
         @include('components.admin.navbar')
         @include('components.admin.sub-navbar')

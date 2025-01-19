@@ -371,6 +371,7 @@ li .attachments .time {
 }
 
 li.reply .time {
+    white-space: nowrap;
     margin: 18px 10px 0 0;
 }
 
@@ -565,65 +566,18 @@ button:focus {
 
 
 
-@media (max-width: 767px) {
-    .chat-icon {
-        display: block;
-        margin-right: 5px;
-        img {
-            width: 30px;
-            height: 30px;
+@media(min-width: 0px) and (max-width: 992px) {
+    .send-box {
+        textarea, button {
+            width: 100% !important;
         }
 
+        button {
+            margin-top: 15px;
+        }
     }
-    .chatlist {
+
+    .msg-body ul li.sender {
         width: 100%;
-    }
-    .chatbox {
-        width: 100%;
-        position: absolute;
-        left: 1000px;
-        right: 0;
-        background: #fff;
-        transition: all 0.5s ease;
-        border-left: none;
-    }
-    .showbox {
-        left: 0 !important;
-        transition: all 0.5s ease;
-    }
-    .msg-head h3 {
-        font-size: 14px;
-    }
-    .msg-head p {
-        font-size: 12px;
-    }
-    .msg-head .flex-shrink-0 img {
-        height: 30px !important;
-    }
-    .send-box button {
-        width: 28%;
-    }
-    .send-box .form-control {
-        width: 70%;
-    }
-    .chat-list h3 {
-        font-size: 14px;
-    }
-    .chat-list p {
-        font-size: 12px;
-    }
-    .msg-body ul li.sender p {
-        font-size: 13px;
-        padding: 8px;
-        border-bottom-left-radius: 6px;
-        border-top-right-radius: 6px;
-        border-bottom-right-radius: 6px;
-    }
-    .msg-body ul li.reply p {
-        font-size: 13px;
-        padding: 8px;
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-        border-bottom-left-radius: 6px;
     }
 }

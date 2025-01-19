@@ -35,6 +35,11 @@
     @livewireScripts
 </head>
 <body>
+    
+    <div class="scroll-top">
+        <i class="fa-solid fa-arrow-up fa-bounce"></i>
+    </div>
+
     <div id="app">
         @include('components.home.navbar')
         <main>

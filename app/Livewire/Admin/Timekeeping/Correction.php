@@ -52,16 +52,19 @@ class Correction extends Component
                 'day' => $this->day,
                 'month' => Carbon::createFromFormat('m', $this->month)->format('F'),
                 'year' => Carbon::createFromFormat('Y', $this->year)->format('Y'),
+                'day_of_week' => $currentDate->format('l'),
             ],
             'previous' => [
                 'day' => $previousDay,
                 'month' => $previousMonth,
                 'year' => $previousYear,
+                'day_of_week' => $previousDate->format('l'),
             ],
             'next' => [
                 'day' => $nextDay,
                 'month' => $nextMonth,
                 'year' => $nextYear,
+                'day_of_week' => $nextDate->format('l'),
             ],
             'data' => []
         ];

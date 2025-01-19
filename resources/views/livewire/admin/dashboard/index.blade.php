@@ -9,7 +9,7 @@
                         </div>
                         <div class="card-body px-3">
                             <div class="swiper-container">
-                                <div class="swiper-wrapper d-flex">
+                                <div class="swiper-wrapper">
                                     @forelse($stats['employee'] as $types)
                                         <div class="swiper-slide text-uppercase bg-info p-3 rounded-3 text-white">
                                             <p class="mb-0 fw-bold">{{$types['employment_type']}}</p>
@@ -41,18 +41,18 @@
                             <h5 class="my-2 text-uppercase fw-bold">{{ \Carbon\Carbon::now()->format('F d, Y') }}</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
-                            <div class="d-flex gap-3 w-100">
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
+                            <div class="d-lg-flex gap-3 w-100">
+                                <div class="mb-3 w-100 text-uppercase bg-info p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Clocked In</p>
                                     <hr>
                                     <h1>{{$stats['clockinout']['clockin']}}</h1>
                                 </div>
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-info p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">In Progress</p>
                                     <hr>
                                     <h1>{{$stats['clockinout']['inprogress']}}</h1>
                                 </div>
-                                <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-info p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Clocked Out</p>
                                     <hr>
                                     <h1>{{$stats['clockinout']['clockout']}}</h1>
@@ -67,8 +67,8 @@
                             <h5 class="my-2 text-uppercase fw-bold">Leave Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
-                            <div class="d-flex gap-3 w-100">
-                                <div class="w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                            <div class="d-lg-flex gap-3 w-100">
+                                <div class="mb-3 w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Pending</p>
                                     <hr>
                                     <h1>{{$stats['leave']['pending']}}</h1>
@@ -76,7 +76,7 @@
                                         <a href="{{route('ess.leave', ['status' => 'pending'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-success p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Granted</p>
                                     <hr>
                                     <h1>{{$stats['leave']['granted']}}</h1>
@@ -84,7 +84,7 @@
                                         <a href="{{route('ess.leave', ['status' => 'granted'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Rejected</p>
                                     <hr>
                                     <h1>{{$stats['leave']['rejected']}}</h1>
@@ -102,8 +102,8 @@
                             <h5 class="my-2 text-uppercase fw-bold">OBS Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
-                            <div class="d-flex gap-3 w-100">
-                                <div class="w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                            <div class="d-lg-flex gap-3 w-100">
+                                <div class="mb-3 w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Pending</p>
                                     <hr>
                                     <h1>{{$stats['obs']['pending']}}</h1>
@@ -111,7 +111,7 @@
                                         <a href="{{route('ess.obs', ['status' => 'pending'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-success p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Granted</p>
                                     <hr>
                                     <h1>{{$stats['obs']['granted']}}</h1>
@@ -119,7 +119,7 @@
                                         <a href="{{route('ess.obs', ['status' => 'granted'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Rejected</p>
                                     <hr>
                                     <h1>{{$stats['obs']['rejected']}}</h1>
@@ -137,8 +137,8 @@
                             <h5 class="my-2 text-uppercase fw-bold">ATRO Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
-                            <div class="d-flex gap-3 w-100">
-                                <div class="w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                            <div class="d-lg-flex gap-3 w-100">
+                                <div class="mb-3 w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Pending</p>
                                     <hr>
                                     <h1>{{$stats['atro']['pending']}}</h1>
@@ -146,7 +146,7 @@
                                         <a href="{{route('ess.atro', ['status' => 'pending'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-success p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Granted</p>
                                     <hr>
                                     <h1>{{$stats['atro']['granted']}}</h1>
@@ -154,7 +154,7 @@
                                         <a href="{{route('ess.atro', ['status' => 'approve'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
-                                <div class="w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
                                     <p class="mb-0 fw-bold">Rejected</p>
                                     <hr>
                                     <h1>{{$stats['atro']['rejected']}}</h1>
