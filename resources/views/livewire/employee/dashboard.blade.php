@@ -3,7 +3,7 @@
         <div class="wrapper d-flex gap-4">
             @foreach($announcements as $announcement)
                 <a href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
-                    <div class="card shadow">
+                    <div class="card">
                         <div class="card-body d-flex align-items-center">
                             <small class="card-title text-clamp clamp-3">{{$announcement->title}}</small>
                         </div>
