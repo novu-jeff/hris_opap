@@ -18,6 +18,7 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';
+    protected $listeners = ['remove'];
 
     public function remove(bool $isNotify = true, string $employee_no = null) {
 
@@ -28,10 +29,12 @@ class Index extends Component
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
+
             return;
         }
     
         if ($isNotify) {
+
             $this->selected_id = $employee_no;
     
             $this->dispatch('showConfirmation', [
@@ -81,10 +84,7 @@ class Index extends Component
     
             // Delete the main employee record
             $record->delete();
-    
-            // Reload records and notify success
-            $this->loadRecords();
-    
+        
             $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Success!',
