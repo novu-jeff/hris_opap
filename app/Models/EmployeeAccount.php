@@ -20,7 +20,10 @@ class EmployeeAccount extends Authenticatable
         'email',
         'password',
         'isLoggedIn',
-        'token'
+        'token',
+        'isNew',
+        'isToUpdatePassword',
+        'last_password_updated'
     ];
     public $timestamps = false;
 
