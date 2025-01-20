@@ -57,6 +57,8 @@ table {
       overflow-x: hidden;
       transform: translateY(20px);
       transition: all ease 0.3s;
+      position: relative;
+      padding: 0 15px 0 15px;
     }
 
     .wrapper:hover {
@@ -69,7 +71,23 @@ table {
       width: 300px;
       flex-shrink: 0;
       cursor: pointer;
+      box-shadow: 0 4px 8px $primary;
     }
+
+    .wrapper a:nth-child(1) .card::before {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      right: 10px;
+      top: 10px;
+      content: '';
+      background-color: $primary;
+      border-radius: 50%;
+      z-index: 999;
+    }
+    
+    
+    
     
   }
 
