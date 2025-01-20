@@ -45,7 +45,7 @@
                                             <a target="_blank" href="{{route('ess.approval-profile.edit', ['approval' => $record->employee_no])}}" class="btn btn-primary mx-1">
                                                 <i class="fa-solid fa-eye"></i>
                                             </a>
-                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <button wire:click='remove(true, "{{$record->employee_no}}")' class="btn btn-danger mx-1">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </td>
