@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee;
 
 use App\Models\EmployeeAccount;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
@@ -13,14 +14,20 @@ class NewEmployee extends Component
     public $employee_no;
     public $name;
     public bool $isNewEmployee;
+    public bool $isForcedEmployee;
     public $password;
     public $confirm_password;
 
     public $listeners = ['not'];
 
     public function mount() {
+        
+        
         $user = Auth::user();
+        
         $this->isNewEmployee = $user->isNew;
+        $this->isForcedEmployee = $user->isToUpdatePassword;
+
         $this->employee_no = $user->employee_no;
         $this->name = $user->load('personal')->personal->firstname . ' ' . $user->personal->lastname;        
     }
@@ -39,7 +46,9 @@ class NewEmployee extends Component
 
             EmployeeAccount::where('employee_no', $this->employee_no)->update([
                 'password' => Hash::make($this->password),
-                'isNew' => false
+                'isNew' => false,
+                'isToUpdatePassword' => false,
+                'last_password_updated' => Carbon::now(),
             ]);
 
             return $this->dispatch('alert', [

@@ -1,11 +1,17 @@
 <div>
-    @if($isNewEmployee)
+    @if($isNewEmployee || $isForcedEmployee)
     <div class="change-password">
         <div class="content" wire:ignore.self>
             <div class="card px-3 py-3 shadow rounded-4">
                 <div class="card-header pt-3 border-0 bg-transparent">
                     <h4 class="mt-4 mb-3 fw-bold">Hello <span>{{$name}}</span>,</h4>
-                    <p class="text-justify mb-0">As part of our commitment to ensuring the security of your personal information, we kindly request that you update your password before accessing the employee self-service portal. This step is essential to protect your account and maintain the integrity of our system. Thank you for your cooperation and understanding.</p>
+                    <p class="text-justify mb-0">
+                        @if($isNewEmployee)
+                            As part of our commitment to ensuring the security of your personal information, we kindly request that you update your password before accessing the employee self-service portal. This step is essential to protect your account and maintain the integrity of our system. Thank you for your cooperation and understanding.
+                        @elseif($isForcedEmployee)
+                            Your account password has been already exceeded for 30 days. As part of our commitment to security, you are required to update your password before accessing the employee self-service portal. This step is essential to protect your account and maintain the integrity of our system. Thank you for your cooperation and understanding.
+                        @endif
+                    </p>
                 </div>
                 <hr>
                 <div class="card-body">
@@ -40,7 +46,7 @@
     @endif
 </div>
 
-@if($isNewEmployee)
+@if($isNewEmployee || $isForcedEmployee)
 @section('script')
 <script>
     $(function() {
