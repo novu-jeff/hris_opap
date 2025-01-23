@@ -156,6 +156,18 @@
     </div>
     
     <div class="d-flex justify-content-end mb-5 gap-3">
+        <div class="btn-group">
+            <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'role' => 'all'])}}" class="btn btn-outline-primary px-5 py-3 text-uppercase d-flex align-items-center gap-2"><i class="fa-solid fa-download"></i> Download</a>
+            <button type="button" class="btn btn-outline-primary px-3 dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="visually-hidden"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a target="_blank" class="dropdown-item d-flex align-items-center gap-2" href="{{route('download.view', ['show' => 'employee', 'role' => 'all'])}}"><i class="fa-solid fa-download"></i> All</a></li>
+                @foreach($roles as $role)
+                    <li><a target="_blank" class="dropdown-item d-flex align-items-center gap-2" href="{{route('download.view', ['show' => 'employee', 'role' => $role->id])}}"><i class="fa-solid fa-download"></i> {{$role->name}}</a></li>
+                @endforeach
+            </ul>
+        </div>
         <button class="btn btn-primary px-5 py-3 text-uppercase" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 
@@ -204,6 +216,9 @@
                             <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
                             <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
                             <td wire:ignore.self>
+                                <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary mx-1">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
                                 <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>

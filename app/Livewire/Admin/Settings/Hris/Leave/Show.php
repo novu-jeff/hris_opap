@@ -26,17 +26,18 @@ class Show extends Component
 
     public function loadRecords() {
 
-   
+        // Retrieve employees with employment_type_id 1 and eager load the 'personal' relationship
         $employees = EmployeeInformation::with(['personal'])
+            ->where('employment_type_id', 1)  // Filter by employment_type_id 1
             ->get();
-            
+    
         // Retrieve the leave credits based on the leave type ID
         $leaveCredits = LeaveCredits::where('leave_type_id', $this->id)->get();
-
+    
         // Initialize the credits array
         $this->credits = [];
-
-        // Loop through the employees
+    
+        // Loop through the filtered employees
         foreach ($employees as $employee) {
             // Find the leave credit matching the employee's employee_no
             $leaveCredit = $leaveCredits->firstWhere('employee_no', $employee['employee_no']);
@@ -45,6 +46,7 @@ class Show extends Component
             $this->credits[$employee['employee_no']] = $leaveCredit ? $leaveCredit->credits : 0;
         }
     }
+    
     
     public function save()
     {
@@ -103,7 +105,8 @@ class Show extends Component
     // Render method to display the records with pagination and search functionality
     public function render()
     {
-        $model = EmployeeInformation::with(['personal']);
+        $model = EmployeeInformation::with(['personal'])
+            ->where('employment_type_id', 1);
 
         if ($this->search) {
 

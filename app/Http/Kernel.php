@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'employee' => \App\Http\Middleware\EmployeeMiddleware::class,
         'api_employee' => \App\Http\Middleware\EnsureEmployeeToken::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
+        'check_employee_allowed_module' => \App\Http\Middleware\CheckEmployeeAllowedModule::class
     ];
 }

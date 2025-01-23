@@ -14,8 +14,8 @@ class LeaveTypesSeeder extends Seeder
     public function run(): void
     {
         $leave_types = [
-            ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 10, 'isCummulative' => true],
-            ['code' => 'SL', 'name' => 'Sick Leave' , 'credits' => 10, 'isCummulative' => true],
+            ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 15, 'isCummulative' => true],
+            ['code' => 'SL', 'name' => 'Sick Leave' , 'credits' => 15, 'isCummulative' => true],
             ['code' => 'SPL', 'name' => 'Special Privilege Leave' , 'credits' => 3, 'isCummulative' => false],
             ['code' => 'ML', 'name' => 'Maternity Leave' , 'credits' => 105, 'isCummulative' => false],
             ['code' => 'PL', 'name' => 'Paternity Leave' , 'credits' => 7, 'isCummulative' => false],
