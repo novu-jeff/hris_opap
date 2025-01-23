@@ -155,8 +155,8 @@
         </div>
     </div>
     
-    <div class="d-flex justify-content-end mb-5 gap-3">
-        <div class="btn-group">
+    <div class="d-lg-flex justify-content-end text-center mb-5 gap-3">
+        <div class="btn-group mb-3">
             <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'role' => 'all'])}}" class="btn btn-outline-primary px-5 py-3 text-uppercase d-flex align-items-center gap-2"><i class="fa-solid fa-download"></i> Download</a>
             <button type="button" class="btn btn-outline-primary px-3 dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
               <span class="visually-hidden"></span>
@@ -168,7 +168,7 @@
                 @endforeach
             </ul>
         </div>
-        <button class="btn btn-primary px-5 py-3 text-uppercase" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
+        <button class="btn btn-primary px-5 py-3 text-uppercase mb-3" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 
     <div>
