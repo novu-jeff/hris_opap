@@ -17,6 +17,8 @@ use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
+use App\Models\LeaveCredits;
+use App\Models\LeaveType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -64,6 +66,7 @@ class HRISProcessingService extends Controller
             $this->employee_account($record->employee_no, $data['employee_account'], true);
             $this->employee_personal($record->employee_no, $data['employee_personal'], true);
             $this->employee_parents($record->employee_no, null, true);
+            $this->employee_leave($record->employee_no, $data);
 
         } else {
 
@@ -82,6 +85,9 @@ class HRISProcessingService extends Controller
             $this->employee_trainings($employee_no, $data['employee_trainings']);
             $this->employee_others($employee_no, $data['employee_others']);
             $this->employee_skills($employee_no, $data['employee_skills']);
+
+            $this->employee_leave($employee_no, $data);
+
         }
     }
 
@@ -366,6 +372,90 @@ class HRISProcessingService extends Controller
                 ]);
             } 
         }
+    }
+
+    public function employee_leave(string $employee_no, array $data) {
+
+        $leaveDefaultCredits = LeaveType::all();
+
+        $model = LeaveCredits::class;
+
+        $product = config('app.product');
+
+        if ($product == 'opap') {
+            if ($data['employee_information']['type'] == 1) {
+                foreach ($leaveDefaultCredits as $leave) {
+
+                    $credits = 0;
+                    
+                    $existingLeave = $model::where('employee_no', $employee_no)
+                        ->where('leave_type_id', $leave->id)
+                        ->first();
+                        
+                    if($existingLeave && $existingLeave->credits != 0) {
+                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $existingLeave->credits;
+                        }
+
+                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+                            $credits = $existingLeave->credits;
+                        }
+
+                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+                            $credits = 0;
+                        }
+
+                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+                            $credits = $existingLeave->credits;
+                        }
+                    } else {
+                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $leave->credits;
+                        }
+
+                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+                            $credits = $leave->credits;
+                        }
+
+                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+                            $credits = 0;
+                        }
+
+                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+                            $credits = $leave->credits;
+                        }
+                    }
+
+                    
+                
+                    // Update or create the record with the appropriate credits
+                    $model::updateOrCreate(
+                        [
+                            'employee_no' => $employee_no,
+                            'leave_type_id' => $leave->id,
+                        ],
+                        [
+                            'credits' => $credits,
+                        ]
+                    );
+                }
+                
+                
+            } else {
+                foreach ($leaveDefaultCredits as $leave) {
+                    $model::updateOrCreate(
+                        [
+                            'employee_no' => $employee_no,
+                            'leave_type_id' => $leave->id,
+                        ],
+                        [
+                            'credits' => 0,
+                        ]
+                    );
+                }
+            }
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Notification;
+use App\Models\Scheduler;
 use Illuminate\Console\Command;
 
 class ClearReadNotifications extends Command
@@ -19,7 +20,7 @@ class ClearReadNotifications extends Command
      *
      * @var string
      */
-    protected $description = 'Clear notifications that have been read (read_at is not null)';
+    protected $description = 'Clear notifications that have been read (read_at is not null) after the scheduled timespan.';
 
     /**
      * Execute the console command.
@@ -27,11 +28,16 @@ class ClearReadNotifications extends Command
     public function handle()
     {
 
-        $cutoffTime = \Carbon\Carbon::now()->subHours(1);
-        $delete = Notification::whereNotNull('read_at')
-            ->whereDate('read_at', '<=', $cutoffTime->format('Y-m-d H:i:s'))
-            ->delete();
+        $schedule = Scheduler::where('schedule_name', 'clear_notification')
+            ->first();
 
-        $this->info("{$delete} read notifications cleared successfully.");
+        if($schedule) {
+            $cutoffTime = \Carbon\Carbon::now()->subHours($schedule->interval);
+            $delete = Notification::whereNotNull('read_at')
+                ->whereDate('read_at', '<=', $cutoffTime->format('Y-m-d H:i:s'))
+                ->delete();
+    
+            $this->info("{$delete} read notifications cleared successfully.");
+        }
     }
 }

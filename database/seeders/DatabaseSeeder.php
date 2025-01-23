@@ -18,14 +18,10 @@ class DatabaseSeeder extends Seeder
         $product = config('app.product');
 
         $this->call([
-            RequirementSeeder::class,
-            InterviewSeeder::class,
             EmploymentTypesSeeder::class,
-            JobPostSeeder::class,
             PositionSeeder::class,
             ViolationSeeder::class,
             SkillListSeeder::class,   
-            AnnouncementSeeder::class,
             LeaveTypesSeeder::class,
             CompanyBusinessTypeSeeder::class,
             ShiftScheduleSeeder::class,
@@ -34,9 +30,20 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
-            ApplicantTestUserSeeder::class,
-            EmployeeTestUserSeeder::class
+            SchedulerDefaultSeeder::class
         ]);
+
+        if($product == 'testing' || $product == 'novu') {
+            $this->call([
+                AnnouncementSeeder::class,
+                RequirementSeeder::class,
+                InterviewSeeder::class,
+                JobPostSeeder::class,
+                AnnouncementSeeder::class,
+                ApplicantTestUserSeeder::class,
+                EmployeeTestUserSeeder::class
+            ]);
+        }
 
         
         if($product == 'opap') {

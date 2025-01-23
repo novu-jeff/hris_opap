@@ -40,10 +40,10 @@ class Show extends Component
             'ess' => ['leave', 'obs', 'arto', 'announcements', 'employee-profile-approval', 'request-status'],
             'reports' => ['dtr'],
             'settings' => [
-                'company-information', 'branches', 'departments', 'sections', 'assessments', 'requirements',
+                'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
                 'leave-types', 'leave-credits', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
-                'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration'
+                'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
             ],
             'employee' => [
                 'apply-leave', 'clock-in-out', 'apply-atro', 'payslip', 'employee-request-status',

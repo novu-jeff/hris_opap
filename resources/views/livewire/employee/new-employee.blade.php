@@ -4,7 +4,7 @@
         <div class="content" wire:ignore.self>
             <div class="card px-3 py-3 shadow rounded-4">
                 <div class="card-header pt-3 border-0 bg-transparent">
-                    <h4 class="mt-4 mb-3 fw-bold">Hello <span>{{$name}}</span>,</h4>
+                    <h4 class="mt-4 mb-3 fw-bold">Hello <span>{{ucfirst($name)}}</span>,</h4>
                     <p class="text-justify mb-0">
                         @if($isNewEmployee)
                             As part of our commitment to ensuring the security of your personal information, we kindly request that you update your password before accessing the employee self-service portal. This step is essential to protect your account and maintain the integrity of our system. Thank you for your cooperation and understanding.
