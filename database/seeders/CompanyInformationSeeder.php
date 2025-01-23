@@ -23,11 +23,11 @@ class CompanyInformationSeeder extends Seeder
                 'contact' => '8636-0707',
                 'type_id' => 10
             ];
-        } else if ($product == 'hris') {
+        } else if ($product == 'novu' || $product == 'testing') {
             $information = [
-                'name' => 'BlitzDev IT Consultancy', 
-                'address' => 'B51 L11 Acorn Loop Evergreen County Brgy. Zapote, City of Biñan',
-                'contact' => '0977-188-0867',
+                'name' => 'Novulutions Inc.', 
+                'address' => 'EcoTower, 32nd St. Cor, 9th Ave, Taguig, Metro Manila, Philippines',
+                'contact' => '',
                 'type_id' => 5
             ];
         }

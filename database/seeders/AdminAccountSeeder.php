@@ -14,22 +14,74 @@ class AdminAccountSeeder extends Seeder
      */
     public function run(): void
     {
-        $admins = [
-            [
-                'name' => 'Carl Llemos', 
-                'username' => 'superadmin01',
-                'role' => 'superadmin',
-                'email' => 'superadmin@hris.com', 
-                'password' => Hash::make('password')
-            ],
-            [
-                'name' => 'Kim Mariano', 
-                'username' => 'admin01',
-                'role' => 'admin',
-                'email' => 'admin@hris.com', 
-                'password' => Hash::make('password')
-            ],
+
+        $product = config('app.product');
+
+        if($product == 'opap') {
+            $admins = [
+                [
+                    'name' => 'Opapru Superadmin', 
+                    'username' => 'opapru01',
+                    'role' => 'superadmin',
+                    'email' => 'opapru01@hris.com', 
+                    'password' => Hash::make('password')
+                ],
+                [
+                    'name' => 'Opapru Admin', 
+                    'username' => 'opapru02',
+                    'role' => 'admin',
+                    'email' => 'opapru02@hris.com', 
+                    'password' => Hash::make('password')
+                ],
+            ];
+        } else if($product == 'novu' || $product == 'testing') {
+            $admins = [
+                [
+                    'name' => 'Mike Gabriel Pascaran', 
+                    'username' => 'mike01',
+                    'role' => 'superadmin',
+                    'email' => 'mike@novulutions.com', 
+                    'password' => Hash::make('password')
+                ],
+                [
+                    'name' => 'Christina Francisco', 
+                    'username' => 'christina01',
+                    'role' => 'superadmin',
+                    'email' => 'christina@novulutions.com', 
+                    'password' => Hash::make('password')
+                ],
+                [
+                    'name' => 'Ronna', 
+                    'username' => 'ronna01',
+                    'role' => 'superadmin',
+                    'email' => 'ronna@novulutions.com', 
+                    'password' => Hash::make('password')
+                ],
+                [
+                    'name' => 'Micole Lapeña', 
+                    'username' => 'micole01',
+                    'role' => 'superadmin',
+                    'email' => 'micole@novulutions.com', 
+                    'password' => Hash::make('password')
+                ],
+                [
+                    'name' => 'Lechler', 
+                    'username' => 'lech01',
+                    'role' => 'superadmin',
+                    'email' => 'lechler@novulutions.com', 
+                    'password' => Hash::make('password')
+                ],
+            ];
+        }
+
+        $admins[] =  [
+            'name' => 'Carl Llemos', 
+            'username' => 'dev01',
+            'role' => 'superadmin',
+            'email' => 'carl@novulutions.com', 
+            'password' => Hash::make('password')
         ];
+        
 
         foreach ($admins as $admin) {
             $user = User::updateOrCreate(

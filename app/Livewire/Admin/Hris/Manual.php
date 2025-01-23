@@ -16,6 +16,8 @@ use App\Models\EmployeePersonal;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\EmployementTypes;
+use App\Models\LeaveCredits;
+use App\Models\LeaveType;
 use App\Models\Positions;
 use App\Models\Sections;
 use GuzzleHttp\Client;
@@ -147,7 +149,7 @@ class Manual extends Component
     }
 
     public function setActiveAccordion($accordion) {
-        $this->activeAccordion = $this->activeAccordion === $accordion ? '' : $accordion;
+        $this->activeAccordion = $accordion;
     }
 
     public function select_change(string $property) {
@@ -240,7 +242,7 @@ class Manual extends Component
             'records.employee_personal.lastname' => 'required|string|max:255',
             'records.employee_personal.suffix' => 'nullable|in:jr,sr,I,II,III,IV,V',
             'records.employee_personal.civil_status' => 'nullable|in:single,married,divorced,seperated,widowed,anulled',
-            'records.employee_personal.sex' => 'nullable|in:male,female',
+            'records.employee_personal.sex' => 'required|in:male,female',
             'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
@@ -328,6 +330,7 @@ class Manual extends Component
             'records.employee_personal.lastname.required' => 'The last name is required.',
             'records.employee_personal.suffix.in' => 'The suffix must be one of the following: jr, sr, I, II, III, IV, or V.',
             'records.employee_personal.civil_status.in' => 'The civil status must be one of the following: single, married, divorced, separated, widowed, or annulled.',
+            'records.employee_personal.sex.required' => 'The sex field is required.',
             'records.employee_personal.sex.in' => 'The sex must be either male or female.',
             'records.employee_personal.citizenship_type.required_with' => 'The citizenship type is required when citizenship is provided.',
             'records.employee_personal.country.required_if' => 'The country is required when citizenship is dual citizenship.',
@@ -435,7 +438,7 @@ class Manual extends Component
             $this->employee_trainings($record->employee_no, $this->records['employee_trainings'] ?? []);
             $this->employee_others($record->employee_no, $this->records['employee_others'] ?? []);
             $this->employee_skills($record->employee_no, $this->records['employee_skills'] ?? []);
-
+            $this->employee_leave($record->employee_no, $this->records);
 
             DB::commit();
 
@@ -693,6 +696,90 @@ class Manual extends Component
                 ]);
             } 
         }
+    }
+
+    public function employee_leave(string $employee_no, array $data) {
+
+        $leaveDefaultCredits = LeaveType::all();
+
+        $model = LeaveCredits::class;
+
+        $product = config('app.product');
+
+        if ($product == 'opap') {
+            if ($data['employee_information']['type'] == 1) {
+                foreach ($leaveDefaultCredits as $leave) {
+
+                    $credits = 0;
+                    
+                    $existingLeave = $model::where('employee_no', $employee_no)
+                        ->where('leave_type_id', $leave->id)
+                        ->first();
+                        
+                    if($existingLeave && $existingLeave->credits != 0) {
+                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $existingLeave->credits;
+                        }
+
+                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+                            $credits = $existingLeave->credits;
+                        }
+
+                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+                            $credits = 0;
+                        }
+
+                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+                            $credits = $existingLeave->credits;
+                        }
+                    } else {
+                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $leave->credits;
+                        }
+
+                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+                            $credits = $leave->credits;
+                        }
+
+                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+                            $credits = 0;
+                        }
+
+                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+                            $credits = $leave->credits;
+                        }
+                    }
+
+                    
+                
+                    // Update or create the record with the appropriate credits
+                    $model::updateOrCreate(
+                        [
+                            'employee_no' => $employee_no,
+                            'leave_type_id' => $leave->id,
+                        ],
+                        [
+                            'credits' => $credits,
+                        ]
+                    );
+                }
+                
+                
+            } else {
+                foreach ($leaveDefaultCredits as $leave) {
+                    $model::updateOrCreate(
+                        [
+                            'employee_no' => $employee_no,
+                            'leave_type_id' => $leave->id,
+                        ],
+                        [
+                            'credits' => 0,
+                        ]
+                    );
+                }
+            }
+        }
+
     }
 
     public function render()

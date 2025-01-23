@@ -1,7 +1,7 @@
 <div>
     <div class="latest-announcements">
         <div class="wrapper d-flex gap-4">
-            @foreach($announcements as $announcement)
+            @forelse($announcements as $announcement)
                 <a href="{{route('employee.announcements.view', ['id' => $announcement->id])}}" class="text-decoration-none text-uppercase fw-bold">
                     <div class="card">
                         <div class="card-body d-flex align-items-center">
@@ -9,7 +9,11 @@
                         </div>
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <div class="alert alert-primary w-100 d-flex align-items-center justify-content-center text-uppercase fw-medium">
+                    No Announcements Yet
+                </div>
+            @endforelse
         </div>          
     </div>
     @if($announcements)
@@ -18,14 +22,16 @@
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
         <div class="row">
             @canany(['read apply-leave', 'write apply-leave'])
-            <div class="col-12 col-md-6 col-xl-4 mb-4">
-                <a href="{{ route('employee.leave') }}" class="nav-link">
-                <div class="item">
-                    <img src="{{ asset('/img/leave.png') }}" class="w-100">
-                    <p>Leave Application</p>
-                </div>
-                </a>
-            </div>
+                @if($isAllowedLeave)
+                    <div class="col-12 col-md-6 col-xl-4 mb-4">
+                        <a href="{{ route('employee.leave') }}" class="nav-link">
+                        <div class="item">
+                            <img src="{{ asset('/img/leave.png') }}" class="w-100">
+                            <p>Leave Application</p>
+                        </div>
+                        </a>
+                    </div>
+                @endif
             @endcanany
         
             @canany(['read clock-in-out', 'write clock-in-out'])

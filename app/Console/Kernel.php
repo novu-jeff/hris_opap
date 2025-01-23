@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('notification:clear')->everyMinute();
-        $schedule->command('update:password')->everyFourHours();
+        $schedule->command('update:password')->everyMinute();
+        $schedule->command('reset:leaves')->everyMinute();
     }
 
     /**

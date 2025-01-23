@@ -14,9 +14,11 @@ use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
+use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
+use App\Http\Controllers\Admin\SchedulerController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
 use App\Http\Controllers\Admin\Settings\HRIS\BranchController;
 use App\Http\Controllers\Admin\Settings\HRIS\CostCenterController;
@@ -148,6 +150,9 @@ Route::prefix('admin')->group(function() {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])
             ->name('admin.dashboard');
 
+        Route::get('download', [DownloadController::class, 'index'])
+            ->name('download.view');
+
         Route::prefix('job')->group(function() {
     
             Route::resource('posts', PostController::class)
@@ -240,6 +245,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('company-information', [CompanyInformationController::class, 'index'])
                 ->name('company.index');
+            
+            Route::get('scheduled-tasks', [SchedulerController::class, 'index'])
+                ->name('scheduler.index');
 
             Route::prefix('location')->group( function() {
                 Route::resource('/branch', BranchController::class)
@@ -317,7 +325,7 @@ Route::prefix('admin')->group(function() {
 
 });
 
-Route::prefix('employee')->group(function() {
+Route::prefix('employee')->middleware('check_employee_allowed_module')->group(function() {
 
 
     Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');

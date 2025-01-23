@@ -16,15 +16,11 @@ class LoginController extends Controller
     public function login(Request $request) {
         
         $rules = [
-            'email' => 'required|exists:users',
+            'email' => 'required',
             'password' => 'required',
         ];
 
-        $message = [
-            'email.exists' => 'The email provided does not exists.'
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all(), $rules);
 
         if($validator->fails()) {
             return redirect()->back()
@@ -33,7 +29,7 @@ class LoginController extends Controller
         }
 
         if(Auth::attempt([
-            'email' => $request->email,
+            filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'username' => $request->email,
             'password' => $request->password
         ])) {
 
@@ -41,8 +37,10 @@ class LoginController extends Controller
 
         } else {
             return redirect()->back()
-                ->with(['error' => 'Invalid email or password']);
+                ->with(['error' => 'Invalid login or password'])
+                ->withInput();
         }
+        
         
     }
 
