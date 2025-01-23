@@ -33,6 +33,15 @@ class LoginController extends Controller
             'password' => $request->password
         ])) {
 
+            $employee = Auth::guard('employee')->user();
+
+            if ($employee->information->status !== 'active') {
+                Auth::guard('employee')->logout(); 
+                return redirect()->back()
+                    ->with(['error' => 'Oops, your account is currently inactive.'])
+                    ->withInput();
+            }
+
             return redirect()->route('employee.dashboard');
 
         } else {
