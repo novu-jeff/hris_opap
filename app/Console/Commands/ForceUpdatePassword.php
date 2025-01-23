@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\EmployeeAccount;
+use App\Models\Scheduler;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,7 +22,7 @@ class ForceUpdatePassword extends Command
      *
      * @var string
      */
-    protected $description = 'Employee force update password after a month.';
+    protected $description = 'Employee force update password after the scheduled timespan.';
 
     /**
      * Execute the console command.
@@ -31,17 +33,26 @@ class ForceUpdatePassword extends Command
             ->where('isToUpdatePassword', false)
             ->get();
     
-        $reset = 30;
+        $schedule = Scheduler::where('schedule_name', 'clear_notification')
+            ->first();
+            
 
-        foreach($users as $user) {
-            $lastPasswordUpdated = \Carbon\Carbon::parse($user->last_password_updated);
-            $now = \Carbon\Carbon::now();
-            $diff = $now->diffInDays($lastPasswordUpdated);
-            if($diff >= $reset) {
-                $user->isToUpdatePassword = true;
-                $user->last_password_updated = $now;
-                $user->save();
+       if($schedule) {
+
+            $resetInterval = $schedule->interval;
+            $now = Carbon::now();
+            
+            foreach ($users as $user) {
+                $lastUpdated = Carbon::parse($user->last_password_updated);
+                $hoursSinceUpdate = $lastUpdated->diffInHours($now);
+            
+                if ($hoursSinceUpdate >= $resetInterval) {
+                    $user->update([
+                        'isToUpdatePassword' => true,
+                        'last_password_updated' => $now
+                    ]);
+                }
             }
-        }
+       }
     }
 }

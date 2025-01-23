@@ -395,7 +395,7 @@ class Form extends Component
             'records.employee_personal.lastname' => 'required|string|max:255',
             'records.employee_personal.suffix' => 'nullable|in:jr,sr,I,II,III,IV,V',
             'records.employee_personal.civil_status' => 'nullable|in:single,married,divorced,seperated,widowed,anulled',
-            'records.employee_personal.sex' => 'nullable|in:male,female',
+            'records.employee_personal.sex' => 'required|in:male,female',
             'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
@@ -484,6 +484,7 @@ class Form extends Component
             'records.employee_personal.lastname.required' => 'The last name is required.',
             'records.employee_personal.suffix.in' => 'The suffix must be one of the following: jr, sr, I, II, III, IV, or V.',
             'records.employee_personal.civil_status.in' => 'The civil status must be one of the following: single, married, divorced, separated, widowed, or annulled.',
+            'records.employee_personal.sex.required' => 'The sex field is required.',
             'records.employee_personal.sex.in' => 'The sex must be either male or female.',
             'records.employee_personal.citizenship_type.required_with' => 'The citizenship type is required when citizenship is provided.',
             'records.employee_personal.country.required_if' => 'The country is required when citizenship is dual citizenship.',

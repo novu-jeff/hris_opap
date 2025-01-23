@@ -33,8 +33,8 @@
                                         <div class="alert alert-danger mb-3 text-uppercase fw-medium text-center fs-6">{{session('error')}}</div>
                                     @endif
                                     <div class="col-12 mb-3">
-                                        <label for="email" class="mb-2">Email <span class="text-danger">*</span></label>
-                                        <input type="text" name="email" id="email" class="form-control" placeholder="E-ID">
+                                        <label for="email" class="mb-2">Login <span class="text-danger">*</span></label>
+                                        <input type="text" name="email" id="email" class="form-control" placeholder="Username or Email">
                                         <div class="error-field mt-1">
                                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>

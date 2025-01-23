@@ -4,7 +4,12 @@
         Settings
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{route('company.index')}}">Company Information</a></li>
+        @can('read company-information')
+            <li><a class="dropdown-item" href="{{route('company.index')}}">Company Information</a></li>
+        @endcan
+        @can('read scheduler')
+            <li><a class="dropdown-item" href="{{route('scheduler.index')}}">Scheduler</a></li>
+        @endcan
         @canany([
             'read branches',
             'read departments',

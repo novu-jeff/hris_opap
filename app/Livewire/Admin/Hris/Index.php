@@ -8,6 +8,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\EmployementTypes;
 use App\Models\Message;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class Index extends Component
     public $isLinkSchedule = false;
     public $shifts;
     public $schedules;
+    public $roles;
     public $shift_id;
     public $schedule_id;
 
@@ -59,6 +61,7 @@ class Index extends Component
     public function loadRecords() {
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
+        $this->roles = EmployementTypes::all();
     }
 
     public function close_upload_employee() {

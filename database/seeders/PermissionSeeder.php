@@ -38,6 +38,7 @@ class PermissionSeeder extends Seeder
             ],
             'settings' => [
                 'company-information',
+                'scheduler',
                 'branches',
                 'departments',
                 'sections',
@@ -59,7 +60,7 @@ class PermissionSeeder extends Seeder
                 'employee-schedule',
                 'holidays',
                 'payroll-period',
-                'payroll-configuration'
+                'payroll-configuration',
             ],
             'employee' => [
                 'apply-leave',
