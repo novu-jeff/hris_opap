@@ -105,7 +105,7 @@ class Index extends Component
             $from = Carbon::parse($record->from);
             $to = Carbon::parse($record->to);
 
-            if ($to) {
+            if ($record->to) {
                 $daysCovered = $from->diffInDays($to) + 1; 
             } else {
                 $daysCovered = 1; 
