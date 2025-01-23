@@ -115,7 +115,7 @@
                     <th colspan="12">Employee Information</th>
                 </tr>
                 <tr>
-                    <td>
+                    <td colspan="2">
                         <p class="label">Employee No</p>
                         <p class="value">{{$data['employee_no'] ?? 'N/A'}}</p>
                     </td>
@@ -124,26 +124,18 @@
                         <p class="value">{{$data['bsd_no'] ?? 'N/A'}}</p>
                     </td>
                     <td>
-                        <p class="label">Position</p>
-                        <p class="value">{{$data['positions']['name'] ?? 'N/A'}}</p>
-                    </td>
-                    <td>
                         <p class="label">Date Hired</p>
                         <p class="value">{{$data['date_hired'] ?? 'N/A'}}</p>
                     </td>
                 </tr>
                 <tr>
+                    <td colspan="2">
+                        <p class="label">Position</p>
+                        <p class="value">{{$data['positions']['name'] ?? 'N/A'}}</p>
+                    </td>
                     <td>
                         <p class="label">Employment Type</p>
                         <p class="value">{{$data['employment_type']['name'] ?? 'N/A'}}</p>
-                    </td>
-                    <td>
-                        <p class="label">Shift</p>
-                        <p class="value">Morning</p>
-                    </td>
-                    <td>
-                        <p class="label">Schedule</p>
-                        <p class="value">9 AM - 5 PM</p>
                     </td>
                     <td>
                         <p class="label">Status</p>
@@ -162,7 +154,7 @@
                     </td>
                     <td>
                         <p class="label">Monthly Rate</p>
-                        <p class="value">₱{{$data['monthly_rate'] ?? 'N/A'}}</p>
+                        <p class="value">₱{{number_format($data['monthly_rate'], 2) ?? 'N/A'}}</p>
                     </td>
                     <td>
                         <p class="label">Payroll Account Number</p>
@@ -514,7 +506,7 @@
                         </td>
                         <td>
                             <p class="label">Monthly Salary</p>
-                            <p class="value">{{$employment_history['monthly_salary'] ?? 'N/A'}}</p>
+                            <p class="value">₱{{number_format($employment_history['monthly_salary'], 2) ?? 'N/A'}}</p>
                         </td>
                     </tr>
                     <tr>

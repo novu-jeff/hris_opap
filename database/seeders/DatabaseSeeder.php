@@ -30,12 +30,12 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
-            SchedulerDefaultSeeder::class
+            SchedulerDefaultSeeder::class,
+            AnnouncementSeeder::class,
         ]);
 
         if($product == 'testing' || $product == 'novu') {
             $this->call([
-                AnnouncementSeeder::class,
                 RequirementSeeder::class,
                 InterviewSeeder::class,
                 JobPostSeeder::class,

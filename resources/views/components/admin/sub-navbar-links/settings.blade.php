@@ -85,9 +85,9 @@
                     HRIS
                 </a>
                 <ul class="dropdown-menu">
-                    @can('read bank-information')
+                    {{-- @can('read bank-information')
                         <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
-                    @endcan
+                    @endcan --}}
                     @can('read employment-type')
                         <li><a class="dropdown-item" href="{{route('employment-type.index')}}">Employment Type</a></li>
                     @endcan

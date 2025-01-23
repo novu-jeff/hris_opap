@@ -30,19 +30,23 @@ class CheckEmployeeAllowedModule
 
         // Check if the current route is not 'employee.dashboard'
         if ($current_route !== 'employee.dashboard') {
-            if(Auth::guard('employee')->user()->information->employment_type_id !== 1) {
-                if (isset($notAllowed[$product])) {
-                    foreach ($notAllowed[$product]['routes'] as $routePattern) {
-                        // Remove the leading slash and convert to match the pattern
-                        $routePattern = ltrim($routePattern, '/');
 
-                        // Check if the current route matches the wildcard pattern
-                        if ($request->is($routePattern)) {
-                            return redirect()->route('employee.dashboard');
+            if(Auth::guard('employee')->check()) {
+                if(Auth::guard('employee')->user()->information->employment_type_id !== 1) {
+                    if (isset($notAllowed[$product])) {
+                        foreach ($notAllowed[$product]['routes'] as $routePattern) {
+                            // Remove the leading slash and convert to match the pattern
+                            $routePattern = ltrim($routePattern, '/');
+    
+                            // Check if the current route matches the wildcard pattern
+                            if ($request->is($routePattern)) {
+                                return redirect()->route('employee.dashboard');
+                            }
                         }
                     }
                 }
             }
+
         }
 
         
