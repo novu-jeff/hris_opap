@@ -36,7 +36,7 @@
                         <tr data-id="{{$record->id}}">
                             <td>{{$record->code}}</td>
                             <td>{{$record->name}}</td>
-                            <td class="d-flex justify-content-end">
+                            <td class="d-flex justify-content-start">
                                 @if ($record->source == 'entry')
                                     <a href="{{route('deductions.index', ['id' => $record->id])}}" class="btn btn-secondary mx-1">
                                         <i class="fa-solid fa-plus text-white"></i>
