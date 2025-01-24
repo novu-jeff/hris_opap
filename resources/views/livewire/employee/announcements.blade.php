@@ -61,6 +61,22 @@
             <div class="content mt-4">
                 {!!$view->content!!}
             </div>
+            @if(!is_null($view->attachments))
+                <hr>
+                <div class="attachments mt-4">
+                    <h5>Downloadable Attachments</h5>
+                    <ul class="list-unstyled text-uppercase mt-3">
+                        @foreach($view->attachments as $attachment)
+                            <li class="list-unstyled-item mb-2">
+                                <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{Storage::url('public/announcements/' . $attachment->file)}}" download>
+                                    <i class="fa-solid fa-download"></i>
+                                    {{$attachment->name}}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
         <div class="mt-5">
             <div class="float-start">

@@ -356,6 +356,8 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
                 ->name('employee.leave.edit');
+            Route::get('{id}', [EmployeeLeaveController::class, 'show'])
+                ->name('employee.leave.show');
         });
 
         Route::prefix('official-business-slip')->group(function() {

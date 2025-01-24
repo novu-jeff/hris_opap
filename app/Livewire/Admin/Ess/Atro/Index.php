@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Ess\Atro;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeAtro;
 use App\Notifications\Notifications;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -15,7 +16,7 @@ class Index extends Component
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
-    protected $listeners = ['remove', 'rejected', 'granted'];
+    protected $listeners = ['remove', 'disapproved', 'approved'];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -38,13 +39,13 @@ class Index extends Component
         }
     }
 
-    public function rejected(bool $isNotify = true) {
+    public function disapproved(bool $isNotify = true) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to reject this Authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'rejected';
+            $message = 'Please be informed that you are about to disapprove this authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
+            $action = 'disapproved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -57,11 +58,12 @@ class Index extends Component
                 ->where('status', 'pending')
                 ->first();
 
-            $record->status = 'denied';
+            $record->status = 'disapproved';
+            $record->action_by_id = Auth::user()->id;
             $record->save();
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.atro'), 'employee'));
+            $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>DISAPPROVED</strong>.', route('employee.atro'), 'employee'));
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -69,19 +71,19 @@ class Index extends Component
                 'status' => 'success',
                 'title' => 'Success', 
                 'isRemoveRowDT' => true,
-                'message' => 'Application has been rejected'
+                'message' => 'Application has been disapproved.'
             ]);
 
         }
     }
 
-    public function granted(bool $isNotify = true) {
+    public function approved(bool $isNotify = true) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to grant this Authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'granted';
+            $message = 'Please be informed that you are about to approve this authority to render overtime application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
+            $action = 'approved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -94,7 +96,8 @@ class Index extends Component
                 ->where('status', 'pending')
                 ->first();
             
-            $record->status = 'approve';
+            $record->status = 'approved';
+            $record->action_by_id = Auth::user()->id;
             $record->save();
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
@@ -106,7 +109,7 @@ class Index extends Component
                 'status' => 'success',
                 'title' => 'Success', 
                 'isRemoveRowDT' => true,
-                'message' => 'Application has been granted'
+                'message' => 'Application has been approved.'
             ]);
 
         }
@@ -117,7 +120,7 @@ class Index extends Component
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to delete this Authority to render overtime application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
+            $message = 'Please be informed that you are about to remove this authority to render overtime application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
             $action = 'remove';
 
             $this->selected_id = $id;
@@ -136,14 +139,16 @@ class Index extends Component
                 $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
                 $user?->notify(new Notifications('error', 'You\'re authority to render overtime application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.atro'), 'employee'));
 
-                $record->delete();
+                $record->isDeleted = true;
+                $record->action_by_id = Auth::user()->id;
+                $record->save();
 
                 $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'ATRO Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
+                    'message' => 'ATRO Application #' . strtoupper(format_id($record->id, 6)) . 'has been removed successfully.' 
                 ]);
 
             } else {
@@ -162,7 +167,8 @@ class Index extends Component
     {
 
         $model = EmployeeAtro::with('employment', 'employee')
-            ->where('status', $this->status);
+            ->where('status', $this->status)
+            ->where('isDeleted', false);
 
         if ($this->search) {
             

@@ -21,14 +21,22 @@ return new class extends Migration
             $table->time('arrival_time')->nullable();
 
             $table->string('requested_by')->nullable();
+            $table->enum('status', [
+                'approved',
+                'disapproved',
+                'pending'
+            ])->default('pending');
 
-            $table->string('status')
-                ->default('pending');
+            $table->longText('remarks')
+                ->nullable();
         
-            $table->foreignId('approved_by_id')
+            $table->foreignId('action_by_id')
                 ->nullable()
                 ->constrained('users')
                 ->onDelete('set null');
+
+            $table->boolean('isDeleted')
+                ->default(false);
 
             $table->timestamps();
         });

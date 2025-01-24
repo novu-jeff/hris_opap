@@ -39,7 +39,7 @@ class Edit extends Component
     public $activeTab = 'details';
     public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
-    protected $listeners = ['approve', 'reject'];
+    protected $listeners = ['approved', 'disapproved'];
 
     public function mount() {
         $this->loadRecords();
@@ -256,7 +256,7 @@ class Edit extends Component
         $this->activeAccordion = $accordion;
     }
 
-    public function approve(bool $isNotify = true) {
+    public function approved(bool $isNotify = true) {
 
         if (Gate::denies('write employee-profile-approval')) {
             $this->dispatch('alert', [
@@ -272,7 +272,7 @@ class Edit extends Component
 
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
-            $action = 'approve';
+            $action = 'approved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -300,14 +300,14 @@ class Edit extends Component
                 DB::commit();
 
                 $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
-                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong> APPROVED </strong>.', route('employee.profile'), 'employee'));
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong> approvedD </strong>.', route('employee.profile'), 'employee'));
 
                 return $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!',
                     'isRemoveRowDT' => false,
                     'isReloadDT' => false,
-                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was approved successfully.',
+                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was approvedd successfully.',
                     'redirect' => route('ess.approval-profile.index')
                 ]);
 
@@ -323,7 +323,7 @@ class Edit extends Component
         }
     }
 
-    public function reject(bool $isNotify = true) {
+    public function disapproved(bool $isNotify = true) {
 
         if (Gate::denies('write employee-profile-approval')) {
             $this->dispatch('alert', [
@@ -338,7 +338,7 @@ class Edit extends Component
         if($isNotify) {
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
-            $action = 'reject';
+            $action = 'disapproved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -354,14 +354,14 @@ class Edit extends Component
                 DB::commit();
 
                 $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
-                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong>REJECTED</strong>. Click this notification to view more details.', route('employee.profile'), 'employee'));
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong>disapprovedED</strong>. Click this notification to view more details.', route('employee.profile'), 'employee'));
 
                 return $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!',
                     'isRemoveRowDT' => false,
                     'isReloadDT' => false,
-                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was rejected for updating profile.',
+                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was disapproveded for updating profile.',
                     'redirect' => route('ess.approval-profile.index')
                 ]);
 

@@ -16,4 +16,8 @@ class EmployeeAnnouncements extends Model
         'content'
     ];
 
+    public function attachments() {
+        return $this->hasMany(EmployeeAnnouncementAttachments::class, 'announcement_id');
+    }
+
 }

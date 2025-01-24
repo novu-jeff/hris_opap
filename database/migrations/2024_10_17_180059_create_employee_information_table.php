@@ -70,6 +70,8 @@ return new class extends Migration
             $table->boolean('hasPagibigLoan')
                 ->default(false)
                 ->nullable();
+            $table->boolean('isDeleted')
+                ->default(false);
             $table->timestamps();
         });
 
@@ -317,21 +319,41 @@ return new class extends Migration
         Schema::create('employee_leave', function(Blueprint $table) {
             $table->id();
             $table->string('employee_no');
-            $table->string('status')
-                ->default('pending');
             $table->foreignId('leave_id')
                 ->nullable()
                 ->constrained('leave_types')
                 ->onDelete('set null');
-            $table->longtext('reason');
+            $table->string('location')
+                ->nullable();
+            $table->string('location_specific')
+                ->nullable();
+            $table->string('confinement')
+                ->nullable();
+            $table->string('illness')
+                ->nullable();
+            $table->string('study')
+                ->nullable();
+            $table->string('study_other_purpose')
+                ->nullable();
+            $table->string('commutation')
+                ->nullable();
             $table->string('from')
                 ->nullable();
             $table->string('to')
                 ->nullable();
-            $table->string('measurement')
+            $table->enum('status', [
+                    'approved',
+                    'disapproved',
+                    'pending'
+                ])->default('pending');
+            $table->longText('remarks')
                 ->nullable();
-            $table->string('consumed_hours')
-                ->nullable();
+            $table->foreignId('action_by_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
+            $table->boolean('isDeleted')
+                ->default(false);
             $table->timestamps();
         });
 

@@ -22,7 +22,7 @@ class SchedulerDefaultSeeder extends Seeder
             ],
             [
                 'schedule_name' => 'change_password',
-                'interval' => '730', 
+                'interval' => '2160', 
                 'latest_activity' => Carbon::now(),
             ],
             [

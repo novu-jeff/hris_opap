@@ -15,7 +15,7 @@ class EmploymentTypesSeeder extends Seeder
         $data = [
             ['name' => 'Regular Contractual', 'code' => 'RC'], 
             ['name' => 'Contract of Service', 'code' => 'COS'],
-            ['name' => 'Job Offer', 'code' => 'JO'],
+            ['name' => 'Job Order', 'code' => 'JO'],
         ];
 
         foreach ($data as $item) {

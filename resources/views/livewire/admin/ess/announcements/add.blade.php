@@ -34,6 +34,44 @@
                                 @error('content') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        <div class="col-12 mb-3">
+                            <label class="mb-2" for="attachments">Attachments</label>
+                            <div class="d-flex justify-content-end">
+                                <div wire:click="addRecord" class="btn btn-dark">
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                            </div>
+                                <div class="w-100">
+                                    @foreach($attachments as $key => $attachment)
+                                        <div class="d-lg-flex align-items-start gap-3 w-100 mb-3">
+                                            <div class="mb-3 w-50">
+                                                <label class="mb-2" for="custom_file_{{ $key }}">Custom File Name</label>
+                                                <input type="text" wire:model="attachments.{{ $key }}.name" id="custom_file_{{ $key }}" class="form-control">    
+                                                <div class="error-field">
+                                                    @error("attachments.{$key}.name") 
+                                                        <span class="text-danger">{{ $message }}</span> 
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="mb-3 w-100">
+                                                <label class="mb-2" for="file_{{ $key }}">File <span class="text-danger">*</span></label>
+                                                <input type="file" wire:model="attachments.{{ $key }}.file" id="file_{{ $key }}" class="form-control">    
+                                                <div class="error-field">
+                                                    @error("attachments.{$key}.file") 
+                                                        <span class="text-danger">{{ $message }}</span> 
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div style="margin-top: 28px">
+                                                <div wire:click="removeRecord({{$key}})" class="btn btn-danger">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>  
+                            </div>                            
+                        </div>
                     </div>
                 </div>
                 <hr class="mx-3">

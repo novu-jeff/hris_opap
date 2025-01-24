@@ -10,7 +10,7 @@
                     <div class="row">
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
-                            <select wire:model="type" id="type" class="form-select">
+                            <select wire:model.live="type" id="type" class="form-select">
                                 <option value=""> - CHOOSE - </option>
                                 @foreach($leaveTypes as $leave)
                                     <option value="{{$leave->id}}">{{$leave->code . ' - ' . $leave->name}}</option>
@@ -49,11 +49,77 @@
                                 </div>
                             @endif
                         @endif
-                        <div class="col-12 mb-4">
-                            <label class="mb-2" for="reason">Reason <span class="text-danger">*</span></label>
-                            <textarea wire:model="reason" id="reason" cols="30" rows="5" class="form-control" placeholder="Write something..."></textarea>
+                        @if($type == 1)
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="location">Location <span class="text-danger">*</span></label>
+                                <select wire:model.live="location" id="location" class="form-select">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="ph">Within Philippines</option>
+                                    <option value="abroad">Abroad</option>
+                                </select>
+                                <div class="error-field">
+                                    @error('location') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="location_specific">Specific Location <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="location_specific" id="location_specific" class="form-control">
+                                <div class="error-field">
+                                    @error('location_specific') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        
+                        @elseif($type == 3)
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="confinement">Patient Type <span class="text-danger">*</span></label>
+                                <select wire:model="confinement" id="confinement" class="form-select">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="hospital">In Hospital</option>
+                                    <option value="out-patient">Out Patient</option>
+                                </select>
+                                <div class="error-field">
+                                    @error('confinement') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="illness">Illness (Specify) <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="illness" id="illness" class="form-control">
+                                <div class="error-field">
+                                    @error('illness') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        @elseif($type == 8)
+                            <div class="col-12 {{ $study == '' || $study != 'others' ? 'col-md-12' : 'col-md-4' }} mb-4">
+                                <label class="mb-2" for="study">Purpose <span class="text-danger">*</span></label>
+                                <select wire:model.live="study" id="study" class="form-select">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="completion_masters">Completion of Master's Degree</option>
+                                    <option value="examination">Bar/Board Examination Review</option>
+                                    <option value="others">Other Purpose</option>
+                                </select>
+                                <div class="error-field">
+                                    @error('study') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            @if($study == 'others')
+                                <div class="col-12 col-md-8 mb-4">
+                                    <label class="mb-2" for="study_other_purpose">Other Purpose (Specify) <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="study_other_purpose" id="study_other_purpose" class="form-control">
+                                    <div class="error-field">
+                                        @error('study_other_purpose') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="commutation">Commutation <span class="text-danger">*</span></label>
+                            <select wire:model="commutation" id="commutation" class="form-select">
+                                <option value=""> - CHOOSE -</option>
+                                <option value="no">No Requested</option>
+                                <option value="yes">Requested</option>
+                            </select>
                             <div class="error-field">
-                                @error('reason') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('commutation') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>

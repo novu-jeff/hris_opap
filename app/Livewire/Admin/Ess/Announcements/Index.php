@@ -39,7 +39,8 @@ class Index extends Component
                 
             if($record) {
                 
-                $record->delete();
+                $record->isDeleted = true;
+                $record->save();
 
                 $this->dispatch('alert', [
                     'status' => 'success',
@@ -63,7 +64,7 @@ class Index extends Component
     public function render()
     {
 
-        $model = EmployeeAnnouncements::query();
+        $model = EmployeeAnnouncements::where('isDeleted', false);
 
         if ($this->search) {
             $this->resetPage(); 

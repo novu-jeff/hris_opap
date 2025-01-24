@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Ess\Announcements;
 
 use App\Models\EmployeeAccount;
+use App\Models\EmployeeAnnouncementAttachments;
 use App\Models\EmployeeAnnouncements;
 use App\Models\EmployeeLeave;
 use App\Notifications\Notifications;
@@ -22,6 +23,7 @@ class Add extends Component
     public $record_id;
     public $user_id;
     public $preview_banner;
+    public array $attachments;
 
     protected $listeners = ['ckeditor', 'save'];
 
@@ -44,6 +46,8 @@ class Add extends Component
             $this->title = $record->title;
             $this->content = $record->content;
             $this->preview_banner = Storage::url('public/announcements/' . $record->banner);
+            $this->attachments = $record->attachments->toArray() ?? [];
+            
         }
    
     }
@@ -91,22 +95,49 @@ class Add extends Component
         
     }
 
+    public function addRecord() {
+        $this->attachments[] = [
+            'name' => '',
+            'file' => ''
+        ];
+    }
+
+    public function removeRecord(int $key) {
+        unset($this->attachments[$key]);
+    }
+
 
     public function rules() {
         $rules = [
             'title' => 'required',
             'content' => 'required',
         ];
-
+    
+        // Validate banner if it is an uploaded file
         if ($this->banner instanceof \Illuminate\Http\UploadedFile) {
             $rules['banner'] = 'required|image|mimes:jpg,jpeg,png,gif';
         }
-
+    
+        // Check if attachments is an array and make 'file' required for each attachment
+        foreach ($this->attachments as $key => $attachment) {
+            if ($this->banner instanceof \Illuminate\Http\UploadedFile || is_null($this->record_id)) {
+                $rules["attachments.{$key}.name"] = 'required';
+                $rules["attachments.{$key}.file"] = 'required|file|mimes:jpg,jpeg,png,gif,docx,doc,xls,xlsx,pdf';
+            }
+        }
+        
+    
         return $rules;
     }
+    
 
-    public function message() {
-        return [];
+    public function messages() {
+        return [
+            'attachments.*.name.required' => 'Attachment name is required.',
+            'attachments.*.file.required' => 'Attachment file is required.',
+            'attachments.{$key}.file.file' => 'The uploaded attachment must be a valid file.',
+            'attachments.{$key}.file.mimes' => 'Only JPG, JPEG, PNG, GIF, DOCX, DOC, XLS, XLSX and PDF files are allowed.',
+        ];
     }
 
     public function ckeditor($data) {
@@ -133,63 +164,79 @@ class Add extends Component
                 $banner = $this->banner;
                 $model = EmployeeAnnouncements::class;
 
-                if ($banner instanceof \Illuminate\Http\UploadedFile) {
+                $bannerFilename = 'default.jpg';
 
+                if ($banner instanceof \Illuminate\Http\UploadedFile) {
                     $extension = $banner->getClientOriginalExtension();
-                    $filename = strtolower('announcement' . '_' . time() . '.' . $extension);
-                    $banner->storeAs('announcements', strtolower($filename), 'public');
-                    
-                    // Fetch the existing record if any
-                    $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)->first();
+                    $bannerFilename = strtolower('announcement_' . time() . '.' . $extension);
+                    $banner->storeAs('announcements', $bannerFilename, 'public');
+                }
                 
-                    // If there's an existing record and a banner, delete the old file if it's not 'default.jpg'
-                    if ($existingRecord && $existingRecord->banner && $existingRecord->banner !== 'default.jpg') {
-                        $previousPath = 'announcements/' . $existingRecord->banner;
-                        Storage::disk('public')->delete($previousPath);
+                $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)->first();
+                if ($existingRecord && $existingRecord->banner && $existingRecord->banner !== 'default.jpg') {
+                    Storage::disk('public')->delete('announcements/' . $existingRecord->banner);
+                }
+                
+                $model = EmployeeAnnouncements::updateOrCreate([
+                    'id' => $this->record_id,
+                ], [
+                    'banner' => $bannerFilename,
+                    'title' => $this->title,
+                    'content' => $this->content,
+                ]);
+                
+                $action = $existingRecord ? 'updated' : 'added';
+                
+                $users = EmployeeAccount::pluck('employee_no')->toArray();
+                EmployeeAccount::whereIn('employee_no', $users)->get()->each(function ($userModel) use ($model, $action) {
+                    $message = '"' . ucwords($model->title) . '" was ' . $action . ' to announcements.';
+                    $redirect = route('employee.announcements.view', ['id' => $model->id]);
+                    $userModel->notify(new Notifications('info', $message, $redirect, 'employee'));
+                });
+                
+
+                if(!is_null($this->record_id)) {
+                    EmployeeAnnouncementAttachments::where('announcement_id', $this->record_id)
+                        ->delete();
+                }
+
+                foreach ($this->attachments as $attachment) {
+
+                    $file = $attachment['file'];
+
+                    if ($file instanceof \Illuminate\Http\UploadedFile) {
+                        $filename = 'attachment_' . time() . '_' . strtolower(str_replace(' ', '_', $file->getClientOriginalName()));
+                    } else {
+                        $filename = $file;
+                    }
+
+                
+                    if ($file instanceof \Illuminate\Http\UploadedFile) {
+                        $file->storeAs('announcements', strtolower($filename), 'public');
                     }
                 
-                    // Update or create the record with the new banner
-                    $model = EmployeeAnnouncements::updateOrCreate([
-                        'id' => $this->record_id,
+                    $existingAttachment = EmployeeAnnouncementAttachments::where('announcement_id', $model->id)->first();
+                    if ($existingAttachment && $existingAttachment->file) {
+                        Storage::disk('public')->delete('announcements/' . $existingAttachment->file);
+                    }
+
+                    $attachmentModel = EmployeeAnnouncementAttachments::updateOrCreate([
+                        'announcement_id' => $model->id,
+                        'file' => $filename,
                     ], [
-                        'banner' => $filename,
-                        'title' => $this->title,
-                        'content' => $this->content,
+                        'file' => $filename,
+                        'name' => $attachment['name'] ?? '',
                     ]);
                 
-                    // Determine action: added or updated
-                    $action = $existingRecord ? 'updated' : 'added';
+                    $attachmentAction = $existingAttachment ? 'updated' : 'added';
                 
-                    // Fetch all employee_no and send notifications to them
-                    $user = EmployeeAccount::pluck('employee_no')->toArray();
-                    EmployeeAccount::whereIn('employee_no', $user)->get()->each(function ($userModel) use ($model, $action) {
-                        $message = '"' . $model->title . '" was ' . $action . ' to announcements.';
-                        $redirect = route('employee.announcements.view', ['id' => $model->id]);
-                        $userModel->notify(new Notifications('info', $message, $redirect, 'employee'));
-                    });
-                
-                } else {
-                    // If no file is uploaded, update or create without a new banner
-                    $model = EmployeeAnnouncements::updateOrCreate([
-                        'id' => $this->record_id,
-                    ], [
-                        'banner' => $banner,
-                        'title' => $this->title,
-                        'content' => $this->content,
-                    ]);
-                
-                    // Determine action: added or updated
-                    $existingRecord = EmployeeAnnouncements::where('id', $this->record_id)->first();
-                    $action = $existingRecord ? 'updated' : 'added';
-                
-                    // Fetch all employee_no and send notifications to them
-                    $user = EmployeeAccount::pluck('employee_no')->toArray();
-                    EmployeeAccount::whereIn('employee_no', $user)->get()->each(function ($userModel) use ($model, $action) {
-                        $message = '"' . ucwords($model->title) . '" was ' . $action . ' to announcements.';
-                        $redirect = route('employee.announcements.view', ['id' => $model->id]);
+                    EmployeeAccount::whereIn('employee_no', $users)->get()->each(function ($userModel) use ($attachmentModel, $attachmentAction) {
+                        $message = '"' . $attachmentModel->name . '" was ' . $attachmentAction . ' to announcements.';
+                        $redirect = route('employee.announcements.view', ['id' => $attachmentModel->announcement_id]);
                         $userModel->notify(new Notifications('info', $message, $redirect, 'employee'));
                     });
                 }
+                
                 
 
                 if(is_null($this->record_id)) {
