@@ -26,6 +26,14 @@ class Apply extends Component
     public $isMoreThanOne = null;
     public $notification;
 
+    public $location;
+    public $location_specific;
+    public $confinement;
+    public $illness;
+    public $study;
+    public $study_other_purpose;
+    public $commutation;
+
     protected $listeners = ['save'];
 
     public function mount() {
@@ -66,6 +74,13 @@ class Apply extends Component
             $this->from = $records->from;
             $this->to = $records->to;
             $this->reason = $records->reason;
+            $this->location = $records->location;
+            $this->location_specific = $records->location_specific;
+            $this->confinement = $records->confinement;
+            $this->illness = $records->illness;
+            $this->study = $records->study;
+            $this->study_other_purpose = $records->study_other_purpose;
+            $this->commutation = $records->commutation;
         }
 
         
@@ -87,31 +102,56 @@ class Apply extends Component
         $rules = [
             'duration' => 'required',
             'type' => 'required|exists:leave_types,id',
-            'reason' => 'required',
             'from' => 'required|date|after:today',
             'to' => 'required|date',
+            'commutation' => 'required|in:yes,no'
         ];
     
+        // Conditional rules based on $this->isMoreThanOne
         if ($this->isMoreThanOne) {
             $rules['to'] = 'required|date|after:from';
         } else {
             $rules['to'] = 'nullable|date';
         }
     
+        // Conditional rules for 'location' based on $this->type
+        if ($this->type == 1) {
+            $rules['location'] = 'required|in:ph,abroad';
+            $rules['location_specific'] = 'required';
+        }
+    
+        // Conditional rules for 'confinement' and 'illness' based on $this->type
+        if ($this->type == 3) {
+            $rules['confinement'] = 'required';
+            $rules['illness'] = 'required';
+        }
+    
+        // Conditional rules for 'study' based on $this->type
+        if ($this->type == 8) {
+            $rules['study'] = 'required|in:completion_masters,examination,others';
+    
+            // If 'study' is 'others', make 'study_other_purpose' required
+            if ($this->study == 'others') {
+                $rules['study_other_purpose'] = 'required';
+            }
+        }
+    
         return $rules;
     }
     
+    
 
-    public function message() {
+    public function messages() {
         return [
-            'type.exists' => 'Leave type does not exists.'
+            'type.exists' => 'Leave type does not exists.',
+            'location_specific.required' => 'The specific location field is required.'
         ];
     }
 
     public function save(bool $isNotify = true) {
         
         $this->validate();
-
+        
         if($isNotify) {
             
             $title = 'Are you sure to continue?';
@@ -187,11 +227,15 @@ class Apply extends Component
                 ], [
                     'employee_no' => $this->employee_no,
                     'leave_id' => $this->type,
-                    'reason' => $this->reason,
                     'from' => $from->format('Y-m-d'),
                     'to' => $to ? $to->format('Y-m-d') : null,
-                    'measurement' => 'full day',
-                    'consumed_hours' => $consumed_hours 
+                    'location' => $this->location ?? null,
+                    'location_specific' => $this->location_specific ?? null,
+                    'confinement' => $this->confinement ?? null,
+                    'illness' => $this->illness ?? null,
+                    'study' => $this->study ?? null,
+                    'study_other_purpose' => $this->study_other_purpose ?? null,
+                    'commutation' => $this->commutation ?? null,
                 ]);
 
                 if(is_null($this->record_id)) {

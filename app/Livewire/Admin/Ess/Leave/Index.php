@@ -8,6 +8,7 @@ use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Notifications\Notifications;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,7 +21,7 @@ class Index extends Component
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
-    protected $listeners = ['remove', 'rejected', 'granted'];
+    protected $listeners = ['remove', 'disapproved', 'approved'];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -42,13 +43,13 @@ class Index extends Component
             ->first();
     }
 
-    public function rejected(bool $isNotify = true) {
+    public function disapproved(bool $isNotify = true) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to reject this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'rejected';
+            $message = 'Please be informed that you are about to disapprove this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
+            $action = 'disapproved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -61,7 +62,8 @@ class Index extends Component
                 ->where('status', 'pending')
                 ->first();
 
-            $record->status = 'rejected';
+            $record->status = 'disapproved';
+            $record->action_by_id = Auth::user()->id;
             $record->save();
 
             $this->dispatch('alert', [
@@ -70,22 +72,22 @@ class Index extends Component
                 'status' => 'success',
                 'title' => 'Success', 
                 'isRemoveRowDT' => true,
-                'message' => 'Application has been rejected'
+                'message' => 'Application has been disapproved'
             ]);
 
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REJECTED</strong>.', route('employee.leave'), 'employee'));
+            $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>DISAPPROVED</strong>.', route('employee.leave'), 'employee'));
         }
     }
 
-    public function granted(bool $isNotify = true) {
+    public function approved(bool $isNotify = true) {
 
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to grant this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'granted';
+            $message = 'Please be informed that you are about to approve this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
+            $action = 'approved';
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
@@ -141,11 +143,12 @@ class Index extends Component
             // deduct leave credits
 
             $leaveCredits->credits -= $daysCovered;
+            $record->action_by_id = Auth::user()->id;
             $leaveCredits->save();
 
             // Update the EmployeeLeave record's status
             $record->update([
-                'status' => 'granted'
+                'status' => 'approved'
             ]);
         
             $this->dispatch('alert', [
@@ -154,7 +157,7 @@ class Index extends Component
                 'status' => 'success',
                 'title' => 'Success', 
                 'isRemoveRowDT' => true,
-                'message' => 'Application has been granted'
+                'message' => 'Application has been approved'
             ]);
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
@@ -189,14 +192,16 @@ class Index extends Component
                 $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
                 $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
 
-                $record->delete();
+                $record->isDeleted = true;
+                $record->action_by_id = Auth::user()->id;
+                $record->save();
 
                 $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
+                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' has deleted successfully.' 
                 ]);
             
             } else {
@@ -215,7 +220,8 @@ class Index extends Component
     {
        
         $model = EmployeeLeave::with('employment', 'employee', 'leave_type')
-            ->where('status', $this->status);
+            ->where('status', $this->status)
+            ->where('isDeleted', false);
 
         if ($this->search) {
 

@@ -23,6 +23,7 @@ class Announcements extends Component
     public $view;
 
     public function mount() {
+
         $user_id = Auth::user()->employee_no;
 
         if(is_null($user_id)) {
@@ -35,9 +36,12 @@ class Announcements extends Component
     }
 
     public function loadRecords() {
-        $records = EmployeeAnnouncements::class;
+        $records = EmployeeAnnouncements::with('attachments')
+            ->where('isDeleted', false);
+
         if(!is_null($this->record_id)) {
-            $records = $records::where('id', $this->record_id)->first();
+            
+            $records = $records->where('id', $this->record_id)->first();
 
             if(!$records) {
                 return redirect()->route('employee.announcements.index');

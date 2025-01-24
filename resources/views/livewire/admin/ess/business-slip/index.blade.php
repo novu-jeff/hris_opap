@@ -69,8 +69,8 @@
                    
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
-                        <button wire:click="rejected" class="btn btn-danger text-uppercase fw-medium">Reject</button>
-                        <button wire:click="granted" class="btn btn-primary text-uppercase fw-medium">Approve</button>
+                        <button wire:click="disapproved" class="btn btn-danger text-uppercase fw-medium">Disapprove</button>
+                        <button wire:click="approved" class="btn btn-primary text-uppercase fw-medium">Approve</button>
                     </div>
                 @endif
             </div>
@@ -84,10 +84,10 @@
                     <a href="{{route('ess.obs', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.obs', ['status' => 'granted'])}}" class="nav-link text-uppercase fw-medium {{$status === 'granted' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
+                    <a href="{{route('ess.obs', ['status' => 'approved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'approved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Approved</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.obs', ['status' => 'rejected'])}}" class="nav-link text-uppercase fw-medium {{$status === 'rejected' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Rejected</a>
+                    <a href="{{route('ess.obs', ['status' => 'disapproved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'disapproved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Disapproved</a>
                 </li>
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">

@@ -19,12 +19,22 @@ return new class extends Migration
             $table->string('end_time');
             $table->longText('justification');
             $table->enum('status', [
-                'approve',
-                'denied',
+                'approved',
+                'disapproved',
                 'pending'
             ])->default('pending');
+            
             $table->longText('remarks')
                 ->nullable();
+
+            $table->foreignId('action_by_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
+
+            $table->boolean('isDeleted')
+                ->default(false);
+
             $table->timestamps();
         });
     }

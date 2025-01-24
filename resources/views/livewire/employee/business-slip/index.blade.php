@@ -22,8 +22,8 @@
                 <select wire:model.change="status" id="status" class="form-select w-50">
                     <option value=""> - ALL - </option>
                     <option value="pending"> Pending </option>
-                    <option value="granted"> Granted </option>
-                    <option value="rejected"> Rejected </option>
+                    <option value="approved"> Approved </option>
+                    <option value="disapproved"> Disapproved </option>
                 </select>
             </div>
         </div>
@@ -45,10 +45,10 @@
                             <td>{{ $record->purpose }}</td>
                             <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
                             <td>
-                                @if ($record->status == 'granted')
-                                    <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Granted</div>
-                                @elseif ($record->status == 'rejected')
-                                    <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Denied</div>
+                                @if ($record->status == 'approved')
+                                    <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Approved</div>
+                                @elseif ($record->status == 'disapproved')
+                                    <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Disapproved</div>
                                 @elseif($record->status === 'pending')
                                     <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">Pending</div>
                                 @endif

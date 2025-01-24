@@ -14,11 +14,15 @@ class EmployeeLeave extends Model
         'employee_no',
         'status',
         'leave_id',
-        'reason',
+        'location',
+        'location_specific',
+        'confinement',
+        'illness',
+        'study',
+        'study_other_purpose',
+        'commutation',
         'from',
         'to',
-        'measurement',
-        'consumed_hours'
     ];
 
     public function employment() {

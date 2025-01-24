@@ -37,7 +37,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('country')
                 ->nullable();
-
             $table->string('present_address')
                 ->nullable(); 
             $table->string('present_province')
@@ -94,8 +93,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('spouse_contact_no')
                 ->nullable();  
-
-
             $table->string('father_surname')
                 ->nullable();
             $table->string('father_firstname')
@@ -104,7 +101,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('father_suffix')
                 ->nullable();
-
             $table->string('mother_surname')
                 ->nullable();
             $table->string('mother_firstname')

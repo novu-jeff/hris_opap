@@ -416,22 +416,8 @@ class Index extends Component
                 
             if($record) {
                 
-                $record->account()->delete();
-                $record->personal()->delete();
-                $record->education()->delete();
-                $record->parents()->delete();
-                $record->children()->delete();
-                $record->employment_history()->delete();
-                $record->civil_service()->delete();
-                $record->trainings()->delete();
-                $record->others()->delete();
-                $record->skills()->delete();
-            
-                $record->delete();
-
-                Message::where('to_id', $this->employee_no)
-                    ->orWhere('from_id', $this->employee_no)
-                    ->delete();
+                $record->isDeleted = true;
+                $record->save();
 
                 $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
 
@@ -454,32 +440,14 @@ class Index extends Component
                     'message' => 'Error: ID does not exists' 
                 ]);
             }
-
-            $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
-
-            if($record) {
-
-                $record->education()->delete();
-                $record->parents()->delete();
-                $record->children()->delete();
-                $record->employment_history()->delete();
-                $record->civil_service()->delete();
-                $record->trainings()->delete();
-                $record->others()->delete();
-                $record->skills()->delete();
-                
-                $record->delete();
-
-                return true;
-
-            }
         }
     }
 
     public function render()
     {
         
-        $model = EmployeeInformation::with('personal');
+        $model = EmployeeInformation::with('personal')
+            ->where('isDeleted', false);
 
         if ($this->search) {
 
