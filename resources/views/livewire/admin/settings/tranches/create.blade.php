@@ -45,30 +45,30 @@
                                     <tbody>
                                         @foreach($records as $key => $data)
                                             <tr>
-                                                <td>{{ $data['salary_grade'] }}</td>
+                                                <td>{{ $data['Salary Grade'] }}</td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_1" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 1" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_2" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 2" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_3" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 3" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_4" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 4" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_5" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 5" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_6" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 6" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_7" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 7" class="form-control">
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_8" class="form-control">
+                                                    <input type="text" wire:model="records.{{ $key }}.Step 8" class="form-control">
                                                 </td>
                                             </tr>
                                         @endforeach
