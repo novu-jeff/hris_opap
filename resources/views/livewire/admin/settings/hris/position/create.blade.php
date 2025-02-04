@@ -8,13 +8,41 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12 col-md-12 mb-4">
-                            <label class="mb-2" for="fields.name">Name <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="fields.name" id="fields.name" class="form-control text-uppercase">
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="name">File <span class="text-danger">*</span></label>
+                            <input type="file" wire:model="file" id="file" class="form-control">
+                            <div class="mt-2">
+                                <small class="text-muted text-uppercase">(only accepts csv file)</small>
+                            </div>
                             <div class="error-field">
-                                @error('fields.name') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('file') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('records') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        @if($records)
+                            <div class="col-12 mb-4">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Position</th>
+                                            <th>Salary Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($records as $key => $data)
+                                            <tr>
+                                                <td>
+                                                    <input type="text" wire:model="records.{{ $key }}.Position" class="form-control">
+                                                </td>
+                                                <td>
+                                                    <input type="text" wire:model="records.{{ $key }}.Salary Grade" class="form-control">
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif 
                     </div>
                 </div>
                 <hr class="mx-3">

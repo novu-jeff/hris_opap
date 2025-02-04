@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Hris\Leave;
 
 use App\Models\LeaveType;
+use App\Models\Tranche;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -71,8 +72,7 @@ class Index extends Component
         }
     }
 
-    public function render()
-    {
+    public function render() {
 
         $model = LeaveType::query();
 

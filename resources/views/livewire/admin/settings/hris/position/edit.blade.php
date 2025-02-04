@@ -15,6 +15,13 @@
                                 @error('fields.name') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="fields.salary_grade">Salary Grade <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="fields.salary_grade" id="fields.salary_grade" class="form-control text-uppercase">
+                            <div class="error-field">
+                                @error('fields.salary_grade') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <hr class="mx-3">

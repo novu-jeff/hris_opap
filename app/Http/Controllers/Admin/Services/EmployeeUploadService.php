@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin\Services;
 
 use App\Helper\Generate;
 use App\Http\Controllers\Controller;
-use App\Models\Departments;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
 use App\Models\EmployeeCivilService;
@@ -17,9 +16,7 @@ use App\Models\EmployeePersonal;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\EmployementTypes;
-use App\Models\JobCategory;
 use App\Models\Positions;
-use Illuminate\Support\Facades\Hash;
 
 class EmployeeUploadService extends Controller
 {
@@ -82,7 +79,6 @@ class EmployeeUploadService extends Controller
                     'position_id' => $position->id ?? null,
                     'employment_type_category' => $jobCategory?->id ?? null,
                     'bank_account_no' => $employeeData[15],
-                    'monthly_rate' => $employeeData[18],
                 ]
             );
     

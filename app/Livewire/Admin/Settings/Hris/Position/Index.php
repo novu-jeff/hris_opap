@@ -80,7 +80,8 @@ class Index extends Component
             $this->resetPage(); 
 
             $records = $model->where('code', 'like', '%' . $this->search . '%')
-                ->orWhere('name', 'like', '%' . $this->search . '%');
+                ->orWhere('name', 'like', '%' . $this->search . '%')
+                ->orWhere('salary_grade', 'like', '%' . $this->search . '%');
         }
         
         $records = $model->latest()->paginate($this->entries);

@@ -27,6 +27,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Salary Grade</th>
                         <th style="max-width: 200px;">Action</th>
                     </tr>
                 </thead>                
@@ -34,6 +35,7 @@
                     @forelse($records as $record)
                         <tr data-id="{{$record->id}}">
                             <td>{{$record->name}}</td>
+                            <td>{{$record->salary_grade}}</td>
                             <td>
                                 <a href="{{route('position.edit', ['position' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
