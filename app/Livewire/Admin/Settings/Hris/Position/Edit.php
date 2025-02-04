@@ -28,6 +28,7 @@ class Edit extends Component
 
         return $this->fields = [
             'name' => $records->name,
+            'salary_grade' => $records->salary_grade
         ];
     }
 
@@ -52,6 +53,7 @@ class Edit extends Component
             Positions::where('id', $this->id)
                 ->update([
                     'name' => $this->fields['name'],
+                    'salary_grade' => $this->fields['salary_grade']
             ]);
 
             DB::commit();

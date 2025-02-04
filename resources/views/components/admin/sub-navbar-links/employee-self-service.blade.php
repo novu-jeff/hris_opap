@@ -24,6 +24,10 @@
             <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
         @endcan
 
+        @can('read request-log')
+            <li><a class="dropdown-item" href="{{route('ess.request-timelog')}}">Request Timelog</a></li>
+        @endcan
+
         @can('read announcements')
             <li><a class="dropdown-item" href="{{route('ess.announcements.index')}}">Announcements</a></li>
         @endcan
@@ -34,6 +38,10 @@
 
         @can('read request-status')
             <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
+        @endcan
+
+        @can('read faqs')
+            <li><a class="dropdown-item" href="{{route('ess.faqs.index')}}">FAQs</a></li>
         @endcan
     </ul>
 </li>

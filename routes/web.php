@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\DownloadController;
+use App\Http\Controllers\Admin\ESSFAQController;
+use App\Http\Controllers\Admin\ESSRequestTimeLogController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
@@ -39,6 +41,7 @@ use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\Settings\RoleController;
 use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
+use App\Http\Controllers\Admin\TranchesController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\UserAccessController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -61,6 +64,7 @@ use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncement
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
+use App\Http\Controllers\Employee\EmployeeRequestLogController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 use App\Http\Controllers\Employee\TutorialController;
@@ -153,6 +157,8 @@ Route::prefix('admin')->group(function() {
         Route::get('download', [DownloadController::class, 'index'])
             ->name('download.view');
 
+       
+
         Route::prefix('job')->group(function() {
     
             Route::resource('posts', PostController::class)
@@ -209,6 +215,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
+
+            Route::get('request-timelog', [ESSRequestTimeLogController::class, 'index'])
+                ->name('ess.request-timelog');
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
@@ -222,6 +231,15 @@ Route::prefix('admin')->group(function() {
             Route::prefix('request-status')->group(function() {
                 Route::get('{employee_no?}', [ESSRequestStatusController::class, 'index'])
                     ->name('ess.request-status');
+            });
+
+            Route::prefix('faqs')->group(function() {
+                Route::get('/', [ESSFAQController::class, 'index'])
+                    ->name('ess.faqs.index');
+                Route::get('apply', [ESSFAQController::class, 'create'])
+                    ->name('ess.faqs.create');
+                Route::get('edit/{id}', [ESSFAQController::class, 'edit'])
+                    ->name('ess.faqs.edit');
             });
 
             Route::resource('profile/approval', ESSApprovalProfile::class)
@@ -248,6 +266,10 @@ Route::prefix('admin')->group(function() {
             
             Route::get('scheduled-tasks', [SchedulerController::class, 'index'])
                 ->name('scheduler.index');
+
+            Route::resource('tranches', TranchesController::class)
+                ->names('tranches')
+                ->only('index', 'show', 'create', 'edit');
 
             Route::prefix('location')->group( function() {
                 Route::resource('/branch', BranchController::class)
@@ -380,6 +402,19 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 ->name('employee.atro.edit');
                 
         });
+
+        Route::prefix('request-timelog')->group(function() {
+
+            Route::get('/', [EmployeeRequestLogController::class, 'index'])
+                ->name('employee.request-timelog');
+            Route::get('apply', [EmployeeRequestLogController::class, 'create'])
+                ->name('employee.request-timelog.apply');
+            Route::get('edit/{id}', [EmployeeRequestLogController::class, 'edit'])
+                ->name('employee.request-timelog.edit');
+            Route::get('{id}', [EmployeeRequestLogController::class, 'show'])
+                ->name('employee.request-timelog.show');
+        });
+
 
         Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
             ->name('employee.dtr');

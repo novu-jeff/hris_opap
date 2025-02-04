@@ -5,15 +5,13 @@ namespace App\Livewire\Admin\Hris;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Http\Controllers\Admin\Services\OtherServices;
 use App\Mail\SendEmployeeAccount;
-use App\Models\CompanyInformation;
 use App\Models\EmployeeInformation;
-use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
 use App\Models\EmployementTypes;
-use App\Models\JobCategory;
 use App\Models\Positions;
 use App\Models\Sections;
 use App\Models\ShiftSchedule;
+use App\Models\Tranche;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +30,7 @@ class Form extends Component
     public object $employmentTypes;
     public object $shiftSchedule;
     public object $employeeSchedule;
+    public object $salaryGrade;
     public array $records;
     public $countries;
 
@@ -41,10 +40,12 @@ class Form extends Component
 
     public function mount() {
         $this->loadRecords();
+        $this->handleSalary();
         $this->loadCountries();
     }
 
     public function loadRecords() {
+
         // Redirect if employee number is not provided
         if (empty($this->employee_no)) {
             return redirect()->route('hris.index');
@@ -57,7 +58,6 @@ class Form extends Component
 
         $this->shiftSchedule = ShiftSchedule::all();
         $this->employeeSchedule = EmployeeSchedule::all();
-
 
         // Fetch related earnings and deductions
         $otherServices = new OtherServices();
@@ -114,11 +114,41 @@ class Form extends Component
         }
     }
 
+    public function handleSalary() {
+        
+        $position_id = $this->records['employee_information']['position_id'] ?? '';
+        $step_id = $this->records['employee_information']['step_id'] ?? '';
+
+        if (!empty($position_id) && !empty($step_id)) {
+            $salaryGrade = Positions::where('id', $position_id)
+                ->value('salary_grade') ?? '';
+
+            $stepColumn = "step_" . ($step_id ?? '');
+
+            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
+                $query->where('salary_grade', $salaryGrade)
+                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+            }])
+            ->where('isActive', true)
+            ->first();
+
+            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
+
+            if ($activeTranche) {
+                $this->records['employee_information']['monthly_rate'] = $salary;
+            }
+        } else {
+            $this->records['employee_information']['monthly_rate'] = 0;
+        }
+    }
+
 
     /**
      * Format employee information data
      */
     protected function formatEmployeeInformation($data) {
+
+
         return [
             'id' => $data->id,
             'employee_id' => format_id($data->id, 6),
@@ -128,6 +158,7 @@ class Form extends Component
             'employee_schedule' => $data->schedule_id,
             'section_id' => $data->section_id,
             'position_id' => $data->position_id,
+            'step_id' => $data->step_id ?? '1',
             'date_hired' => $data->date_hired,
             'service_duration' => relative_time_duration($data->date_hired),
             'date_resignation' => $data->date_resignation,
@@ -386,8 +417,8 @@ class Form extends Component
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
             'records.employee_information.position_id' => 'required|exists:positions,id',
+            'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.section_id' => 'nullable|exists:sections,id',
-            'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
             'records.employee_information.type' => 'required|exists:employment_types,id',
 
@@ -469,13 +500,12 @@ class Form extends Component
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
             'records.employee_information.date_hired.required' => 'The date hired is required',
             'records.employee_information.date_hired.date' => 'The date hired must be valid date',
-            'records.employee_information.monthly_rate.required' => 'The monthly rate is required',
-            'records.employee_information.monthly_rate.numeric' => 'The monthly rate must be numbers',
-            'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
             'records.employee_information.section_id.required' => 'The section is required.',
-            'records.employee_information.position_id.required' => 'The position is required.',
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
+            'records.employee_information.position_id.required' => 'The position is required.',
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
+            'records.employee_information.step_id.required' => 'The tranche step is required.',
+            'records.employee_information.step_id.in' => 'The tranche step is invalid.',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',

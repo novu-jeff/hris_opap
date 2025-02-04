@@ -8,14 +8,9 @@
                 <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 px-3">Employee Details</h5>
             </div>
             <div class="card-body px-4">
-                <div class="row my-3">
-                    <div class="col-12 mb-5">
-                        <div class="row">
-                          
-                        </div>
-                    </div>  
+                <div class="row my-3">  
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="employee_no">Employee No.</label>
+                        <label class="mb-2" for="employee_no">Employee No. <span class="text-danger">*</span></label>
                         <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">
                         <div class="error-field">
                             @error('records.employee_information.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
@@ -29,78 +24,116 @@
                         </div>
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="date_hired">Date Hired</label>
+                        <label class="mb-2" for="date_hired">Date Hired <span class="text-danger">*</span></label>
                         <input type="date" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control">
                         <div class="error-field">
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 mb-4">
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-2" for="status">Account Status <span class="text-danger">*</span></label>
+                        <select wire:model="records.employee_information.status" id="records.employee_information.status" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        @error('records.employee_information.status') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="mb-2" for="date_resignation">Date Resignation</label>
+                        <input type="text" wire:model="records.employee_information.date_resignation" id="records.employee_information.date_resignation" class="form-control restricted" readonly>
+                        <div class="error-field">
+                            @error('records.employee_information.date_resignation') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>  
+                    <div class="col-12 mt-4 mb-3">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Organization Details</h5>
                         <hr>
                     </div>
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="section_id">Office</label>
+                    <div class="col-md-4 mb-3">
+                        <label class="mb-2" for="section_id">Office <span class="text-danger">*</span></label>
                         <select wire:model="records.employee_information.section_id" wire:change="select_change('section')" id="records.employee_information.section_id" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($sections as $section)
                                 <option value="{{$section->id}}">{{$section->code . ' - ' . $section->name}}</option>
                             @endforeach
                         </select>
-                        <div class="error-field">
-                            @error('records.employee_information.section_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="branch">Branch</label>
-                        <input type="text" wire:model="records.employee_information.branch" id="records.employee_information.branch" class="form-control restricted" readonly>
-                        <div class="error-field">
-                            @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
-                    <div class="col-12 col-md-3 mb-3">
+                        @error('records.employee_information.section_id') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="mb-2" for="branch">Branch </label>
+                        <input type="text" wire:model="records.employee_information.branch" id="records.employee_information.branch" class="form-control" readonly>
+                        @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
                         <label class="mb-2" for="department">Department</label>
-                        <input type="text" wire:model="records.employee_information.department" id="records.employee_information.department" class="form-control restricted" readonly>
-                        <div class="error-field">
-                            @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="position_id">Position</label>
-                        <select wire:model="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
+                        <input type="text" wire:model="records.employee_information.department" id="records.employee_information.department" class="form-control" readonly>
+                        @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-12 mt-4 mb-3">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Employment Details</h5>
+                        <hr>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="mb-2" for="type">Employment Type <span class="text-danger">*</span></label>
+                        <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            @foreach ($employmentTypes as $category)
+                                <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
+                            @endforeach
+                        </select>
+                        @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
+                        <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($positions as $position)
                                 <option value="{{$position->id}}">{{$position->name}}</option>
                             @endforeach
                         </select>
-                        <div class="error-field">
-                            @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="type">Employment Type</label>
-                        <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
+                        @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
+                        <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            @foreach ($employmentTypes as $types)
-                                <option value="{{strtolower($types->id)}}">{{$types->name}}</option>
+                            @for($i = 1; $i <= 8; $i++)
+                                <option value="{{$i}}"> Step {{$i}}</option>
+                            @endfor
+                        </select>
+                        @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-12 col-md-3 mb-3">
+                        <label class="mb-2" for="shift_schedule">Shift Schedule</label>
+                        <select wire:model="records.employee_information.shift_schedule" wire:change="select_change('section')" id="records.employee_information.shift_schedule" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            @foreach ($shiftSchedule as $shift)
+                                <option value="{{$shift->id}}">{{$shift->name . ' (' . $shift->work_setup . ')'}}</option>
                             @endforeach
                         </select>
                         <div class="error-field">
-                            @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('records.employee_information.shift_schedule') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="status">Account Status</label>
-                        <select wire:model="records.employee_information.status" id="records.employee_information.status" class="form-select">
+                        <label class="mb-2" for="employee_schedule">Days Schedule</label>
+                        <select wire:model="records.employee_information.employee_schedule" wire:change="select_change('section')" id="records.employee_information.employee_schedule" class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            @foreach ($employeeSchedule as $schedule)
+                                <option value="{{$schedule->id}}">{{$schedule->name}}</option>
+                            @endforeach
                         </select>
                         <div class="error-field">
-                            @error('records.employee_information.status') <span class="text-danger">{{ $message }}</span> @enderror
+                            @error('records.employee_information.employee_schedule') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div> 
-                    <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="salary_method">Salary Method</label>
+                    <div class="col-12 mt-4 mb-3">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Salary & Payroll Details</h5>
+                        <hr>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-2" for="salary_method">Salary Method <span class="text-danger">*</span></label>
                         <select wire:model="records.employee_information.salary_method" id="records.employee_information.salary_method" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             <option value="cash">Cash</option>
@@ -108,24 +141,19 @@
                             <option value="paycheck">Paycheck</option>
                             <option value="e-wallet">E-Wallet</option>
                         </select>
-                        <div class="error-field">
-                            @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div> 
-                    <div class="col-12 col-md-3 mb-3">
+                        @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <label class="mb-2" for="monthly_rate">Monthly Rate</label>
-                        <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
-                        <div class="error-field">
-                            @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>  
-                    <div class="col-12 col-md-4 mb-3">
+                        <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control restricted" readonly>
+                        @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                
+                    <div class="col-md-4 mb-3">
                         <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
                         <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">
-                        <div class="error-field">
-                            @error('records.employee_information.payroll_account_number') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>                  
+                        @error('records.employee_information.payroll_account_number') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
                 </div>
                 <hr class="mt-5">
             </div>
@@ -176,14 +204,14 @@
                                             <div class="accordion-body">
                                                 <div class="row">
                                                     <div class="col-12 col-md-3 mb-3">
-                                                        <label class="mb-2" for="lastname">Surname</label>
+                                                        <label class="mb-2" for="lastname">Surname <span class="text-danger">*</span></label>
                                                         <input type="text" wire:model="records.employee_personal.lastname" id="lastname" class="form-control">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
-                                                        <label class="mb-2" for="firstname">First Name</label>
+                                                        <label class="mb-2" for="firstname">First Name <span class="text-danger">*</span></label>
                                                         <input type="text" wire:model="records.employee_personal.firstname" id="firstname" class="form-control">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.firstname') <span class="text-danger">{{ $message }}</span> @enderror
@@ -235,7 +263,7 @@
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
-                                                        <label class="mb-2" for="sex">Sex</label>
+                                                        <label class="mb-2" for="sex">Sex <span class="text-danger">*</span></label>
                                                         <select wire:model="records.employee_personal.sex" id="sex" class="form-select">
                                                             <option value=""> - CHOOSE - </option>
                                                             <option value="male">Male</option>
@@ -372,7 +400,7 @@
                                                         </div>
                                                     </div>  
                                                     <div class="col-12 col-md-4 mb-3">
-                                                        <label class="mb-2" for="email">Email</label>
+                                                        <label class="mb-2" for="email">Email <span class="text-danger">*</span></label>
                                                         <input type="text" wire:model="records.employee_personal.email" id="email" class="form-control text-lowercase">
                                                         <div class="error-field">
                                                             @error('records.employee_personal.email') <span class="text-danger">{{ $message }}</span> @enderror
@@ -1152,14 +1180,14 @@
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
-                                    <label class="mb-2" for="records.employee_account.password">Password</label>
+                                    <label class="mb-2" for="records.employee_account.password">Password <span class="text-danger">*</span></label>
                                     <input type="password" wire:model="records.employee_account.password" id="records.employee_account.password" class="form-control">
                                     <div class="error-field">
                                         @error('records.employee_account.password') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-12 mb-3">
-                                    <label class="mb-2" for="records.employee_account.confirm_password">Confirm Password</label>
+                                    <label class="mb-2" for="records.employee_account.confirm_password">Confirm Password <span class="text-danger">*</span></label>
                                     <input type="password" wire:model="records.employee_account.confirm_password" id="records.employee_account.confirm_password" class="form-control">
                                     <div class="error-field">
                                         @error('records.employee_account.confirm_password') <span class="text-danger">{{ $message }}</span> @enderror

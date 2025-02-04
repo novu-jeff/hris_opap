@@ -19,6 +19,8 @@ use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
+use App\Models\Positions;
+use App\Models\Tranche;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -102,7 +104,6 @@ class HRISProcessingService extends Controller
             $record = EmployeeInformation::create([
                 'employee_no' => $employee_no,
                 'bsd_no' => $data['employee_information']['biometrics_id'] ?? '',
-                'monthly_rate' => $data['employee_information']['salary'] ?? '',
                 'date_hired' => Carbon::now()->format('Y-m-d'),
             ]);
 
@@ -110,8 +111,9 @@ class HRISProcessingService extends Controller
         }
 
         $record = EmployeeInformation::where('employee_no', $employee_no);
-        
-        
+
+        $monthly_rate = $this->handleSalary($data);
+
         return $record->update([
             'section_id' => $data['section_id'] ? $data['section_id'] : null,
             'position_id' => $data['position_id'],
@@ -123,7 +125,7 @@ class HRISProcessingService extends Controller
             'employment_type_id' => $data['type'],
             'status' => $data['status'],
             'salary_method' => $data['salary_method'],
-            'monthly_rate' => $data['monthly_rate'],
+            'monthly_rate' => $monthly_rate,
             'payroll_account_number' => $data['payroll_account_number'],
         ]);
     }
@@ -456,6 +458,31 @@ class HRISProcessingService extends Controller
             }
         }
 
+    }
+
+    public function handleSalary(array $data) {
+        $position_id = $data['position_id'];
+        $step_id = $data['step_id'];
+
+        if ($position_id && $step_id) {
+            $salaryGrade = Positions::where('id', $position_id)
+                ->value('salary_grade') ?? '';
+
+            $stepColumn = "step_" . ($step_id ?? '');
+
+            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
+                $query->where('salary_grade', $salaryGrade)
+                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+            }])
+            ->where('isActive', true)
+            ->first();
+
+            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
+
+            if ($activeTranche) {
+                $data['monthly_rate'] = $salary;
+            }
+        }
     }
 
 }

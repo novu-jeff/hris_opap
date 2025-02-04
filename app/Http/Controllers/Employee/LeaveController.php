@@ -30,6 +30,7 @@ class LeaveController extends Controller
     }
 
     public function show(int $leave_id) {
+        
         $employee_no = Auth::user()->employee_no;
     
         // Fetch leave record with employee details

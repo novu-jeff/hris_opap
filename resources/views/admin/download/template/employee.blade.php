@@ -75,7 +75,7 @@
             gap: 12px;
         }
 
-        .btn-print {
+        .btn-print, .btn-download {
             border: 1px solid #225f8b;
             background-color: #225f8b;
             color: #fff;
@@ -104,6 +104,7 @@
         <div class="btn-actions">
             <a href="{{route('hris.index')}}" class="btn-custom btn-back"><i class="fa-solid fa-arrow-left-long"></i> Go Back</a>
             <button class="btn-custom btn-print"><i class="fa-solid fa-print"></i> Print Page</button>
+            <a href="{{route('download.view', ['show' => 'employee', 'employee_no' => $data[0]['employee_no'], 'toPDS' => 'true'])}}" class="btn-custom btn-download"><i class="fa-solid fa-download"></i> Download PDS</a>
         </div>
         @forelse($data as $key => $data)
             @if($key > 0)

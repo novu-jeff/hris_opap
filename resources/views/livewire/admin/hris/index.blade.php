@@ -156,18 +156,6 @@
     </div>
     
     <div class="d-lg-flex justify-content-end text-center mb-5 gap-3">
-        <div class="btn-group mb-3">
-            <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'role' => 'all'])}}" class="btn btn-outline-primary px-5 py-3 text-uppercase d-flex align-items-center gap-2"><i class="fa-solid fa-download"></i> Download</a>
-            <button type="button" class="btn btn-outline-primary px-3 dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="visually-hidden"></span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a target="_blank" class="dropdown-item d-flex align-items-center gap-2" href="{{route('download.view', ['show' => 'employee', 'role' => 'all'])}}"><i class="fa-solid fa-download"></i> All</a></li>
-                @foreach($roles as $role)
-                    <li><a target="_blank" class="dropdown-item d-flex align-items-center gap-2" href="{{route('download.view', ['show' => 'employee', 'role' => $role->id])}}"><i class="fa-solid fa-download"></i> {{$role->name}}</a></li>
-                @endforeach
-            </ul>
-        </div>
         <button class="btn btn-primary px-5 py-3 text-uppercase mb-3" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 

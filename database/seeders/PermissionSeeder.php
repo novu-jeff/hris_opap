@@ -29,9 +29,11 @@ class PermissionSeeder extends Seeder
                 'leave',
                 'obs',
                 'arto',
+                'request-log',
                 'announcements',
                 'employee-profile-approval',
                 'request-status',
+                'faqs'
             ],
             'reports' => [
                 'dtr'
@@ -39,6 +41,7 @@ class PermissionSeeder extends Seeder
             'settings' => [
                 'company-information',
                 'scheduler',
+                'tranches',
                 'branches',
                 'departments',
                 'sections',
@@ -66,6 +69,7 @@ class PermissionSeeder extends Seeder
                 'apply-leave',
                 'clock-in-out',
                 'apply-atro',
+                'apply-request-timelog',
                 'payslip',
                 'employee-request-status',
                 'apply-obs',

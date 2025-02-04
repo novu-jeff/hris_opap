@@ -37,7 +37,9 @@ class Show extends Component
             'hris' => ['hris'],
             'timekeeping' => ['timelogs', 'correction-timelogs'],
             'payroll' => [],
-            'ess' => ['leave', 'obs', 'arto', 'announcements', 'employee-profile-approval', 'request-status'],
+            'ess' => [
+                'leave', 'obs', 'arto', 'request-log', 'announcements', 
+                'employee-profile-approval', 'request-status', 'faqs'],
             'reports' => ['dtr'],
             'settings' => [
                 'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
@@ -46,17 +48,16 @@ class Show extends Component
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
             ],
             'employee' => [
-                'apply-leave', 'clock-in-out', 'apply-atro', 'payslip', 'employee-request-status',
+                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-request-status',
                 'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
             ]
         ];
     
-        // Check if the role is 'employee'
         if ($role->name === 'employee') {
             // Show only 'employee' permissions
             $this->permissions = [
                 'employee' => [
-                    'apply-leave', 'clock-in-out', 'apply-atro', 'payslip', 'employee-request-status',
+                    'apply-leave', 'clock-in-out', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-request-status',
                     'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
                 ]
             ];

@@ -55,6 +55,17 @@
                 </a>
             </div>
             @endcanany
+
+            @canany(['read apply-request-timelog', 'write apply-request-timelog'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
+                <a href="{{ route('employee.request-timelog') }}" class="nav-link">
+                <div class="item">
+                    <img src="{{ asset('/img/request-log.png') }}" class="w-100">
+                    <p>Request Timelog</p>
+                </div>
+                </a>
+            </div>
+            @endcanany
         
             @canany(['read payslip', 'write payslip'])
             <div class="col-12 col-md-6 col-xl-4 mb-4">

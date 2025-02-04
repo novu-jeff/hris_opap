@@ -13,6 +13,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployeeOtherWorks;
 use App\Models\EmployeeParents;
 use App\Models\EmployeePersonal;
+use App\Models\EmployeeSchedule;
 use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\EmployementTypes;
@@ -20,6 +21,8 @@ use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Models\Positions;
 use App\Models\Sections;
+use App\Models\ShiftSchedule;
+use App\Models\Tranche;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +41,8 @@ class Manual extends Component
     public object $positions;
     public object $sections;
     public object $employmentTypes;
+    public object $shiftSchedule;
+    public object $employeeSchedule;
     public bool $isDualCitizenship = false;
     public array $countries;
     public $activeTab = 'details';
@@ -52,6 +57,9 @@ class Manual extends Component
         $this->sections = Sections::all();
         $this->positions = Positions::all();
         $this->employmentTypes = EmployementTypes::all();
+
+        $this->shiftSchedule = ShiftSchedule::all();
+        $this->employeeSchedule = EmployeeSchedule::all();
     }
 
     public function loadCountries() {
@@ -84,6 +92,34 @@ class Manual extends Component
 
             // Provide a default empty array if an error occurs
             return $this->countries = [];
+        }
+    }
+
+    public function handleSalary() {
+        
+        $position_id = $this->records['employee_information']['position_id'] ?? '';
+        $step_id = $this->records['employee_information']['step_id'] ?? '';
+
+        if (!empty($position_id) && !empty($step_id)) {
+            $salaryGrade = Positions::where('id', $position_id)
+                ->value('salary_grade') ?? '';
+
+            $stepColumn = "step_" . ($step_id ?? '');
+
+            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
+                $query->where('salary_grade', $salaryGrade)
+                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+            }])
+            ->where('isActive', true)
+            ->first();
+
+            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
+
+            if ($activeTranche) {
+                $this->records['employee_information']['monthly_rate'] = $salary;
+            }
+        } else {
+            $this->records['employee_information']['monthly_rate'] = 0;
         }
     }
 
@@ -126,7 +162,6 @@ class Manual extends Component
             'position' => '',
             'department' => '',
             'company_name' => '',
-            'monthly_salary' => '',
             'employment_status' => '',
             'isGovernment' => '',
             'from_year' => '',
@@ -232,6 +267,7 @@ class Manual extends Component
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
             'records.employee_information.position_id' => 'required|exists:positions,id',
+            'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.section_id' => 'required|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
@@ -266,7 +302,6 @@ class Manual extends Component
             'records.employee_employment_history.*.position' => 'required|string|max:255',
             'records.employee_employment_history.*.department' => 'required|string|max:255',
             'records.employee_employment_history.*.company_name' => 'required|string|max:255',
-            'records.employee_employment_history.*.monthly_salary' => 'required|numeric|min:0',
             'records.employee_employment_history.*.employment_status' => 'required|string',
             'records.employee_employment_history.*.isGovernment' => 'required|string',
             'records.employee_employment_history.*.from_year' => 'required|date',
@@ -321,6 +356,8 @@ class Manual extends Component
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
             'records.employee_information.position_id.required' => 'The position is required.',
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
+            'records.employee_information.step_id.required' => 'The tranche step is required.',
+            'records.employee_information.step_id.in' => 'The tranche step is invalid.',
             'records.employee_information.salary_method.required' => 'The salary method is required',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
@@ -355,8 +392,6 @@ class Manual extends Component
             'records.employee_employment_history.*.position.required' => 'The position is required for each employment history entry.',
             'records.employee_employment_history.*.department.required' => 'The department is required for each employment history entry.',
             'records.employee_employment_history.*.company_name.required' => 'The company name is required for each employment history entry.',
-            'records.employee_employment_history.*.monthly_salary.required' => 'The monthly salary is required.',
-            'records.employee_employment_history.*.monthly_salary.numeric' => 'The monthly salary must be a number.',
             'records.employee_employment_history.*.employment_status.required' => 'The employment status is required.',
             'records.employee_employment_history.*.isGovernment.required' => 'The field indicating government employment is required.',
             'records.employee_employment_history.*.from_year.required' => 'The start date is required.',
@@ -620,7 +655,6 @@ class Manual extends Component
                     'position' => $value['position'] ?? null,
                     'department' => $value['department'] ?? null,
                     'company_name' => $value['company_name'] ?? null,
-                    'monthly_salary' => $value['monthly_salary'] ?? null,
                     'employment_status' => $value['employment_status'] ?? null,
                     'isGovernment' => $value['isGovernment'] ?? null,
                     'from_year' => $value['from_year'] ?? null,
