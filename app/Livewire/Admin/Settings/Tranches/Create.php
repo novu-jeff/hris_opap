@@ -69,8 +69,8 @@ class Create extends Component
         $this->records = [];
 
         $expectedHeaders = [
-            "Salary Grade", "Step 1", "Step 2", "Step 3", "Step 4",
-            "Step 5", "Step 6", "Step 7", "Step 8"
+            "salary_grade", "sterp_1", "sterp_2", "sterp_3", "sterp_4",
+            "sterp_5", "sterp_6", "sterp_7", "sterp_8"
         ];
 
         if (!Storage::exists($filePath)) {
