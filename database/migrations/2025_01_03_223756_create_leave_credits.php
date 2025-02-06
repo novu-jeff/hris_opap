@@ -18,7 +18,9 @@ return new class extends Migration
                 ->constrained('leave_types')
                 ->onDelete('cascade');
             $table->string('employee_no');
-            $table->integer('credits');
+            $table->string('credits');
+            $table->string('as_of')
+                ->nullable();
             $table->timestamps();
         });
     }

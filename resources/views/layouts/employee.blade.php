@@ -51,6 +51,8 @@
             <i class="fa-solid fa-arrow-up fa-bounce"></i>
         </div>
 
+        @livewire('employee.new-employee')
+
         @include('components.employee.navbar')
         <main>
             <div class="container">

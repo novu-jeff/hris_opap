@@ -40,12 +40,12 @@
                                 <a href="{{route('leave.show', ['leave' => $record->id])}}" class="btn btn-secondary mx-1 text-white">
                                     <i class="fa-solid fa-plus"></i>
                                 </a>
-                                <a href="{{route('leave.edit', ['leave' => $record->id])}}" class="btn btn-primary mx-1">
+                                {{-- <a href="{{route('leave.edit', ['leave' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
-                                </a>
-                                <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                </a> --}}
+                                {{-- <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                     <i class="fa-solid fa-trash"></i>
-                                </button>
+                                </button> --}}
                             </td>
                         </tr>
                     @empty

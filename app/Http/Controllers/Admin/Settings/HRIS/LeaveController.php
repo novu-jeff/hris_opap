@@ -29,9 +29,13 @@ class LeaveController extends Controller
         return view('admin.settings.hris.leave.edit', compact('id'));
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
-        return view('admin.settings.hris.leave.show', compact('id'));
+        $action = $request->action ?? '';
+        $employee = $request->employee ?? '';
+        
+        return view('admin.settings.hris.leave.show', compact('id', 'action', 'employee'));
+
     }
     
 }

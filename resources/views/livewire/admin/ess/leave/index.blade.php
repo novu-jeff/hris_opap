@@ -42,10 +42,6 @@
                             <label class="mb-2" for="date_applied">Date Applied</label>
                             <input type="text" id="date_applied" class="form-control restricted" value="{{ isset($view_records->created_at) ? format_date($view_records->created_at, 'date_string')  : '' }}" readonly>
                         </div>
-                        <div class="col-12 mb-4">
-                            <label class="mb-2" for="reason">Reason</label>
-                            <textarea id="reason" cols="30" rows="5" class="form-control restricted" readonly placeholder="Write something...">{{$view_records['reason'] ?? ''}}</textarea>
-                        </div>
                     </div>
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')

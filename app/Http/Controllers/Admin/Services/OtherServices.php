@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Services;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeDeductions;
 use App\Models\EmployeeInformation;
+use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Models\OtherEarnings;
@@ -111,26 +112,41 @@ class OtherServices extends Controller
     
     }
 
-    public function leaves(string $employee_no) {
-
+    public function leaves(string $employee_no) 
+    {
+        // Get all leave types
         $leaves = LeaveType::all();
 
+        // Get all credits for the given employee
         $credits = LeaveCredits::where('employee_no', $employee_no)->get();
 
-        $leaveCredits = $leaves->map(function ($leave) use ($credits) {
+        // Map leave credits and calculate totals for specific leave types
+        $leaveCredits = $leaves->map(function ($leave) use ($credits, $employee_no) {
 
-            $credit = $credits->firstWhere('leave_type_id', $leave->id);
+            // If leave type is VL or SL (ID 1 or 2), get balance from EmployeeLeaveCard
+            if ($leave->id == 1 || $leave->id == 2) {
+                // Get the latest leave card record for the employee for the current year
+                $record = EmployeeLeaveCard::where('employee_no', $employee_no)
+                    ->where('year', Carbon::now()->year)
+                    ->orderBy('year', 'asc') 
+                    ->get()
+                    ->last();
 
-            $leave->credits = $credit ? $credit->credits : 0;
+                // Set leave total credits, fallback to 0 if not found
+                $leave->credits = $record ? ($record->{strtolower($leave->code) . '_bal'} ?? 0) : 0;
+            } else {
+                // Otherwise, use the credits from the LeaveCredits table
+                $credit = $credits->firstWhere('leave_type_id', $leave->id);
+                $leave->credits = $credit ? $credit->credits : 0;
+            }
 
             return $leave;
         });
 
-        $credits = $leaveCredits->toArray();
-
-        return $credits;
-
+        // Convert the collection to an array and return
+        return $leaveCredits->toArray();
     }
+
 
     
 }

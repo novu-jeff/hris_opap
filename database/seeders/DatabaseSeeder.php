@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
                 SectionSeeder::class,
                 OtherEarningsSeeder::class,
                 OtherDeductionsSeeder::class,
+                TimeEquivalentSeeder::class
             ]);
         }
     }

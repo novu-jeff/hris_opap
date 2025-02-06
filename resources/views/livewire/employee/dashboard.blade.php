@@ -174,5 +174,4 @@
             </div>
         </div>
     </div>
-    @livewire('employee.new-employee')
 </div>

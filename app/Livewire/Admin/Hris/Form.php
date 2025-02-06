@@ -126,13 +126,17 @@ class Form extends Component
             $stepColumn = "step_" . ($step_id ?? '');
 
             $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
-                $query->where('salary_grade', $salaryGrade)
-                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-            }])
-            ->where('isActive', true)
-            ->first();
-
-            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
+                    $query->where('salary_grade', $salaryGrade)
+                        ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                }])
+                ->where('isActive', true)
+                ->first();
+            
+            // Ensure that $activeTranche is not null before accessing its items
+            $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                ? $activeTranche->items->first()->$stepColumn 
+                : 0;
+        
 
             if ($activeTranche) {
                 $this->records['employee_information']['monthly_rate'] = $salary;
@@ -194,6 +198,7 @@ class Form extends Component
             'sex' => $data->personal->sex ?? null,
             'citizenship' => $data->personal->citizenship ?? null,
             'citizenship_type' => $data->personal->citizenship_type ?? null,
+            'solo_parent' => $data->personal->solo_parent ? 'yes' : 'no',
             'country' => $data->personal->country ?? null,
             'present_address' => $data->personal->present_address ?? null,
             'present_province' => $data->personal->present_province ?? null,
@@ -419,6 +424,7 @@ class Form extends Component
             'records.employee_information.position_id' => 'required|exists:positions,id',
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.section_id' => 'nullable|exists:sections,id',
+            'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
             'records.employee_information.type' => 'required|exists:employment_types,id',
 
@@ -506,6 +512,9 @@ class Form extends Component
             'records.employee_information.position_id.exists' => 'The selected position does not exist.',
             'records.employee_information.step_id.required' => 'The tranche step is required.',
             'records.employee_information.step_id.in' => 'The tranche step is invalid.',
+            'records.employee_information.monthly_rate.required' => 'The monthly rate is required',
+            'records.employee_information.monthly_rate.numeric' => 'The monthly rate must be numbers',
+            'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',

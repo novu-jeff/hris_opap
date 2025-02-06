@@ -13,11 +13,16 @@ class LeaveCredits extends Model
     protected $fillable = [
         'leave_type_id',
         'employee_no',
-        'credits'
+        'credits',
+        'as_of'
     ];  
 
     public function personal() {
         return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
+    }
+
+    public function leave() {
+        return $this->belongsTo(LeaveType::class, 'leave_type_id', 'id');
     }
 
 }

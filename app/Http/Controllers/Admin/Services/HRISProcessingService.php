@@ -183,6 +183,7 @@ class HRISProcessingService extends Controller
             'citizenship' => !empty($data['citizenship']) ? $data['citizenship'] : null,
             'citizenship_type' => !empty($data['citizenship_type']) ? $data['citizenship_type'] : null,
             'country' => !empty($data['country']) ? $data['country'] : null,
+            'solo_parent' => isset($data['solo_parent']) && strtolower($data['solo_parent']) === 'yes' ? true : false,
             'present_address' => !empty($data['present_address']) ? $data['present_address'] : null,
             'present_province' => !empty($data['present_province']) ? $data['present_province'] : null,
             'present_city' => !empty($data['present_city']) ? $data['present_city'] : null,
@@ -387,48 +388,36 @@ class HRISProcessingService extends Controller
         if ($product == 'opap') {
             if ($data['employee_information']['type'] == 1) {
                 foreach ($leaveDefaultCredits as $leave) {
-
                     $credits = 0;
-                    
-                    $existingLeave = $model::where('employee_no', $employee_no)
-                        ->where('leave_type_id', $leave->id)
-                        ->first();
-                        
-                    if($existingLeave && $existingLeave->credits != 0) {
-                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $existingLeave->credits;
-                        }
-
-                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
-                            $credits = $existingLeave->credits;
-                        }
-
-                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
-                            $credits = 0;
-                        }
-
-                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
-                            $credits = $existingLeave->credits;
+                
+                    // Skip VL and SL
+                    if ($leave->code == 'VL' || $leave->code == 'SL') {
+                        continue; // Skip this iteration for VL and SL
+                    }
+                
+                    if ($data['employee_information']['type'] == 1) {
+                        if ($leave->code == 'VL') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'SL') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male' && $data['employee_personal']['civil_status'] == 'married') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'SOLO' && $data['employee_personal']['solo_parent'] == 'yes') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'VAWC' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'SLBW' && $data['employee_personal']['sex'] == 'female') {
+                            $credits = $leave->credits;
+                        } elseif ($leave->code == 'SPL' || $leave->code == 'STL' || $leave->code == 'RP' || $leave->code == 'SEL' || $leave->code == 'AL') {
+                            $credits = $leave->credits;
                         }
                     } else {
                         if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
                             $credits = $leave->credits;
                         }
-
-                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
-                            $credits = $leave->credits;
-                        }
-
-                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
-                            $credits = 0;
-                        }
-
-                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
-                            $credits = $leave->credits;
-                        }
                     }
-
-                    
                 
                     // Update or create the record with the appropriate credits
                     $model::updateOrCreate(
@@ -441,7 +430,6 @@ class HRISProcessingService extends Controller
                         ]
                     );
                 }
-                
                 
             } else {
                 foreach ($leaveDefaultCredits as $leave) {
@@ -471,13 +459,16 @@ class HRISProcessingService extends Controller
             $stepColumn = "step_" . ($step_id ?? '');
 
             $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
-                $query->where('salary_grade', $salaryGrade)
-                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-            }])
-            ->where('isActive', true)
-            ->first();
-
-            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
+                    $query->where('salary_grade', $salaryGrade)
+                        ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                }])
+                ->where('isActive', true)
+                ->first();
+            
+            // Ensure that $activeTranche is not null before accessing its items
+            $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                ? $activeTranche->items->first()->$stepColumn 
+                : 0;
 
             if ($activeTranche) {
                 $data['monthly_rate'] = $salary;

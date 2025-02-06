@@ -158,7 +158,7 @@
                         @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="mb-2" for="monthly_rate">Monthly Rate</label>
+                        <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
                         <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control restricted" readonly>
                         @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
@@ -418,6 +418,17 @@
                                                         </select>
                                                         <div class="error-field">
                                                             @error('records.employee_personal.citizenship_type') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-md-4 mb-3">
+                                                        <label class="mb-2" for="solo_parent">Has Solo Parent ID?</label>
+                                                        <select wire:model="records.employee_personal.solo_parent" id="solo_parent" class="form-select">
+                                                            <option value=""> - CHOOSE - </option>
+                                                            <option value="yes">Yes</option>
+                                                            <option value="no">No</option>
+                                                        </select>
+                                                        <div class="error-field">
+                                                            @error('records.employee_personal.solo_parent') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
                                                 </div>
