@@ -200,7 +200,6 @@ class Apply extends Component
                 
                 $from = Carbon::parse($this->from);
                 $to = $this->isMoreThanOne ? Carbon::parse($this->to) : null;
-                $consumed_hours = $to ? $to->diffInHours($from) : 24;
 
                 if ($to) {
                     $daysCovered = $from->diffInDays($to) + 1; 
@@ -211,7 +210,6 @@ class Apply extends Component
                 $employeeLeaveModel = EmployeeLeave::class;
                 $leaveTypeModel = LeaveType::find($this->type);
                 $leaveCreditsModel = LeaveCredits::class;
-
 
                 $pending = $employeeLeaveModel::where('employee_no', $this->employee_no)
                     ->where('status', false)
@@ -233,24 +231,91 @@ class Apply extends Component
                     ]);
                 }
 
-                // if no credits left
-                if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
-                    return $this->dispatch('alert', [
-                        'showAlert' => true,
-                        'status' => 'error',
-                        'title' => 'Oops', 
-                        'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
-                    ]);
-                } 
+                $formatted_from = Carbon::parse($from)->format('Y-m-d');
+                $formatted_to = isset($to) ? Carbon::parse($to)->format('Y-m-d') : null;
 
-                // if leave days covered is greater than leave credits remaining
-                if($daysCovered > $leaveCredits->credits) {
+                // Check if the leave date already exists in the database (excluding approved status)
+                $existingLeave = $employeeLeaveModel::where('employee_no', $this->employee_no)
+                    ->where(function ($query) use ($formatted_from, $formatted_to) {
+                        if ($formatted_to) {
+                            // If $formatted_to is not null, check the date range
+                            $query->whereBetween('from', [$formatted_from, $formatted_to])  // Leave starts within the requested range
+                                ->orWhereBetween('to', [$formatted_from, $formatted_to])    // Leave ends within the requested range
+                                ->orWhere(function ($subQuery) use ($formatted_from, $formatted_to) {
+                                    // Full overlap (leave starts before and ends after the requested range)
+                                    $subQuery->where('from', '<=', $formatted_from)
+                                            ->where('to', '>=', $formatted_to);
+                                });
+                        } else {
+                            // If $formatted_to is null, only check the 'from' date
+                            $query->where('from', '=', $formatted_from)
+                                ->orWhere('to', '=', $formatted_from);
+                        }
+                    })
+                    ->where('status', '=', 'approved')
+                    ->exists();
+
+
+                if ($existingLeave) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'error',
-                        'title' => 'Oops', 
-                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying to leave for '.$daysCovered.' days(s) but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                        'title' => 'Oops',
+                        'message' => 'You already have an existing approved application during this period. Please select a different date.'
                     ]);
+                }
+
+
+                dd(123);
+
+
+                if($this->type == 1 || $this->type == 2) {
+
+                    $leaveType = LeaveType::where('id', $this->type)
+                        ->first();
+                    $leaveTypes = strtolower($leaveType->code);
+    
+                    $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                        ->where('year', Carbon::now()->year)
+                        ->orderBy('year', 'asc') 
+                        ->get()
+                        ->last();
+    
+                    $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? 0 : 0;
+    
+                    $leaveEquiv = round((float) $daysCovered * 1.00, 3);
+    
+                    if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'error',
+                            'title' => 'Oops', 
+                            'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveTotalCredits . ' remaining leave credits.'
+                        ]);
+                    }
+    
+                } else {
+                    $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
+                        ->where('employee_no', $this->employee_no)
+                        ->first();
+    
+                    if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'error',
+                            'title' => 'Oops', 
+                            'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                        ]);
+                    }
+                    
+                    if($daysCovered > $leaveCredits->credits) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'error',
+                            'title' => 'Oops', 
+                            'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                        ]);
+                    }
                 }
 
                 $employeeLeaveModel::updateOrCreate([
