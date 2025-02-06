@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Ess\Leave;
 
+use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Notifications\Notifications;
@@ -103,51 +105,87 @@ class Index extends Component
             if(is_null($record)) {
                 return redirect()->route('ess.leave');
             }
-
+        
             $from = Carbon::parse($record->from);
             $to = Carbon::parse($record->to);
-
+        
+            // Calculate days covered
             if ($record->to) {
                 $daysCovered = $from->diffInDays($to) + 1; 
             } else {
                 $daysCovered = 1; 
             }
+                    
+            $record->daysCovered = $daysCovered;
 
+            // Update leave credits model
             $leaveCreditsModel = LeaveCredits::class;
             $leaveTypeModel = LeaveType::find($record->leave_id);
-
-            $leaveCredits = $leaveCreditsModel::where('leave_type_id', $record->leave_id)
-                    ->where('employee_no', $record->employee_no)
-                    ->first();
+        
+            
             
             // if no credits left
-            if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops', 
-                    'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
-                ]);
-            } 
 
-            // if leave days covered is greater than leave credits remaining
-            if($daysCovered > $leaveCredits->credits) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops', 
-                    'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying to leave for '.$daysCovered.' days(s) but only have ' . $leaveCredits->credits . ' remaining leave credits.'
-                ]);
+            if($record->leave_id == 1 || $record->leave_id == 2) {
+
+                $leaveType = LeaveType::where('id', $record->leave_id)
+                    ->first();
+                $leaveTypes = strtolower($leaveType->code);
+
+                $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $record->employee_no)
+                    ->where('year', Carbon::now()->year)
+                    ->orderBy('year', 'asc') 
+                    ->get()
+                    ->last();
+
+                $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? 0 : 0;
+
+                $leaveEquiv = round((float) $daysCovered * 1.00, 3);
+
+                if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveTotalCredits . ' remaining leave credits.'
+                    ]);
+                }
+
+            } else {
+                $leaveCredits = $leaveCreditsModel::where('leave_type_id', $record->leave_id)
+                    ->where('employee_no', $record->employee_no)
+                    ->first();
+
+                if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                    ]);
+                }
+                
+                if($daysCovered > $leaveCredits->credits) {
+                    return $this->dispatch('alert', [
+                        'showAlert' => true,
+                        'status' => 'error',
+                        'title' => 'Oops', 
+                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                    ]);
+                }
             }
+        
             
-            // deduct leave credits
+        
+            $leaveCardService = new LeaveCardService;
+            $leaveCardService->init($record->employee_no, 'leave_approval', $record);
+        
 
-            $leaveCredits->credits -= $daysCovered;
-            $record->action_by_id = Auth::user()->id;
-            $leaveCredits->save();
+            unset($record->daysCovered);
 
             // Update the EmployeeLeave record's status
             $record->update([
+                'action_by_id' => Auth::user()->id,
                 'status' => 'approved'
             ]);
         
@@ -159,13 +197,13 @@ class Index extends Component
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been approved'
             ]);
-
+        
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('success', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
-
+            $user?->notify(new Notifications('success', 'Your leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
+        
             return;
-
         }
+        
     }
 
     public function remove(bool $isNotify = true, int $id = null) {

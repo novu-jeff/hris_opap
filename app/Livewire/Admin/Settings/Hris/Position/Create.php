@@ -158,6 +158,8 @@ class Create extends Component
 
             DB::commit();
 
+            $this->reset();
+
             $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Success!', 

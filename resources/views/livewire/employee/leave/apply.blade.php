@@ -8,9 +8,16 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row">
+                        @if(!is_null($this->type)) 
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-end">
+                                    <h6 class="text-uppercase fw-bold">Remaining Leave Credits: {{$this->remaining_credits}}</h6>
+                                </div>
+                            </div>
+                        @endif
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
-                            <select wire:model.live="type" id="type" class="form-select">
+                            <select wire:model.live="type" wire:change="handleLeaveCredits" id="type" class="form-select">
                                 <option value=""> - CHOOSE - </option>
                                 @foreach($leaveTypes as $leave)
                                     <option value="{{$leave->id}}">{{$leave->code . ' - ' . $leave->name}}</option>
@@ -69,7 +76,7 @@
                                 </div>
                             </div>
                         
-                        @elseif($type == 3)
+                        @elseif($type == 2)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="confinement">Patient Type <span class="text-danger">*</span></label>
                                 <select wire:model="confinement" id="confinement" class="form-select">

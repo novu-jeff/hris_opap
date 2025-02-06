@@ -118,6 +118,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('citizenship_type')
                 ->nullable();
+            $table->boolean('solo_parent')
+                ->default(false)
+                ->nullable();
             $table->string('country')
                 ->nullable();
 

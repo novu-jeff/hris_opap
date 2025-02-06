@@ -4,6 +4,7 @@ namespace App\Livewire\Employee\Leave;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Notifications\Notifications;
@@ -33,6 +34,8 @@ class Apply extends Component
     public $study;
     public $study_other_purpose;
     public $commutation;
+
+    public $remaining_credits;
 
     protected $listeners = ['save'];
 
@@ -70,6 +73,8 @@ class Apply extends Component
             }
 
             $this->selectDuration();
+            $this->handleLeaveCredits();
+
 
             $this->from = $records->from;
             $this->to = $records->to;
@@ -96,6 +101,32 @@ class Apply extends Component
         } else {
             return $this->isMoreThanOne = null;
         }
+    }
+
+    public function handleLeaveCredits() {
+        
+        if($this->type == 1 || $this->type == 2) {
+            $leaveType = LeaveType::where('id', $this->type)
+                ->first();
+            $leaveTypes = strtolower($leaveType->code);
+            $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                ->where('year', Carbon::now()->year)
+                ->orderBy('year', 'asc') 
+                ->get()
+                ->last();
+            $leaveTotalCredits = $records->{$leaveTypes . '_bal'} ?? 0;
+
+        } else {
+            $records = LeaveCredits::where('employee_no', $this->employee_no)
+                ->where('leave_type_id', $this->type)
+                ->first();
+
+            $leaveTotalCredits = $records->credits ?? 0;
+            
+        }
+
+
+        $this->remaining_credits = $leaveTotalCredits;
     }
 
     public function rules() {

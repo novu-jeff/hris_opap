@@ -56,7 +56,7 @@
                             <td>
                                 @if($record->status === 'pending')
                                     <a href="{{route('employee.leave.show', ['id' => $record->id])}}" class="btn btn-primary mx-1">
-                                        <i class="fa-solid fa-eye"></i>
+                                        <i class="fa-solid fa-download"></i>
                                     </a>
                                     <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-pen-to-square"></i>
