@@ -122,7 +122,7 @@
                             <label class="mb-2" for="commutation">Commutation <span class="text-danger">*</span></label>
                             <select wire:model="commutation" id="commutation" class="form-select">
                                 <option value=""> - CHOOSE -</option>
-                                <option value="no">No Requested</option>
+                                <option value="no">Not Requested</option>
                                 <option value="yes">Requested</option>
                             </select>
                             <div class="error-field">
