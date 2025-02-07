@@ -23,8 +23,11 @@ class Show extends Component
     public $entries = 10;
     public $search = '';
     public $credits = [];
+    public $sl_credits = [];
+    public $vl_credits = [];
     public $as_of = [];
-    public $total_credits = [];
+    public $total_sl_credits = [];
+    public $total_vl_credits = [];
     public $has_leave_card = [];
 
     public $leaveName;
@@ -49,18 +52,27 @@ class Show extends Component
 
         $this->leaveName = $leaveType->name;
 
-        $leaveCredits = LeaveCredits::where('leave_type_id', $this->id)->get();
+        $leaveCreditsVL = LeaveCredits::where('leave_type_id', 1)->get();
+        $leaveCreditsSL = LeaveCredits::where('leave_type_id', 2)->get();
+
         
-        $this->credits = [];
+        $this->vl_credits = [];
+        $this->sl_credits = [];
+        $this->total_vl_credits = [];
+        $this->total_sl_credits = [];
         $this->as_of = [];
     
         if($this->id == 1 || $this->id == 2) {
             foreach ($employees as $employee) {
-                $leaveCredit = $leaveCredits->firstWhere('employee_no', $employee['employee_no']);
+                $leaveCreditVL = $leaveCreditsVL->firstWhere('employee_no', $employee['employee_no']);
+                $leaveCreditSL = $leaveCreditsSL->firstWhere('employee_no', $employee['employee_no']);
+
                 $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
                     ->where('year', Carbon::now()->year)
-                    ->whereNotNull("{$leaveTypes}_bal")
+                    ->whereRaw("COALESCE(vl_bal, '') != ''")
+                    ->where("{$leaveTypes}_bal", '>', 0)
                     ->exists();
+
 
                 $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
                     ->where('year', Carbon::now()->year)
@@ -68,14 +80,19 @@ class Show extends Component
                     ->get()
                     ->last();
 
-                $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? 0 : 0;
-    
-                $this->credits[$employee['employee_no']] = $leaveCredit ? $leaveCredit->credits : 0;
-                $this->as_of[$employee['employee_no']] = $leaveCredit ? $leaveCredit->as_of : null;
-                $this->total_credits[$employee['employee_no']] = $leaveTotalCredits  ?? null;
+                $leaveTotalCreditsVL = $leaveTotalCredits ? $leaveTotalCredits->vl_bal ?? 0 : 0;
+                $leaveTotalCreditsSL = $leaveTotalCredits ? $leaveTotalCredits->sl_bal ?? 0 : 0;
+
+                $this->vl_credits[$employee['employee_no']] = $leaveCreditVL ? $leaveCreditVL->credits : 0;
+                $this->sl_credits[$employee['employee_no']] = $leaveCreditSL ? $leaveCreditSL->credits : 0;
+                $this->as_of[$employee['employee_no']] = $leaveCreditVL ? $leaveCreditVL->as_of : null;
+                $this->total_vl_credits[$employee['employee_no']] = $leaveTotalCreditsVL  ?? null;
+                $this->total_sl_credits[$employee['employee_no']] = $leaveTotalCreditsSL  ?? null;
+
                 $this->has_leave_card[$employee['employee_no']] = $leaveCardExists;
             }
         } else {
+            $leaveCredits = LeaveCredits::where('leave_type_id', $this->id)->get();
             foreach ($employees as $employee) {
                 $leaveCredit = $leaveCredits->firstWhere('employee_no', $employee['employee_no']);
 
@@ -89,34 +106,29 @@ class Show extends Component
     
     protected function rules() {
         $rules = [
-            'credits.*' => 'required|numeric|min:1', 
+            'vl_credits.*' => 'required|numeric|gt:0',
+            'sl_credits.*' => 'required|numeric|gt:0',
+            'as_of.*' => 'required'
         ];
-    
-        // Apply custom validation for as_of when the id is 1 or 2
-        if ($this->id == 1 || $this->id == 2) {
-            // Apply custom rule for 'as_of' field
-            $rules['as_of.*'] = [
-                function ($attribute, $value, $fail) {
-                    // Get employee number from the attribute key, assuming attribute is like 'as_of.1', 'as_of.2', etc.
-                    $employeeNo = explode('.', $attribute)[1] ?? null;
-    
-                    // Ensure 'as_of' is required when credits are greater than zero
-                    if (isset($this->credits[$employeeNo]) && $this->credits[$employeeNo] > 0 && empty($value)) {
-                        $fail('The "As of" date is required when credits are greater than zero.');
-                    }
-                }
-            ];
-        }
     
         return $rules;
     }
     
+    
 
     protected function messages() {
         return [
-            'credits.*.required' => 'The credits field is required',
-            'credits.*.min' => 'The credits field is required',
-            'credits.*.numeric' => 'The credits field ',
+            'vl_credits.*.required' => '*required',
+            'vl_credits.*.min' => '*required',
+            'vl_credits.*.numeric' => ' ',
+            'vl_credits.*.gt' => '.',
+
+            'sl_credits.*.required' => '*required',
+            'sl_credits.*.min' => '*required',
+            'sl_credits.*.numeric' => '*numeric required',
+            'sl_credits.*.gt' => '*required',
+
+            'as_of.*' => '*required'
         ];
     }
 
@@ -145,48 +157,86 @@ class Show extends Component
                 'action' => $action
             ]);
 
-        }  else {
+        } else {
+        
 
-            $record = LeaveCredits::where('employee_no', $this->selected_id)
-                ->where('leave_type_id', $this->id)
-                ->first();
-
+            
+            // Retrieve the LeaveCredits record
+           
+        
+            // Retrieve the EmployeeLeaveCard records
             $leaveCard = EmployeeLeaveCard::where('employee_no', $this->selected_id);
-                
-            if($record && $leaveCard) {
-                
-                $record->credits = 0;
-                $record->as_of = '';
 
-                $record->save();
-                $leaveCard->delete();
+            $leaveCardData = $leaveCard->get();
+            // Ensure records exist before performing any actions
+            if ($leaveCardData->isNotEmpty()) {
+                // Reset leave card values
+                $leaveCardData->each(function ($card) {
+                    $card->{'vl_particulars'} = '';
+                    $card->{'vl_earned'} = '';
+                    $card->{'vl_aut_w_pay'} = '';
+                    $card->{'vl_aut_wo_pay'} = '';
+                    $card->{'vl_bal'} = '';
+                    $card->{'vl_remarks'} = '';
 
+                    $card->{'sl_particulars'} = '';
+                    $card->{'sl_earned'} = '';
+                    $card->{'sl_aut_w_pay'} = '';
+                    $card->{'sl_aut_wo_pay'} = '';
+                    $card->{'sl_bal'} = '';
+                    $card->{'sl_remarks'} = '';
+                    $card->save();
+                });
+        
+
+                foreach ([1, 2] as $leave_id) {
+                    $record = LeaveCredits::where('employee_no', $this->selected_id)
+                        ->where('leave_type_id', $leave_id) // Use where() instead of whereIn()
+                        ->first();
+                
+                    if ($record) {
+                        $record->update([
+                            'credits' => 0,
+                            'as_of' => '', // or set a default date if necessary
+                        ]);
+                    }
+                }
+                
+        
+                // Check if the last leave card has empty 'vl_bal' and 'sl_bal' fields
+                $lastLeaveCard = $leaveCardData->last();
+        
+                // Only delete if the last card has empty values for 'vl_bal' and 'sl_bal'
+                if (empty($lastLeaveCard->vl_bal) && empty($lastLeaveCard->sl_bal)) {
+                    // Deleting only the last leave card if conditions are met
+                    $leaveCard->delete();
+                }
+        
+                // Reload records
                 $this->loadRecords();
-
+        
+                // Dispatch success alert
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
-                    'id' => $this->selected_id,
-                    'isRemoveRowDT' => false,
-                    'message' => 'Leave Card for ' . strtoupper($record->employee_no) . ' has been reset successfully' 
+                    'title' => 'Success!',
+                    'message' => 'Leave Card for ' . strtoupper($record->employee_no) . ' has been reset successfully'
                 ]);
-
-                
             } else {
-                return $this->dispatch('alert', [
+                // If records don't exist, dispatch error alert
+                $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
-                    'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'title' => 'Oops!',
+                    'message' => 'Error: ID does not exist'
                 ]);
             }
         }
-
+                  
     }
     
     public function save()
     {
+
         if (Gate::denies('write leave-credits')) {
             $this->dispatch('alert', [
                 'status' => 'error',
@@ -201,39 +251,97 @@ class Show extends Component
     
         try {
             DB::transaction(function () {
-                foreach ($this->credits as $employeeNo => $credit) {
-                    if (!is_null($credit)) {
 
-                        LeaveCredits::updateOrCreate(
-                            [
-                                'employee_no' => $employeeNo,
-                                'leave_type_id' => $this->id,
-                            ],
-                            [
-                                'credits' => $credit,
-                                'as_of' => $this->as_of[$employeeNo] ?? null,
-                            ]
-                        );
-
-                        $year = Carbon::now()->format('Y');
-
-                        $leaveCard = EmployeeLeaveCard::where('employee_no', $employeeNo)
-                            ->where('year', $year)
-                            ->count();
-
-                        if($leaveCard == 0) {
-                            $LeaveCardService = new LeaveCardService;
-                            $LeaveCardService->init($employeeNo, 'firstime', [
-                                'employee_no' => $employeeNo,
-                                'leave_id' => $this->id,
-                                'credits' => $credit,
-                                'as_of' => $this->as_of[$employeeNo] ?? null
-                            ]);
-
-                            $this->loadRecords();
+                if($this->id == 1 || $this->id == 2) {
+                    foreach ($this->vl_credits as $employeeNo => $credit) {
+                        if (!is_null($credit)) {
+    
+                            LeaveCredits::updateOrCreate(
+                                [
+                                    'employee_no' => $employeeNo,
+                                    'leave_type_id' => 1,
+                                ],
+                                [
+                                    'credits' => $credit,
+                                    'as_of' => $this->as_of[$employeeNo] ?? null,
+                                ]
+                            );
+    
+                            $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employeeNo)
+                                ->where('year', Carbon::now()->year)
+                                ->whereNotNull("vl_bal")
+                                ->exists();
+    
+    
+                            if(!$leaveCardExists) {
+                                $LeaveCardService = new LeaveCardService;
+                                $LeaveCardService->init($employeeNo, 'firstime', [
+                                    'employee_no' => $employeeNo,
+                                    'leave_id' => 1,
+                                    'credits' => $credit,
+                                    'as_of' => $this->as_of[$employeeNo] ?? null
+                                ]);
+    
+                            }
                         }
                     }
+    
+                    foreach ($this->sl_credits as $employeeNo => $credit) {
+                        if (!is_null($credit)) {
+    
+                            LeaveCredits::updateOrCreate(
+                                [
+                                    'employee_no' => $employeeNo,
+                                    'leave_type_id' => 2,
+                                ],
+                                [
+                                    'credits' => $credit,
+                                    'as_of' => $this->as_of[$employeeNo] ?? null,
+                                ]
+                            );
+    
+                            $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employeeNo)
+                                ->where('year', Carbon::now()->year)
+                                ->whereNotNull("sl_bal")
+                                ->exists();
+    
+    
+                            if(!$leaveCardExists) {
+                                $LeaveCardService = new LeaveCardService;
+                                $LeaveCardService->init($employeeNo, 'firstime', [
+                                    'employee_no' => $employeeNo,
+                                    'leave_id' => 2,
+                                    'credits' => $credit,
+                                    'as_of' => $this->as_of[$employeeNo] ?? null
+                                ]);
+    
+                            }
+                        }
+                    }
+                } else {
+
+                    foreach($this->credits as $employeeNo => $credit) {
+                        if (!is_null($credit)) {
+
+                            LeaveCredits::updateOrCreate(
+                                [
+                                    'employee_no' => $employeeNo,
+                                    'leave_type_id' => $this->id,
+                                ],
+                                [
+                                    'credits' => $credit,
+                                    'as_of' => null,
+                                ]
+                            );
+
+                        }
+                    }
+
                 }
+
+                $this->loadRecords();
+        
+              
             });
     
             $this->dispatch('alert', [

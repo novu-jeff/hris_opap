@@ -28,34 +28,51 @@
                             <tr>
                                 <th>Employee No</th>
                                 <th>Employee Name</th>
-                                <th>Credits</th>
                                 @if($this->id == 1 || $this->id == 2)
-                                    <th>As of</th>
-                                    <th>Total Credits</th>
+                                    <th>VL Credits</th>
+                                    <th>SL Credits</th>
+                                    <th>Updated as of</th>
                                     <th>Actions</th>
+                                @else
+                                    <th>Credits</th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($records as $record)
                                 <tr>
-                                    <td>{{ $record->employee_no }}</td>
-                                    <td>{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
-                                    <td>
-                                        <input 
-                                            type="text" 
-                                            wire:key="credit-{{$record->employee_no}}" 
-                                            wire:model="credits.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                        <div class="error-field">
-                                            @error("credits.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
-                                            @enderror
-                                        </div>
-                                    </td>
+                                    <td style="vertical-align: top; padding-top: 22px;">{{ $record->employee_no }}</td>
+                                    <td style="vertical-align: top; padding-top: 22px;">{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                     @if($this->id == 1 || $this->id == 2)
-                                        <td>
+                                        <td style="vertical-align: top; padding-top: 12px;">
+                                            <input 
+                                                type="text" 
+                                                wire:key="vl-credit-{{$record->employee_no}}" 
+                                                wire:model="vl_credits.{{$record->employee_no}}" 
+                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                            <div class="error-field">
+                                                @error("vl_credits.{$record->employee_no}") 
+                                                    <span class="text-danger">{{ $message }}</span> 
+                                                @enderror
+                                            </div>
+                                            <label class="mt-2 mb-2">Total: {{$total_vl_credits[$record->employee_no]}}</label>
+                                        </td>
+                                        <td style="vertical-align: top; padding-top: 12px;">
+                                            <input 
+                                                type="text" 
+                                                wire:key="sl-credit-{{$record->employee_no}}" 
+                                                wire:model="sl_credits.{{$record->employee_no}}" 
+                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                            <div class="error-field">
+                                                @error("sl_credits.{$record->employee_no}") 
+                                                    <span class="text-danger">{{ $message }}</span> 
+                                                @enderror
+                                            </div>
+                                            <label class="mt-2 mb-2">Total: {{$total_sl_credits[$record->employee_no]}}</label>
+                                        </td>
+                                        <td style="vertical-align: top; padding-top: 12px;">
                                             <input 
                                                 type="month" 
                                                 wire:key="as_of-{{$record->employee_no}}" 
@@ -67,18 +84,10 @@
                                                     <span class="text-danger">{{ $message }}</span> 
                                                 @enderror
                                             </div>
-                                        </td>     
-                                        <td>
-                                            <input 
-                                                type="text" 
-                                                wire:key="total-credit-{{$record->employee_no}}" 
-                                                wire:model="total_credits.{{$record->employee_no}}" 
-                                                class="form-control restricted" 
-                                                readonly>
-                                        </td>     
-                                        <td>
+                                        </td>      
+                                        <td style="vertical-align: top; padding-top: 12px;">
                                             @if($has_leave_card[$record->employee_no])
-                                                <div class="d-flex gap-2">
+                                                <div class="d-flex justify-content-center align-items-center gap-2">
                                                     <div class="btn btn-danger" wire:click="resetCredit(true, '{{ $record->employee_no }}')">
                                                         <i class="fa-solid fa-rotate"></i>
                                                     </div>
@@ -87,12 +96,26 @@
                                                     </a>
                                                 </div>
                                             @endif
-                                        </td>         
+                                        </td>       
+                                    @else
+                                        <td>
+                                            <input 
+                                                type="text" 
+                                                wire:key="credit-{{$record->employee_no}}" 
+                                                wire:model="credits.{{$record->employee_no}}" 
+                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                            <div class="error-field">
+                                                @error("credits.{$record->employee_no}") 
+                                                    <span class="text-danger">{{ $message }}</span> 
+                                                @enderror
+                                            </div>
+                                        </td>
                                     @endif
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No records found</td>
+                                    <td colspan="12" class="text-center">No records found</td>
                                 </tr>
                             @endforelse
                         </tbody>

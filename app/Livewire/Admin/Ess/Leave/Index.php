@@ -24,6 +24,7 @@ class Index extends Component
     public $selected_id;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'disapproved', 'approved'];
+    public $accepts_autwopay;
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -122,8 +123,6 @@ class Index extends Component
             $leaveCreditsModel = LeaveCredits::class;
             $leaveTypeModel = LeaveType::find($record->leave_id);
         
-            
-            
             // if no credits left
 
             if($record->leave_id == 1 || $record->leave_id == 2) {
@@ -137,19 +136,33 @@ class Index extends Component
                     ->orderBy('year', 'asc') 
                     ->get()
                     ->last();
+                    
 
-                $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? 0 : 0;
+                $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? '' : 0;
 
                 $leaveEquiv = round((float) $daysCovered * 1.00, 3);
 
-                if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                if(empty($leaveTotalCredits)) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'error',
                         'title' => 'Oops', 
-                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveTotalCredits . ' remaining leave credits.'
+                        'message' => 'Unfortunately, this employee\'s leave balance is not yet set.'
                     ]);
                 }
+
+                if(!$this->accepts_autwopay) {
+                    if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                        $this->accepts_autwopay = true;
+                        return $this->dispatch('showConfirmation', [
+                            'title' => 'Please be Informed', 
+                            'message' => '
+                                Unfortunately, this employee\'s leave credits are insufficient. He/she is requesting '.$daysCovered.' day(s) of leave, but only have '.$leaveTotalCredits.' remaining. This may still proceed, but please note that this will be considered as Absence Without Pay (AUT w/o pay).
+                            ',
+                            'action' => 'approved'
+                        ]);
+                    }
+                } 
 
             } else {
                 $leaveCredits = $leaveCreditsModel::where('leave_type_id', $record->leave_id)
@@ -161,7 +174,7 @@ class Index extends Component
                         'showAlert' => true,
                         'status' => 'error',
                         'title' => 'Oops', 
-                        'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                        'message' => 'Unfortunately, this employee have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
                     ]);
                 }
                 
@@ -170,24 +183,23 @@ class Index extends Component
                         'showAlert' => true,
                         'status' => 'error',
                         'title' => 'Oops', 
-                        'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                        'message' => 'Unfortunately, this employee have insufficient leave credits. Applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
                     ]);
                 }
             }
         
-            
-        
             $leaveCardService = new LeaveCardService;
             $leaveCardService->init($record->employee_no, 'leave_approval', $record);
         
+            // dd(123);
 
-            unset($record->daysCovered);
+            // unset($record->daysCovered);
 
             // Update the EmployeeLeave record's status
-            $record->update([
-                'action_by_id' => Auth::user()->id,
-                'status' => 'approved'
-            ]);
+            // $record->update([
+            //     'action_by_id' => Auth::user()->id,
+            //     'status' => 'approved'
+            // ]);
         
             $this->dispatch('alert', [
                 'id' => $this->selected_id,

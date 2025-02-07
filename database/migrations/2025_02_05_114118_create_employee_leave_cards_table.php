@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('employee_no');
             $table->string('period')
                 ->nullable();
-            $table->tinyText('particulars')
+            $table->tinyText('vl_particulars')
                 ->nullable();
             $table->string('vl_earned')
                 ->nullable();
@@ -26,6 +26,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('vl_aut_wo_pay')
                 ->nullable();
+            $table->tinyText('vl_remarks')
+                ->nullable();
             $table->string('sl_earned')
                 ->nullable();
             $table->string('sl_aut_w_pay')
@@ -34,7 +36,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('sl_aut_wo_pay')
                 ->nullable();
-            $table->tinyText('remarks')
+            $table->tinyText('sl_particulars')
+                ->nullable();
+            $table->tinyText('sl_remarks')
                 ->nullable();
             $table->string('year')
                 ->nullable();

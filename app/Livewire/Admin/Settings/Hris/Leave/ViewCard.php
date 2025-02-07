@@ -39,13 +39,42 @@ class ViewCard extends Component
             ->get();
 
         $sortedRecords = collect($records)
-            ->groupBy('year') 
-            ->map(function ($items) {
-                return $items->sortBy(function ($item) {
+            ->groupBy('year') // Group by year
+            ->map(function ($items, $year) use ($records) {
+                // Get the last item for the current year
+                $lastItem = $items->last();
+        
+                // Calculate the remaining balance using the last item in the current year
+                $prevBal = [
+                    'vl' => (float)($lastItem['vl_bal'] ?? 0),
+                    'sl' => (float)($lastItem['sl_bal'] ?? 0),
+                ];
+        
+                // Get the last record of the previous year
+                $previousYearRecord = $records->where('year', $year - 1)->last();
+        
+                // If no previous year record is found, set previous_bal to 0
+                if ($previousYearRecord) {
+                    $prevBal['vl'] = (float)($previousYearRecord['vl_bal'] ?? 0);
+                    $prevBal['sl'] = (float)($previousYearRecord['sl_bal'] ?? 0);
+                } else {
+                    // Set to 0 if no previous year exists
+                    $prevBal['vl'] = 0;
+                    $prevBal['sl'] = 0;
+                }
+        
+                // Sort items by period (month order)
+                $sortedItems = $items->sortBy(function ($item) {
                     return DateTime::createFromFormat('F', $item['period'])->format('m');
-                })->values(); 
+                })->values();
+        
+                return [
+                    'previous_bal' => $prevBal, // Use previous year's last record for previous_bal
+                    'items' => $sortedItems // Return the sorted items
+                ];
             })
             ->sortKeys();
+        
     
         $this->records = $sortedRecords;
 
