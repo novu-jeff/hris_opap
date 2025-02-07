@@ -26,6 +26,7 @@ class Apply extends Component
     public $leaveTypes;
     public $isMoreThanOne = null;
     public $notification;
+    public $accepts_autwopay;
 
     public $location;
     public $location_specific;
@@ -253,6 +254,7 @@ class Apply extends Component
                         }
                     })
                     ->where('status', '=', 'approved')
+                    ->where('isDeleted', false)
                     ->exists();
 
 
@@ -264,9 +266,6 @@ class Apply extends Component
                         'message' => 'You already have an existing approved application during this period. Please select a different date.'
                     ]);
                 }
-
-
-                dd(123);
 
 
                 if($this->type == 1 || $this->type == 2) {
@@ -285,13 +284,17 @@ class Apply extends Component
     
                     $leaveEquiv = round((float) $daysCovered * 1.00, 3);
     
-                    if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
-                        return $this->dispatch('alert', [
-                            'showAlert' => true,
-                            'status' => 'error',
-                            'title' => 'Oops', 
-                            'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveTotalCredits . ' remaining leave credits.'
-                        ]);
+                    if(!$this->accepts_autwopay) {
+                        if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                            $this->accepts_autwopay = true;
+                            return $this->dispatch('showConfirmation', [
+                                'title' => 'Please be Informed', 
+                                'message' => '
+                                    Unfortunately, your leave credits are insufficient. You are requesting '.$daysCovered.' day(s) of leave, but you only have '.$leaveTotalCredits.' remaining. You may still proceed with your request, but please note that this will be considered as Absence Without Pay (AUT w/o pay).
+                                ',
+                                'action' => 'save'
+                            ]);
+                        }
                     }
     
                 } else {
@@ -349,6 +352,7 @@ class Apply extends Component
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
                     $this->resetExcept('employee_no', 'employee_id', 'leaveTypes');
+                    $this->accepts_autwopay = false;
 
                     return;
 

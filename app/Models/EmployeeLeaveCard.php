@@ -14,16 +14,18 @@ class EmployeeLeaveCard extends Model
         'employee_no',
         'period',
         'year',
-        'particulars',
+        'vl_particulars',
         'vl_earned',
         'vl_aut_w_pay',
         'vl_bal',
         'vl_aut_wo_pay',
+        'vl_remarks',
         'sl_earned',
         'sl_aut_w_pay',
         'sl_bal',
         'sl_aut_wo_pay',
-        'remarks',
+        'sl_particulars',
+        'sl_remarks',
     ];
 
 }

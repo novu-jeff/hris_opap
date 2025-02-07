@@ -20,30 +20,47 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($records as $year => $periods)
+            @forelse($records as $year => $data)
                 <tr class="year-header">
-                    <td colspan="10">{{$year}}</td>
+                    <td colspan="1">
+                        {{$year}} 
+                    </td>
+                    <td colspan="3" style="font-weight: 500 !important">
+                        {{$data['previous_bal']['vl'] != 0 || $data['previous_bal']['sl'] != 0 ? '(Bal. brought forward)' : ''}}
+                    </td>
+                    <td colspan="4">
+                        <strong>
+                            {{ $data['previous_bal']['vl'] != 0 ? $data['previous_bal']['vl'] : '' }}
+                        </strong>
+                    </td>
+                    <td colspan="12">
+                        <strong>
+                            {{ $data['previous_bal']['sl'] != 0 ? $data['previous_bal']['sl'] : '' }}
+                        </strong>
+                    </td>
                 </tr>
-                @foreach($periods as $item)
-                <tr>
-                    <td>{{$item['period']}}</td>
-                    <td>{{$item['particulars']}}</td>
-                    <td>{{$item['vl_earned'] ?? '-'}}</td>
-                    <td style="color: red">{{$item['vl_aut_w_pay'] ?? '-'}}</td>
-                    <td style="color: red">{{$item['vl_bal'] ?? '-'}}</td>
-                    <td>{{$item['vl_aut_wo_pay'] ?? '-'}}</td>
-                    <td>{{$item['sl_earned'] ?? '-'}}</td>
-                    <td style="color: red">{{$item['sl_aut_w_pay'] ?? '-'}}</td>
-                    <td style="color: red">{{$item['sl_bal'] ?? '-'}}</td>
-                    <td>{{$item['sl_aut_wo_pay'] ?? '-'}}</td>
-                    <td>{{$item['remarks'] ?? '-'}}</td>
-                </tr>
+            
+                @foreach($data['items'] as $item)
+                    <tr>
+                        <td>{{ $item['period'] }}</td>
+                        <td>{{ implode(', ', array_filter([$item['vl_particulars'], $item['sl_particulars']])) }}</td>
+                        <td>{{ $item['vl_earned'] ?? '-' }}</td>
+                        <td style="color: red">{{ $item['vl_aut_w_pay'] ?? '-' }}</td>
+                        <td style="color: red">{{ $item['vl_bal'] ?? '-' }}</td>
+                        <td>{{ $item['vl_aut_wo_pay'] ?? '-' }}</td>
+                        <td>{{ $item['sl_earned'] ?? '-' }}</td>
+                        <td style="color: red">{{ $item['sl_aut_w_pay'] ?? '-' }}</td>
+                        <td style="color: red">{{ $item['sl_bal'] ?? '-' }}</td>
+                        <td>{{ $item['sl_aut_wo_pay'] ?? '-' }}</td>
+                        <td>{{ $item['remarks'] ?? '-' }}</td>
+                    </tr>
                 @endforeach
             @empty
                 <tr>
                     <td colspan="12" class="text-center">No records found</td>
                 </tr>
             @endforelse
+        
         </tbody>
     </table>
 
