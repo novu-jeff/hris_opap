@@ -33,7 +33,7 @@ class ForceUpdatePassword extends Command
             ->where('isToUpdatePassword', false)
             ->get();
     
-        $schedule = Scheduler::where('schedule_name', 'clear_notification')
+        $schedule = Scheduler::where('schedule_name', 'change_password')
             ->first();
             
 
@@ -45,7 +45,6 @@ class ForceUpdatePassword extends Command
             foreach ($users as $user) {
                 $lastUpdated = Carbon::parse($user->last_password_updated);
                 $hoursSinceUpdate = $lastUpdated->diffInHours($now);
-            
                 if ($hoursSinceUpdate >= $resetInterval) {
                     $user->update([
                         'isToUpdatePassword' => true,
