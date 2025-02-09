@@ -388,11 +388,11 @@ class HRISProcessingService extends Controller
         if ($product == 'opap') {
             if ($data['employee_information']['type'] == 1) {
                 foreach ($leaveDefaultCredits as $leave) {
+
                     $credits = 0;
                 
-                    // Skip VL and SL
-                    if ($leave->code == 'VL' || $leave->code == 'SL') {
-                        continue; // Skip this iteration for VL and SL
+                    if ($leave->code == 'VL' || $leave->code == 'SL' || $leave->code == 'MFL') {
+                        continue; 
                     }
                 
                     if ($data['employee_information']['type'] == 1) {
@@ -418,19 +418,25 @@ class HRISProcessingService extends Controller
                             $credits = $leave->credits;
                         }
                     }
-                
-                    // Update or create the record with the appropriate credits
-                    $model::updateOrCreate(
-                        [
-                            'employee_no' => $employee_no,
-                            'leave_type_id' => $leave->id,
-                        ],
-                        [
-                            'credits' => $credits,
-                        ]
-                    );
+
+                    $currentCredits = LeaveCredits::where('leave_type_id', $leave->id)
+                        ->where('employee_no', $employee_no)
+                        ->count();
+                            
+                    if($currentCredits == 0) {
+                        $model::updateOrCreate(
+                            [
+                                'employee_no' => $employee_no,
+                                'leave_type_id' => $leave->id,
+                            ],
+                            [
+                                'credits' => $credits,
+                                'as_of' => Carbon::now()->format('Y-m')
+                            ]
+                        );
+                    }
+                    
                 }
-                
             } else {
                 foreach ($leaveDefaultCredits as $leave) {
                     $model::updateOrCreate(
@@ -471,7 +477,7 @@ class HRISProcessingService extends Controller
                 : 0;
 
             if ($activeTranche) {
-                $data['monthly_rate'] = $salary;
+                return $data['monthly_rate'] = $salary;
             }
         }
     }

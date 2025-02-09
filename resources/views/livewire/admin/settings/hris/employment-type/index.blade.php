@@ -28,7 +28,7 @@
                     <tr>
                         <th>Code</th>
                         <th>Name</th>
-                        <th style="max-width: 200px;">Action</th>
+                        {{-- <th style="max-width: 200px;">Action</th> --}}
                     </tr>
                 </thead>                
                 <tbody>
@@ -36,14 +36,14 @@
                         <tr>
                             <td>{{$record->code}}</td>
                             <td>{{$record->name}}</td>
-                            <td>
+                            {{-- <td>
                                 <a href="{{route('employment-type.edit', ['employment_type' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
-                            </td>
+                            </td> --}}
                         </tr>
                     @empty
                         <tr>

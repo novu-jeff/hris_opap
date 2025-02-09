@@ -29,7 +29,7 @@
                         </div>
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="duration">Duration <span class="text-danger">*</span></label>
-                            <select wire:change="selectDuration" wire:model="duration" id="duration" class="form-select">
+                            <select wire:change="selectDuration" wire:model="duration" id="duration" class="form-select" {{$isDurationDisabled ? 'disabled' : ''}}>
                                 <option value=""> - CHOOSE - </option>
                                 <option value="1"> One Day </option>
                                 <option value="2"> Two or More Days </option>
