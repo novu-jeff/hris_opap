@@ -20,19 +20,21 @@ class LeaveCardService extends Controller
         if($employee_no) {
 
             if($action == 'firstime') {
-                $this->formatLeaveCardFirst($data);
+                $this->triggerSLVLFirst($data);
             }
 
             if($action == 'leave_approval') {
-                $this->formatLeaveCard($data);
+                
+                $this->triggerSLVL($data);
+
             }
 
         }
 
     }
 
-    public function formatLeaveCard($data)
-    {
+    public function triggerSLVL($data) {
+
         if (!$data) {
             return;
         }
@@ -45,13 +47,6 @@ class LeaveCardService extends Controller
         $startDate = Carbon::parse($data->from);
         $endDate = $data->to ? Carbon::parse($data->to) : null;
 
-       
-
-
-        $earned = 1.250;
-        $aut_w_pay = 0;
-        $aut_wo_pay = 0;
-
         // CHECK LEAVE BALANCE BASED ON LEAVE CARD BAL
 
         $leaveCardBalance = EmployeeLeaveCard::where('employee_no', $employee_no)
@@ -60,190 +55,235 @@ class LeaveCardService extends Controller
             ->get()
             ->last();
         
-        $leaveCardBalance = $leaveCardBalance ? $leaveCardBalance->{strtolower($leaveCode) . '_bal'} ?? 0 : 0;
+
+        if(in_array($leaveCode, ['vl', 'sl'])) {
+            $leaveCardBalance = $leaveCardBalance ? (float) $leaveCardBalance->{strtolower($leaveCode) . '_bal'} ?? 0 : 0;
+        } else {
+            // IF MFL SET BALANCE TO VL
+            $leaveCardBalance = $leaveCardBalance ? (float) $leaveCardBalance->vl_bal ?? 0 : 0;
+        }
     
-        $isWOPay = $leaveCardBalance <= 0 ? true : false;
-
-        $leaveMonths = $this->processLeaveMonths($startDate, $endDate, $leaveCode, $isWOPay);
-
-        $months = [
-            'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-            'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
-        ];
-        
+        $leaveMonths = $this->processLeaveMonths($startDate, $endDate, $leaveCode, $leaveCardBalance);
         $latestLeaveCard = EmployeeLeaveCard::where('employee_no', $employee_no)
             ->where('year', $currentYear)
             ->orderBy('year', 'asc')
             ->get()
             ->toArray();
-
-        // dd($latestLeaveCard->toArray());
-        // dd($leaveMonths);
-
-
+        
         $mappedLeaveCards = array_map(function ($leaveCard) use ($leaveMonths, $leaveCode) {
-            // Find the corresponding month in the $leaveMonths array
+            // Find the corresponding month in $leaveMonths
             $matchingMonth = collect($leaveMonths)->firstWhere('month', $leaveCard['period']);
-            
-            // If a matching month is found, handle the leaveEquiv and particulars
+        
             if ($matchingMonth) {
-                // Handle auto pay fields, add if they are already numeric
-                $leaveCard[$leaveCode . '_aut_w_pay'] = isset($leaveCard[$leaveCode . '_aut_w_pay']) && is_numeric($leaveCard[$leaveCode . '_aut_w_pay']) 
-                    ? $leaveCard[$leaveCode . '_aut_w_pay'] + ($matchingMonth[$leaveCode . '_aut_w_pay'] ?? 0)
-                    : ($matchingMonth[$leaveCode . '_aut_w_pay'] ?? '-');
+                if (in_array($leaveCode, ['vl', 'sl'])) {
+                    // Handle auto pay fields only if $isVLandSL is true
+                    $leaveCard[$leaveCode . '_aut_w_pay'] = isset($leaveCard[$leaveCode . '_aut_w_pay']) && is_numeric($leaveCard[$leaveCode . '_aut_w_pay']) 
+                        ? $leaveCard[$leaveCode . '_aut_w_pay'] + ($matchingMonth[$leaveCode . '_aut_w_pay'] ?? 0)
+                        : ($matchingMonth[$leaveCode . '_aut_w_pay'] ?? '');
         
-                $leaveCard[$leaveCode . '_aut_wo_pay'] = isset($leaveCard[$leaveCode . '_aut_wo_pay']) && is_numeric($leaveCard[$leaveCode . '_aut_wo_pay']) 
-                    ? $leaveCard[$leaveCode . '_aut_wo_pay'] + ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? 0)
-                    : ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? '-');
+                    $leaveCard[$leaveCode . '_aut_wo_pay'] = isset($leaveCard[$leaveCode . '_aut_wo_pay']) && is_numeric($leaveCard[$leaveCode . '_aut_wo_pay']) 
+                        ? $leaveCard[$leaveCode . '_aut_wo_pay'] + ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? 0)
+                        : ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? '');
+                } else {
+                    // if mfl
+                    $leaveCard['vl_aut_w_pay'] = isset($leaveCard['vl_aut_w_pay']) && is_numeric($leaveCard['vl_aut_w_pay']) 
+                        ? $leaveCard['vl_aut_w_pay'] + ($matchingMonth['vl_aut_w_pay'] ?? 0)
+                        : ($matchingMonth['vl_aut_w_pay'] ?? '');
+                    }
         
-                // Combine the particulars if they already exist
-                $leaveCard[$leaveCode . '_particulars'] = isset($leaveCard[$leaveCode . '_particulars']) && $leaveCard[$leaveCode . '_particulars'] !== ''
-                ? $leaveCard[$leaveCode . '_particulars'] . ', ' . ($matchingMonth[$leaveCode . '_particulars'] ?? '')
-                : ($matchingMonth[$leaveCode . '_particulars'] ?? '-');
+                // Determine field key(s) based on leave code
+                $fieldKeys = ($leaveCode === 'mfl') ? ['particulars', 'remarks'] : [in_array($leaveCode, ['vl', 'sl']) ? 'particulars' : 'remarks'];
 
+                foreach ($fieldKeys as $fieldKey) {
+                    // Extract existing values
+                    $existingField = isset($leaveCard[$fieldKey]) && $leaveCard[$fieldKey] !== '' 
+                        ? explode("\n", trim($leaveCard[$fieldKey])) 
+                        : [];
+
+                    // Extract new values
+                    $newField = isset($matchingMonth[$fieldKey]) && $matchingMonth[$fieldKey] !== '' 
+                        ? explode("\n", trim($matchingMonth[$fieldKey])) 
+                        : [];
+
+                    // Merge and format fields
+                    $mergedField = array_filter(array_merge($existingField, $newField), fn($v) => !empty(trim($v)));
+                    $formattedField = implode(', ', array_map('trim', $mergedField));
+
+                    // Assign merged values back
+                    $leaveCard[$fieldKey] = !empty($formattedField) ? $formattedField : '';
+                }
+
+        
             } else {
-                // If no matching month found, set all fields to '-'
-                $leaveCard[$leaveCode . '_aut_w_pay'] = '-';
-                $leaveCard[$leaveCode . '_aut_wo_pay'] = '-';
-                $leaveCard[$leaveCode . '_particulars'] = '-';
+                // If no matching month, set defaults
+                if (in_array($leaveCode, ['vl', 'sl'])) {
+                    $leaveCard[$leaveCode . '_aut_w_pay'] = '';
+                    $leaveCard[$leaveCode . '_aut_wo_pay'] = '';
+                }
+        
+                // Set default for particulars or remarks
+                $leaveCard[in_array($leaveCode, ['vl', 'sl']) ? 'particulars' : 'remarks'] = '';
             }
         
             return $leaveCard;
         }, $latestLeaveCard);
-        
+            
         $combined = $this->combine($mappedLeaveCards, $latestLeaveCard);
-
-        // dd($combined);
 
         $newData = $this->compute($combined);
 
-
-        foreach($newData as $data) {
+        foreach($newData as $info) {
             EmployeeLeaveCard::updateOrCreate(
                 [
-                    'employee_no' => $data['employee_no'],
-                    'period' => $data['period'],
-                    'year' => $data['year']
+                    'employee_no' => $info['employee_no'],
+                    'period' => $info['period'],
+                    'year' => $info['year']
                 ],
                 [
-                    'vl_particulars' => $data['vl_particulars'],
-                    'vl_earned' => $data['vl_earned'],
-                    'vl_aut_w_pay' => $data['vl_aut_w_pay'],
-                    'vl_bal' => $data['vl_bal'],
-                    'vl_aut_wo_pay' => $data['vl_aut_wo_pay'],
-                    'vl_remarks' => null,
-                    'sl_earned' => $data['sl_earned'],
-                    'sl_aut_w_pay' => $data['sl_aut_w_pay'],
-                    'sl_bal' => $data['sl_bal'],
-                    'sl_aut_wo_pay' => $data['sl_aut_wo_pay'],
-                    'sl_particulars' => $data['sl_particulars'],
-                    'sl_remarks' => null,
+                    'particulars' => $info['particulars'],
+                    'vl_earned' => $info['vl_earned'],
+                    'vl_aut_w_pay' => $info['vl_aut_w_pay'],
+                    'vl_bal' => $info['vl_bal'],
+                    'vl_aut_wo_pay' => $info['vl_aut_wo_pay'],
+                    'sl_earned' => $info['sl_earned'],
+                    'sl_aut_w_pay' => $info['sl_aut_w_pay'],
+                    'sl_bal' => $info['sl_bal'],
+                    'sl_aut_wo_pay' => $info['sl_aut_wo_pay'],
+                    'remarks' => $info['remarks'],
                 ]
             );
         }
 
+        // DEDUCT NON SL AND VL CREDITS TO TABLE
+        
+        if(!in_array($leaveCode, ['vl', 'sl', 'mfl'])) {
+            $remainingLeaveCredits = LeaveCredits::where('employee_no', $employee_no)
+                    ->where('leave_type_id', $data->leave_id)
+                    ->first();
+            $remainingLeaveCredits->credits -= $data->daysCovered;
+            $remainingLeaveCredits->as_of = Carbon::now()->format('Y-m');
+            $remainingLeaveCredits->save();
+        } 
+
     }
 
-    private function processLeaveMonths($startDate, $endDate, $leaveCode, $isWOPay = false) {
-        // Ensure that start date is a valid Carbon instance
+    private function processLeaveMonths($startDate, $endDate, $leaveCode, $leaveBalance) {
+
         if (!$startDate instanceof Carbon) {
             throw new InvalidArgumentException('Start date is not a valid Carbon instance.');
         }
-        
+    
         $leaveMonths = [];
-        $currentDate = $startDate->copy(); // Ensure we do not modify the original $startDate
+        $currentDate = $startDate->copy(); // Clone startDate to avoid modifying the original
     
-        // Loop through days from startDate to endDate
-        if (!is_null($endDate)) {
-            while ($currentDate->lte($endDate)) {
-                $month = strtoupper($currentDate->format('F'));  // Get the full month name
-                $abbrMonth = $currentDate->format('M');  // Abbreviated month (e.g., 'Jan', 'Feb')
-                $day = $currentDate->day;  // Get the day of the month
+        // Ensure endDate is valid
+        $endDate = $endDate instanceof Carbon ? $endDate : $startDate;
     
-                // Determine the correct key for auto-pay based on $isWOPay
-                $payKey = $isWOPay ? $leaveCode . '_aut_wo_pay' : $leaveCode . '_aut_w_pay';
-    
-                // If the month doesn't exist in the $leaveMonths array, add it
-                if (!isset($leaveMonths[$month])) {
-                    $leaveMonths[$month] = [
-                        'month' => $month,
-                        'days' => [$day],  // Store the day in the days array
-                        $payKey => round(1.00, 3), // Initialize with 1.0
-                        $leaveCode . '_particulars' => strtoupper($leaveCode) . ': ' . $abbrMonth . ' ' . $day
-                    ];
-                } else {
-                    // If the month already exists, just append the day
-                    $leaveMonths[$month]['days'][] = $day;
-                }
-    
-                // Move to the next day
-                $currentDate->addDay();
-            }
-    
-            // After looping through all the days, calculate the leaveEquiv for each month
-            foreach ($leaveMonths as &$entry) {
-                // Calculate the number of days before transforming to a string
-                $daysCount = count($entry['days']); // Count the days in the array
-    
-                // Transform days into a comma-separated string
-                $entry['days'] = implode(',', $entry['days']);
-    
-                // Update the leave pay equivalent based on the number of days
-                $entry[$payKey] = round($daysCount * 1.00, 3); // Multiply by the number of days
-    
-                // Update particulars with all the days, properly formatted
-                // Fix: use the original month from the array, not the last iteration's month
-                // Use abbreviated month for particulars
-                $entry[$leaveCode . '_particulars'] = strtoupper($leaveCode) . ': ' . Carbon::parse($entry['month'])->format('M') . ' ' . $entry['days'];
-            }
-        } else {
-            // If endDate is null, treat it as just the startDate
+        while ($currentDate->lte($endDate)) {
             $month = strtoupper($currentDate->format('F'));
             $abbrMonth = $currentDate->format('M');
             $day = $currentDate->day;
     
-            // Determine the correct key for auto-pay based on $isWOPay
-            $payKey = $isWOPay ? $leaveCode . '_aut_wo_pay' : $leaveCode . '_aut_w_pay';
+            if (!isset($leaveMonths[$month])) {
+                $leaveMonths[$month] = [
+                    'month' => $month,
+                    'days' => [],
+                ];
     
-            $leaveMonths[$month] = [
-                'month' => $month,
-                'days' => $day,
-                $payKey => round(1.00, 3), // Initialize with 1.0
-                $leaveCode . '_particulars' => strtoupper($leaveCode) . ': ' . $abbrMonth . ' ' . $day
-            ];
+                if($leaveCode == 'vl' || $leaveCode == 'sl') {
+                    $leaveMonths[$month][$leaveCode . '_aut_w_pay'] = 0;
+                    $leaveMonths[$month][$leaveCode . '_aut_wo_pay'] = 0;
+                    $leaveMonths[$month]['particulars'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
+                } else if($leaveCode == 'mfl') {
+                    $leaveMonths[$month]['vl_aut_w_pay'] = 0;
+                    $leaveMonths[$month]['vl_aut_wo_pay'] = 0;
+                    $leaveMonths[$month]['particulars'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
+                    $leaveMonths[$month]['remarks'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
+                } else {
+                    $leaveMonths[$month]['remarks'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
+                }
+
+            }
+    
+            // Add day to the array
+            $leaveMonths[$month]['days'][] = $day;
+    
+            // Move to the next day
+            $currentDate->addDay();
         }
     
-        return array_values($leaveMonths);  // Re-index the array before returning
-    }
+        // Determine leave balance distribution
+        foreach ($leaveMonths as &$entry) {
+            $leaveDays = count($entry['days']);
     
+            if($leaveCode == 'vl' || $leaveCode == 'sl') {
+                if ($leaveDays > $leaveBalance) {
+                    $entry[$leaveCode . '_aut_w_pay'] = $leaveBalance;
+                    $entry[$leaveCode . '_aut_wo_pay'] = $leaveDays - $leaveBalance;
+                } else {
+                    $entry[$leaveCode . '_aut_w_pay'] = $leaveDays;
+                    $entry[$leaveCode . '_aut_wo_pay'] = 0;
+                }
+            } else {
+                if ($leaveDays > $leaveBalance) {
+                    $entry['vl_aut_w_pay'] = $leaveBalance;
+                    $entry['vl_aut_wo_pay'] = $leaveDays - $leaveBalance;
+                } else {
+                    $entry['vl_aut_w_pay'] = $leaveDays;
+                    $entry['vl_aut_wo_pay'] = 0;
+                }
+            }
+        
+    
+            // Format days correctly (single day or range)
+            $firstDay = reset($entry['days']);
+            $lastDay = end($entry['days']);
+            $dayRange = $firstDay == $lastDay ? " $firstDay" : " $firstDay-$lastDay";
+    
+            if($leaveCode == 'vl' || $leaveCode == 'sl') {
+                $entry['particulars'] .= $dayRange;
+            } else if($leaveCode == 'mfl') {
+                $entry['particulars'] .= $dayRange;
+                $entry['remarks'] .= $dayRange;
+            } else {
+                $entry['remarks'] .= $dayRange;
+            }
+        }
+    
+        return array_values($leaveMonths);
+    }
+     
     private function combine($a, $b) {
         $mergedData = [];
     
         foreach ($a as $index => $itemA) {
-            $itemB = $b[$index] ?? []; // Get the corresponding item from arrayB if it exists
+            $itemB = $b[$index] ?? []; // Get the corresponding item from array B if it exists
             $mergedItem = [];
     
             foreach ($itemA as $key => $valueA) {
                 $valueB = $itemB[$key] ?? null;
     
-                // List of keys that should be merged uniquely (except numeric values)
-                $mergeKeys = ['vl_particulars', 'sl_particulars'];
+                // Normalize values to remove unwanted characters
+                $valueA = trim(preg_replace('/\s+/', ' ', $valueA ?? ''));
+                $valueB = trim(preg_replace('/\s+/', ' ', $valueB ?? ''));
     
-                // Keys that should retain the highest numeric value
-                $numericKeys = ['vl_aut_w_pay', 'sl_aut_w_pay', 'vl_aut_wo_pay', 'sl_aut_wo_pay'];
-    
-                if (in_array($key, $mergeKeys) && $valueB !== null) {
-                    // Convert to an array, filter out empty values and '-'
+                if ($key === 'particulars' && $valueB !== null) {
+                    // Convert to an array, filter out empty values and ''
                     $values = array_filter(
                         array_merge(explode(', ', $valueA), explode(', ', $valueB)),
-                        fn($v) => $v !== '-' && trim($v) !== ''
+                        fn($v) => $v !== '' && trim($v) !== ''
                     );
                     // Remove duplicates and reformat
                     $mergedValue = implode(', ', array_unique($values));
     
-                } elseif (in_array($key, $numericKeys)) {
+                } elseif (in_array($key, ['vl_aut_w_pay', 'sl_aut_w_pay', 'vl_aut_wo_pay', 'sl_aut_wo_pay'])) {
                     // Ensure the values are treated as numbers and pick the maximum
                     $mergedValue = max((int) $valueA, (int) $valueB);
+    
+                } elseif ($key === 'remarks') {
+                    // Always take remarks from $a
+                    $mergedValue = $valueA;
+    
                 } else {
                     // Default merging behavior
                     $mergedValue = $valueB ?? $valueA;
@@ -257,6 +297,7 @@ class LeaveCardService extends Controller
     
         return $mergedData;
     }
+    
 
     public function compute($data) {
         for ($i = 1; $i < count($data); $i++) {
@@ -282,7 +323,7 @@ class LeaveCardService extends Controller
         return $data;
     }
     
-    public function formatLeaveCardFirst($data) {
+    public function triggerSLVLFirst($data) {
 
         if ($data) {
             
@@ -341,7 +382,7 @@ class LeaveCardService extends Controller
                         'period' => $month,
                         'particulars' => '',
                         'earned' => number_format($earned, 3),
-                        'aut_w_pay' => ($aut_w_pay > 0) ? number_format($aut_w_pay, 3) : '-',
+                        'aut_w_pay' => ($aut_w_pay > 0) ? number_format($aut_w_pay, 3) : '',
                         'bal' => number_format($balance, 3),
                         'year' => $currentYear,
                     ];
@@ -363,7 +404,7 @@ class LeaveCardService extends Controller
                     EmployeeLeaveCard::updateOrCreate(
                         ['employee_no' => $data['employee_no'], 'period' => $data['period'], 'year' => $data['year']],
                         [
-                            'vl_particulars' => $data['particulars'],
+                            'particulars' => $data['particulars'],
                             'vl_earned' => $data['earned'],
                             'vl_aut_w_pay' => $data['aut_w_pay'],
                             'vl_bal' => $data['bal'],
@@ -377,7 +418,7 @@ class LeaveCardService extends Controller
                     EmployeeLeaveCard::updateOrCreate(
                         ['employee_no' => $data['employee_no'], 'period' => $data['period'], 'year' => $data['year']],
                         [
-                            'sl_particulars' => $data['particulars'],
+                            'particulars' => $data['particulars'],
                             'sl_earned' => $data['earned'],
                             'sl_aut_w_pay' => $data['aut_w_pay'],
                             'sl_bal' => $data['bal'],

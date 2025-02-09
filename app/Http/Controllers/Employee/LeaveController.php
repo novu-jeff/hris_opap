@@ -34,7 +34,7 @@ class LeaveController extends Controller
         $employee_no = Auth::user()->employee_no;
     
         // Fetch leave record with employee details
-        $records = EmployeeLeave::with('employee')->where('employee_no', $employee_no)
+        $records = EmployeeLeave::with('employee.personal', 'employee.positions')->where('employee_no', $employee_no)
             ->where('id', $leave_id)
             ->first();
     
@@ -52,10 +52,12 @@ class LeaveController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
     
             // Set employee information
-            $sheet->setCellValue('G9', $records->employee->lastname);
-            $sheet->setCellValue('I9', $records->employee->firstname);
-            $sheet->setCellValue('N9', $records->employee->middlename);
-            
+            $sheet->setCellValue('G9', $records->employee->personal->lastname ?? '');
+            $sheet->setCellValue('I9', $records->employee->personal->firstname ?? '');
+            $sheet->setCellValue('N9', $records->employee->personal->middlename ?? '');
+            $sheet->setCellValue('O11', $records->employee->monthly_rate ?? '');
+            $sheet->setCellValue('H11', $records->employee->positions->name ?? '');
+
             // Set created date
             $sheet->setCellValue('F11', Carbon::parse($records->created_at)->format('m/d/y'));
     

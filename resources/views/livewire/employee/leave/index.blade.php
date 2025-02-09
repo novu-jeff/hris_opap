@@ -43,7 +43,12 @@
                         <tr data-id="{{$record->id}}">
                             <td>#{{format_id($record->id, 6)}}</td>
                             <td>{{'(' . $record->leave_type->code . ') - ' . $record->leave_type->name}}</td>
-                            <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
+                            <td>
+                                {{ format_date($record->from, 'date_string') }}
+                                @if($record->to)
+                                    - {{ format_date($record->to, 'date_string') }}
+                                @endif
+                            </td>                            
                             <td>
                                 @if ($record->status == 'approved')
                                     <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Approved</div>

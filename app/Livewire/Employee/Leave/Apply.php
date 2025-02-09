@@ -37,6 +37,7 @@ class Apply extends Component
     public $commutation;
 
     public $remaining_credits;
+    public bool $isDurationDisabled = false;
 
     protected $listeners = ['save'];
 
@@ -105,11 +106,14 @@ class Apply extends Component
     }
 
     public function handleLeaveCredits() {
-        
+
+        $this->reset('duration', 'isDurationDisabled', 'isMoreThanOne');
+    
+        $leaveType = LeaveType::where('id', $this->type)
+            ->first();
+        $leaveTypes = strtolower($leaveType->code ?? null);
+
         if($this->type == 1 || $this->type == 2) {
-            $leaveType = LeaveType::where('id', $this->type)
-                ->first();
-            $leaveTypes = strtolower($leaveType->code);
             $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)
                 ->where('year', Carbon::now()->year)
                 ->orderBy('year', 'asc') 
@@ -117,6 +121,24 @@ class Apply extends Component
                 ->last();
             $leaveTotalCredits = $records->{$leaveTypes . '_bal'} ?? 0;
 
+        } else if($this->type == 3) {
+            
+            $this->duration = 2;
+            $this->isDurationDisabled = true;
+            $this->isMoreThanOne = true;
+
+            $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                ->where('year', Carbon::now()->year)
+                ->orderBy('year', 'asc') 
+                ->get()
+                ->last();
+                
+            $leaveTotalCredits = $records->vl_bal ?? 0;
+
+            if($leaveTotalCredits > 10) {
+                $leaveTotalCredits = 5;
+            }
+            
         } else {
             $records = LeaveCredits::where('employee_no', $this->employee_no)
                 ->where('leave_type_id', $this->type)
@@ -139,37 +161,49 @@ class Apply extends Component
             'commutation' => 'required|in:yes,no'
         ];
     
-        // Conditional rules based on $this->isMoreThanOne
+        // Adjust 'to' field validation based on isMoreThanOne
         if ($this->isMoreThanOne) {
-            $rules['to'] = 'required|date|after:from';
+            $rules['to'] = ['required', 'date', 'after:from'];
         } else {
-            $rules['to'] = 'nullable|date';
+            $rules['to'] = ['nullable', 'date'];
         }
     
-        // Conditional rules for 'location' based on $this->type
-        if ($this->type == 1) {
-            $rules['location'] = 'required|in:ph,abroad';
-            $rules['location_specific'] = 'required';
-        }
+        // Conditional validation based on type
+        switch ($this->type) {
+            case 1: // Location required for type 1
+                $rules['location'] = 'required|in:ph,abroad';
+                $rules['location_specific'] = 'required';
+                break;
     
-        // Conditional rules for 'confinement' and 'illness' based on $this->type
-        if ($this->type == 3) {
-            $rules['confinement'] = 'required';
-            $rules['illness'] = 'required';
-        }
+            case 2: // Confinement and illness required for type 2
+                $rules['confinement'] = 'required';
+                $rules['illness'] = 'required';
+                break;
     
-        // Conditional rules for 'study' based on $this->type
-        if ($this->type == 8) {
-            $rules['study'] = 'required|in:completion_masters,examination,others';
+            case 3: // Ensure 'to' is at least 5 days after 'from'
+                $rules['from'] = ['required', 'date', 'after:today'];
+                $rules['to'] = [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        if (strtotime($value) - strtotime($this->from) < 4 * 86400) { // Ensure at least 5 days total
+                            $fail('requires atleast 5 days to spend');
+                        }
+                    }
+                ];
+                break;
     
-            // If 'study' is 'others', make 'study_other_purpose' required
-            if ($this->study == 'others') {
-                $rules['study_other_purpose'] = 'required';
-            }
+            case 8: // Study leave
+                $rules['study'] = 'required|in:completion_masters,examination,others';
+                if ($this->study === 'others') {
+                    $rules['study_other_purpose'] = 'required';
+                }
+                break;
         }
     
         return $rules;
     }
+    
     
     
 
@@ -239,21 +273,27 @@ class Apply extends Component
                 $existingLeave = $employeeLeaveModel::where('employee_no', $this->employee_no)
                     ->where(function ($query) use ($formatted_from, $formatted_to) {
                         if ($formatted_to) {
-                            // If $formatted_to is not null, check the date range
-                            $query->whereBetween('from', [$formatted_from, $formatted_to])  // Leave starts within the requested range
-                                ->orWhereBetween('to', [$formatted_from, $formatted_to])    // Leave ends within the requested range
-                                ->orWhere(function ($subQuery) use ($formatted_from, $formatted_to) {
-                                    // Full overlap (leave starts before and ends after the requested range)
-                                    $subQuery->where('from', '<=', $formatted_from)
-                                            ->where('to', '>=', $formatted_to);
-                                });
+                            // Check for any overlap when both "from" and "to" are provided
+                            $query->where(function ($subQuery) use ($formatted_from, $formatted_to) {
+                                $subQuery->whereBetween('from', [$formatted_from, $formatted_to]) // Starts within range
+                                    ->orWhereBetween('to', [$formatted_from, $formatted_to]) // Ends within range
+                                    ->orWhere(function ($overlapQuery) use ($formatted_from, $formatted_to) {
+                                        // Existing leave fully covers the new leave
+                                        $overlapQuery->where('from', '<=', $formatted_from)
+                                                    ->where('to', '>=', $formatted_to);
+                                    })
+                                    ->orWhere(function ($containedQuery) use ($formatted_from, $formatted_to) {
+                                        // New leave is fully within an existing leave
+                                        $containedQuery->where('from', '<=', $formatted_to)
+                                                    ->where('to', '>=', $formatted_from);
+                                    });
+                            });
                         } else {
-                            // If $formatted_to is null, only check the 'from' date
-                            $query->where('from', '=', $formatted_from)
-                                ->orWhere('to', '=', $formatted_from);
+                            // If "to" is null, check if any leave already exists on the "from" date
+                            $query->where('from', '=', $formatted_from);
                         }
                     })
-                    ->where('status', '=', 'approved')
+                    ->where('status', 'pending')
                     ->where('isDeleted', false)
                     ->exists();
 
@@ -263,64 +303,84 @@ class Apply extends Component
                         'showAlert' => true,
                         'status' => 'error',
                         'title' => 'Oops',
-                        'message' => 'You already have an existing approved application during this period. Please select a different date.'
+                        'message' => 'You already have an existing application during this period. Please select a different date.'
                     ]);
                 }
 
+                if (in_array($this->type, [1, 2, 3])) {
+                
+                    $leaveType = LeaveType::find($this->type);
+                    $leaveCode = strtolower($leaveType->code);
+                
+                    $leaveCard = EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                        ->where('year', Carbon::now()->year);
 
-                if($this->type == 1 || $this->type == 2) {
+                    if(!$leaveCard->exists()) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'error',
+                            'title' => 'Oops',
+                            'message' => 'Unfortunately, vacation leave (VL), sick leave (SL) and mandatory / forced leave (MFL) are not available. Please try again later.'
+                        ]);
+                    }
 
-                    $leaveType = LeaveType::where('id', $this->type)
-                        ->first();
-                    $leaveTypes = strtolower($leaveType->code);
-    
-                    $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $this->employee_no)
-                        ->where('year', Carbon::now()->year)
-                        ->orderBy('year', 'asc') 
+                    $leaveTotalCredits = $leaveCard->orderBy('year', 'asc')
                         ->get()
                         ->last();
-    
-                    $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? 0 : 0;
-    
+
+                    if($this->type == 1 || $this->type == 2) {
+                        $leaveTotalCredits = $leaveTotalCredits ? (float) $leaveTotalCredits->{strtolower($leaveCode) . '_bal'} ?? 0 : 0;
+                    } else {
+                        $leaveTotalCredits = $leaveTotalCredits ? (float) $leaveTotalCredits->vl_bal ?? 0 : 0;
+                    }
+
+                    
                     $leaveEquiv = round((float) $daysCovered * 1.00, 3);
-    
-                    if(!$this->accepts_autwopay) {
-                        if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
+                
+                    if($this->type == 3 && $leaveTotalCredits <= 10) {
+                        return $this->dispatch('alert', [
+                            'showAlert' => true,
+                            'status' => 'error',
+                            'title' => 'Oops',
+                            'message' =>  'Unfortunately, unable to use <b>mandatory or forced leave</b> because you only have <b>' . $leaveTotalCredits . '</b> credits left.'
+                        ]);
+                    }
+
+                    if (in_array($this->type, [1, 2]) && !$this->accepts_autwopay) {
+                        if ($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
                             $this->accepts_autwopay = true;
                             return $this->dispatch('showConfirmation', [
-                                'title' => 'Please be Informed', 
-                                'message' => '
-                                    Unfortunately, your leave credits are insufficient. You are requesting '.$daysCovered.' day(s) of leave, but you only have '.$leaveTotalCredits.' remaining. You may still proceed with your request, but please note that this will be considered as Absence Without Pay (AUT w/o pay).
-                                ',
+                                'title' => 'Please be Informed',
+                                'message' => "Unfortunately, your leave credits are insufficient. You are requesting {$daysCovered} day(s) of leave, but you only have {$leaveTotalCredits} remaining. You may still proceed with your request, but please note that this will be considered as Absence Without Pay (AUT w/o pay).",
                                 'action' => 'save'
                             ]);
                         }
                     }
-    
                 } else {
                     $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
                         ->where('employee_no', $this->employee_no)
                         ->first();
-    
-                    if(is_null($leaveCredits) || $leaveCredits->credits == 0) {
+                
+                    if (!$leaveCredits || $leaveCredits->credits == 0) {
                         return $this->dispatch('alert', [
                             'showAlert' => true,
                             'status' => 'error',
-                            'title' => 'Oops', 
-                            'message' => 'Unfortunately, you have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
+                            'title' => 'Oops',
+                            'message' => "Unfortunately, you have no credits left for <b>{$leaveTypeModel->name}</b>."
                         ]);
                     }
-                    
-                    if($daysCovered > $leaveCredits->credits) {
+                
+                    if ($daysCovered > $leaveCredits->credits) {
                         return $this->dispatch('alert', [
                             'showAlert' => true,
                             'status' => 'error',
-                            'title' => 'Oops', 
-                            'message' => 'Unfortunately, you have insufficient leave credits. You\'re applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
+                            'title' => 'Oops',
+                            'message' => "Unfortunately, you have insufficient leave credits. You're applying for {$daysCovered} day(s), but only have {$leaveCredits->credits} remaining leave credits."
                         ]);
                     }
                 }
-
+                
+                
                 $employeeLeaveModel::updateOrCreate([
                     'id' => $this->record_id,
                 ], [

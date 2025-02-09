@@ -125,7 +125,7 @@ class Index extends Component
         
             // if no credits left
 
-            if($record->leave_id == 1 || $record->leave_id == 2) {
+            if($record->leave_id == 1 || $record->leave_id == 2 || $record->leave_id == 3) {
 
                 $leaveType = LeaveType::where('id', $record->leave_id)
                     ->first();
@@ -138,7 +138,11 @@ class Index extends Component
                     ->last();
                     
 
-                $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? '' : 0;
+                if($record->leave_id == 1 || $record->leave_id == 2) {
+                    $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? '' : 0;
+                } else {
+                    $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->vl_bal ?? '' : 0;
+                }
 
                 $leaveEquiv = round((float) $daysCovered * 1.00, 3);
 
@@ -165,6 +169,7 @@ class Index extends Component
                 } 
 
             } else {
+
                 $leaveCredits = $leaveCreditsModel::where('leave_type_id', $record->leave_id)
                     ->where('employee_no', $record->employee_no)
                     ->first();
@@ -190,16 +195,14 @@ class Index extends Component
         
             $leaveCardService = new LeaveCardService;
             $leaveCardService->init($record->employee_no, 'leave_approval', $record);
-        
-            // dd(123);
-
-            // unset($record->daysCovered);
+    
+            unset($record->daysCovered);
 
             // Update the EmployeeLeave record's status
-            // $record->update([
-            //     'action_by_id' => Auth::user()->id,
-            //     'status' => 'approved'
-            // ]);
+            $record->update([
+                'action_by_id' => Auth::user()->id,
+                'status' => 'approved'
+            ]);
         
             $this->dispatch('alert', [
                 'id' => $this->selected_id,

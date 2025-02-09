@@ -52,8 +52,9 @@ class Show extends Component
 
         $this->leaveName = $leaveType->name;
 
-        $leaveCreditsVL = LeaveCredits::where('leave_type_id', 1)->get();
-        $leaveCreditsSL = LeaveCredits::where('leave_type_id', 2)->get();
+        $currentMonth = strtoupper(Carbon::now()->format('F'));
+        $currentYear = Carbon::now()->year;
+        $currentMonthYear = Carbon::now()->format('Y-m');
 
         
         $this->vl_credits = [];
@@ -64,32 +65,28 @@ class Show extends Component
     
         if($this->id == 1 || $this->id == 2) {
             foreach ($employees as $employee) {
-                $leaveCreditVL = $leaveCreditsVL->firstWhere('employee_no', $employee['employee_no']);
-                $leaveCreditSL = $leaveCreditsSL->firstWhere('employee_no', $employee['employee_no']);
 
-                $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
-                    ->where('year', Carbon::now()->year)
-                    ->whereRaw("COALESCE(vl_bal, '') != ''")
-                    ->where("{$leaveTypes}_bal", '>', 0)
-                    ->exists();
-
-
-                $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
-                    ->where('year', Carbon::now()->year)
+                $currentleaveCredits = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
+                    ->where('year', $currentYear)
                     ->orderBy('year', 'asc') 
-                    ->get()
-                    ->last();
+                    ->get();
 
+                $currentMonthCredits = $currentleaveCredits->filter(function ($item) use ($currentMonth) {
+                    return $item->period === $currentMonth; // Compare period with the current month
+                })->first();
+
+                $leaveTotalCredits = $currentleaveCredits->last();
+                    
                 $leaveTotalCreditsVL = $leaveTotalCredits ? $leaveTotalCredits->vl_bal ?? 0 : 0;
                 $leaveTotalCreditsSL = $leaveTotalCredits ? $leaveTotalCredits->sl_bal ?? 0 : 0;
 
-                $this->vl_credits[$employee['employee_no']] = $leaveCreditVL ? $leaveCreditVL->credits : 0;
-                $this->sl_credits[$employee['employee_no']] = $leaveCreditSL ? $leaveCreditSL->credits : 0;
-                $this->as_of[$employee['employee_no']] = $leaveCreditVL ? $leaveCreditVL->as_of : null;
+                $this->vl_credits[$employee['employee_no']] = $currentMonthCredits ? $currentMonthCredits->vl_bal : 0;
+                $this->sl_credits[$employee['employee_no']] = $currentMonthCredits ? $currentMonthCredits->sl_bal : 0;
+                $this->as_of[$employee['employee_no']] = ($leaveTotalCreditsVL <= 0 || $leaveTotalCreditsSL <= 0) ? '' : $currentMonthYear;
                 $this->total_vl_credits[$employee['employee_no']] = $leaveTotalCreditsVL  ?? null;
                 $this->total_sl_credits[$employee['employee_no']] = $leaveTotalCreditsSL  ?? null;
 
-                $this->has_leave_card[$employee['employee_no']] = $leaveCardExists;
+                $this->has_leave_card[$employee['employee_no']] = ($leaveTotalCreditsVL <= 0 || $leaveTotalCreditsSL <= 0) ? false : true;
             }
         } else {
             $leaveCredits = LeaveCredits::where('leave_type_id', $this->id)->get();
@@ -120,12 +117,12 @@ class Show extends Component
         return [
             'vl_credits.*.required' => '*required',
             'vl_credits.*.min' => '*required',
-            'vl_credits.*.numeric' => ' ',
-            'vl_credits.*.gt' => '.',
+            'vl_credits.*.numeric' => '*number only',
+            'vl_credits.*.gt' => '*required',
 
             'sl_credits.*.required' => '*required',
             'sl_credits.*.min' => '*required',
-            'sl_credits.*.numeric' => '*numeric required',
+            'sl_credits.*.numeric' => '*number only',
             'sl_credits.*.gt' => '*required',
 
             'as_of.*' => '*required'
@@ -158,11 +155,7 @@ class Show extends Component
             ]);
 
         } else {
-        
-
-            
-            // Retrieve the LeaveCredits record
-           
+               
         
             // Retrieve the EmployeeLeaveCard records
             $leaveCard = EmployeeLeaveCard::where('employee_no', $this->selected_id);
@@ -172,32 +165,30 @@ class Show extends Component
             if ($leaveCardData->isNotEmpty()) {
                 // Reset leave card values
                 $leaveCardData->each(function ($card) {
-                    $card->{'vl_particulars'} = '';
+                    $card->{'particulars'} = '';
                     $card->{'vl_earned'} = '';
                     $card->{'vl_aut_w_pay'} = '';
                     $card->{'vl_aut_wo_pay'} = '';
                     $card->{'vl_bal'} = '';
-                    $card->{'vl_remarks'} = '';
 
-                    $card->{'sl_particulars'} = '';
                     $card->{'sl_earned'} = '';
                     $card->{'sl_aut_w_pay'} = '';
                     $card->{'sl_aut_wo_pay'} = '';
                     $card->{'sl_bal'} = '';
-                    $card->{'sl_remarks'} = '';
+                    $card->{'remarks'} = '';
                     $card->save();
                 });
         
 
                 foreach ([1, 2] as $leave_id) {
                     $record = LeaveCredits::where('employee_no', $this->selected_id)
-                        ->where('leave_type_id', $leave_id) // Use where() instead of whereIn()
+                        ->where('leave_type_id', $leave_id) 
                         ->first();
                 
                     if ($record) {
                         $record->update([
                             'credits' => 0,
-                            'as_of' => '', // or set a default date if necessary
+                            'as_of' => '', 
                         ]);
                     }
                 }
@@ -330,7 +321,7 @@ class Show extends Component
                                 ],
                                 [
                                     'credits' => $credit,
-                                    'as_of' => null,
+                                    'as_of' => $this->as_of[$employeeNo],
                                 ]
                             );
 

@@ -35,6 +35,7 @@
                                     <th>Actions</th>
                                 @else
                                     <th>Credits</th>
+                                    <th>Updated as of</th>
                                 @endif
                             </tr>
                         </thead>
@@ -56,7 +57,7 @@
                                                     <span class="text-danger">{{ $message }}</span> 
                                                 @enderror
                                             </div>
-                                            <label class="mt-2 mb-2">Total: {{$total_vl_credits[$record->employee_no]}}</label>
+                                            <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_vl_credits[$record->employee_no]}}</span></label>
                                         </td>
                                         <td style="vertical-align: top; padding-top: 12px;">
                                             <input 
@@ -70,7 +71,7 @@
                                                     <span class="text-danger">{{ $message }}</span> 
                                                 @enderror
                                             </div>
-                                            <label class="mt-2 mb-2">Total: {{$total_sl_credits[$record->employee_no]}}</label>
+                                            <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_sl_credits[$record->employee_no]}}</span></label>
                                         </td>
                                         <td style="vertical-align: top; padding-top: 12px;">
                                             <input 
@@ -100,7 +101,7 @@
                                     @else
                                         <td>
                                             <input 
-                                                type="text" 
+                                                type="number" 
                                                 wire:key="credit-{{$record->employee_no}}" 
                                                 wire:model="credits.{{$record->employee_no}}" 
                                                 class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
@@ -111,6 +112,19 @@
                                                 @enderror
                                             </div>
                                         </td>
+                                        <td style="vertical-align: top; padding-top: 12px;">
+                                            <input 
+                                                type="month" 
+                                                wire:key="as_of-{{$record->employee_no}}" 
+                                                wire:model="as_of.{{$record->employee_no}}" 
+                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                            <div class="error-field">
+                                                @error("as_of.{$record->employee_no}") 
+                                                    <span class="text-danger">{{ $message }}</span> 
+                                                @enderror
+                                            </div>
+                                        </td>      
                                     @endif
                                 </tr>
                             @empty

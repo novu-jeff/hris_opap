@@ -10,7 +10,11 @@
                     <h1>Leave Card</h1>
                 </div>
                 <div class="actions">
-                    <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    @if($action)
+                        <a href="{{route('leave.show', ['leave' => $id])}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    @else
+                        <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    @endif
                 </div>
             </div>
             <div class="mt-3">

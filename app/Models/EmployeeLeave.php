@@ -30,7 +30,7 @@ class EmployeeLeave extends Model
     }
 
     public function employee() {
-        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
+        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
     }
 
     public function leave_type() {
