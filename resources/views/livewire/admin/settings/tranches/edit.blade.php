@@ -8,11 +8,22 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12 mb-4">
+                        <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="name">Name <span class="text-danger">*</span></label>
                             <input type="text" wire:model="name" id="name" class="form-control">
                             <div class="error-field">
                                 @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="eligible">Eligible <span class="text-danger">*</span></label>
+                            <select wire:model="eligible" id="eligible" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                <option value="1">Regular Contractual</option>
+                                <option value="2">Contract of Service (COS)</option>
+                            </select>
+                            <div class="error-field">
+                                @error('eligible') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-4">

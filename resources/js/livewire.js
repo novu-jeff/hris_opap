@@ -166,7 +166,7 @@ Livewire.on('showConfirmation', function(data) {
                 }
 
                 formData['report'] = textareaValue;
-                Livewire.dispatch(data[0].action, [false, formData]);
+                Livewire.dispatch(data[0].action, [formData, data[0]['time']]);
             } else {
                 Livewire.dispatch(data[0].action, [false]);
             }

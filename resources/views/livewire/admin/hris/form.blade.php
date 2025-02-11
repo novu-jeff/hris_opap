@@ -90,7 +90,7 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="type">Employment Type <span class="text-danger">*</span></label>
-                        <select wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
+                        <select wire:change="handleSalary" wire:model="records.employee_information.type" id="records.employee_information.type" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($employmentTypes as $category)
                                 <option value="{{strtolower($category->id)}}">{{$category->name}}</option>

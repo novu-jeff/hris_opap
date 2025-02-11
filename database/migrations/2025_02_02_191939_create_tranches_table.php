@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('tranche', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isActive')
-                ->default(false);
+            $table->string('eligible');
             $table->boolean('isDeleted')
                 ->default(false);
             $table->timestamps();

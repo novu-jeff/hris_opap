@@ -35,4 +35,84 @@
             </div>
         </div>  
     </div> 
+
+    <div class="modal" id="modal-loading" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="loading-spinner mb-2"></div>
+                    <div id="progress-text">Uploading...</div> 
+                    <button id="cancel-job" wire:click="cancelUpload" class="btn btn-danger btn-sm mt-2">Cancel Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .loading-spinner{
+            width:30px;
+            height:30px;
+            border:2px solid indigo;
+            border-radius:50%;
+            border-top-color:#0001;
+            display:inline-block;
+            animation:loadingspinner .7s linear infinite;
+            }
+            @keyframes loadingspinner{
+            0%{
+                transform:rotate(0deg)
+            }
+            100%{
+                transform:rotate(360deg)
+            }
+        }           
+    </style>
 </div>
+
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            Livewire.on('isLoading', (event) => {
+                console.log(event);
+                let batchId = event[0] ?? "";
+
+                if (!batchId) {
+                    console.warn("No batch ID found. Aborting job progress check.");
+                    return;
+                }
+
+                // Ensure modal is initialized and shown
+                setTimeout(() => {
+                    $('#modal-loading').modal('show');
+                }, 1000);
+
+                function checkJobProgress(batchId) {
+                    $.ajax({
+                        url: `/admin/timekeeping/upload/job/${batchId}`,
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function(response) {
+
+                            if (response.progress !== undefined) {
+                                $('#progress-text').text(`Uploading... ${response.progress}%`);
+
+                                if (response.progress < 100) {
+                                    setTimeout(() => checkJobProgress(batchId), 30); // Poll every 2 sec
+                                } else {
+                                    location.reload();
+                                }
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error("Error fetching job progress:", xhr);
+                            modal.modal('hide'); // Hide modal on error
+                        }
+                    });
+                }
+
+                // Start job progress check
+                setTimeout(() => checkJobProgress(batchId), 100); // Small delay to ensure modal visibility
+            });
+        });
+    </script>
+@endsection

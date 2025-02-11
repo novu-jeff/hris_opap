@@ -105,7 +105,7 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td>{{$record->employee_no}}</td>
-                                        <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
+                                        <td>{{$record->employee->personal->firstname . ' ' . $record->employee->personal->lastname}}</td>
                                         <td>{{format_date($record->created_at, 'date_string')}}</td>
                                         <td>
                                             <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">

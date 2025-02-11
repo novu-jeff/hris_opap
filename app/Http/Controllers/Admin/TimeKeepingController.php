@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin\TimeKeeping;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 
-class TimekeepingController extends Controller
+class TimeKeepingController extends Controller
 {
 
     public function __construct() {
@@ -22,7 +23,7 @@ class TimekeepingController extends Controller
 
         if (is_null($month) || is_null($day) || is_null($year)) {
             // Get the latest record from the database
-            $latestRecord = EmployeeClockInOut::orderByDesc('created_at')->first();
+            $latestRecord = EmployeeTimelogs::orderByDesc('created_at')->first();
         
             if ($latestRecord) {
                 // Get the year, month, and day of the latest record
@@ -57,7 +58,7 @@ class TimekeepingController extends Controller
 
         if (is_null($month) || is_null($day) || is_null($year)) {
             // Get the latest record from the database
-            $latestRecord = EmployeeClockInOut::orderByDesc('created_at')->first();
+            $latestRecord = EmployeeTimelogs::orderByDesc('created_at')->first();
         
             if ($latestRecord) {
                 // Get the year, month, and day of the latest record
@@ -79,11 +80,16 @@ class TimekeepingController extends Controller
 
         $setup = request()->query('setup');
 
+
         return view('admin.timekeeping.correction', compact('month', 'day', 'year', 'setup'));
     }
 
-    public function correction_apply(int $id = null) {
-        return view('admin.timekeeping.correction-apply', compact('id'));
+    public function job(string $id) {
+        return Bus::findBatch($id);
+    }
+
+    public function correction_apply(string $bsd_no, string $date) {
+        return view('admin.timekeeping.correction-apply', compact('bsd_no', 'date'));
     }
 
 }

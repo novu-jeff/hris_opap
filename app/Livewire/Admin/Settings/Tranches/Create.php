@@ -16,6 +16,7 @@ class Create extends Component
     use WithFileUploads;
 
     public $name;
+    public $eligible;
     public $file;
     public $records;
 
@@ -120,6 +121,7 @@ class Create extends Component
     protected function rules() {
         return [
             'name' => 'required',
+            'eligible' => 'required|exists:employment_types,id',
             'file' => empty($this->records) ? 'required' : 'nullable', 
     
         ];
@@ -143,20 +145,10 @@ class Create extends Component
 
         try {
            
-            $model = Tranche::class;
-
-            if($model::count() > 0) {
-                $tranche = $model::create([
-                    'name' => $this->name
-                ]);
-            } else {
-                $tranche = Tranche::create([
-                    'name' => $this->name,
-                    'isActive' => true
-                ]);
-            }
-
-           
+            $tranche = Tranche::create([
+                'name' => $this->name,
+                'eligible' => $this->eligible,
+            ]);
 
             foreach ($this->records as $key => $data) {
                 $this->records[$key]['tranche_id'] = $tranche->id;
@@ -170,7 +162,7 @@ class Create extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Tranche ' . strtoupper($this->name) . ' was added successfully.'
+                'message' => 'Tranche  was added successfully.'
             ]);
 
             $this->reset();

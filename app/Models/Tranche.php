@@ -12,7 +12,7 @@ class Tranche extends Model
     protected $table = 'tranche';
     protected $fillable = [
         'name',
-        'isActive',
+        'eligible',
         'isDeleted'
     ];
 

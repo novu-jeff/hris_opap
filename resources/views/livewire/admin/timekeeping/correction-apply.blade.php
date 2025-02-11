@@ -10,30 +10,30 @@
                     <div class="row">
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2">Clock In <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="clock_in_am" id="clock_in_am" class="form-control">
+                            <input type="time" wire:model="clockin" id="clockin" class="form-control">
                             <div class="error-field">
-                                @error('clock_in_am') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('clockin') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2">Break Out <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="clock_out_am" id="clock_out_am" class="form-control">
+                            <input type="time" wire:model="breakout" id="breakout" class="form-control">
                             <div class="error-field">
-                                @error('clock_out_am') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('breakout') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2">Break In <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="clock_in_pm" id="clock_in_pm" class="form-control">
+                            <input type="time" wire:model="breakin" id="breakin" class="form-control">
                             <div class="error-field">
-                                @error('clock_in_pm') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('breakin') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2">Clock Out <span class="text-danger">*</span></label>
-                            <input type="time" wire:model="clock_out_pm" id="clock_out_pm" class="form-control">
+                            <input type="time" wire:model="clockout" id="clockout" class="form-control">
                             <div class="error-field">
-                                @error('clock_out_pm') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('clockout') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>

@@ -26,6 +26,7 @@
                                         <tr>
                                             <th>Position</th>
                                             <th>Salary Grade</th>
+                                            <th>Eligible</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -36,6 +37,13 @@
                                                 </td>
                                                 <td>
                                                     <input type="text" wire:model="records.{{ $key }}.Salary Grade" class="form-control">
+                                                </td>
+                                                <td>
+                                                    <select wire:model="records.{{ $key }}.Type" class="form-select">
+                                                        <option value="1">Regular Contractual</option>
+                                                        <option value="2">Contract of Service</option>
+                                                        <option value="3">Job Offer</option>
+                                                    </select>
                                                 </td>
                                             </tr>
                                         @endforeach

@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.timekeeping.correction-apply', ['id' => $id])
+        @livewire('admin.timekeeping.correction-apply', ['bsd_no' => $bsd_no, 'date' => $date])
     </div>
 </div>
 @endsection

@@ -40,7 +40,7 @@ use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\Settings\RoleController;
-use App\Http\Controllers\Admin\TimeKeeping\TimekeepingController;
+use App\Http\Controllers\Admin\TimeKeepingController;
 use App\Http\Controllers\Admin\TranchesController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\UserAccessController;
@@ -193,15 +193,17 @@ Route::prefix('admin')->group(function() {
         
         Route::prefix('timekeeping')->group(function() {
 
-            Route::get('logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'index'])
+            Route::get('logs/{month?}/{day?}/{year?}', [TimeKeepingController::class, 'index'])
                 ->name('timekeeping.index');
-            Route::get('upload', [TimekeepingController::class, 'upload'])
+            Route::get('upload', [TimeKeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
+            Route::get('upload/job/{id}', [TimeKeepingController::class, 'job'])
+                ->name('timekeeping.upload.job');
 
-            Route::get('correction/logs/{month?}/{day?}/{year?}', [TimekeepingController::class, 'correction'])
+            Route::get('correction/logs/{month?}/{day?}/{year?}', [TimeKeepingController::class, 'correction'])
                 ->name('timekeeping.correction');
 
-            Route::get('correction/{id}', [TimekeepingController::class, 'correction_apply'])
+            Route::get('correction/apply/{bsd_no}/{date}', [TimeKeepingController::class, 'correction_apply'])
                 ->name('timekeeping.correction-apply');
         });
 
