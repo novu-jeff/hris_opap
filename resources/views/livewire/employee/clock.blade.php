@@ -34,7 +34,7 @@
                         </div>  
                         @if (in_array($status, ['Break Out']))
                             <div class="text-center mt-3">
-                                <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut" wire:target="triggerClockOut">
+                                <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut(true)" wire:target="triggerClockOut">
                                     Clock Out
                                 </button>
                             </div>     
@@ -85,43 +85,76 @@
                 </div>
                 <div class="modal-body">
                     @if (!empty($logs))
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Day</th>
-                                        <th>Clock In</th>
-                                        <th>Break Out</th>
-                                        <th>Break In</th>
-                                        <th>Clock Out</th>
-
-                                        <th>Accomplishment</th>
-
-                                        <th>Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($logs as $key => $item)
-                                        <tr>
-                                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->created_at)->format('l') }}</td>
-                                            <td>{{ $item->clock_in_am ? \Carbon\Carbon::parse($item->clock_in_am)->format('h:i A') : '' }}</td>
-                                            <td>{{ $item->clock_out_am ? \Carbon\Carbon::parse($item->clock_out_am)->format('h:i A') : '' }}</td>
-                                            <td>{{ $item->clock_in_pm ? \Carbon\Carbon::parse($item->clock_in_pm)->format('h:i A') : '' }}</td>
-                                            <td>{{ $item->clock_out_pm ? \Carbon\Carbon::parse($item->clock_out_pm)->format('h:i A') : '' }}</td>
-                                        
-                                            <td>{{ $item->accomplishment }} </td>
-                                            <td></td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="12" class="text-center py-4">No logs for this month</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                        <div class="accordion" id="logsAccordion">
+                            @forelse($logs as $key => $item)
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading{{ $key }}">
+                                        <button class="accordion-button text-uppercase fw-bold {{ $key == 0 ? '' : 'collapsed' }}" 
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse{{ $key }}" 
+                                                aria-expanded="{{ $key == 0 ? 'true' : 'false' }}" 
+                                                aria-controls="collapse{{ $key }}">
+                                            {{ \Carbon\Carbon::parse($item['date'])->format('j, l') }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ $key }}" 
+                                        class="accordion-collapse collapse {{ $key == 0 ? 'show' : '' }}" 
+                                        aria-labelledby="heading{{ $key }}" 
+                                        data-bs-parent="#logsAccordion">
+                                        <div class="accordion-body">
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Clock In</th>
+                                                        <th>Break Out</th>
+                                                        <th>Break In</th>
+                                                        <th>Clock Out</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ isset($item['logs'][0]['time']) ? \Carbon\Carbon::parse($item['logs'][0]['time'])->format('h:i A') : '-' }}</td>
+                                                        <td>{{ isset($item['logs'][1]['time']) ? \Carbon\Carbon::parse($item['logs'][1]['time'])->format('h:i A') : '-' }}</td>
+                                                        <td>{{ isset($item['logs'][2]['time']) ? \Carbon\Carbon::parse($item['logs'][2]['time'])->format('h:i A') : '-' }}</td>
+                                                        <td>{{ isset($item['logs'][3]['time']) ? \Carbon\Carbon::parse($item['logs'][3]['time'])->format('h:i A') : '-' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        @for ($i = 0; $i < 4; $i++)
+                                                            <td>
+                                                                {{ isset($item['logs'][$i]['captured_location']) ? $item['logs'][$i]['captured_location'] : 'N/A' }}
+                                                            </td>
+                                                        @endfor
+                                                    </tr>
+                                                    <tr>
+                                                        @for ($i = 0; $i < 4; $i++)
+                                                            <td>
+                                                                @if (isset($item['logs'][$i]['captured_image']))
+                                                                    <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
+                                                                         alt="logs" style="width: 100%; height: 100px;">
+                                                                @else
+                                                                    No Image
+                                                                @endif
+                                                            </td>
+                                                        @endfor
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="12">
+                                                            <div class="text-start pb-3 px-3">
+                                                                <p class="mb-2 fw-bold">Accomplishment Report: </p>
+                                                                <small>{{$item['logs'][3]['accomplishment']}}</small>
+                                                            </div>
+                                                        </td>    
+                                                    </tr>                                                    
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-4">No logs for this month</div>
+                            @endforelse
+                        </div>                    
                     @else
                         <div class="alert alert-info mb-0">Currently no clock logs.</div>
                     @endif
@@ -167,20 +200,23 @@
             });
         }
 
-        Livewire.on('capture', (data) => {
-           
-            const isForcedClockOut = data[0].isForcedClockout ? true : false;
+        Livewire.on('triggerClock', (data) => {
+            if(data[0] == 'true') {
+                Livewire.dispatch('triggerClock', [false]);
+            }
+        });
 
+        Livewire.on('captureImage', (data) => {
+           
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             
             const isNotBlank = hasContent(imageData);
 
-            isImageCaptured = isNotBlank;
+            let isImageCaptured = isNotBlank;
 
-            @this.call('processClock', canvas.toDataURL('image/png'), isImageCaptured, isForcedClockOut);
-        
+            Livewire.dispatch('grabImage', [canvas.toDataURL('image/png'), data[0]['time'], isImageCaptured]);
         });
 
         function hasContent(imageData) {

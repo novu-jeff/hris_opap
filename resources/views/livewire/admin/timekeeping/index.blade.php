@@ -64,86 +64,96 @@
                 @forelse ($timelogs as $key => $item)
                     @php
                         // Check if the condition is met (avoid repeating the logic)
-                        $highlightBG = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
-                        $highlightColor = ($item->origin == 'web' && $setup == 'wfh') || ($item->origin == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
+                        $highlightBG = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
+                        $highlightColor = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
                     @endphp
                         <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
                             <!-- Display Employee No, BSD No., and Employee Name -->
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->information->employee_no ?? '' }}</td>
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item->bsd_no ?? '' }}</td>
+                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['employee']->employee_no ?? '' }}</td>
+                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['employee']->bsd_no ?? '' }}</td>
                             <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                                {{ optional(optional($item->information)->personal)->firstname . ' ' . optional(optional($item->information)->personal)->lastname ?? '' }}
+                                {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
                             </td>                    
                             <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                                <button wire:click="findLogs({{$item->bsd_no}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                                <button wire:click="findLogs({{$item['employee']->bsd_no}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
                             </td>
                         </tr>   
-                        @if($view_log && $item->bsd_no == $viewLogBsdNo)
-                            @php
-                                // Define captured image URLs
-                                $clockInImage = $view_log->captured_image_clockin
-                                    ? asset('storage/clockinout/' . $view_log->captured_image_clockin)
-                                    : 'https://placehold.co/300x150.png?text=No+Image';
-                                $clockOutImage = $view_log->captured_image_clockout
-                                    ? asset('storage/clockinout/' . $view_log->captured_image_clockout)
-                                    : 'https://placehold.co/300x150.png?text=No+Image';
-    
-                                $showCapturedImages = $view_log->captured_image_clockin || $view_log->captured_image_clockout;
-                            @endphp
-                            <tr class="child-row">
-                                <td colspan="100%">
-                                    <div class="mb-3">
-                                        <hr>
-                                        <div class="row">
-                                            <div class="col-12 col-md-5 mb-3">
-                                                <strong>Employee Information:</strong>
-                                                <ul class="my-3">
-                                                    <li>Employee No: <strong><u>{{ $view_log->information->employee_no ?? 'N/A' }}</u></strong></li>
-                                                    <li>Employee Name: <strong><u>{{ $view_log->information->personal->firstname ?? 'N/A' }} {{ $view_log->information->personal->lastname ?? 'N/A' }}</u></strong></li>
-                                                    <li>Biometrics ID: <strong><u>{{ $view_log->bsd_no ?? 'N/A' }}</u></strong></li>
-                                                </ul>
-                                            </div>
-                                            <div class="col-12 col-md-7 mb-3">
-                                                <div class="d-flex gap-3">
-                                                    @if ($showCapturedImages)
-                                                        <div class="mb-4">
-                                                            <p class="fw-bold">Captured Clock In:</p>
-                                                            <img src="{{ $clockInImage }}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                        </div>
-                                                        <div class="mb-4">
-                                                            <p class="fw-bold">Captured Clock Out:</p>
-                                                            <img src="{{ $clockOutImage }}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="col-12 col-md-12">
-                                                <hr>
-                                                <strong>Employee Clock In & Out</strong>
-                                                <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
-                                                    <thead class="bg-gray-200">
-                                                        <tr>
-                                                            <th class="border px-4 py-2">Clock In</th>
-                                                            <th class="border px-4 py-2">Break Out</th>
-                                                            <th class="border px-4 py-2">Break In</th>
-                                                            <th class="border px-4 py-2">Clock Out</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_am }}</u></strong></td>
-                                                            <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_am }}</u></strong></td>
-                                                            <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_in_pm }}</u></strong></td>
-                                                            <td class="border px-4 py-2"><strong><u>{{ $view_log->clock_out_pm }}</u></strong></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                        @if($view_log && $item['bsd_no'] == $viewLogBsdNo)
+                        @php
+                            // Extract clock-in and clock-out times dynamically
+                            $clockInAM = isset($view_log['logs'][0]['time']) ? Carbon\Carbon::parse($view_log['logs'][0]['time'])->format('h:i A') : 'N/A';
+                            $breakOut = isset($view_log['logs'][1]['time']) ? Carbon\Carbon::parse($view_log['logs'][1]['time'])->format('h:i A') : 'N/A';
+                            $breakIn = isset($view_log['logs'][2]['time']) ? Carbon\Carbon::parse($view_log['logs'][2]['time'])->format('h:i A') : 'N/A';
+                            $clockOutPM = isset($view_log['logs'][3]['time']) ? Carbon\Carbon::parse($view_log['logs'][3]['time'])->format('h:i A') : 'N/A';
+                    
+                            // Extract captured images
+                            $clockInImage = $view_log['logs'][0]['captured_image']
+                                ? asset('storage/clockinout/' . $view_log['logs'][0]['captured_image'])
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+                    
+                            $clockOutImage = $view_log['logs'][count($view_log['logs']) - 1]['captured_image']
+                                ? asset('storage/clockinout/' . $view_log['logs'][count($view_log['logs']) - 1]['captured_image'])
+                                : 'https://placehold.co/300x150.png?text=No+Image';
+                    
+                            $showCapturedImages = $view_log['logs'][0]['captured_image'] || $view_log['logs'][count($view_log['logs']) - 1]['captured_image'];
+                        @endphp
+                    
+                        <tr class="child-row">
+                            <td colspan="100%">
+                                <div class="mb-3">
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-12 col-md-5 mb-3">
+                                            <strong>Employee Information:</strong>
+                                            <ul class="my-3">
+                                                <li>Employee No: <strong><u>{{ $view_log['employee']->employee_no ?? 'N/A' }}</u></strong></li>
+                                                <li>Employee Name: <strong><u>{{ $view_log['employee']->personal->firstname ?? 'N/A' }} {{ $view_log['employee']->personal->lastname ?? 'N/A' }}</u></strong></li>
+                                                <li>Biometrics ID: <strong><u>{{ $view_log['bsd_no'] ?? 'N/A' }}</u></strong></li>
+                                            </ul>
+                                        </div>
+                    
+                                        <div class="col-12 col-md-7 mb-3">
+                                            <div class="d-flex gap-3">
+                                                @if ($showCapturedImages)
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock In:</p>
+                                                        <img src="{{ $clockInImage }}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <p class="fw-bold">Captured Clock Out:</p>
+                                                        <img src="{{ $clockOutImage }}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
+                    
+                                        <div class="col-12 col-md-12">
+                                            <hr>
+                                            <strong>Employee Clock In & Out</strong>
+                                            <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                                <thead class="bg-gray-200">
+                                                    <tr>
+                                                        <th class="border px-4 py-2">Clock In</th>
+                                                        <th class="border px-4 py-2">Break Out</th>
+                                                        <th class="border px-4 py-2">Break In</th>
+                                                        <th class="border px-4 py-2">Clock Out</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $clockInAM }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $breakOut }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $breakIn }}</u></strong></td>
+                                                        <td class="border px-4 py-2"><strong><u>{{ $clockOutPM }}</u></strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </td>
-                            </tr>
-                        @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @endif                    
                 @empty
                     <tr>
                         <td colspan="12" class="text-center fw-bold py-3">No data was found</td>

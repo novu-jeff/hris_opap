@@ -455,6 +455,7 @@ class HRISProcessingService extends Controller
     }
 
     public function handleSalary(array $data) {
+        $eligible = $data['type'];
         $position_id = $data['position_id'];
         $step_id = $data['step_id'];
 
@@ -464,11 +465,11 @@ class HRISProcessingService extends Controller
 
             $stepColumn = "step_" . ($step_id ?? '');
 
-            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
+            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
                     $query->where('salary_grade', $salaryGrade)
                         ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
                 }])
-                ->where('isActive', true)
+                ->where('eligible', $eligible)
                 ->first();
             
             // Ensure that $activeTranche is not null before accessing its items

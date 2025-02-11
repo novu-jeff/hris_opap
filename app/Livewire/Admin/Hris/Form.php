@@ -116,20 +116,22 @@ class Form extends Component
 
     public function handleSalary() {
         
+        $eligible = $this->records['employee_information']['type'] ?? '';
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
-        if (!empty($position_id) && !empty($step_id)) {
+        if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
+
             $salaryGrade = Positions::where('id', $position_id)
                 ->value('salary_grade') ?? '';
 
             $stepColumn = "step_" . ($step_id ?? '');
 
-            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
+            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
                     $query->where('salary_grade', $salaryGrade)
                         ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
                 }])
-                ->where('isActive', true)
+                ->where('eligible', $eligible)
                 ->first();
             
             // Ensure that $activeTranche is not null before accessing its items

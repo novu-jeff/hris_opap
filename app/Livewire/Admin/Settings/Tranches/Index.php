@@ -91,16 +91,6 @@ class Index extends Component
         }
     }
 
-    public function setDefault(int $id) {
-        $model = Tranche::class;
-        $model::query()->update(['isActive' => false]);
-        $tranche = $model::find($id);
-        if ($tranche) {
-            $tranche->isActive = true;
-            $tranche->save();
-        }
-    }
-
     public function render()
     {
 

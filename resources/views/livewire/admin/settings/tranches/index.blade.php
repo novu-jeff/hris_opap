@@ -74,7 +74,6 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th></th>
                             <th style="max-width: 200px;">Action</th>
                         </tr>
                     </thead>                
@@ -82,15 +81,6 @@
                         @forelse($records as $record)
                             <tr data-id="{{$record->id}}">
                                 <td>{{$record->name}}</td>
-                                <td>
-                                    @if(!$record->isActive)
-                                        <button wire:click="setDefault('{{$record->id}}')" class="btn btn-primary mx-1 text-uppercase">
-                                            Set Default
-                                        </button>
-                                    @else
-                                        <h6 class="mb-0 text-uppercase text-muted fst-italic">Current Default</h6>
-                                    @endif
-                                </td>
                                 <td>
                                     <button wire:click="view('{{$record->id}}')" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-eye"></i>

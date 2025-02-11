@@ -16,6 +16,7 @@ class Edit extends Component
 
     public $id;
     public $name;
+    public $eligible;
     public $file;
     public $records;
 
@@ -27,6 +28,7 @@ class Edit extends Component
         $records = Tranche::with('items')->where('id', $this->id)
             ->first();
         $this->name = $records->name;
+        $this->eligible = $records->eligible;
         $this->records = $records->items->toArray() ?? [];
     }
 
@@ -129,6 +131,7 @@ class Edit extends Component
     protected function rules() {
         return [
             'name' => 'required',
+            'eligible' => 'required|exists:employment_types,id',
             'file' => empty($this->records) ? 'required' : 'nullable', 
     
         ];
@@ -152,8 +155,9 @@ class Edit extends Component
 
         try {
            
-            $tranche = Tranche::where('id', $this->id)->update([
-                'name' => $this->name
+            Tranche::where('id', $this->id)->update([
+                'name' => $this->name,
+                'eligible' => $this->eligible
             ]);            
 
             TrancheItems::where('tranche_id', $this->id)
@@ -171,7 +175,7 @@ class Edit extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Tranche ' . strtoupper($this->name) . ' was added successfully.'
+                'message' => 'Tranche was updated successfully.'
             ]);
 
         } catch (\Exception $e) {

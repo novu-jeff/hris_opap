@@ -15,6 +15,7 @@ class Positions extends Model
         'name',
         'salary_grade',
         'salary',
+        'type',
         'isActive'
     ];
 

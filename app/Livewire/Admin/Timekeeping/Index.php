@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,6 +19,7 @@ class Index extends Component
     public $year;
     public $setup;
 
+    public $page;
     public $records;
     public $view_log;
     public $viewLogBsdNo;
@@ -72,50 +75,85 @@ class Index extends Component
     }
 
     public function findLogs(int $id) {
-        // Check if the same log is being clicked again
+
         if ($this->viewLogBsdNo === $id) {
-            // Toggle visibility (hide)
             $this->viewLogBsdNo = null;
             $this->view_log = null;
         } else {
-            // Set new log to be viewed
-            $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
-            $data = EmployeeClockInOut::with('information.personal')
-                ->orWhere('bsd_no', $id)
-                ->whereDate('created_at', $timestamp)
-                ->first();
-    
+            $data = $this->getLogs($id)[0] ?? [];
             $this->viewLogBsdNo = $id;
             $this->view_log = $data;
+
         }
     }
     
-
-    public function render() {
-
-        $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
-
-        $model = EmployeeClockInOut::with('information.personal')
-            ->whereDate('created_at', $timestamp);
-            
-        
-        if ($this->search) {
-            $this->resetPage();
-            $model->where(function ($query) {
-                $query->whereHas('information', function($subQuery) {
-                        $subQuery->where('employee_no', 'like', '%' . $this->search . '%');
-                    })
-                    ->orWhereHas('information.personal', function ($subQuery) {
-                        $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
-                    })
-                    ->orWhere('bsd_no', $this->search);
-            });
+    private function getLogs(int $bsd_no = null) {
+        $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('j/n/Y');
+    
+        $query = EmployeeTimelogs::with('employee.personal')
+            ->where('logdatetime', 'LIKE', "{$timestamp}%");
+    
+        if (!is_null($bsd_no)) {
+            $query->where('bsd_no', $bsd_no);
         }
+    
+        $records = $query->get()->unique('logdatetime'); // Remove exact duplicates
+    
+        $groupedData = $records->groupBy(function ($record) {
+            return Carbon::parse($record->logdatetime)->format('j/n/Y') . '|' . ($record->bsd_no ?? 'undefined');
+        })->map(function ($logs, $key) {
+            [$date, $bsd_no] = explode('|', $key);
+    
+            return [
+                'date' => $date,
+                'bsd_no' => $bsd_no,
+                'employee' => $logs->first()->employee,
+                'origin' => $logs->first()->origin,
+                'logs' => collect($logs)->mapToGroups(function ($log) {
+                    return [
+                        Carbon::parse($log->logdatetime)->format('H') => [
+                            'time' => Carbon::parse($log->logdatetime)->format('H:i:s'),
+                            'captured_image' => $log->captured_image
+                        ]
+                    ];
+                })->map(function ($entries, $hour) {
+                    if ($hour == 12 || $hour == 13) {
+                        return $entries->unique('time')->values()->toArray(); // Keep unique times
+                    } elseif ($hour < 12) {
+                        return [$entries->sortBy('time')->first()]; // Earliest log for AM
+                    } else {
+                        return [$entries->sortByDesc('time')->first()]; // Latest log for PM
+                    }
+                })->collapse()->values()->all()
+            ];
+        })->values();
+    
+        return $groupedData;
+    }    
+    
+
+    public function render()
+    {
         
-        $timelogs = $model->paginate($this->entries);
+        $data = $this->getLogs();
+
+        // Manual pagination for collections
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = $this->entries;
+        $pagedData = $data->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        
+        $paginatedLogs = new LengthAwarePaginator(
+            $pagedData, 
+            count($data),
+            $perPage, 
+            $currentPage, 
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('livewire.admin.timekeeping.index', [
-            'timelogs' => $timelogs
+            'timelogs' => $paginatedLogs
         ]);
     }
+    
+    
 }
