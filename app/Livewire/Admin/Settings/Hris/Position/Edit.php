@@ -28,7 +28,8 @@ class Edit extends Component
 
         return $this->fields = [
             'name' => $records->name,
-            'salary_grade' => $records->salary_grade
+            'salary_grade' => $records->salary_grade,
+            'type' => $records->type
         ];
     }
 
@@ -62,7 +63,7 @@ class Edit extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Position ' . strtoupper($this->fields['name']) . ' was added successfully.'
+                'message' => 'Position ' . strtoupper($this->fields['name']) . ' was updated successfully.'
             ]);
 
             
@@ -85,8 +86,10 @@ class Edit extends Component
             'fields.name' => [
                 'required',
                 Rule::unique('positions', 'name')
-                    ->ignore($this->id)
+                    ->ignore($this->id),
             ],
+            'fields.salary_grade' => 'required|numeric',
+            'fields.type' => 'required|exists:employment_types,id'
         ];
     }
 
@@ -94,6 +97,12 @@ class Edit extends Component
         return [
             'fields.name.required' => 'The position name is required.',
             'fields.name.unique' => 'The position name is already taken.',
+            
+            'fields.salary_grade.required' => 'The salary grade is required.',
+            'fields.salary_grade.unique' => 'The salary grade is already taken.',
+
+            'fields.type.required' => 'The type is required.',
+            'fields.type.unique' => 'The type is already taken.',
         ];
     }
 

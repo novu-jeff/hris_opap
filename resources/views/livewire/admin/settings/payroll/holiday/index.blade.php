@@ -36,11 +36,7 @@
                         <tr>
                             <td>{{$record->name}}</td>
                             <td>
-                                @if ($record->isYearly)
-                                    {{ \Carbon\Carbon::parse($record->date)->format('F j') }}
-                                @else
-                                    {{ \Carbon\Carbon::parse($record->date)->format('F j, Y') }}
-                                @endif
+                                {{ \Carbon\Carbon::createFromFormat('m-d', $record->date)->format('F j') }}
                             </td>
                             <td>
                                 <a href="{{route('holiday.edit', ['holiday' => $record->id])}}" class="btn btn-primary mx-1">

@@ -3,14 +3,10 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Jobs\TimelogUploadProcess;
-use App\Models\EmployeeClockInOut;
-use App\Models\EmployeeInformation;
-use App\Models\EmployeeTimelogs;
-use App\Models\ShiftSchedule;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -28,6 +24,8 @@ class Upload extends Component
     public bool $isParsing, $isUploading = false;
     public $isLoading = false;
     public $batch_id;
+
+    protected $listeners = ['cancelUpload'];
 
     public function mount() {
         $this->loadingUpload();
@@ -201,33 +199,32 @@ class Upload extends Component
 
     }
 
-    public function cancelUpload()
-    {
+    public function cancelUpload($batchId) {
 
-        $jobId = session('batchInfo');
-
-        $deleted = DB::table('jobs')->where('id', $jobId)->delete();
+        $batch = Bus::findBatch($batchId);
     
-        if ($deleted) {
+        if ($batch) {
+
+            $batch->cancel(); 
+    
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'success',
                 'title' => 'Yey!', 
                 'message' => 'Uploading Cancelled',
-                'redirect' => '_reload'
+                'redirect' => route('timekeeping.upload')
             ]);
         } 
-        
+    
         return $this->dispatch('alert', [
             'showAlert' => true,
             'status' => 'error',
             'title' => 'Oops!', 
             'message' => 'Unable to cancel upload',
-            'redirect' => '_reload'
+            'redirect' => route('timekeeping.upload')
         ]);
-    
-       
     }
+    
 
     public function render() {
         return view('livewire.admin.timekeeping.upload');

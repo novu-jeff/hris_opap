@@ -30,9 +30,10 @@
                             <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
                             <select wire:model="type" id="type" class="form-control" wire:change="checkIfYearly">
                                 <option value="">Select Type</option>
-                                <option value="national">National</option>
-                                <option value="special">Special</option>
-                                <option value="company">Company-specific</option>
+                                <option value="regular">Regular Holiday</option>
+                                <option value="special-non-working">Special Non-Working Holiday</option>
+                                <option value="special-working">Special Working Holiday</option>
+                                <option value="company">Company Holiday</option>
                             </select>
                             <div class="error-field">
                                 @error('type') <span class="text-danger">{{ $message }}</span> @enderror

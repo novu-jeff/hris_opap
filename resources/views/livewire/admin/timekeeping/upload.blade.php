@@ -27,28 +27,20 @@
             </button>
         </div>
     @endif
-    <div class="w-100 mt-5" wire:loading wire:target="upload_file">
-        <div class="alert alert-danger d-flex justify-content-center gap-3 align-items-center" role="alert">
-            <i class="fa-solid fa-triangle-exclamation fs-5"></i>
-            <div class="text-uppercase fw-bold">
-                Please do not close or reload the page to prevent errors during the upload process.
-            </div>
-        </div>  
-    </div> 
 
-    <div class="modal" id="modal-loading" data-backdrop="static">
+    <div class="modal" id="modal-loading" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
-                <div class="modal-body text-center">
+                <div class="modal-body text-center pt-5 pb-3">
                     <div class="loading-spinner mb-2"></div>
-                    <div id="progress-text">Uploading...</div> 
-                    <button id="cancel-job" wire:click="cancelUpload" class="btn btn-danger btn-sm mt-2">Cancel Upload</button>
+                    <p id="progress-text" class="text-uppercase">Uploading...</p> 
+                    <button id="cancel-job" class="btn btn-danger mt-2 text-uppercase">Cancel Upload</button>
                 </div>
             </div>
         </div>
     </div>
     <style>
-        .loading-spinner{
+        .loading-spinner {
             width:30px;
             height:30px;
             border:2px solid indigo;
@@ -56,8 +48,9 @@
             border-top-color:#0001;
             display:inline-block;
             animation:loadingspinner .7s linear infinite;
-            }
-            @keyframes loadingspinner{
+        }
+
+        @keyframes loadingspinner{
             0%{
                 transform:rotate(0deg)
             }
@@ -84,7 +77,7 @@
                 // Ensure modal is initialized and shown
                 setTimeout(() => {
                     $('#modal-loading').modal('show');
-                }, 1000);
+                }, 100);
 
                 function checkJobProgress(batchId) {
                     $.ajax({
@@ -112,6 +105,11 @@
 
                 // Start job progress check
                 setTimeout(() => checkJobProgress(batchId), 100); // Small delay to ensure modal visibility
+            
+                $('#cancel-job').on('click', () => {
+                    Livewire.dispatch('cancelUpload', [batchId]);
+                });
+
             });
         });
     </script>

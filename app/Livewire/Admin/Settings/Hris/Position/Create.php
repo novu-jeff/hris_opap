@@ -117,7 +117,6 @@ class Create extends Component
     protected function rules() {
         return [
             'file' => empty($this->records) ? 'required' : 'nullable', 
-    
         ];
     } 
 
@@ -141,17 +140,28 @@ class Create extends Component
 
             $records = [];
 
+
             foreach ($this->records as $record) {
                 $records[] = [
                     'name' => $record['Position'],          
-                    'salary_grade' => $record['Salary Grade'] 
+                    'salary_grade' => $record['Salary Grade'],
+                    'type' => $record['Type']
                 ];
             }
+
             
             foreach ($records as $record) {
                 Positions::updateOrCreate(
-                    ['name' => $record['name']], 
-                    ['salary_grade' => $record['salary_grade']] 
+                    [
+                        'name' => $record['name'],
+                        'salary_grade' => $record['salary_grade'],
+                        'type' => $record['type'],
+                    ], 
+                    [
+                        'name' => $record['name'],
+                        'salary_grade' => $record['salary_grade'],
+                        'type' => $record['type'],
+                    ],
                 );
             }
             

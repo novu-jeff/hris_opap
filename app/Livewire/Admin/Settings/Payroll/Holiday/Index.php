@@ -47,11 +47,11 @@ class Index extends Component
         }  else {
 
             $record = Holiday::find($this->selected_id);
-            
+                
             if($record) {
 
                 $record->update([
-                    'isActive' => false
+                    'isDeleted' => true
                 ]);
 
                 $this->dispatch('alert', [
@@ -76,7 +76,7 @@ class Index extends Component
     public function render()
     {
 
-        $model = Holiday::where('isActive', true);
+        $model = Holiday::where('isDeleted', false);
 
         if ($this->search) {
 

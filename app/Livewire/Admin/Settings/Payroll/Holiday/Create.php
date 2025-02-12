@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Payroll\Holiday;
 
 use App\Models\Holiday;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
@@ -41,9 +42,11 @@ class Create extends Component
 
         try {
 
+            $date = Carbon::parse($this->date)->format('m-d');
+
             Holiday::create([
                 'name' => $this->name,
-                'date' => $this->date,
+                'date' => $date,
                 'type' => $this->type,
                 'isYearly' => $this->isYearly,
             ]);
@@ -56,7 +59,7 @@ class Create extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Holiday: ' . strtoupper($this->name) . ' was added successfully.'
+                'message' => 'Holiday was added successfully.'
             ]);
             
         } catch (\Exception $e) {
@@ -77,7 +80,7 @@ class Create extends Component
         return [
             'name' => 'required|unique:holidays,name',
             'date' => 'required|date',
-            'type' => 'required|string',
+            'type' => 'required|string|in:regular,special-non-working,special-working,company',
         ];
     }
 
