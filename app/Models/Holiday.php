@@ -14,6 +14,6 @@ class Holiday extends Model
         'name',
         'date',
         'type',
-        'isYearly'
+        'isDeleted'
     ];
 }

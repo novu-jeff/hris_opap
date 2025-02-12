@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Payroll\Holiday;
 
 use App\Models\Holiday;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -25,8 +26,11 @@ class Edit extends Component
             return redirect()->route('holidays.index');
         }
 
+
+        $fullDate = Carbon::parse(Carbon::now()->year . '-' . $record->date)->toDateString();
+
         $this->name = $record->name;
-        $this->date = $record->date;
+        $this->date = $fullDate;
         $this->type = $record->type;
         $this->isYearly = $record->isYearly;
     }
@@ -60,11 +64,13 @@ class Edit extends Component
 
         try {
 
+            $date = Carbon::parse($this->date)->format('m-d');
+
             Holiday::where('id', $this->id)
                 ->where('isActive', true)
                 ->update([
                     'name' => $this->name,
-                    'date' => $this->date,
+                    'date' => $date,
                     'type' => $this->type,
                     'isYearly' => $this->isYearly,
             ]);
@@ -75,7 +81,7 @@ class Edit extends Component
                 'status' => 'success',
                 'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => 'Holiday: ' . strtoupper($this->name) . ' was updated successfully.'
+                'message' => 'Holiday  was updated successfully.'
             ]);
 
             
@@ -101,7 +107,7 @@ class Edit extends Component
                     ->ignore($this->id)
             ],
             'date' => 'required|date',
-            'type' => 'required|string',
+            'type' => 'required|string|in:regular,special-non-working,special-working,company',
         ];
     }
 

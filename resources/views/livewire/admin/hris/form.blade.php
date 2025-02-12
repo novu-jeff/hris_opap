@@ -108,16 +108,18 @@
                         </select>
                         @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
-                        <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
-                            <option value=""> - CHOOSE - </option>
-                            @for($i = 1; $i <= 8; $i++)
-                                <option value="{{$i}}"> Step {{$i}}</option>
-                            @endfor
-                        </select>
-                        @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
+                    @if(in_array($records['employee_information']['type'], ['1', '2']))
+                        <div class="col-md-4 mb-3">
+                            <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
+                            <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                @for($i = 1; $i <= 8; $i++)
+                                    <option value="{{$i}}"> Step {{$i}}</option>
+                                @endfor
+                            </select>
+                            @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    @endif
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="shift_schedule">Shift Schedule</label>
                         <select wire:model="records.employee_information.shift_schedule" wire:change="select_change('section')" id="records.employee_information.shift_schedule" class="form-select">

@@ -79,7 +79,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">
-                        Clock Logs ( {{ \Carbon\Carbon::now()->format('F') }} )
+                        {{ \Carbon\Carbon::now()->format('F, Y') }}
                     </h1>                    
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -152,7 +152,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="text-center py-4">No logs for this month</div>
+                                <div class="text-center py-4 text-uppercase fw-bold text-muted">No logs for this month</div>
                             @endforelse
                         </div>                    
                     @else

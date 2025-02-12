@@ -53,7 +53,7 @@ class Form extends Component
 
         // Load dropdown data
         $this->sections = Sections::all();
-        $this->positions = Positions::all();
+        $this->positions = collect([]);
         $this->employmentTypes = EmployementTypes::all();
 
         $this->shiftSchedule = ShiftSchedule::all();
@@ -119,6 +119,10 @@ class Form extends Component
         $eligible = $this->records['employee_information']['type'] ?? '';
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
+
+        if(!empty($eligible)) {
+            $this->positions = Positions::where('type', $eligible)->get();
+        }
 
         if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
 

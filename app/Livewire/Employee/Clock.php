@@ -686,7 +686,7 @@ class Clock extends Component
 
         $shift = $this->employeeShift();
 
-        if($shift->shift_duration == 'flexible') {
+        if($shift && $shift->shift_duration == 'flexible') {
 
     
             $date = Carbon::now()->format('j/n/Y');
@@ -719,6 +719,8 @@ class Clock extends Component
                 $this->status = 'Done';
             }
 
+        } else {
+            $this->status = 'Clock In';
         }
         
 

@@ -32,7 +32,8 @@ class DatabaseSeeder extends Seeder
             AdminAccountSeeder::class,
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
-            EmployeeTestUserSeeder::class
+            EmployeeTestUserSeeder::class,
+            HolidaySeeder::class
         ]);
 
         if($product == 'testing' || $product == 'novu') {

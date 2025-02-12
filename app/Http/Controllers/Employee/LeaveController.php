@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveCard;
+use App\Models\Holiday;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -121,17 +123,52 @@ class LeaveController extends Controller
             $from = Carbon::parse($records->from);
             $to = isset($records->to) ? Carbon::parse($records->to) : null;
             $daysCovered = $to ? $from->diffInDays($to) + 1 : 1;
-    
+
+
+            // Get holidays from the database
+            $holidays = Holiday::pluck('date')->map(function ($date) {
+                return Carbon::createFromFormat('m-d', $date)->format('m-d'); // Normalize to MM-DD
+            })->toArray();
+
             // Generate a period of dates between 'from' and 'to'
             $period = $to ? CarbonPeriod::create($from, $to) : CarbonPeriod::create($from, $from);
             $dates = [];
-    
+
             foreach ($period as $date) {
-                $dates[] = $date->format('m/d/y');
+                $formattedDate = $date->format('m-d'); // Extract MM-DD format
+                $dayOfWeek = $date->format('D'); // Get day of the week (Sat/Sun)
+
+                // Skip weekends and holidays
+                if ($dayOfWeek !== 'Sat' && $dayOfWeek !== 'Sun' && !in_array($formattedDate, $holidays)) {
+                    $dates[] = $date->format('m/d/y'); // Keep only valid dates
+                }
             }
-    
+
+            $leaveCardBalance = $this->getLeaveCard();
+            $currentTimestamp = Carbon::now()->format('F Y');
+
+            if($records->leave_id == 1) {
+                $vl_latest = $leaveCardBalance->vl_bal;
+                $vl_coveredBal = round(count($dates), 3);
+                $vl_bal = $vl_latest - $vl_coveredBal;
+            } else if($records->leave_id == 2) {
+                $sl_latest = $leaveCardBalance->sl_bal;
+                $sl_coveredBal = round(count($dates), 3);
+                $sl_bal = $sl_latest - $sl_coveredBal;
+            }
+
+            $sheet->setCellValue('F42', $currentTimestamp ?? '');
+
+            $sheet->setCellValue('F45', $vl_latest ?? 0);
+            $sheet->setCellValue('F46', $vl_coveredBal ?? 0);
+            $sheet->setCellValue('F47', $vl_bal ?? 0);
+
+            $sheet->setCellValue('G45', $sl_latest ?? 0);
+            $sheet->setCellValue('G46', $sl_coveredBal ?? 0);
+            $sheet->setCellValue('G47', $sl_bal ?? 0);
+
             // Set the days covered and list of dates
-            $sheet->setCellValue('E33', $daysCovered . ($daysCovered > 1 ? ' days' : ' day'));
+            $sheet->setCellValue('E33', count($dates) . ($daysCovered > 1 ? ' days' : ' day'));
             $sheet->setCellValue('E35', implode(', ', $dates));
     
             // Prepare response to download the Excel file
@@ -151,6 +188,22 @@ class LeaveController extends Controller
         }
     }
     
+    private function getLeaveCard() {
+
+        $employee_no = Auth::user()->employee_no;
+
+        $currentMonth = strtoupper(Carbon::now()->format('F'));
+        $currentYear = Carbon::now()->year;
+
+
+        $leaveCardBalance = EmployeeLeaveCard::where('employee_no', $employee_no)
+            ->where('period', $currentMonth)
+            ->where('year', $currentYear)
+            ->orderBy('year', 'asc')
+            ->first();
+
+        return $leaveCardBalance;
+    }
 
     public function create()
     {

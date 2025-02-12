@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Services;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
+use App\Models\Holiday;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Models\TimeEquivalent;
@@ -26,11 +27,8 @@ class LeaveCardService extends Controller
             if($action == 'leave_approval') {
                 
                 $this->triggerSLVL($data);
-
             }
-
         }
-
     }
 
     public function triggerSLVL($data) {
@@ -48,7 +46,7 @@ class LeaveCardService extends Controller
         $endDate = $data->to ? Carbon::parse($data->to) : null;
 
         // CHECK LEAVE BALANCE BASED ON LEAVE CARD BAL
-
+        
         $leaveCardBalance = EmployeeLeaveCard::where('employee_no', $employee_no)
             ->where('year', $currentYear)
             ->orderBy('year', 'asc')
@@ -127,7 +125,7 @@ class LeaveCardService extends Controller
         
             return $leaveCard;
         }, $latestLeaveCard);
-            
+
         $combined = $this->combine($mappedLeaveCards, $latestLeaveCard);
 
         $newData = $this->compute($combined);
@@ -166,35 +164,38 @@ class LeaveCardService extends Controller
         } 
 
     }
-
+    
     private function processLeaveMonths($startDate, $endDate, $leaveCode, $leaveBalance) {
-
         if (!$startDate instanceof Carbon) {
             throw new InvalidArgumentException('Start date is not a valid Carbon instance.');
         }
     
+        // Fetch all holidays and store them in an array with 'mm-dd' format as keys
+        $holidays = Holiday::pluck('date')->toArray();
+        
         $leaveMonths = [];
         $currentDate = $startDate->copy(); // Clone startDate to avoid modifying the original
-    
-        // Ensure endDate is valid
         $endDate = $endDate instanceof Carbon ? $endDate : $startDate;
-    
+        
         while ($currentDate->lte($endDate)) {
             $month = strtoupper($currentDate->format('F'));
             $abbrMonth = $currentDate->format('M');
             $day = $currentDate->day;
+            $dayOfWeek = $currentDate->format('D');
+            $formattedDate = $currentDate->format('m-d'); // Format to match holidays
     
             if (!isset($leaveMonths[$month])) {
                 $leaveMonths[$month] = [
                     'month' => $month,
                     'days' => [],
+                    'remarks' => ''
                 ];
     
-                if($leaveCode == 'vl' || $leaveCode == 'sl') {
+                if ($leaveCode == 'vl' || $leaveCode == 'sl') {
                     $leaveMonths[$month][$leaveCode . '_aut_w_pay'] = 0;
                     $leaveMonths[$month][$leaveCode . '_aut_wo_pay'] = 0;
                     $leaveMonths[$month]['particulars'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
-                } else if($leaveCode == 'mfl') {
+                } elseif ($leaveCode == 'mfl') {
                     $leaveMonths[$month]['vl_aut_w_pay'] = 0;
                     $leaveMonths[$month]['vl_aut_wo_pay'] = 0;
                     $leaveMonths[$month]['particulars'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
@@ -202,21 +203,22 @@ class LeaveCardService extends Controller
                 } else {
                     $leaveMonths[$month]['remarks'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
                 }
-
             }
     
-            // Add day to the array
-            $leaveMonths[$month]['days'][] = $day;
-    
-            // Move to the next day
+            // Exclude weekends and holidays
+            if ($dayOfWeek == 'Sat' || $dayOfWeek == 'Sun' || in_array($formattedDate, $holidays)) {
+                $leaveMonths[$month]['remarks'] .= ($leaveMonths[$month]['remarks'] ? ', ' : 'Except, ') . $abbrMonth . ' ' . $day;
+            } else {
+                $leaveMonths[$month]['days'][] = $day;
+            }
+            
             $currentDate->addDay();
         }
     
-        // Determine leave balance distribution
         foreach ($leaveMonths as &$entry) {
             $leaveDays = count($entry['days']);
     
-            if($leaveCode == 'vl' || $leaveCode == 'sl') {
+            if ($leaveCode == 'vl' || $leaveCode == 'sl') {
                 if ($leaveDays > $leaveBalance) {
                     $entry[$leaveCode . '_aut_w_pay'] = $leaveBalance;
                     $entry[$leaveCode . '_aut_wo_pay'] = $leaveDays - $leaveBalance;
@@ -233,26 +235,43 @@ class LeaveCardService extends Controller
                     $entry['vl_aut_wo_pay'] = 0;
                 }
             }
-        
     
-            // Format days correctly (single day or range)
-            $firstDay = reset($entry['days']);
-            $lastDay = end($entry['days']);
-            $dayRange = $firstDay == $lastDay ? " $firstDay" : " $firstDay-$lastDay";
+            // Group consecutive leave days into ranges
+            $ranges = [];
+            $rangeStart = null;
+            $prevDay = null;
     
-            if($leaveCode == 'vl' || $leaveCode == 'sl') {
-                $entry['particulars'] .= $dayRange;
-            } else if($leaveCode == 'mfl') {
-                $entry['particulars'] .= $dayRange;
-                $entry['remarks'] .= $dayRange;
+            foreach ($entry['days'] as $day) {
+                if ($rangeStart === null) {
+                    $rangeStart = $day;
+                } elseif ($prevDay !== null && $day !== $prevDay + 1) {
+                    // Save the previous range and start a new one
+                    $ranges[] = ($rangeStart == $prevDay) ? "$rangeStart" : "$rangeStart-$prevDay";
+                    $rangeStart = $day;
+                }
+                $prevDay = $day;
+            }
+    
+            // Add the last range
+            if ($rangeStart !== null) {
+                $ranges[] = ($rangeStart == $prevDay) ? "$rangeStart" : "$rangeStart-$prevDay";
+            }
+    
+            $dayRanges = implode(', ', $ranges);
+    
+            if ($leaveCode == 'vl' || $leaveCode == 'sl') {
+                $entry['particulars'] .= ' ' . $dayRanges;
+            } elseif ($leaveCode == 'mfl') {
+                $entry['particulars'] .= ' ' . $dayRanges;
+                $entry['remarks'] .= ' ' . $dayRanges;
             } else {
-                $entry['remarks'] .= $dayRange;
+                $entry['remarks'] .= ' ' . $dayRanges;
             }
         }
     
         return array_values($leaveMonths);
     }
-     
+    
     private function combine($a, $b) {
         $mergedData = [];
     

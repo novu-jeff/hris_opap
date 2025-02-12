@@ -56,6 +56,7 @@ class Apply extends Component
         $this->employee_id = $employee_id;
  
         if(!is_null($this->record_id)) {
+            
             $records = EmployeeLeave::where('id', $this->record_id)
                 ->where('employee_no', $employee_no)
                 ->first();
@@ -74,8 +75,9 @@ class Apply extends Component
                 $this->duration = 2;
             }
 
+
             $this->selectDuration();
-            $this->handleLeaveCredits();
+            $this->handleLeaveCredits($this->duration);
 
 
             $this->from = $records->from;
@@ -105,13 +107,15 @@ class Apply extends Component
         }
     }
 
-    public function handleLeaveCredits() {
+    public function handleLeaveCredits(int $duration = null) {
 
         $this->reset('duration', 'isDurationDisabled', 'isMoreThanOne');
     
         $leaveType = LeaveType::where('id', $this->type)
             ->first();
         $leaveTypes = strtolower($leaveType->code ?? null);
+
+        $this->duration = $duration;
 
         if($this->type == 1 || $this->type == 2) {
             $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)
@@ -147,6 +151,7 @@ class Apply extends Component
             $leaveTotalCredits = $records->credits ?? 0;
             
         }
+
 
 
         $this->remaining_credits = $leaveTotalCredits;

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('type');
-            $table->date('date');
-            $table->boolean('isActive')->default(true);
-            $table->boolean('isYearly')->default(true);
+            $table->string('date');
+            $table->boolean('isDeleted')
+                ->default(false);
             $table->timestamps();
         });
     }
