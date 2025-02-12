@@ -425,7 +425,7 @@ class Clock extends Component
 
             if($entry == 4) {
                 
-                if($timestamp->gt($breakTimeTo) && $timestamp->lt($expectedOut)) {
+                if($timestamp->gte($breakTimeTo) && $timestamp->lt($expectedOut)) {
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
@@ -618,7 +618,8 @@ class Clock extends Component
                     return [
                         'time' => Carbon::parse($log->logdatetime)->format('H:i:s'),
                         'captured_image' => $log->captured_image,
-                        'captured_location' => $log->captured_location
+                        'captured_location' => $log->captured_location,
+                        'accomplishment' => $log->accomplishment
                     ];
                 })->values()->all()
             ];
@@ -631,8 +632,6 @@ class Clock extends Component
     public function showLogs() {
 
         $records = $this->getLogs();
-
-        // dd($records->toArray());
 
         $this->logs = $records;
 

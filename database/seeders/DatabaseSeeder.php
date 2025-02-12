@@ -33,7 +33,8 @@ class DatabaseSeeder extends Seeder
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
             EmployeeTestUserSeeder::class,
-            HolidaySeeder::class
+            HolidaySeeder::class,
+            FAQSeeder::class,
         ]);
 
         if($product == 'testing' || $product == 'novu') {

@@ -90,15 +90,28 @@
                                 $('#progress-text').text(`Uploading... ${response.progress}%`);
 
                                 if (response.progress < 100) {
-                                    setTimeout(() => checkJobProgress(batchId), 30); // Poll every 2 sec
+                                    setTimeout(() => checkJobProgress(batchId), 2000); // Poll every 2 sec (fixed timeout)
                                 } else {
-                                    location.reload();
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Yey!',
+                                        html: 'Uploading Success',
+                                        allowOutsideClick: false,
+                                        allowEscapeKey: false,
+                                        confirmButtonText: 'GOT IT',
+                                        confirmButtonColor: '#143953',
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            $('#modal-loading').modal('hide');
+                                        }
+                                    });
                                 }
                             }
+
                         },
                         error: function(xhr) {
                             console.error("Error fetching job progress:", xhr);
-                            modal.modal('hide'); // Hide modal on error
+                            $('#modal-loading').modal('hide');
                         }
                     });
                 }

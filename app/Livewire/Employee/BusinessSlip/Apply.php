@@ -84,7 +84,7 @@ class Apply extends Component
         $this->middlename = substr($employee->first()->middlename, 0, 1);
         $this->lastname = $employee->first()->lastname;
         $this->section = $employee->first()->section_name . ' ' . '(' . $employee->first()->section_code . ')';
-        $this->position = $employee->first()->position_name . ' ' . '(' . $employee->first()->position_code . ')';
+        $this->position = $employee->first()->position_name;
         $this->branch = $employee->first()->branch_name . ' ' . '(' . $employee->first()->branch_code . ')';
         $this->department = $employee->first()->department_name . ' ' . '(' . $employee->first()->department_code . ')';
     }

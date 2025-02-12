@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Ess\RequestTimelog;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeRequestLog;
+use App\Models\EmployeeTimelogs;
 use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -95,7 +96,7 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeRequestLog::where('id', $this->selected_id)
+            $record = EmployeeRequestLog::with('employee')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
                 
@@ -106,23 +107,22 @@ class Index extends Component
 
             $record->action_by_id = Auth::user()->id;
 
-            $clock_in_am = Carbon::parse($this->view_records->clock_in)->format('h:i A');
-            $clock_out_am = Carbon::parse($this->view_records->break_out)->format('h:i A');
-            $clock_in_pm = Carbon::parse($this->view_records->break_in)->format('h:i A');
-            $clock_out_pm = Carbon::parse($this->view_records->clock_out)->format('h:i A');
-            $date = Carbon::parse($this->view_records->date)->format('Y-m-d H:i:s');
+            $clock_in_am = Carbon::parse($record->clock_in)->format('H:i');
+            $clock_out_am = Carbon::parse($record->break_out)->format('H:i');
+            $clock_in_pm = Carbon::parse($record->break_in)->format('H:i');
+            $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i');
+            $date = Carbon::parse($record->date)->format('j/n/Y');
 
-            EmployeeClockInOut::insert([
-                'origin' => 'requested-timelog',
-                'employee_no' => $this->view_records->employee_no,
-                'clock_in_am' => $clock_in_am,
-                'clock_out_am' => $clock_out_am,
-                'clock_in_pm' => $clock_in_pm,
-                'clock_out_pm' => $clock_out_pm,
-                'created_at' => $date,
-                'updated_at' => $date
-            ]);
+            $logs = [
+                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_am"],
+                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_am"],
+                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_pm"],
+                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_pm"],
+            ];
 
+            foreach ($logs as $log) {
+                EmployeeTimelogs::create($log);
+            }
 
             $record->update([
                 'status' => 'approved'

@@ -8,10 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('employee_timelogs', function (Blueprint $table) {
-            $table->id();
-            $table->index('employee_no');
-            $table->string('employee_no')
-                ->nullable();
+            $table->id(); 
             $table->string('origin')
                 ->nullable();
             $table->string('biometricdtrid')

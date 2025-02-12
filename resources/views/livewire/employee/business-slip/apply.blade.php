@@ -10,36 +10,28 @@
                     <div class="card-body">
 
                         <div class="row">
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-12 mb-4">
                                 <label class="mb-2" for="type">Section <span class="text-danger">*</span></label>
                                <input type="text" wire:model="section" class="form-control"  disabled>
                                 <div class="error-field">
                                     @error('section') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-4 mb-4">
                                 <label class="mb-2" for="type">Department <span class="text-danger">*</span></label>
                                <input type="text" class="form-control" wire:model="department" disabled>
                                 <div class="error-field">
                                     @error('department') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-4 mb-4">
                                 <label class="mb-2" for="type">Branch <span class="text-danger">*</span></label>
                                <input type="text" class="form-control" wire:model="branch" disabled>
                                 <div class="error-field">
                                     @error('branch') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="col-md-3 mb-4">
-                                <label class="mb-2" for="type">Date Filed <span class="text-danger">*</span></label>
-                               <input type="date" class="form-control" wire:model="date_filed">
-                                <div class="error-field">
-                                    @error('date_filed') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
                         </div>
-
                         <div class="row">
                             <div class="col-md-3 mb-4">
                                 <label class="mb-2" for="type">Lastname <span class="text-danger">*</span></label>
@@ -71,7 +63,20 @@
                             </div>
                         </div>
 
+                        <hr class="mb-4">  
+
                         <div class="row">
+                            <div class="col-12 mb-4">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="mb-2" for="type">Date Filed <span class="text-danger">*</span></label>
+                                       <input type="date" class="form-control" wire:model="date_filed">
+                                        <div class="error-field">
+                                            @error('date_filed') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-6 mb-4">
                                 <label class="mb-2" for="type">Destination <span class="text-danger">*</span></label>
                                 <textarea wire:model="destination" id="destination" cols="30" rows="5" class="form-control" placeholder="Write something..."></textarea>

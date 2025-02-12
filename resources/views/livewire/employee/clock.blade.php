@@ -119,33 +119,55 @@
                                                         <td>{{ isset($item['logs'][2]['time']) ? \Carbon\Carbon::parse($item['logs'][2]['time'])->format('h:i A') : '-' }}</td>
                                                         <td>{{ isset($item['logs'][3]['time']) ? \Carbon\Carbon::parse($item['logs'][3]['time'])->format('h:i A') : '-' }}</td>
                                                     </tr>
-                                                    <tr>
-                                                        @for ($i = 0; $i < 4; $i++)
-                                                            <td>
-                                                                {{ isset($item['logs'][$i]['captured_location']) ? $item['logs'][$i]['captured_location'] : 'N/A' }}
-                                                            </td>
-                                                        @endfor
-                                                    </tr>
-                                                    <tr>
-                                                        @for ($i = 0; $i < 4; $i++)
-                                                            <td>
-                                                                @if (isset($item['logs'][$i]['captured_image']))
-                                                                    <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
-                                                                         alt="logs" style="width: 100%; height: 100px;">
-                                                                @else
-                                                                    No Image
-                                                                @endif
-                                                            </td>
-                                                        @endfor
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="12">
-                                                            <div class="text-start pb-3 px-3">
-                                                                <p class="mb-2 fw-bold">Accomplishment Report: </p>
-                                                                <small>{{$item['logs'][3]['accomplishment']}}</small>
-                                                            </div>
-                                                        </td>    
-                                                    </tr>                                                    
+                                                    @php
+                                                        $hasLocation = false;
+                                                        $hasImage = false;
+                                                    
+                                                        // Check if any of the logs have a captured location or image
+                                                        for ($i = 0; $i < 4; $i++) {
+                                                            if (!empty($item['logs'][$i]['captured_location'])) {
+                                                                $hasLocation = true;
+                                                            }
+                                                            if (!empty($item['logs'][$i]['captured_image'])) {
+                                                                $hasImage = true;
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    
+                                                    @if($hasLocation)
+                                                        <tr>
+                                                            @for ($i = 0; $i < 4; $i++)
+                                                                <td>
+                                                                    {{ isset($item['logs'][$i]['captured_location']) ? $item['logs'][$i]['captured_location'] : 'N/A' }}
+                                                                </td>
+                                                            @endfor
+                                                        </tr>
+                                                    @endif
+                                                    
+                                                    @if($hasImage)
+                                                        <tr>
+                                                            @for ($i = 0; $i < 4; $i++)
+                                                                <td>
+                                                                    @if (!empty($item['logs'][$i]['captured_image']))
+                                                                        <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
+                                                                            alt="logs" style="width: 100%; height: 100px;">
+                                                                    @else
+                                                                        No Image
+                                                                    @endif
+                                                                </td>
+                                                            @endfor
+                                                        </tr>
+                                                    @endif
+                                                    @if(!empty($item['logs'][3]['accomplishment']))
+                                                        <tr>
+                                                            <td colspan="12">
+                                                                <div class="text-start pb-3 px-3">
+                                                                    <p class="mb-2 fw-bold">Accomplishment Report: </p>
+                                                                    <small>{{ $item['logs'][3]['accomplishment'] }}</small>
+                                                                </div>
+                                                            </td>    
+                                                        </tr>  
+                                                    @endif                            
                                                 </tbody>
                                             </table>
                                         </div>
