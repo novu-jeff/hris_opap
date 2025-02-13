@@ -51,7 +51,9 @@
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
-                        @error('records.employee_information.status') <span class="text-danger">{{ $message }}</span> @enderror
+                        <div class="error-field">
+                            @error('records.employee_information.status') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     <div class="col-12 col-md-4 mb-3">
                         <label class="mb-2" for="date_resignation">Date Resignation</label>
@@ -72,18 +74,24 @@
                                 <option value="{{$section->id}}">{{$section->code . ' - ' . $section->name}}</option>
                             @endforeach
                         </select>
-                        @error('records.employee_information.section_id') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
+                        <div class="error-field">
+                            @error('records.employee_information.section_id') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        </div>
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="branch">Branch</label>
                         <input type="text" wire:model="records.employee_information.branch" id="records.employee_information.branch" class="form-control" readonly>
-                        @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
+                        <div class="error-field">
+                            @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        </div>
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="department">Department</label>
                         <input type="text" wire:model="records.employee_information.department" id="records.employee_information.department" class="form-control" readonly>
-                        @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
+                        <div class="error-field">
+                            @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        </div>
                     <div class="col-12 mt-4 mb-3">
                         <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Employment Details</h5>
                         <hr>
@@ -96,19 +104,23 @@
                                 <option value="{{strtolower($category->id)}}">{{$category->name}}</option>
                             @endforeach
                         </select>
-                        @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
-                        <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
-                            <option value=""> - CHOOSE - </option>
-                            @foreach ($positions as $position)
-                                <option value="{{$position->id}}">{{$position->name}}</option>
-                            @endforeach
-                        </select>
-                        @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
+                        <div class="error-field">
+                            @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     @if(in_array($records['employee_information']['type'], ['1', '2']))
+                        <div class="col-md-4 mb-3">
+                            <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
+                            <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
+                                <option value=""> - CHOOSE - </option>
+                                @foreach ($positions as $position)
+                                    <option value="{{$position->id}}">{{$position->name}}</option>
+                                @endforeach
+                            </select>
+                            <div class="error-field">
+                                @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                         <div class="col-md-4 mb-3">
                             <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
                             <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
@@ -117,8 +129,18 @@
                                     <option value="{{$i}}"> Step {{$i}}</option>
                                 @endfor
                             </select>
-                            @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
+                            <div class="error-field">
+                                @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>      
+                    @elseif($records['employee_information']['type'] == 3)    
+                        <div class="col-md-4 mb-3">
+                            <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
+                            <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
+                            <div class="error-field">
+                                @error('records.employee_information.job_completion') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>     
                     @endif
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="shift_schedule">Shift Schedule</label>
@@ -157,25 +179,50 @@
                             <option value="paycheck">Paycheck</option>
                             <option value="e-wallet">E-Wallet</option>
                         </select>
-                        @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
+                        <div class="error-field">
+                            @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                        <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control restricted" readonly>
-                        @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
+                       <div class="error-field">
+                            @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                       </div>
                     </div>
                 
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
                         <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">
-                        @error('records.employee_information.payroll_account_number') <span class="text-danger">{{ $message }}</span> @enderror
+                        <div class="error-field">
+                            @error('records.employee_information.payroll_account_number') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                 </div>
                 <hr class="mt-5">
             </div>
         </div>
         <div class="row">
-            <div class="col-12 col-md-6 mb-4">
+            <div class="col-12 col-md-4 mb-4">
+                <div class="card mb-4 border-0">
+                    <div class="card-header border-0 bg-transparent">
+                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Leave Credits</h5>
+                    </div>
+                    <div class="card-body px-4">
+                        <ul class="list-unstyled">
+                            @foreach ($records['leaveCredits'] as $item)
+                                <li class="d-flex align-items-center gap-3 mb-2">
+                                    <div>
+                                        <span> {{ strtoupper($item['code']) . ' - ' .  ucwords($item['name']) }}</span>
+                                        <strong> ({{ $item['credits'] }})</strong>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>                            
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 mb-4">
                 <div class="card mb-4 border-0">
                     <div class="card-header border-0 bg-transparent">
                         <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Other Earnings</h5>
@@ -186,12 +233,12 @@
                                 @foreach ($records['other_earnings'] as $item)
                                     <li class="d-flex align-items-center gap-3 mb-2">
                                         <span>
-                                            {{ strtoupper($item['code']) }} - {{ ucwords($item['name']) }}
+                                            {{ strtoupper($item['code']) }} -
                                             @if ($item['isEligible'])
                                                 <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
                                             @endif
                                         </span>
-                                        <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" aria-hidden="true"></i>
+                                        <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" style="margin-bottom: 5px" aria-hidden="true"></i>
                                     </li>
                                 @endforeach
                             @else
@@ -201,7 +248,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 mb-4">
+            <div class="col-12 col-md-4 mb-4">
                 <div class="card mb-4 border-0">
                     <div class="card-header border-0 bg-transparent">
                         <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Other Deductions</h5>
@@ -243,25 +290,6 @@
                             @endif
                         </ul>
                                                               
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 mb-4">
-                <div class="card mb-4 border-0">
-                    <div class="card-header border-0 bg-transparent">
-                        <h5 class="mb-0 text-uppercase fw-bold pt-2 pb-0 ps-2">Leave Credits</h5>
-                    </div>
-                    <div class="card-body px-4">
-                        <ul class="list-unstyled">
-                            @foreach ($records['leaveCredits'] as $item)
-                                <li class="d-flex align-items-center gap-3 mb-2">
-                                    <div>
-                                        <span> {{ strtoupper($item['code']) . ' - ' .  ucwords($item['name']) }}</span>
-                                        <strong> ({{ $item['credits'] }})</strong>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>                            
                     </div>
                 </div>
             </div>

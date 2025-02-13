@@ -18,6 +18,7 @@ class EmployeeInformation extends Model
         'schedule_id',
         'section_id',
         'position_id',
+        'job_completion',
         'date_hired',
         'date_resignation',
         'employment_type_id',

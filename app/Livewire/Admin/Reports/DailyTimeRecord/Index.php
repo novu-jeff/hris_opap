@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Reports\DailyTimeRecord;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,7 +22,7 @@ class Index extends Component
     public function render()
     {
         // Initialize the query builder for EmployeeClockInOut with related information
-        $model = EmployeeClockInOut::with('information.personal');
+        $model = EmployeeTimelogs::with('employee.personal');
 
         // If search is provided, apply the search condition
         if ($this->search) {

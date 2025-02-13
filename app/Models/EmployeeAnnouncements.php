@@ -13,7 +13,8 @@ class EmployeeAnnouncements extends Model
     protected $fillable = [
         'banner',
         'title',
-        'content'
+        'content',
+        'isDeleted'
     ];
 
     public function attachments() {

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -10,35 +11,30 @@ class DailyTimeRecordService {
     /**
     * Retrieve the Daily Time Record for a specific employee and month.
     */
-    public function getDailyTimeRecord($id, $date)
+    public function getDailyTimeRecord($employee_no, $coverageDate)
     {
+
         $errors = [];
 
-        $date = Carbon::createFromFormat('F, Y', $date);
-
-        Log::info('Showing DTR for Date: ' . $date);
-
-        $startDate = $date->copy()->startOfMonth();
-        $endDate = $date->copy()->endOfMonth();
 
         # get the employee's information
-        $employee = $this->getEmployee($id);
+        $employee = $this->getEmployee($employee_no);
 
         $shift = $this->fetchData('shift_schedule', $employee->shift_id, $errors, 'Shift schedule is missing');
         $schedule = $this->fetchData('employee_schedules', $employee->schedule_id, $errors, 'Schedule is missing');
-        $overtime = $this->fetchOvertime($id, $startDate, $endDate);
-        $leaves = $this->fetchLeaves($id, $startDate, $endDate);
-        $holidays = $this->fetchHolidays($startDate, $endDate);
+        $overtime = $this->fetchOvertime($employee_no, $coverageDate);
+        $leaves = $this->fetchLeaves($employee_no, $coverageDate);
+        $holidays = $this->fetchHolidays($coverageDate);
 
         if (!$employee) {
             $errors[] = 'Employee not found.';
             throw new \Exception(implode("\n", $errors));
         }
         if (!$shift) {
-            $errors[] = "Shift schedule is missing for employee {$id}. Please assign one.";
+            $errors[] = "Shift schedule is missing for employee {$employee_no}. Please assign one.";
         }
         if (!$schedule) {
-            $errors[] = "Employee schedule is missing for employee {$id}. Please assign one.";
+            $errors[] = "Employee schedule is missing for employee {$employee_no}. Please assign one.";
         }
 
         # Throw all errors if any
@@ -46,11 +42,12 @@ class DailyTimeRecordService {
             throw new \Exception(implode("\n", $errors));
         }
 
+
         # Fetch clock-in/out data
-        $clockData = $this->getClockData($employee, $startDate, $endDate);
+        $clockData = $this->getClockData($employee, $coverageDate);
 
         # Generate all days in the month
-        $allDays = $this->generateAllDays($startDate, $endDate);
+        $allDays = $this->generateAllDays($coverageDate);
 
         # DTR Computation
         $dailyTimeRecord = $this->computeDailyTimeRecord(
@@ -77,8 +74,8 @@ class DailyTimeRecordService {
         object $overtime, 
         int $leaves,
         object $holiday,
-        $allDays)
-    {
+        $allDays) {
+            
         # Initialize totals
         $totalOfWorkDaysForCurrentMonth  = 0;
         $totalPresentDays = 0;
@@ -173,7 +170,6 @@ class DailyTimeRecordService {
         }
     
         # Format the final result
-        Log::info('Formatting DTR data for the employee.');
         $dtrNewFormat = [
             'employee_account' => [
                 'employee_no' => $employee->employee_no,
@@ -277,26 +273,42 @@ class DailyTimeRecordService {
     /**
     * Get all the clock data of the employee based on the start and end date.
     */
-    public function getClockData($employee, $startDate, $endDate)
+    
+    public function getClockData($employee, $coverageDate)  
     {
-        return DB::table('employee_clock_in_out')
-            ->select(
-                'bsd_no',
-                'employee_no',
-                'clock_in_am',
-                'clock_out_am',
-                'clock_in_pm',
-                'clock_out_pm',
-                'created_at',
-                'origin',
-            )
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where(function ($query) use ($employee) {
-                $query->where('bsd_no', $employee->bsd_no)
-                    ->orWhere('employee_no', $employee->employee_no);
-            })
+        
+        $month = Carbon::parse($coverageDate)->format('m'); // Get selected month
+        $year = Carbon::parse($coverageDate)->format('Y'); // Get selected year
+    
+        // Fetch logs within the given month & year
+        $logs = EmployeeTimelogs::where('bsd_no', $employee->bsd_no)
+            ->whereRaw("STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i') IS NOT NULL")
+            ->whereRaw("MONTH(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$month])
+            ->whereRaw("YEAR(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$year])
+            ->orderByRaw("STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')") // Order by date
+            ->limit(100)
             ->get();
+    
+        // Initialize a collection
+        $formattedData = collect();
+    
+        foreach ($logs as $log) {
+            // Ensure correct datetime parsing
+            $dateTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
+            $date = $dateTime->format('Y-m-d'); // Format as YYYY-MM-DD
+            $time = $dateTime->format('H:i:s'); // Format as HH:MM:SS
+    
+            // Ensure key exists before pushing
+            if (!$formattedData->has($date)) {
+                $formattedData[$date] = collect();
+            }
+    
+            $formattedData[$date]->push($time);
+        }
+            
+        return $formattedData;
     }
+    
      /**
      * Fetch data from the database.
      */
@@ -312,17 +324,24 @@ class DailyTimeRecordService {
     /**
     * Generate all days in the given date range.
     */
-    private function generateAllDays($startDate, $endDate)
+    private function generateAllDays($date)
     {
+
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
         $this->logInfo("Generating all days for the month.");
         return collect($startDate->toPeriod($endDate))->map(fn($day) => $day->toDateString());
     }
     /**
     * Fetch overtime data.
     */
-    private function fetchOvertime($id, $startDate, $endDate)
+    private function fetchOvertime($id, $date)
     {
-        $this->logInfo("Fetching overtime for employee ID: $id between $startDate and $endDate.");
+
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
         return DB::table('employee_atro')
             ->whereBetween('date', [$startDate, $endDate])
             ->where('employee_no', $id)
@@ -331,8 +350,12 @@ class DailyTimeRecordService {
     /**
     * Fetch leave data.
     */
-    private function fetchLeaves($id, $startDate, $endDate)
+    private function fetchLeaves($id, $date)
     {
+
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
         $this->logInfo("Fetching leaves for employee ID: $id.");
         return DB::table('employee_leave')
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -342,9 +365,12 @@ class DailyTimeRecordService {
     /**
     * Fetch holiday data.
     */
-    private function fetchHolidays($startDate, $endDate)
+    private function fetchHolidays($date)
     {
-        $this->logInfo("Fetching holidays between $startDate and $endDate.");
+
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
         return DB::table('holidays')
             ->whereBetween('date', [$startDate, $endDate])
             ->get();

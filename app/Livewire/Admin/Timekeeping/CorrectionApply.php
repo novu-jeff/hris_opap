@@ -46,56 +46,58 @@ class CorrectionApply extends Component
     }
 
     private function getLogs(int $bsd_no = null, string $date) {
-        $timestamp = Carbon::create($date)->format('j/n/Y');
-    
+
+        $timestamp = Carbon::create($date)->format('d/m/Y');
+        
         $query = EmployeeTimelogs::with('employee.personal')
-            ->where('bsd_no', $bsd_no)
             ->where('logdatetime', 'LIKE', "{$timestamp}%");
+                
+        if (!is_null($bsd_no)) {
+            $query->where('bsd_no', $bsd_no);
+        }
     
-        $records = $query->get()->unique('logdatetime'); // Remove exact duplicates
+        $records = $query->get();
     
-        $groupedData = $records->groupBy(function ($record) {
-            return Carbon::parse($record->logdatetime)->format('j/n/Y') . '|' . ($record->bsd_no ?? 'undefined');
+        return $records->groupBy(function ($record) {
+            return Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('d/m/Y') . '|' . ($record->bsd_no ?? 'undefined');
         })->map(function ($logs, $key) {
             [$date, $bsd_no] = explode('|', $key);
-    
-            $formattedLogs = collect($logs)->mapToGroups(function ($log) {
-                return [
-                    Carbon::parse($log->logdatetime)->format('H') => [
-                        'time' => Carbon::parse($log->logdatetime)->format('H:i:s'),
-                        'captured_image' => $log->captured_image
-                    ]
-                ];
-            });
-    
-            // Only apply merging logic when log count is greater than 4
-            if ($formattedLogs->flatten(1)->count() > 4) {
-                $formattedLogs = $formattedLogs->map(function ($entries, $hour) {
-                    if ($hour == 12 || $hour == 13) {
-                        return $entries->toArray(); // Keep all values for 12 PM and 1 PM
-                    } elseif ($hour < 12) {
-                        return [$entries->sortBy('time')->first()]; // Keep earliest time for AM
-                    } else {
-                        return [$entries->sortByDesc('time')->first()]; // Keep latest time for PM
-                    }
-                })->collapse()->values()->all();
-            } else {
-                // If logs are <= 4, keep all logs as they are
-                $formattedLogs = $formattedLogs->collapse()->values()->all();
-            }
     
             return [
                 'date' => $date,
                 'bsd_no' => $bsd_no,
                 'employee' => $logs->first()->employee,
                 'origin' => $logs->first()->origin,
-                'logs' => $formattedLogs
+                'logs' => $this->processLogs($logs)
             ];
         })->values();
-    
-        return $groupedData;
     }
     
+    /**
+     * Process logs to merge IN/OUT timestamps.
+     */
+    private function processLogs($logs)
+    {
+        return $logs->mapToGroups(function ($log) {
+            $logTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
+            return [
+                $logTime->format('H') => [
+                    'time' => $logTime->format('H:i'),
+                    'captured_location' => $log->captured_location,
+                    'captured_image' => $log->captured_image,
+                    'accomplishment' => $log->accomplishment
+                ]
+            ];
+        })->map(function ($entries, $hour) {
+            if ($hour == 12 || $hour == 13) {
+                return $entries->values()->toArray(); // Keep unique times
+            } elseif ($hour < 12) {
+                return [$entries->sortBy('time')->first()]; // Earliest log for AM
+            } else {
+                return [$entries->sortByDesc('time')->first()]; // Latest log for PM
+            }
+        })->collapse()->values()->all();
+    }
 
     protected function rules() {
         return [
@@ -137,37 +139,34 @@ class CorrectionApply extends Component
                 'action' => 'save'
             ]);
         } else {
+
             DB::beginTransaction();
 
             try {
-                $model = EmployeeTimelogs::class;
 
-                $timestamp = Carbon::create($this->date)->format('j/n/Y');
+                $timestamp = Carbon::create($this->date)->format('d/m/Y');
 
-                $records = $model::where('bsd_no', $this->bsd_no)
-                    ->where('logdatetime', 'LIKE', "{$timestamp}%");
-                
-                if ($records->delete()) {
-
-                    // Ensure none of the times are null or empty
-                    $toBeCreated = [
-                        $timestamp . ' ' . ($this->clockin ?? ''),
-                        $timestamp . ' ' . ($this->breakout ?? ''),
-                        $timestamp . ' ' . ($this->breakin ?? ''),
-                        $timestamp . ' ' . ($this->clockout ?? '')
-                    ];
-
-                    foreach ($toBeCreated as $date) {
-                        if (!empty($date)) {  // Only create if the time is valid
-                            EmployeeTimelogs::create([
-                                'origin' => 'biometrics',
+                $logTimes = [
+                    'clockin' => ['time' => $this->clockin, 'type' => 0],   // IN
+                    'breakout' => ['time' => $this->breakout, 'type' => 1], // OUT
+                    'breakin' => ['time' => $this->breakin, 'type' => 0],   // IN
+                    'clockout' => ['time' => $this->clockout, 'type' => 1], // OUT
+                ];
+            
+                foreach ($logTimes as $key => $log) {
+                    if (!empty($log['time'])) {
+                        EmployeeTimelogs::updateOrCreate(
+                            [
                                 'bsd_no' => $this->bsd_no,
+                                'logdatetime' => $timestamp . ' ' . $log['time'],
+                            ],
+                            [
+                                'origin' => 'biometrics',
                                 'isindtr' => '',
-                                'logdatetime' => $date,
-                                'type' => '',
+                                'type' => $log['type'], 
                                 'ismanual' => 1,
-                            ]);
-                        }
+                            ]
+                        );
                     }
                 }
 

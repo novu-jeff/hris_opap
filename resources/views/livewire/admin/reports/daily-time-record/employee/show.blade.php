@@ -97,7 +97,7 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Daily Time Record > <span  class="text-primary">{{ $employee_id }}</span></h1>
+            <h1>Daily Time Record <span  class="text-primary">{{ $employee_no }}</span></h1>
         </div>
     </div>
     <div class="mt-3">

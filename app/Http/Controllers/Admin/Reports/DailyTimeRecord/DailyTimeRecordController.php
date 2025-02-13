@@ -11,15 +11,25 @@ class DailyTimeRecordController extends Controller
     {
         $month = $request->input('month', now()->format('F')); 
         $year = $request->input('year', now()->format('Y'));
-    
-        $date = "{$month}, {$year}";
-    
-        return view('admin.reports.daily-time-record.employee.index', compact('date'));
+        
+        if(empty($month) || empty($year)) {
+            return redirect()->route('dtr.index');
+        }
+
+        return view('admin.reports.daily-time-record.employee.index', compact('month', 'year'));
     }
 
-    public function show($date, $id)
+    public function show(Request $request, string $employee_no)
     {
-        return view('admin.reports.daily-time-record.employee.show', compact('id', 'date'));
+
+        $month = $request->input('month', now()->format('F')); 
+        $year = $request->input('year', now()->format('Y'));
+
+        if(empty($month) || empty($year)) {
+            return redirect()->route('dtr.index');
+        }
+
+        return view('admin.reports.daily-time-record.employee.show', compact('employee_no', 'month', 'year'));
     }
     
 }

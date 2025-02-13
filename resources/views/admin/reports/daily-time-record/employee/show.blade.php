@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="pb-5">
-    @livewire('admin.reports.daily-time-record.employee.show', ['id' => $id, 'date' => $date])
+    @livewire('admin.reports.daily-time-record.employee.show', ['employee_no' => $employee_no, 'month' => $month, 'year' => $year])
 </div>
 @endsection
 

@@ -120,35 +120,45 @@ class Form extends Component
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
-        if(!empty($eligible)) {
-            $this->positions = Positions::where('type', $eligible)->get();
-        }
-
-        if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
-
-            $salaryGrade = Positions::where('id', $position_id)
-                ->value('salary_grade') ?? '';
-
-            $stepColumn = "step_" . ($step_id ?? '');
-
-            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
-                    $query->where('salary_grade', $salaryGrade)
-                        ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-                }])
-                ->where('eligible', $eligible)
-                ->first();
+        if($eligible != 3) {
             
-            // Ensure that $activeTranche is not null before accessing its items
-            $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
-                ? $activeTranche->items->first()->$stepColumn 
-                : 0;
-        
-
-            if ($activeTranche) {
-                $this->records['employee_information']['monthly_rate'] = $salary;
+            if(!empty($eligible)) {
+                $this->positions = Positions::where('type', $eligible)->get();
+            }
+    
+            if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
+    
+                $salaryGrade = Positions::where('id', $position_id)
+                    ->value('salary_grade') ?? '';
+    
+                $stepColumn = "step_" . ($step_id ?? '');
+    
+                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
+                        $query->where('salary_grade', $salaryGrade)
+                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                    }])
+                    ->where('eligible', $eligible)
+                    ->first();
+                
+                // Ensure that $activeTranche is not null before accessing its items
+                $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                    ? $activeTranche->items->first()->$stepColumn 
+                    : 0;
+            
+    
+                if ($activeTranche) {
+                    $this->records['employee_information']['monthly_rate'] = $salary;
+                }
+            } else {
+                $this->records['employee_information']['monthly_rate'] = 0;
             }
         } else {
-            $this->records['employee_information']['monthly_rate'] = 0;
+            $salary = EmployeeInformation::where('employee_no', $this->employee_no)->first();
+            if($salary) {
+                $this->records['employee_information']['monthly_rate'] = $salary->monthly_rate;
+            } else {
+                $this->records['employee_information']['monthly_rate'] = 0;
+            }
         }
     }
 
@@ -168,6 +178,7 @@ class Form extends Component
             'employee_schedule' => $data->schedule_id,
             'section_id' => $data->section_id,
             'position_id' => $data->position_id,
+            'job_completion' => $data->job_completion,
             'step_id' => $data->step_id ?? '1',
             'date_hired' => $data->date_hired,
             'service_duration' => relative_time_duration($data->date_hired),
@@ -427,7 +438,11 @@ class Form extends Component
             ],
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
-            'records.employee_information.position_id' => 'required|exists:positions,id',
+            'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id|required_without:records.employee_information.type',
+            'records.employee_information.job_completion' => 'required_if:records.employee_information.type,3|nullable|date',
+            
+
+
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.section_id' => 'nullable|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
@@ -514,8 +529,15 @@ class Form extends Component
             'records.employee_information.date_hired.date' => 'The date hired must be valid date',
             'records.employee_information.section_id.required' => 'The section is required.',
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
-            'records.employee_information.position_id.required' => 'The position is required.',
-            'records.employee_information.position_id.exists' => 'The selected position does not exist.',
+           
+            'records.employee_information.position_id.required_if' => 'The position field is required when employee type is 1 or 2.',
+            'records.employee_information.position_id.exists' => 'The selected position is invalid.',
+            'records.employee_information.position_id.required_without' => 'The position is required unless an employee type is provided.',
+        
+            'records.employee_information.job_completion.required_if' => 'The job completion date is required when employee type is 3.',
+            'records.employee_information.job_completion.date' => 'The job completion must be a valid date.',
+            
+
             'records.employee_information.step_id.required' => 'The tranche step is required.',
             'records.employee_information.step_id.in' => 'The tranche step is invalid.',
             'records.employee_information.monthly_rate.required' => 'The monthly rate is required',

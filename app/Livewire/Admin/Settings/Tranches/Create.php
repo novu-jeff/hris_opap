@@ -121,11 +121,17 @@ class Create extends Component
     protected function rules() {
         return [
             'name' => 'required',
-            'eligible' => 'required|exists:employment_types,id',
+            'eligible' => 'required|exists:employment_types,id|unique:tranche,eligible',
             'file' => empty($this->records) ? 'required' : 'nullable', 
     
         ];
     } 
+
+    protected function messages() {
+        return [
+            'eligible.unique' => 'There\'s a current tranche already for this employment type'
+        ];
+    }
 
     public function save() {
         
@@ -144,7 +150,7 @@ class Create extends Component
         $this->validate();
 
         try {
-           
+                       
             $tranche = Tranche::create([
                 'name' => $this->name,
                 'eligible' => $this->eligible,
