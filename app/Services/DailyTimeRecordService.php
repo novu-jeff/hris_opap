@@ -102,73 +102,74 @@ class DailyTimeRecordService {
 
         # Map clock-in/out data to dates
         $mappedClockData = [];
+
+        $clockData = $clockData->toArray();
+        $allDays = $allDays->toArray();
+
         foreach ($allDays as $day) {
             $dayTextFormat = Carbon::parse($day)->format('l');
             $overtimeDuration = null;
-    
             $remarks = [];
-    
-            # Find clock entry for the current day
-            $clockEntry = $clockData->firstWhere(fn($item) => Carbon::parse($item->created_at)->isSameDay(Carbon::parse($day)));
-            
-            # Find overtime entry for the current day
-            $overtimeEntry = $overtime->firstWhere(fn($item) => Carbon::parse($item->date)->isSameDay(Carbon::parse($day)));
-    
-            #get the origin of time logs
-            $origin = $clockEntry ? $clockEntry->origin : 'biometrics';  #default biometrics  if null
+        
+            # Ensure $clockData is an array before using it
+            $clockEntry = $clockData[$day] ?? [];
 
-            # Check if the employee was present
-            $clockIn = $clockEntry ? $clockEntry->clock_in_am : null;
-            $clockOut = $clockEntry ? $clockEntry->clock_out_pm : null;
-
+            # Ensure $overtime is an array before using it
+            $overtimeEntry = is_array($overtime) ? collect($overtime)->firstWhere(fn($item) => Carbon::parse($item->date)->isSameDay(Carbon::parse($day))) : null;
+        
+            # Get origin of time logs
+            $origin = !empty($clockEntry) ? 'biometrics' : 'manual';
+        
+            # Get clock-in and clock-out times
+            $clockIn = !empty($clockEntry) ? ($clockEntry[0] ?? null) : null;
+            $clockOut = !empty($clockEntry) && count($clockEntry) > 1 ? end($clockEntry) : null;
+        
             # Compute total minutes worked
             $totalMinutesConsumed = $this->calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, $remarks);
-
+        
             # Calculate overtime
-            $overtimeDuration = $overtimeEntry ? $totalMinutesConsumed - 480 : null;
-
-           if (in_array($dayTextFormat, $scheduleDays)) { # Check if the day is part of the schedule
+            $overtimeDuration = $overtimeEntry ? max($totalMinutesConsumed - 480, 0) : null;
+            
+            if (in_array($dayTextFormat, $scheduleDays)) { 
                 $totalOfWorkDaysForCurrentMonth++;
-                if (is_null($clockEntry)) {
+                if (empty($clockEntry)) {
                     $remarks[] = 'Absent';
-                    Log::info("No clock entry found for $day, marking as Absent.");
                 }
-            } else if ($totalMinutesConsumed < $requiredMinsToRender && $totalMinutesConsumed  != 0) { 
-                $remarks[] = 'Undertime';  # Cap total minutes at 480 and check for undertime
+            } elseif ($totalMinutesConsumed < $requiredMinsToRender && $totalMinutesConsumed != 0) {
+                $remarks[] = 'Undertime';
             } else {
                 $totalRestDay++;
                 $remarks[] = 'Rest day';
             }
-    
-            # Mark the day as a holiday if applicable
+        
+            # Mark as holiday if applicable
             if (in_array($day, $convertedHolidays['regular']) || in_array($day, $convertedHolidays['special']) || in_array($day, $convertedHolidays['company'])) {
                 $remarks[] = 'Holiday';
             }
-    
-            # Check if the employee was present
-            if ($clockEntry && $clockEntry->clock_in_am && $clockEntry->clock_out_pm) {
+        
+            # Check if employee was present
+            if (!empty($clockEntry)) {
                 $totalPresentDays++;
             }
-
-            if($totalMinutesConsumed > $requiredMinsToRender)
-            {
+        
+            if ($totalMinutesConsumed > $requiredMinsToRender) {
                 $totalMinutesConsumed = $requiredMinsToRender;
             }
-    
+        
             # Add data for the current day
             $mappedClockData[] = [
                 'date' => $day,
-                'clock_in_am' => $clockIn,
-                'clock_out_am' => $clockEntry ? $clockEntry->clock_out_am : null,
-                'clock_in_pm' => $clockEntry ? $clockEntry->clock_in_pm : null,
-                'clock_out_pm' => $clockOut,
+                'clock_in' => $clockIn,
+                'break_out' => !empty($clockEntry) && count($clockEntry) > 1 ? $clockEntry[1] : null,
+                'break_in' => !empty($clockEntry) && count($clockEntry) > 2 ? $clockEntry[2] : null,
+                'clock_out' => $clockOut,
                 'origin' => $origin,
-                'remarks' => $remarks ? $remarks : null,
-                'overtime_approved' => $clockEntry ? $overtimeDuration : null,
-                'total_mins_consumed' => $clockEntry ? $totalMinutesConsumed : null,
+                'remarks' => !empty($remarks) ? $remarks : null,
+                'overtime_approved' => !empty($clockEntry) ? $overtimeDuration : null,
+                'total_mins_consumed' => !empty($clockEntry) ? $totalMinutesConsumed : null,
             ];
         }
-    
+                    
         # Format the final result
         $dtrNewFormat = [
             'employee_account' => [
@@ -202,12 +203,15 @@ class DailyTimeRecordService {
     */
     private function calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, &$remarks)
     {
+
         Log::info('Calculate Total Minutes');
 
         if ($clockIn && $clockOut) {
-            $clock_start = Carbon::createFromFormat('h:i A', $clockIn);
-            $clock_end = Carbon::createFromFormat('h:i A', $clockOut);
 
+
+            $clock_start = Carbon::createFromFormat('H:i:s', $clockIn);
+            $clock_end = Carbon::createFromFormat('H:i:s', $clockOut);
+            
             $start_shift = Carbon::parse($shift->start_shift);
 
             switch ($origin) {
@@ -330,7 +334,6 @@ class DailyTimeRecordService {
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
 
-        $this->logInfo("Generating all days for the month.");
         return collect($startDate->toPeriod($endDate))->map(fn($day) => $day->toDateString());
     }
     /**
