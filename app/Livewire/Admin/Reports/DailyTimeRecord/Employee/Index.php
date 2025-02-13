@@ -16,7 +16,9 @@ class Index extends Component
 
     use WithPagination;
 
-    public $date;
+    public $month;
+    public $year;
+
     public $dtr = null;
     public $dtrDate;
     public $employee_id;
@@ -35,10 +37,10 @@ class Index extends Component
         $this->dailyTimeRecordService = app(DailyTimeRecordService::class);
     }
 
-    public function mount($date)
+    public function mount($month, $year)
     {
-        $this->date = $date ?? now()->format('F, Y');
-        $this->dtrDate = $date ?? now()->format('F, Y');
+        $this->month = $month;
+        $this->year = $year;
     }
 
     public function updateDate($newDate)

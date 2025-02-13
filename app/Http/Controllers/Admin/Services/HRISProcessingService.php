@@ -68,7 +68,6 @@ class HRISProcessingService extends Controller
             $this->employee_account($record->employee_no, $data['employee_account'], true);
             $this->employee_personal($record->employee_no, $data['employee_personal'], true);
             $this->employee_parents($record->employee_no, null, true);
-            $this->employee_leave($record->employee_no, $data);
 
         } else {
 
@@ -87,8 +86,6 @@ class HRISProcessingService extends Controller
             $this->employee_trainings($employee_no, $data['employee_trainings']);
             $this->employee_others($employee_no, $data['employee_others']);
             $this->employee_skills($employee_no, $data['employee_skills']);
-
-            $this->employee_leave($employee_no, $data);
 
         }
     }
@@ -117,6 +114,7 @@ class HRISProcessingService extends Controller
         return $record->update([
             'section_id' => $data['section_id'] ? $data['section_id'] : null,
             'position_id' => $data['position_id'],
+            'job_completion' => $data['job_completion'],
             'bsd_no' => $data['biometrics_id'],
             'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
             'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
@@ -377,110 +375,38 @@ class HRISProcessingService extends Controller
         }
     }
 
-    public function employee_leave(string $employee_no, array $data) {
-
-        $leaveDefaultCredits = LeaveType::all();
-
-        $model = LeaveCredits::class;
-
-        $product = config('app.product');
-
-        if ($product == 'opap') {
-            if ($data['employee_information']['type'] == 1) {
-                foreach ($leaveDefaultCredits as $leave) {
-
-                    $credits = 0;
-                
-                    if ($leave->code == 'VL' || $leave->code == 'SL' || $leave->code == 'MFL') {
-                        continue; 
-                    }
-                
-                    if ($data['employee_information']['type'] == 1) {
-                        if ($leave->code == 'VL') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'SL') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male' && $data['employee_personal']['civil_status'] == 'married') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'SOLO' && $data['employee_personal']['solo_parent'] == 'yes') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'VAWC' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'SLBW' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $leave->credits;
-                        } elseif ($leave->code == 'SPL' || $leave->code == 'STL' || $leave->code == 'RP' || $leave->code == 'SEL' || $leave->code == 'AL') {
-                            $credits = $leave->credits;
-                        }
-                    } else {
-                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $leave->credits;
-                        }
-                    }
-
-                    $currentCredits = LeaveCredits::where('leave_type_id', $leave->id)
-                        ->where('employee_no', $employee_no)
-                        ->count();
-                            
-                    if($currentCredits == 0) {
-                        $model::updateOrCreate(
-                            [
-                                'employee_no' => $employee_no,
-                                'leave_type_id' => $leave->id,
-                            ],
-                            [
-                                'credits' => $credits,
-                                'as_of' => Carbon::now()->format('Y-m')
-                            ]
-                        );
-                    }
-                    
-                }
-            } else {
-                foreach ($leaveDefaultCredits as $leave) {
-                    $model::updateOrCreate(
-                        [
-                            'employee_no' => $employee_no,
-                            'leave_type_id' => $leave->id,
-                        ],
-                        [
-                            'credits' => 0,
-                        ]
-                    );
-                }
-            }
-        }
-
-    }
-
     public function handleSalary(array $data) {
         $eligible = $data['type'];
         $position_id = $data['position_id'];
         $step_id = $data['step_id'];
 
-        if ($position_id && $step_id) {
-            $salaryGrade = Positions::where('id', $position_id)
-                ->value('salary_grade') ?? '';
-
-            $stepColumn = "step_" . ($step_id ?? '');
-
-            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
-                    $query->where('salary_grade', $salaryGrade)
-                        ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-                }])
-                ->where('eligible', $eligible)
-                ->first();
-            
-            // Ensure that $activeTranche is not null before accessing its items
-            $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
-                ? $activeTranche->items->first()->$stepColumn 
-                : 0;
-
-            if ($activeTranche) {
-                return $data['monthly_rate'] = $salary;
+        if(in_array($data['type'], [1,2])) {
+            if ($position_id && $step_id) {
+                $salaryGrade = Positions::where('id', $position_id)
+                    ->value('salary_grade') ?? '';
+    
+                $stepColumn = "step_" . ($step_id ?? '');
+    
+                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
+                        $query->where('salary_grade', $salaryGrade)
+                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                    }])
+                    ->where('eligible', $eligible)
+                    ->first();
+                
+                // Ensure that $activeTranche is not null before accessing its items
+                $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                    ? $activeTranche->items->first()->$stepColumn 
+                    : 0;
+    
+                if ($activeTranche) {
+                    return $data['monthly_rate'] = $salary;
+                }
             }
+        } else {
+            return $data['monthly_rate'];
         }
+        
     }
 
 }

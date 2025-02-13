@@ -11,7 +11,7 @@ class Tutorial extends Component
     public $records;
 
     public function mount() {
-        $this->records = FAQs::all();
+        $this->records = FAQs::where('isDeleted', false)->get();
     }
 
     public function render()

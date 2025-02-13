@@ -49,22 +49,22 @@
                                 <textarea wire:model="particulars.{{$year}}.{{ $key }}" wire:key="particulars-{{$year}}.{{ $key }}" class="form-control" style="width: 400px; height: 100px;"></textarea>
                             </td>
                             <td>
-                                <input type="number" wire:key="vl_earned-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_earned'] ?? '' }}">
+                                <input type="text" wire:key="vl_earned-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_earned'] ?? '' }}">
                             </td>
                             <td style="color: red">
-                                <input type="number" wire:key="vl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_w_pay'] ?? '' }}">
+                                <input type="text" wire:key="vl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_w_pay'] ?? '' }}">
                             </td>
                             <td style="color: red">
                                 {{$vl_bal[$year][$key]}}
                             </td>
                             <td>
-                                <input type="number" wire:key="vl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="vl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_wo_pay'] ?? '' }}">
+                                <input type="text" wire:key="vl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="vl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_wo_pay'] ?? '' }}">
                             </td>
                             <td>
-                                <input type="number" wire:key="sl_earned-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_earned'] ?? '' }}">
+                                <input type="text" wire:key="sl_earned-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_earned'] ?? '' }}">
                             </td>
                             <td style="color: red">
-                                <input type="number" wire:key="sl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_w_pay'] ?? '' }}">
+                                <input type="text" wire:key="sl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_w_pay'] ?? '' }}">
                             </td>
                             <td style="color: red">
                                 {{$sl_bal[$year][$key]}}

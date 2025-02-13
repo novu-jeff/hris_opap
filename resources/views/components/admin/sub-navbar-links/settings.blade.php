@@ -91,9 +91,9 @@
                     {{-- @can('read bank-information')
                         <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
                     @endcan --}}
-                    @can('read employment-type')
+                    {{-- @can('read employment-type')
                         <li><a class="dropdown-item" href="{{route('employment-type.index')}}">Employment Type</a></li>
-                    @endcan
+                    @endcan --}}
                     @can('read positions')
                         <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
                     @endcan

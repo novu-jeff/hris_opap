@@ -92,7 +92,7 @@
                                                     <div class="btn btn-danger" wire:click="resetCredit(true, '{{ $record->employee_no }}')">
                                                         <i class="fa-solid fa-rotate"></i>
                                                     </div>
-                                                    <a href="{{route('leave.show', ['leave' => $record->id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
+                                                    <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
                                                         <i class="fa-solid fa-eye"></i>
                                                     </a>
                                                 </div>

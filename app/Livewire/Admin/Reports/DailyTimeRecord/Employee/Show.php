@@ -13,7 +13,7 @@ class Show extends Component
     public $records;
     public $dtr = null;
     public $dtrDate;
-    public $employee_id;
+    public $employee_no;
     public $errors;
 
     protected $dailyTimeRecordService;
@@ -23,17 +23,19 @@ class Show extends Component
         $this->dailyTimeRecordService = app(DailyTimeRecordService::class);
     }
 
-    public function mount($id, $date)
+    public function mount($employee_no, $month, $year)
     {
         $this->initializeService();
 
-        try {
-            $this->dtrDate = $date;
-            $this->employee_id = $id;
-            $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
-        } catch (\Exception $e) {
-            $this->errors = explode("\n", $e->getMessage());
-        }
+        $this->dtrDate = Carbon::parse($month . ' ' . $year);
+        $this->employee_no = $employee_no;
+        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
+
+        // try {
+           
+        // } catch (\Exception $e) {
+        //     $this->errors = explode("\n", $e->getMessage());
+        // }
         
     }
 
@@ -51,7 +53,7 @@ class Show extends Component
         } else {
             $this->dtrDate = $currentDate->format('F, Y');
         }
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_id, $this->dtrDate);
+        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
     }
 
     public function render()

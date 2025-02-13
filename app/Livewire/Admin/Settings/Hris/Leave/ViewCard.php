@@ -37,6 +37,7 @@ class ViewCard extends Component
     }
 
     public function loadRecords() {
+
         if (empty($this->id) || empty($this->employee_no) || empty($this->action)) {
             return redirect()->route('leave.show', ['leave' => $this->id]);
         }
@@ -117,6 +118,7 @@ class ViewCard extends Component
     }
     
     public function onChange($code, $year, $key) {
+
         $previousKey = $key - 1;
         $previousYear = $year - 1;
     
@@ -222,7 +224,7 @@ class ViewCard extends Component
                 if($this->id == 1 || $this->id == 2) {
                     foreach ($this->records as $year => $data) {
                         foreach ($data['items'] as $item) {
-                            EmployeeLeaveCard::updateOrCreate(
+                            EmployeeLeaveCard::where('employee_no', $this->employee_no)->updateOrCreate(
                                 [
                                     'year' => $year,
                                     'period' => $item['period'], 

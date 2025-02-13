@@ -51,17 +51,17 @@
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped table-bordered w-100">
+        <table class="table table-striped w-100" id="logs-table">
             <thead>
                 <tr>
                     <th>Employee No</th>
                     <th>BSD No.</th>
                     <th>Employee Name</th>
-                    <th>Actions</th> <!-- Added actions column for "View" button -->
+                    <th>Actions</th> 
                 </tr>
             </thead>
             <tbody>
-                        @forelse ($timelogs as $key => $item)
+                @forelse ($timelogs as $key => $item)
                     @php
                         // Check if the condition is met (avoid repeating the logic)
                         $highlightBG = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
@@ -70,12 +70,12 @@
                         <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
                             <!-- Display Employee No, BSD No., and Employee Name -->
                             <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['employee']->employee_no ?? '' }}</td>
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['employee']->bsd_no ?? '' }}</td>
+                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['bsd_no'] ?? '' }}</td>
                             <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
                                 {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
                             </td>                    
                             <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                                <button wire:click="findLogs({{$item['employee']->bsd_no}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                                <button wire:click="findLogs({{$item['bsd_no'] ?? ''}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
                             </td>
                         </tr>   
                         @if($view_log && $item['bsd_no'] == $viewLogBsdNo)
@@ -85,17 +85,23 @@
                             $breakOut = isset($view_log['logs'][1]['time']) ? Carbon\Carbon::parse($view_log['logs'][1]['time'])->format('h:i A') : 'N/A';
                             $breakIn = isset($view_log['logs'][2]['time']) ? Carbon\Carbon::parse($view_log['logs'][2]['time'])->format('h:i A') : 'N/A';
                             $clockOutPM = isset($view_log['logs'][3]['time']) ? Carbon\Carbon::parse($view_log['logs'][3]['time'])->format('h:i A') : 'N/A';
-                    
-                            // Extract captured images
-                            $clockInImage = $view_log['logs'][0]['captured_image']
-                                ? asset('storage/clockinout/' . $view_log['logs'][0]['captured_image'])
-                                : 'https://placehold.co/300x150.png?text=No+Image';
-                    
-                            $clockOutImage = $view_log['logs'][count($view_log['logs']) - 1]['captured_image']
-                                ? asset('storage/clockinout/' . $view_log['logs'][count($view_log['logs']) - 1]['captured_image'])
-                                : 'https://placehold.co/300x150.png?text=No+Image';
-                    
-                            $showCapturedImages = $view_log['logs'][0]['captured_image'] || $view_log['logs'][count($view_log['logs']) - 1]['captured_image'];
+
+                          
+                            $hasLocation = false;
+                            $hasImage = false;
+                        
+                            // Check if any of the logs have a captured location or image
+                            for ($i = 0; $i < 4; $i++) {
+                                if (!empty($item['logs'][$i]['captured_location'])) {
+                                    $hasLocation = true;
+                                }
+                                if (!empty($item['logs'][$i]['captured_image'])) {
+                                    $hasImage = true;
+                                }
+                            }
+
+                            $accomplishment = collect($item['logs'])->firstWhere('accomplishment');
+                        
                         @endphp
                     
                         <tr class="child-row">
@@ -112,43 +118,61 @@
                                             </ul>
                                         </div>
                     
-                                        <div class="col-12 col-md-7 mb-3">
-                                            <div class="d-flex gap-3">
-                                                @if ($showCapturedImages)
-                                                    <div class="mb-4">
-                                                        <p class="fw-bold">Captured Clock In:</p>
-                                                        <img src="{{ $clockInImage }}" alt="Clock In Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                    </div>
-                                                    <div class="mb-4">
-                                                        <p class="fw-bold">Captured Clock Out:</p>
-                                                        <img src="{{ $clockOutImage }}" alt="Clock Out Image" style="width: 300px; height: 150px; object-fit: cover">
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                    
                                         <div class="col-12 col-md-12">
                                             <hr>
                                             <strong>Employee Clock In & Out</strong>
                                             <div class="d-flex justify-content-end">
-                                                <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $view_log['employee']->bsd_no, 'date' => $currentDate])}}" type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
+                                                <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $view_log['bsd_no'], 'date' => $currentDate])}}" type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
                                             </div>
                                             <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
                                                 <thead class="bg-gray-200">
                                                     <tr>
-                                                        <th class="border px-4 py-2">Clock In</th>
-                                                        <th class="border px-4 py-2">Break Out</th>
-                                                        <th class="border px-4 py-2">Break In</th>
-                                                        <th class="border px-4 py-2">Clock Out</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Clock In</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Break Out</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Break In</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Clock Out</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="border px-4 py-2"><strong><u>{{ $clockInAM }}</u></strong></td>
-                                                        <td class="border px-4 py-2"><strong><u>{{ $breakOut }}</u></strong></td>
-                                                        <td class="border px-4 py-2"><strong><u>{{ $breakIn }}</u></strong></td>
-                                                        <td class="border px-4 py-2"><strong><u>{{ $clockOutPM }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clockInAM }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $breakOut }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $breakIn }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clockOutPM }}</u></strong></td>
                                                     </tr>
+                                                    @if($hasLocation)
+                                                        <tr>
+                                                            @for ($i = 0; $i < 4; $i++)
+                                                                <td class="text-center py-1">
+                                                                    {{ isset($item['logs'][$i]['captured_location']) ? $item['logs'][$i]['captured_location'] : 'N/A' }}
+                                                                </td>
+                                                            @endfor
+                                                        </tr>
+                                                    @endif
+                                                    @if ($hasImage)
+                                                        <tr>
+                                                            @for ($i = 0; $i < 4; $i++)
+                                                                <td class="text-center py-1">
+                                                                    @if (!empty($item['logs'][$i]['captured_image']))
+                                                                        <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
+                                                                            alt="logs" style="width: 100%; height: 100px; object-fit: cover">
+                                                                    @else
+                                                                        No Image
+                                                                    @endif
+                                                                </td>
+                                                            @endfor
+                                                        </tr>
+                                                    @endif
+                                                    @if(!empty($accomplishment))
+                                                        <tr>
+                                                            <td colspan="12">
+                                                                <div class="text-start mt-2 pb-3 px-3">
+                                                                    <p class="mb-2 fw-bold">Accomplishment Report:</p>
+                                                                    <small>{{ $accomplishment['accomplishment'] }}</small>
+                                                                </div>
+                                                            </td>    
+                                                        </tr>  
+                                                    @endif
                                                 </tbody>
                                             </table>
                                         </div>

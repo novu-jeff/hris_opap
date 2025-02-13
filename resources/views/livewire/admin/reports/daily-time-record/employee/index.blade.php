@@ -44,7 +44,7 @@
                                     {{ $record->personal->lastname }}
                                 </td>                        
                                 <td> 
-                                    <a target="_blank" href="{{ route('dtr.show', ['id' => $record->employee_no, 'date' => $date]) }}" class="btn btn-primary">
+                                    <a target="_blank" href="{{ route('dtr.show', ['id' => $record->employee_no, 'month' => $month, 'year' => $year]) }}" class="btn btn-primary">
                                         <i class="fa-solid fa-eye"></i> Show DTR
                                     </a>
                                 </td>                            

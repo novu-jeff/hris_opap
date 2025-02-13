@@ -76,7 +76,7 @@ class Announcements extends Component
     public function render()
     {
 
-        $model = EmployeeAnnouncements::query();
+        $model = EmployeeAnnouncements::where('isDeleted', false);
 
         if ($this->search) {
             $this->resetPage(); 

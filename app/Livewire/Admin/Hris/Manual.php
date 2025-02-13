@@ -266,7 +266,9 @@ class Manual extends Component
             ],
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
-            'records.employee_information.position_id' => 'required|exists:positions,id',
+            'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|exists:positions,id',
+            'records.employee_information.job_completion' => 'nullable|date|required_if:records.employee_information.position_id,3',
+
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.section_id' => 'required|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\EmployeeTimelogs;
+use Carbon\Carbon;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,7 +38,9 @@ class TimelogUploadProcess implements ShouldQueue
                     'origin' => $item['origin'] ?? null,
                     'bsd_no' => $item['bsdno'] ?? null,
                     'isindtr' => $item['isindtr'] ?? null,
-                    'logdatetime' => $item['logdatetime'] ?? null,
+                    'logdatetime' => !empty($item['logdatetime']) 
+                        ? Carbon::createFromFormat('d/m/Y H:i:s', $item['logdatetime'])->format('d/m/Y H:i') 
+                        : null,
                     'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
                     'type' => $item['type'] ?? null,
                     'ismanual' => $item['ismanual'] ?? null,

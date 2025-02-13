@@ -95,7 +95,7 @@
                                                 data-bs-target="#collapse{{ $key }}" 
                                                 aria-expanded="{{ $key == 0 ? 'true' : 'false' }}" 
                                                 aria-controls="collapse{{ $key }}">
-                                            {{ \Carbon\Carbon::parse($item['date'])->format('j, l') }}
+                                                {{ \Carbon\Carbon::createFromFormat('d/m/Y', $item['date'])->format('j, l') }}
                                         </button>
                                     </h2>
                                     <div id="collapse{{ $key }}" 
@@ -132,6 +132,9 @@
                                                                 $hasImage = true;
                                                             }
                                                         }
+
+                                                        $accomplishment = collect($item['logs'])->firstWhere('accomplishment');
+
                                                     @endphp
                                                     
                                                     @if($hasLocation)
@@ -150,7 +153,7 @@
                                                                 <td>
                                                                     @if (!empty($item['logs'][$i]['captured_image']))
                                                                         <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
-                                                                            alt="logs" style="width: 100%; height: 100px;">
+                                                                            alt="logs" style="width: 100%; height: 100px; object-fit: cover">
                                                                     @else
                                                                         No Image
                                                                     @endif
@@ -158,16 +161,16 @@
                                                             @endfor
                                                         </tr>
                                                     @endif
-                                                    @if(!empty($item['logs'][3]['accomplishment']))
+                                                    @if(!empty($accomplishment))
                                                         <tr>
                                                             <td colspan="12">
-                                                                <div class="text-start pb-3 px-3">
-                                                                    <p class="mb-2 fw-bold">Accomplishment Report: </p>
-                                                                    <small>{{ $item['logs'][3]['accomplishment'] }}</small>
+                                                                <div class="text-start mt-2 pb-3 px-3">
+                                                                    <p class="mb-2 fw-bold">Accomplishment Report:</p>
+                                                                    <small>{{ $accomplishment['accomplishment'] }}</small>
                                                                 </div>
                                                             </td>    
                                                         </tr>  
-                                                    @endif                            
+                                                    @endif                     
                                                 </tbody>
                                             </table>
                                         </div>

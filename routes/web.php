@@ -254,8 +254,8 @@ Route::prefix('admin')->group(function() {
                 return view('admin.reports.daily-time-record.index', compact('title'));
             })->name('reports.dtr');
 
-            Route::get('/dtr/{date?}', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
-            Route::get('/dtr/{date?}/{id}', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+            Route::get('/dtr', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
+            Route::get('/dtr/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
         });
         
         Route::prefix('settings')->group( function() {

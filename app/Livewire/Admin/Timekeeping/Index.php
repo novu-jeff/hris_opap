@@ -87,20 +87,21 @@ class Index extends Component
         }
     }
     
-    private function getLogs(int $bsd_no = null) {
-        $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('j/n/Y');
-    
+    private function getLogs(int $bsd_no = null)
+    {
+        $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('d/m/Y');
+        
         $query = EmployeeTimelogs::with('employee.personal')
             ->where('logdatetime', 'LIKE', "{$timestamp}%");
-    
+
         if (!is_null($bsd_no)) {
             $query->where('bsd_no', $bsd_no);
         }
     
-        $records = $query->get()->unique('logdatetime'); // Remove exact duplicates
+        $records = $query->get();
     
-        $groupedData = $records->groupBy(function ($record) {
-            return Carbon::parse($record->logdatetime)->format('j/n/Y') . '|' . ($record->bsd_no ?? 'undefined');
+        return $records->groupBy(function ($record) {
+            return Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('d/m/Y') . '|' . ($record->bsd_no ?? 'undefined');
         })->map(function ($logs, $key) {
             [$date, $bsd_no] = explode('|', $key);
     
@@ -109,29 +110,38 @@ class Index extends Component
                 'bsd_no' => $bsd_no,
                 'employee' => $logs->first()->employee,
                 'origin' => $logs->first()->origin,
-                'logs' => collect($logs)->mapToGroups(function ($log) {
-                    return [
-                        Carbon::parse($log->logdatetime)->format('H') => [
-                            'time' => Carbon::parse($log->logdatetime)->format('H:i:s'),
-                            'captured_image' => $log->captured_image
-                        ]
-                    ];
-                })->map(function ($entries, $hour) {
-                    if ($hour == 12 || $hour == 13) {
-                        return $entries->unique('time')->values()->toArray(); // Keep unique times
-                    } elseif ($hour < 12) {
-                        return [$entries->sortBy('time')->first()]; // Earliest log for AM
-                    } else {
-                        return [$entries->sortByDesc('time')->first()]; // Latest log for PM
-                    }
-                })->collapse()->values()->all()
+                'logs' => $this->processLogs($logs)
             ];
         })->values();
+    }
     
-        return $groupedData;
-    }    
+    /**
+     * Process logs to merge IN/OUT timestamps.
+     */
+    private function processLogs($logs)
+    {
+        return $logs->mapToGroups(function ($log) {
+            $logTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
+            return [
+                $logTime->format('H') => [
+                    'time' => $logTime->format('H:i'),
+                    'captured_location' => $log->captured_location,
+                    'captured_image' => $log->captured_image,
+                    'accomplishment' => $log->accomplishment
+                ]
+            ];
+        })->map(function ($entries, $hour) {
+            if ($hour == 12 || $hour == 13) {
+                return $entries->values()->toArray(); // Keep unique times
+            } elseif ($hour < 12) {
+                return [$entries->sortBy('time')->first()]; // Earliest log for AM
+            } else {
+                return [$entries->sortByDesc('time')->first()]; // Latest log for PM
+            }
+        })->collapse()->values()->all();
+    }
     
-
+    
     public function render()
     {
         
