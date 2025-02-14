@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EmployeeAUT;
 use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -13,9 +14,7 @@ class DailyTimeRecordService {
     */
     public function getDailyTimeRecord($employee_no, $coverageDate)
     {
-
         $errors = [];
-
 
         # get the employee's information
         $employee = $this->getEmployee($employee_no);
@@ -42,9 +41,9 @@ class DailyTimeRecordService {
             throw new \Exception(implode("\n", $errors));
         }
 
-
         # Fetch clock-in/out data
         $clockData = $this->getClockData($employee, $coverageDate);
+        $employeeAut = $this->getEmployeeAut($employee, $coverageDate);
 
         # Generate all days in the month
         $allDays = $this->generateAllDays($coverageDate);
@@ -55,6 +54,7 @@ class DailyTimeRecordService {
                     $shift, 
                     $schedule, 
                     $clockData, 
+                    $employeeAut,
                     $overtime,
                     $leaves,
                     $holidays,
@@ -71,6 +71,7 @@ class DailyTimeRecordService {
         object $shift, 
         object $schedule, 
         Object $clockData, 
+        Object $employeeAut, 
         object $overtime, 
         int $leaves,
         object $holiday,
@@ -80,6 +81,9 @@ class DailyTimeRecordService {
         $totalOfWorkDaysForCurrentMonth  = 0;
         $totalPresentDays = 0;
         $totalRestDay = 0;
+        $totalLateDuration = 0;
+        $totalUndertimeDuration = 0;
+        $totalOvertimeDuration = 0;
     
         # Get schedule days and converted holidays
         $scheduleDays = $this->getDaysSchedule($schedule);
@@ -104,6 +108,7 @@ class DailyTimeRecordService {
         $mappedClockData = [];
 
         $clockData = $clockData->toArray();
+        $employeeAut = $employeeAut->toArray();
         $allDays = $allDays->toArray();
 
         foreach ($allDays as $day) {
@@ -113,29 +118,36 @@ class DailyTimeRecordService {
         
             # Ensure $clockData is an array before using it
             $clockEntry = $clockData[$day] ?? [];
+            $employeeAutEntry = $employeeAut[$day] ?? [];
+
+            $absent = !empty($employeeAutEntry) ? $employeeAutEntry[0] : 0;
+            $undertime = !empty($employeeAutEntry) ? $employeeAutEntry[1] : 0;
+            $late = !empty($employeeAutEntry) ? $employeeAutEntry[2] : 0;
 
             # Ensure $overtime is an array before using it
             $overtimeEntry = is_array($overtime) ? collect($overtime)->firstWhere(fn($item) => Carbon::parse($item->date)->isSameDay(Carbon::parse($day))) : null;
         
             # Get origin of time logs
-            $origin = !empty($clockEntry) ? 'biometrics' : 'manual';
+            $origin = !empty($clockEntry) ? 'biometrics' : 'web';
         
             # Get clock-in and clock-out times
             $clockIn = !empty($clockEntry) ? ($clockEntry[0] ?? null) : null;
             $clockOut = !empty($clockEntry) && count($clockEntry) > 1 ? end($clockEntry) : null;
         
             # Compute total minutes worked
-            $totalMinutesConsumed = $this->calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, $remarks);
+            $totalMinutesConsumed = $this->calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, $remarks, $late);
         
             # Calculate overtime
             $overtimeDuration = $overtimeEntry ? max($totalMinutesConsumed - 480, 0) : null;
+
+            $totalOvertimeDuration += $overtimeDuration;
             
             if (in_array($dayTextFormat, $scheduleDays)) { 
                 $totalOfWorkDaysForCurrentMonth++;
                 if (empty($clockEntry)) {
                     $remarks[] = 'Absent';
                 }
-            } elseif ($totalMinutesConsumed < $requiredMinsToRender && $totalMinutesConsumed != 0) {
+            } elseif ($undertime >  0) {
                 $remarks[] = 'Undertime';
             } else {
                 $totalRestDay++;
@@ -155,6 +167,11 @@ class DailyTimeRecordService {
             if ($totalMinutesConsumed > $requiredMinsToRender) {
                 $totalMinutesConsumed = $requiredMinsToRender;
             }
+
+            # Total of AUT per row
+            $totalAutPerRow = $absent + $undertime + $late;
+            $totalUndertimeDuration += $undertime;
+            $totalLateDuration += $late;
         
             # Add data for the current day
             $mappedClockData[] = [
@@ -163,7 +180,11 @@ class DailyTimeRecordService {
                 'break_out' => !empty($clockEntry) && count($clockEntry) > 1 ? $clockEntry[1] : null,
                 'break_in' => !empty($clockEntry) && count($clockEntry) > 2 ? $clockEntry[2] : null,
                 'clock_out' => $clockOut,
+                'total_aut' => $totalAutPerRow,
                 'origin' => $origin,
+                'absent' => $absent,
+                'late' => $late,
+                'undertime' => $undertime,
                 'remarks' => !empty($remarks) ? $remarks : null,
                 'overtime_approved' => !empty($clockEntry) ? $overtimeDuration : null,
                 'total_mins_consumed' => !empty($clockEntry) ? $totalMinutesConsumed : null,
@@ -187,27 +208,28 @@ class DailyTimeRecordService {
             'summary' => [
                 'days_works' => $totalPresentDays,
                 'absences' => $totalOfWorkDaysForCurrentMonth - $totalPresentDays,
-                'overtime' => $overtime,
+                'overtime' => $totalOvertimeDuration,
                 'leaves' => $leaves,
                 'rest_days' => $totalRestDay,
+                'tota_late' => $totalLateDuration,
+                'total_undertime' => $totalUndertimeDuration,
                 'special_holidays' => count($convertedHolidays['special']),
                 'regular_holidays' => count($convertedHolidays['regular']),
                 'total_days_work' => $totalOfWorkDaysForCurrentMonth,
             ]
         ];
-    
+
         return $dtrNewFormat;
     }
     /**
     * Get total time
     */
-    private function calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, &$remarks)
+    private function calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, &$remarks, &$late)
     {
 
         Log::info('Calculate Total Minutes');
 
         if ($clockIn && $clockOut) {
-
 
             $clock_start = Carbon::createFromFormat('H:i:s', $clockIn);
             $clock_end = Carbon::createFromFormat('H:i:s', $clockOut);
@@ -226,14 +248,11 @@ class DailyTimeRecordService {
                     break;
             }
             
-            if ($clock_start > $latest_in || $clock_start > $start_shift) {
+            if ($clock_start > $latest_in || $clock_start > $start_shift || $late > 0) {
                 $remarks[] = 'late';
-            } 
-    
+            }     
+
             $totalMinutesConsumed = $clock_start->diffInMinutes($clock_end) - $breakTimeDuration;
-            Log::info('time in: ' . $clockIn);
-            Log::info('Time Out' . $clock_end);
-            Log::info('totalmins' . $totalMinutesConsumed);
 
             return $totalMinutesConsumed;
         }
@@ -309,8 +328,44 @@ class DailyTimeRecordService {
     
             $formattedData[$date]->push($time);
         }
-            
+        // dd($formattedData);
         return $formattedData;
+    }
+
+    public function getEmployeeAut($employee, $coverageDate)
+    {
+        $month = Carbon::parse($coverageDate)->format('m'); # Get selected month
+        $year = Carbon::parse($coverageDate)->format('Y'); # Get selected year
+
+        // Fetch logs within the given month & year
+        $logs = EmployeeAUT::where('bsd_no', $employee->bsd_no)
+            ->whereRaw("MONTH(STR_TO_DATE(date, '%d/%m/%Y')) = ?", [$month])
+            ->whereRaw("YEAR(STR_TO_DATE(date, '%d/%m/%Y')) = ?", [$year])
+            ->orderByRaw("STR_TO_DATE(date, '%d/%m/%Y')") // Order by date
+            ->limit(100)
+            ->get();
+
+        // Initialize a collection
+        $formattedData = collect();
+    
+        foreach ($logs as $log) {
+            // Ensure correct datetime parsing
+            $dateTime = Carbon::createFromFormat('d/m/Y', $log->date);
+            $date = $dateTime->format('Y-m-d'); // Format as DD-MM-YYYY
+    
+            // Ensure key exists before pushing
+            if (!$formattedData->has($date)) {
+                $formattedData[$date] = collect();
+            }
+    
+            $formattedData[$date]->push($log->absences);
+            $formattedData[$date]->push($log->undertime);
+            $formattedData[$date]->push($log->lates);
+        }
+
+        // dd($formattedData);
+        return $formattedData;
+
     }
     
      /**
