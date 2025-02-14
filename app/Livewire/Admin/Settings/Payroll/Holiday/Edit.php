@@ -20,10 +20,10 @@ class Edit extends Component
 
     public function loadRecords(int $id) {
 
-        $record = Holiday::where('id', $id)->where('isActive', true)->first();
-    
+        $record = Holiday::where('id', $id)->where('isDeleted', false)->first();
+        
         if (!$record) {
-            return redirect()->route('holidays.index');
+            return redirect()->route('holiday.index');
         }
 
 
@@ -67,12 +67,10 @@ class Edit extends Component
             $date = Carbon::parse($this->date)->format('m-d');
 
             Holiday::where('id', $this->id)
-                ->where('isActive', true)
                 ->update([
                     'name' => $this->name,
                     'date' => $date,
                     'type' => $this->type,
-                    'isYearly' => $this->isYearly,
             ]);
 
             DB::commit();
