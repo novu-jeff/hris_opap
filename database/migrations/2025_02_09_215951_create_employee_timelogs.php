@@ -33,6 +33,9 @@ return new class extends Migration {
                 ->nullable();
             $table->longText('accomplishment')
                 ->nullable();
+            $table->boolean('isComputed')
+                ->default(false)
+                ->nullable();
             $table->timestamps();
         });
     }

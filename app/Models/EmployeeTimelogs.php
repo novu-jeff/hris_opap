@@ -22,7 +22,8 @@ class EmployeeTimelogs extends Model
         'ismanual',
         'captured_image',
         'captured_location',
-        'accomplishment'
+        'accomplishment',
+        'isComputed',
     ];
 
     public function employee() {
