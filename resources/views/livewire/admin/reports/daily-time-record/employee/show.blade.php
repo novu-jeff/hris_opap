@@ -182,7 +182,13 @@
                                     </td>
         
                                     <!-- AM -->
-                                    <td>{{ isset($day['clock_in']) ? \Carbon\Carbon::parse($day['clock_in'])->format('g:i') : ' ' }}</td>
+                                    <td>
+                                        @isset($day['clock_in'])
+                                            {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i') }}{{ \Carbon\Carbon::parse($day['clock_in'])->format('A') === 'PM' ? ' PM' : '' }}
+                                        @else
+                                            {{ ' ' }}
+                                        @endisset
+                                    </td>
                                     <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i') : ' ' }}</td>
         
                                     <!-- PM -->
@@ -212,21 +218,21 @@
                                     <!-- AUT: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}
-                                        {{-- @if(isset($day['total_mins_consumed']))
+                                        @if(isset($day['total_aut']))
                                             @php
-                                                $hours = str_pad(floor($day['total_mins_consumed'] / 60), 2, '0', STR_PAD_LEFT);
+                                                $hours = str_pad(floor($day['total_aut'] / 60), 2, '0', STR_PAD_LEFT);
                                             @endphp
                                             {{ $hours }}
-                                        @endif --}}
+                                        @endif
                                     </td>
                                     <td>
                                         {{-- minutes --}}
-                                        {{-- @if(isset($day['total_mins_consumed']))
+                                        @if(isset($day['total_aut']))
                                             @php
-                                                $minutes = str_pad($day['total_mins_consumed'] % 60, 2, '0', STR_PAD_LEFT);
+                                                $minutes = str_pad($day['total_aut'] % 60, 2, '0', STR_PAD_LEFT);
                                             @endphp
                                             {{ $minutes }}
-                                        @endif --}}
+                                        @endif
                                     </td>
                                     <td>
                                         @if(isset($day['remarks']) && is_array($day['remarks']))
@@ -250,7 +256,14 @@
                                 <td>Days Worked</td>
                                 <td>{{ isset($dtr['summary']['days_works']) ? $dtr['summary']['days_works'] : ' ' }}</td>
                                 <td>Tardiness</td>
-                                <td>-</td>
+                                <td>
+                                    @isset($dtr['summary']['tota_late'])
+                                        {{ floor($dtr['summary']['tota_late'] / 60) }} hr {{ $dtr['summary']['tota_late'] % 60 }} min
+                                    @else
+                                        {{ ' ' }}
+                                    @endisset
+                                </td>
+                                
                                 <td>Leave</td>
                                 <td>{{ isset($dtr['summary']['leaves']) ? $dtr['summary']['leaves'] : ' ' }}</td>
                             </tr>
@@ -264,9 +277,16 @@
                             </tr>
                             <tr>
                                 <td>Overtime</td>
-                                <td>-</td>
+                                <td>{{ isset($dtr['summary']['overtime']) ? $dtr['summary']['overtime'] : ' ' }}</td>
                                 <td>Undertime</td>
-                                <td>-</td>
+                                <td>
+                                    @isset($dtr['summary']['total_undertime'])
+                                        {{ floor($dtr['summary']['total_undertime'] / 60) }} hr {{ $dtr['summary']['total_undertime'] % 60 }} min
+                                    @else
+                                        {{ ' ' }}
+                                    @endisset
+                                </td>
+
                                 <td>Special Hol.</td>
                                 <td>{{ isset($dtr['summary']['special_holidays']) ? $dtr['summary']['special_holidays'] : ' ' }}</td>
                             </tr>
@@ -301,7 +321,7 @@
                         <div>
                             <h1>DAILY TIME RECORD</h1>
                             <h1>Office of the Presidential Adviser on the Peace Process</h1>
-                            <h1>For the month of <span class="underline">{{ $dtrDate }} </span>(FY)</h1>
+                            <h1>For the month of <span class="underline">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </span>(FY)</h1>
                         </div>
                     </div>
                     <div class="dtr-info">
@@ -344,7 +364,13 @@
                                     </td>
         
                                     <!-- AM -->
-                                    <td>{{ isset($day['clock_in']) ? \Carbon\Carbon::parse($day['clock_in'])->format('g:i') : ' ' }}</td>
+                                    <td>
+                                        @isset($day['clock_in'])
+                                            {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i') }}{{ \Carbon\Carbon::parse($day['clock_in'])->format('A') === 'PM' ? ' PM' : '' }}
+                                        @else
+                                            {{ ' ' }}
+                                        @endisset
+                                    </td>
                                     <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i') : ' ' }}</td>
         
                                     <!-- PM -->
@@ -374,21 +400,21 @@
                                     <!-- AUT: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}
-                                        {{-- @if(isset($day['total_mins_consumed']))
+                                        @if(isset($day['total_aut']))
                                             @php
-                                                $hours = str_pad(floor($day['total_mins_consumed'] / 60), 2, '0', STR_PAD_LEFT);
+                                                $hours = str_pad(floor($day['total_aut'] / 60), 2, '0', STR_PAD_LEFT);
                                             @endphp
                                             {{ $hours }}
-                                        @endif --}}
+                                        @endif
                                     </td>
                                     <td>
                                         {{-- minutes --}}
-                                        {{-- @if(isset($day['total_mins_consumed']))
+                                        @if(isset($day['total_aut']))
                                             @php
-                                                $minutes = str_pad($day['total_mins_consumed'] % 60, 2, '0', STR_PAD_LEFT);
+                                                $minutes = str_pad($day['total_aut'] % 60, 2, '0', STR_PAD_LEFT);
                                             @endphp
                                             {{ $minutes }}
-                                        @endif --}}
+                                        @endif
                                     </td>
                                     <td>
                                         @if(isset($day['remarks']) && is_array($day['remarks']))
@@ -412,7 +438,14 @@
                                 <td>Days Worked</td>
                                 <td>{{ isset($dtr['summary']['days_works']) ? $dtr['summary']['days_works'] : ' ' }}</td>
                                 <td>Tardiness</td>
-                                <td>-</td>
+                                <td>
+                                    @isset($dtr['summary']['tota_late'])
+                                        {{ floor($dtr['summary']['tota_late'] / 60) }} hr {{ $dtr['summary']['tota_late'] % 60 }} min
+                                    @else
+                                        {{ ' ' }}
+                                    @endisset
+                                </td>
+                                
                                 <td>Leave</td>
                                 <td>{{ isset($dtr['summary']['leaves']) ? $dtr['summary']['leaves'] : ' ' }}</td>
                             </tr>
@@ -426,9 +459,16 @@
                             </tr>
                             <tr>
                                 <td>Overtime</td>
-                                <td>-</td>
+                                <td>{{ isset($dtr['summary']['overtime']) ? $dtr['summary']['overtime'] : ' ' }}</td>
                                 <td>Undertime</td>
-                                <td>-</td>
+                                <td>
+                                    @isset($dtr['summary']['total_undertime'])
+                                        {{ floor($dtr['summary']['total_undertime'] / 60) }} hr {{ $dtr['summary']['total_undertime'] % 60 }} min
+                                    @else
+                                        {{ ' ' }}
+                                    @endisset
+                                </td>
+
                                 <td>Special Hol.</td>
                                 <td>{{ isset($dtr['summary']['special_holidays']) ? $dtr['summary']['special_holidays'] : ' ' }}</td>
                             </tr>

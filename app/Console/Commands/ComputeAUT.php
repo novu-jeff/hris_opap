@@ -29,8 +29,7 @@ class ComputeAUT extends Command
 
     private function getLogs() {
 
-    
-        $records = EmployeeTimelogs::where('isComputed', false)
+        $records = EmployeeTimelogs::where('isComputed', true)
             ->get();
         
         $groupedData = $records->groupBy(function ($record) {
@@ -141,13 +140,17 @@ class ComputeAUT extends Command
 
             $earliestIn = Carbon::parse('07:00');
             $latestIn = Carbon::parse('09:00');
-
+            
             $logs = $record['logs'];
+
+            usort($logs, function ($a, $b) {
+                return Carbon::parse($a['time'])->greaterThan(Carbon::parse($b['time']));
+            });
         
             // Earliest Log
             $log = Carbon::parse($logs[0]['time']);
         
-            if (!$log->between($earliestIn, $latestIn)) {
+            if ($log > $latestIn) {
                 $lateMins = $log->diffInMinutes($latestIn);
         
                 $aut[$record['date']][$record['bsd_no']] = [
@@ -164,20 +167,16 @@ class ComputeAUT extends Command
             } else {
                 $expectedOut = Carbon::parse('18:00');
             }
+
+            // $outLog = isset($logs[3]['time']) ? Carbon::parse($logs[3]['time']) : $expectedOut;
+            $outLog = !empty($logs) && count($logs) > 1 ? Carbon::parse(end($logs)['time']) : $expectedOut;
+
+            // end($logs['])
+            if ($outLog->lessThan($expectedOut) || $outLog->equalTo($expectedOut)) {
+                $undertimeMinutes = $expectedOut->diffInMinutes($outLog);
     
-            $latestLog = null;
-    
-            foreach ($logs as $logEntry) {
-                $logTime = Carbon::parse($logEntry['time']);
-    
-                if (!$latestLog || $logTime->greaterThan($latestLog)) {
-                    $latestLog = $logTime;
-                }
-            }
-    
-            if ($latestLog->lessThan($expectedOut)) {
-                $undertimeMinutes = $expectedOut->diffInMinutes($latestLog);
-    
+                $aut[$record['date']][$record['bsd_no']]['outLog'] = $outLog->format('h:i');
+                $aut[$record['date']][$record['bsd_no']]['expectedOut'] = $expectedOut->format('h:i');
                 $aut[$record['date']][$record['bsd_no']]['undertime'] = $undertimeMinutes;
             }
         }
