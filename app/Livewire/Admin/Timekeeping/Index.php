@@ -115,9 +115,6 @@ class Index extends Component
         })->values();
     }
     
-    /**
-     * Process logs to merge IN/OUT timestamps.
-     */
     private function processLogs($logs)
     {
         return $logs->mapToGroups(function ($log) {

@@ -132,14 +132,14 @@
                     <div wire:loading class="ml-2 loading-screen">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </div>
-                    <div class="dtr-header ms-5 d-flex justify-content-center">
+                    <div class="dtr-header ms-5 d-flex justify-content-center gap-4">
                         <div>
                             <img src="{{ asset('img/opapru-logo.png') }}" alt="Logo">
                         </div>
                         <div>
                             <h1>DAILY TIME RECORD</h1>
                             <h1>Office of the Presidential Adviser on the Peace Process</h1>
-                            <h1>For the month of <span class="underline">{{ $dtrDate }} </span>(FY)</h1>
+                            <h1>For the month of <span class="underline">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </span>(FY)</h1>
                         </div>
                     </div>
                     <div class="dtr-info">
@@ -294,7 +294,7 @@
                     <div wire:loading class="ml-2 loading-screen">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </div>
-                    <div class="dtr-header ms-5 d-flex justify-content-center">
+                    <div class="dtr-header ms-5 d-flex justify-content-center gap-4">
                         <div>
                             <img src="{{ asset('img/opapru-logo.png') }}" alt="Logo">
                         </div>

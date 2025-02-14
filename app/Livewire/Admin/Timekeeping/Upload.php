@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Jobs\TimelogUploadProcess;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -128,34 +129,44 @@ class Upload extends Component
             // CODE HERE
             $path = $this->tempPath;
             $files = glob($path . '/*.csv');
-            
-            $batch = Bus::batch([])->dispatch(); 
+
+            $jobs = []; // Collect jobs first
 
             foreach ($files as $key => $file) {
-    
-
                 $data = array_map('str_getcsv', file($file));
 
                 $header = $data[0]; 
+                array_shift($data); // Remove header
 
-                array_shift($data); 
+                if (!empty($data)) {
+                    array_shift($data); // Remove first data row
+                }
 
                 $formattedData = [];
 
                 foreach ($data as $row) {
                     $formattedRow = array_combine($header, $row);
-                    $formattedRow['origin'] = 'biometrics'; 
-                    $formattedData[] = $formattedRow; 
+                    $formattedRow['origin'] = 'biometrics';
+                    $formattedData[] = $formattedRow;
                 }
-            
-                $batch->add(new TimelogUploadProcess($formattedData));
-                                
+
+                $jobs[] = new TimelogUploadProcess($formattedData); // Collect job
+
                 unlink($file);
             }
 
-            session(['batchInfo' => $batch->id]);
+            // Dispatch batch with jobs
+            if (!empty($jobs)) {
+                $batch = Bus::batch($jobs)
+                    ->then(function () {
+                        Artisan::call('compute-aut'); // Run only after all jobs complete
+                    })
+                    ->dispatch();
 
-            $this->loadingUpload();
+                session(['batchInfo' => $batch->id]);
+
+                $this->loadingUpload();
+            }
             
         } catch (\Exception $e) {
             $this->dispatch('alert', [
@@ -224,7 +235,6 @@ class Upload extends Component
             'redirect' => route('timekeeping.upload')
         ]);
     }
-    
 
     public function render() {
         return view('livewire.admin.timekeeping.upload');

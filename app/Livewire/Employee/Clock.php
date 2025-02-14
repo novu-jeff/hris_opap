@@ -60,6 +60,7 @@ class Clock extends Component
 
 
     public function employeeShift() {
+        
         $shift = EmployeeInformation::select('shift_id')->where('employee_no', $this->user_id)->first();
     
         // Check if shift_id is null
@@ -546,6 +547,7 @@ class Clock extends Component
     }
     
     private function getLogs() {
+
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
     
@@ -651,7 +653,6 @@ class Clock extends Component
     
         return $groupedData;
     }
-    
     
 
     public function showLogs() {
