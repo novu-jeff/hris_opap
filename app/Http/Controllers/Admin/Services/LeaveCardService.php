@@ -316,7 +316,6 @@ class LeaveCardService extends Controller
     
         return $mergedData;
     }
-    
 
     public function compute($data) {
         for ($i = 1; $i < count($data); $i++) {

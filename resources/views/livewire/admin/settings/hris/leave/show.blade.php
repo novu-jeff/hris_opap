@@ -21,132 +21,156 @@
                     <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
                 </div>
             </div>
-            <form wire:submit.prevent="save">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered w-100">
-                        <thead>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered w-100">
+                    <thead>
+                        <tr>
+                            <th>Employee No</th>
+                            <th>Employee Name</th>
+                            @if($this->id == 1 || $this->id == 2)
+                                <th>VL Credits</th>
+                                <th>SL Credits</th>
+                                <th>Updated as of</th>
+                                <th>Actions</th>
+                            @else
+                                <th>Credits</th>
+                                <th>Updated as of</th>
+                                <th>Actions</th>
+                            @endif
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($records as $record)
                             <tr>
-                                <th>Employee No</th>
-                                <th>Employee Name</th>
+                                <td style="vertical-align: top; padding-top: 22px;">{{ $record->employee_no }}</td>
+                                <td style="vertical-align: top; padding-top: 22px;">{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                 @if($this->id == 1 || $this->id == 2)
-                                    <th>VL Credits</th>
-                                    <th>SL Credits</th>
-                                    <th>Updated as of</th>
-                                    <th>Actions</th>
+                                    <td style="vertical-align: top; padding-top: 12px;">
+                                        <input 
+                                            type="text" 
+                                            wire:key="vl-credit-{{$record->employee_no}}" 
+                                            wire:model="vl_credits.{{$record->employee_no}}" 
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                        <div class="error-field">
+                                            @error("vl_credits.{$record->employee_no}") 
+                                                <span class="text-danger">{{ $message }}</span> 
+                                            @enderror
+                                        </div>
+                                        <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_vl_credits[$record->employee_no]}}</span></label>
+                                    </td>
+                                    <td style="vertical-align: top; padding-top: 12px;">
+                                        <input 
+                                            type="text" 
+                                            wire:key="sl-credit-{{$record->employee_no}}" 
+                                            wire:model="sl_credits.{{$record->employee_no}}" 
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                        <div class="error-field">
+                                            @error("sl_credits.{$record->employee_no}") 
+                                                <span class="text-danger">{{ $message }}</span> 
+                                            @enderror
+                                        </div>
+                                        <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_sl_credits[$record->employee_no]}}</span></label>
+                                    </td>
+                                    <td style="vertical-align: top; padding-top: 12px;">
+                                        <input 
+                                            type="month" 
+                                            wire:key="as_of-{{$record->employee_no}}" 
+                                            wire:model="as_of.{{$record->employee_no}}" 
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                        <div class="error-field">
+                                            @error("as_of.{$record->employee_no}") 
+                                                <span class="text-danger">{{ $message }}</span> 
+                                            @enderror
+                                        </div>
+                                    </td>      
+                                    <td style="vertical-align: top; padding-top: 12px;">
+                                        @if($has_leave_card[$record->employee_no])
+                                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                                <div class="btn btn-danger" wire:click="resetCreditVLSL(true, '{{ $record->employee_no }}')">
+                                                    <i class="fa-solid fa-rotate"></i>
+                                                </div>
+                                                <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            <button 
+                                                wire:click="save('{{ $record->employee_no }}')" 
+                                                wire:key="save-{{ $record->employee_no }}" 
+                                                class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
+                                                <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
+                                                    Save
+                                                </span>
+                                                <span wire:loading wire:target="save-{{ $record->employee_no }}">
+                                                    Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                                </span>
+                                            </button>
+                                        @endif
+                                    </td>       
                                 @else
-                                    <th>Credits</th>
-                                    <th>Updated as of</th>
+                                    <td>
+                                        <input 
+                                            type="number" 
+                                            wire:key="credit-{{$record->employee_no}}" 
+                                            wire:model="credits.{{$record->employee_no}}" 
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                        <div class="error-field">
+                                            @error("credits.{$record->employee_no}") 
+                                                <span class="text-danger">{{ $message }}</span> 
+                                            @enderror
+                                        </div>
+                                    </td>
+                                    <td style="vertical-align: top; padding-top: 12px;">
+                                        <input 
+                                            type="month" 
+                                            wire:key="as_of-{{$record->employee_no}}" 
+                                            wire:model="as_of.{{$record->employee_no}}" 
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                            {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
+                                        <div class="error-field">
+                                            @error("as_of.{$record->employee_no}") 
+                                                <span class="text-danger">{{ $message }}</span> 
+                                            @enderror
+                                        </div>
+                                    </td>
+                                    <td>
+
+                                        @if($credits[$record->employee_no] > 0)
+                                            <div class="btn btn-danger" wire:click="resetCredit(true, '{{ $record->employee_no }}')">
+                                                <i class="fa-solid fa-rotate"></i>
+                                            </div>  
+                                        @else
+                                            <button 
+                                                wire:click="save('{{ $record->employee_no }}')" 
+                                                wire:key="save-{{ $record->employee_no }}" 
+                                                class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
+                                                <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
+                                                    Save
+                                                </span>
+                                                <span wire:loading wire:target="save-{{ $record->employee_no }}">
+                                                    Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                                </span>
+                                            </button>   
+                                        @endif
+                                        
+                                    </td>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($records as $record)
-                                <tr>
-                                    <td style="vertical-align: top; padding-top: 22px;">{{ $record->employee_no }}</td>
-                                    <td style="vertical-align: top; padding-top: 22px;">{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
-                                    @if($this->id == 1 || $this->id == 2)
-                                        <td style="vertical-align: top; padding-top: 12px;">
-                                            <input 
-                                                type="text" 
-                                                wire:key="vl-credit-{{$record->employee_no}}" 
-                                                wire:model="vl_credits.{{$record->employee_no}}" 
-                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                            <div class="error-field">
-                                                @error("vl_credits.{$record->employee_no}") 
-                                                    <span class="text-danger">{{ $message }}</span> 
-                                                @enderror
-                                            </div>
-                                            <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_vl_credits[$record->employee_no]}}</span></label>
-                                        </td>
-                                        <td style="vertical-align: top; padding-top: 12px;">
-                                            <input 
-                                                type="text" 
-                                                wire:key="sl-credit-{{$record->employee_no}}" 
-                                                wire:model="sl_credits.{{$record->employee_no}}" 
-                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                            <div class="error-field">
-                                                @error("sl_credits.{$record->employee_no}") 
-                                                    <span class="text-danger">{{ $message }}</span> 
-                                                @enderror
-                                            </div>
-                                            <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_sl_credits[$record->employee_no]}}</span></label>
-                                        </td>
-                                        <td style="vertical-align: top; padding-top: 12px;">
-                                            <input 
-                                                type="month" 
-                                                wire:key="as_of-{{$record->employee_no}}" 
-                                                wire:model="as_of.{{$record->employee_no}}" 
-                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                            <div class="error-field">
-                                                @error("as_of.{$record->employee_no}") 
-                                                    <span class="text-danger">{{ $message }}</span> 
-                                                @enderror
-                                            </div>
-                                        </td>      
-                                        <td style="vertical-align: top; padding-top: 12px;">
-                                            @if($has_leave_card[$record->employee_no])
-                                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                                    <div class="btn btn-danger" wire:click="resetCredit(true, '{{ $record->employee_no }}')">
-                                                        <i class="fa-solid fa-rotate"></i>
-                                                    </div>
-                                                    <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
-                                                        <i class="fa-solid fa-eye"></i>
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </td>       
-                                    @else
-                                        <td>
-                                            <input 
-                                                type="number" 
-                                                wire:key="credit-{{$record->employee_no}}" 
-                                                wire:model="credits.{{$record->employee_no}}" 
-                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                            <div class="error-field">
-                                                @error("credits.{$record->employee_no}") 
-                                                    <span class="text-danger">{{ $message }}</span> 
-                                                @enderror
-                                            </div>
-                                        </td>
-                                        <td style="vertical-align: top; padding-top: 12px;">
-                                            <input 
-                                                type="month" 
-                                                wire:key="as_of-{{$record->employee_no}}" 
-                                                wire:model="as_of.{{$record->employee_no}}" 
-                                                class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
-                                                {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
-                                            <div class="error-field">
-                                                @error("as_of.{$record->employee_no}") 
-                                                    <span class="text-danger">{{ $message }}</span> 
-                                                @enderror
-                                            </div>
-                                        </td>      
-                                    @endif
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="12" class="text-center">No records found</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                @if($records->total() > 0)
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                            <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
-                            <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                        </button>
-                    </div>
-                @endif
-                <div class="mt-4">
-                    {{ $records->links(data: ['scrollTo' => false]) }}
-                </div>
-            </form>
+                        @empty
+                            <tr>
+                                <td colspan="12" class="text-center">No records found</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4">
+                {{ $records->links(data: ['scrollTo' => false]) }}
+            </div>
         </div>
     </div>
 </div>
