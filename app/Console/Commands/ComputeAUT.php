@@ -29,20 +29,19 @@ class ComputeAUT extends Command
 
     private function getLogs() {
 
-        $records = EmployeeTimelogs::where('isComputed', true)
+        $records = EmployeeTimelogs::where('isComputed', false)
             ->get();
         
         $groupedData = $records->groupBy(function ($record) {
             try {
                 $date = Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('j/n/Y');
             } catch (\Exception $e) {
-                return null; // Skip invalid dates
+                return null; 
             }
             return $date . '|' . ($record->bsd_no ?? 'undefined');
         })->filter()->map(function ($logs, $key) {
             [$date, $bsd_no] = explode('|', $key);
         
-            // Extract logs and sort by time
             $logEntries = $logs->sortBy(function ($log) {
                 try {
                     return Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
@@ -50,57 +49,6 @@ class ComputeAUT extends Command
                     return null;
                 }
             })->values();
-        
-            if ($logEntries->count() === 2 && !empty($logEntries->last()->accomplishment)) {
-                return [
-                    'date' => $date,
-                    'bsd_no' => $bsd_no,
-                    'origin' => $logs->first()->origin,
-                    'logs' => [
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[0]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[0]->captured_image,
-                            'captured_location' => $logEntries[0]->captured_location
-                        ],
-                        [], // Empty array for consistency
-                        [], // Empty array for consistency
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[1]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[1]->captured_image,
-                            'captured_location' => $logEntries[1]->captured_location,
-                            'accomplishment' => $logEntries[1]->accomplishment
-                        ]
-                    ]
-                ];
-            }
-        
-            if ($logEntries->count() === 3 && !empty($logEntries->last()->accomplishment)) {
-                return [
-                    'date' => $date,
-                    'bsd_no' => $bsd_no,
-                    'origin' => $logs->first()->origin,
-                    'logs' => [
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[0]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[0]->captured_image,
-                            'captured_location' => $logEntries[0]->captured_location
-                        ],
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[1]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[1]->captured_image,
-                            'captured_location' => $logEntries[1]->captured_location,
-                            'accomplishment' => $logEntries[1]->accomplishment
-                        ],
-                        [], // Empty array for consistency
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[2]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[2]->captured_image,
-                            'captured_location' => $logEntries[2]->captured_location,
-                            'accomplishment' => $logEntries[2]->accomplishment
-                        ]
-                    ]
-                ];
-            }
         
             return [
                 'date' => $date,
@@ -122,7 +70,6 @@ class ComputeAUT extends Command
             ];
         })->values();
     
-    
         return $groupedData;
     }
 
@@ -138,8 +85,8 @@ class ComputeAUT extends Command
 
         foreach ($records as $record) {
 
-            $earliestIn = Carbon::parse('07:00');
-            $latestIn = Carbon::parse('09:00');
+            $earliestIn = Carbon::parse('07:00 AM');
+            $latestIn = Carbon::parse('09:00 AM');
             
             $logs = $record['logs'];
 
@@ -147,19 +94,17 @@ class ComputeAUT extends Command
                 return Carbon::parse($a['time'])->greaterThan(Carbon::parse($b['time']));
             });
         
-            // Earliest Log
-            $log = Carbon::parse($logs[0]['time']);
+            $firstLog = Carbon::parse($logs[0]['time']);
         
-            if ($log > $latestIn) {
-                $lateMins = $log->diffInMinutes($latestIn);
+            if ($firstLog->greaterThan($latestIn)) {
+                
+                $lateMins = $firstLog->diffInMinutes($latestIn);
         
                 $aut[$record['date']][$record['bsd_no']] = [
-                    'late' => $lateMins
+                    'late' => $lateMins,
                 ];
             }
         
-            $firstLog = Carbon::parse($logs[0]['time']);
-
             if($firstLog->lessThan($earliestIn)) {
                 $expectedOut = $earliestIn->copy()->addHours(9);
             } else if($firstLog->between($earliestIn, $latestIn)) {
@@ -168,15 +113,10 @@ class ComputeAUT extends Command
                 $expectedOut = Carbon::parse('18:00');
             }
 
-            // $outLog = isset($logs[3]['time']) ? Carbon::parse($logs[3]['time']) : $expectedOut;
             $outLog = !empty($logs) && count($logs) > 1 ? Carbon::parse(end($logs)['time']) : $expectedOut;
 
-            // end($logs['])
             if ($outLog->lessThan($expectedOut) || $outLog->equalTo($expectedOut)) {
                 $undertimeMinutes = $expectedOut->diffInMinutes($outLog);
-    
-                $aut[$record['date']][$record['bsd_no']]['outLog'] = $outLog->format('h:i');
-                $aut[$record['date']][$record['bsd_no']]['expectedOut'] = $expectedOut->format('h:i');
                 $aut[$record['date']][$record['bsd_no']]['undertime'] = $undertimeMinutes;
             }
         }
@@ -201,12 +141,10 @@ class ComputeAUT extends Command
             }
         }
         
-        // Bulk insert EmployeeAUT records
         if (!empty($batchInsert)) {
             EmployeeAUT::insert($batchInsert);
         }
         
-        // Bulk update EmployeeTimelogs using LIKE and WHERE IN
         foreach ($bsdNumbers as $date => $bsdNos) {
             EmployeeTimelogs::where('logdatetime', 'like', "%$date%")
                 ->whereIn('bsd_no', $bsdNos)

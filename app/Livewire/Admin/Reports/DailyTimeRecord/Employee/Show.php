@@ -13,6 +13,8 @@ class Show extends Component
     public $records;
     public $dtr = null;
     public $dtrDate;
+    public $officialTime;
+    public $monthDate;
     public $employee_no;
     public $errors;
 
@@ -25,35 +27,40 @@ class Show extends Component
 
     public function mount($employee_no, $month, $year)
     {
+
         $this->initializeService();
 
         $this->dtrDate = Carbon::parse($month . ' ' . $year);
+        $this->monthDate = $this->dtrDate->format('Y-m');
+        $this->officialTime = Carbon::now()->format('h:i A');
         $this->employee_no = $employee_no;
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
 
-        // try {
-           
-        // } catch (\Exception $e) {
-        //     $this->errors = explode("\n", $e->getMessage());
-        // }
+        try {
+            $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
+        } catch (\Exception $e) {
+            $this->errors = array_merge($this->errors ?? [], explode("\n", trim($e->getMessage())));
+        }
         
+
     }
 
-    public function changeMonth($increment)
+    public function changeMonth($action, $value = null)
     {
-        $this->initializeService();
-
-        Log::info('Before Change Month: ' . $this->dtrDate);
         
-        $currentDate = Carbon::createFromFormat('F, Y', $this->dtrDate);
-        $currentDate->addMonths($increment);
-        
-        if ($currentDate->isFuture() || $currentDate->isCurrentMonth()) {
-            $this->dtrDate = now()->format('F, Y');
-        } else {
-            $this->dtrDate = $currentDate->format('F, Y');
+        if($action == 'control') {
+            $currentDate = $this->dtrDate;
+            $currentDate = $currentDate->addMonths($value);
         }
-        $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
+
+        if($action == 'date') {
+            $currentDate = Carbon::parse($this->monthDate);
+        }
+
+        return redirect()->route('dtr.show', [
+            'id' => $this->employee_no,
+            'month' => $currentDate->format('F'),
+            'year' => $currentDate->format('Y')
+        ]);
     }
 
     public function render()

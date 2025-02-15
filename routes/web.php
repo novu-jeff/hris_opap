@@ -70,6 +70,7 @@ use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStat
 use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
+use App\Livewire\Employee\DailyTimeRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -200,9 +201,6 @@ Route::prefix('admin')->group(function() {
             Route::get('upload/job/{id}', [TimeKeepingController::class, 'job'])
                 ->name('timekeeping.upload.job');
 
-            Route::get('correction/logs/{month?}/{day?}/{year?}', [TimeKeepingController::class, 'correction'])
-                ->name('timekeeping.correction');
-
             Route::get('correction/apply/{bsd_no}/{date}', [TimeKeepingController::class, 'correction_apply'])
                 ->name('timekeeping.correction-apply');
         });
@@ -249,13 +247,8 @@ Route::prefix('admin')->group(function() {
         });
 
         Route::prefix('reports')->group( function() {
-            Route::get('daily-time-record', function () {
-                $title = 'Daily Time Record';
-                return view('admin.reports.daily-time-record.index', compact('title'));
-            })->name('reports.dtr');
-
-            Route::get('/dtr', [DailyTimeRecordController::class, 'index'])->name('dtr.index');
-            Route::get('/dtr/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+            Route::get('daily-time-record', [DailyTimeRecordController::class, 'index'])->name('reports.dtr');
+            Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
         });
         
         Route::prefix('settings')->group( function() {

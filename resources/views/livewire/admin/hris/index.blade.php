@@ -204,15 +204,20 @@
                             <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
                             <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
                             <td wire:ignore.self>
-                                <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary mx-1">
-                                    <i class="fa-solid fa-download"></i>
-                                </a>
-                                <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                                <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger mx-1">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                    <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                    </a>
+                                    <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info">
+                                        <i class="fa-solid fa-business-time"></i>
+                                    </a>
+                                    <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
