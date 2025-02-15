@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | DTR Show'
+    'title' => 'HRIS | DTR'
 ])
 
 @section('content')

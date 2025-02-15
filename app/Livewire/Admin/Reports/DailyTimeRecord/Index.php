@@ -17,40 +17,34 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';
+    public $monthYear;
 
+    public function mount() {
+        $this->monthYear = Carbon::now();
+    }
 
     public function render()
     {
-        // Initialize the query builder for EmployeeClockInOut with related information
-        $model = EmployeeTimelogs::with('employee.personal');
+        
+        $model = EmployeeAccount::with('personal');
 
-        // If search is provided, apply the search condition
         if ($this->search) {
+
+            $this->resetPage();
+    
             $model->where(function ($query) {
-                $query->whereRaw('MONTHNAME(created_at) like ?', ['%' . $this->search . '%'])
-                    ->orWhereRaw('YEAR(created_at) like ?', ['%' . $this->search . '%']);
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('personal', function($subQuery) {
+                        $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                    });
             });
         }
 
-        // Fetch the records (no pagination)
-        $records = $model->latest()->get();
-
-        // Group the records by month and year
-        $groupedRecords = $records->groupBy(function ($record) {
-            return Carbon::parse($record->created_at)->format('F, Y');
-        })->map(function ($group, $monthYear) {
-            // Extract month and year for each group
-            [$month, $year] = explode(', ', $monthYear);
-            return [
-                'month' => $month,
-                'year' => $year,
-                'records' => $group,
-            ];
-        })->values(); // Re-index the collection after grouping
+        $records = $model->paginate($this->entries);
 
         // Return the grouped records to the view
         return view('livewire.admin.reports.daily-time-record.index', [
-            'records' => $groupedRecords,  // Pass only the grouped records
+            'records' => $records,
         ]);
     }
 

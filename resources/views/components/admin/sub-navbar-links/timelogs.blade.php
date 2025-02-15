@@ -10,8 +10,5 @@
         @can('write timelogs')
             <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
         @endcan
-        @can('write correction-timelogs')
-            <li><a class="dropdown-item" href="{{route('timekeeping.correction')}}">Correction Time Logs</a></li>
-        @endcan
     </ul>
 </li>

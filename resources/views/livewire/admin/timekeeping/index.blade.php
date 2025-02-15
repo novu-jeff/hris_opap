@@ -81,12 +81,19 @@
                         @if($view_log && $item['bsd_no'] == $viewLogBsdNo)
                         @php
                             // Extract clock-in and clock-out times dynamically
-                            $clockInAM = isset($view_log['logs'][0]['time']) ? Carbon\Carbon::parse($view_log['logs'][0]['time'])->format('h:i A') : 'N/A';
-                            $breakOut = isset($view_log['logs'][1]['time']) ? Carbon\Carbon::parse($view_log['logs'][1]['time'])->format('h:i A') : 'N/A';
-                            $breakIn = isset($view_log['logs'][2]['time']) ? Carbon\Carbon::parse($view_log['logs'][2]['time'])->format('h:i A') : 'N/A';
-                            $clockOutPM = isset($view_log['logs'][3]['time']) ? Carbon\Carbon::parse($view_log['logs'][3]['time'])->format('h:i A') : 'N/A';
+                            
+                            $clockEntry = $view_log['logs'] ?? [];
 
-                          
+                            $clock_in  = !empty($clockEntry) ? ($clockEntry[0]['time'] ?? null) : null;
+                            $break_out = !empty($clockEntry) && count($clockEntry) > 1 ? $clockEntry[1]['time'] ?? null : null;
+                            $break_in = !empty($clockEntry) && count($clockEntry) > 2 ? $clockEntry[2]['time'] ?? null : null;
+                            $clock_out = !empty($clockEntry) && count($clockEntry) > 1 ? end($clockEntry)['time'] ?? null : null;
+
+                            $clock_in  = !empty($clock_in) ? \Carbon\Carbon::parse($clock_in)->format('h:i A') : 'N/A';
+                            $break_out = !empty($break_out) ? \Carbon\Carbon::parse($break_out)->format('h:i A') : 'N/A';
+                            $break_in  = !empty($break_in) ? \Carbon\Carbon::parse($break_in)->format('h:i A') : 'N/A';
+                            $clock_out = !empty($clock_out) ? \Carbon\Carbon::parse($clock_out)->format('h:i A') : 'N/A';
+
                             $hasLocation = false;
                             $hasImage = false;
                         
@@ -108,7 +115,7 @@
                             <td colspan="100%">
                                 <div class="mb-3">
                                     <hr>
-                                    <div class="row">
+                                    <div class="row p-4">
                                         <div class="col-12 col-md-5 mb-3">
                                             <strong>Employee Information:</strong>
                                             <ul class="my-3">
@@ -121,6 +128,9 @@
                                         <div class="col-12 col-md-12">
                                             <hr>
                                             <strong>Employee Clock In & Out</strong>
+                                            <div class="d-flex justify-content-end mb-4">
+                                                <a target="_blank" href="{{route('timekeeping.correction-apply', ['bsd_no' => $view_log['bsd_no'], 'date' => $currentDate])}}" type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
+                                            </div>
                                             <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
                                                 <thead class="bg-gray-200">
                                                     <tr>
@@ -132,10 +142,10 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clockInAM }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $breakOut }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $breakIn }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clockOutPM }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clock_in }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $break_out }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $break_in }}</u></strong></td>
+                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clock_out }}</u></strong></td>
                                                     </tr>
                                                     @if($hasLocation)
                                                         <tr>

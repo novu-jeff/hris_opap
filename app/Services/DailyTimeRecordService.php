@@ -26,14 +26,15 @@ class DailyTimeRecordService {
         $holidays = $this->fetchHolidays($coverageDate);
 
         if (!$employee) {
-            $errors[] = 'Employee not found.';
-            throw new \Exception(implode("\n", $errors));
+            $errors[] = 'Employee not found';
         }
+        
         if (!$shift) {
-            $errors[] = "Shift schedule is missing for employee {$employee_no}. Please assign one.";
+            $errors[] = "Shift schedule is missing for employee {$employee_no}.";
         }
+
         if (!$schedule) {
-            $errors[] = "Employee schedule is missing for employee {$employee_no}. Please assign one.";
+            $errors[] = "Employee schedule is missing for employee {$employee_no}.";
         }
 
         # Throw all errors if any
@@ -119,11 +120,11 @@ class DailyTimeRecordService {
             # Ensure $clockData is an array before using it
             $clockEntry = $clockData[$day] ?? [];
             $employeeAutEntry = $employeeAut[$day] ?? [];
-
+        
             $absent = !empty($employeeAutEntry) ? $employeeAutEntry[0] : 0;
             $undertime = !empty($employeeAutEntry) ? $employeeAutEntry[1] : 0;
             $late = !empty($employeeAutEntry) ? $employeeAutEntry[2] : 0;
-
+        
             # Ensure $overtime is an array before using it
             $overtimeEntry = is_array($overtime) ? collect($overtime)->firstWhere(fn($item) => Carbon::parse($item->date)->isSameDay(Carbon::parse($day))) : null;
         
@@ -139,20 +140,44 @@ class DailyTimeRecordService {
         
             # Calculate overtime
             $overtimeDuration = $overtimeEntry ? max($totalMinutesConsumed - 480, 0) : null;
-
+        
             $totalOvertimeDuration += $overtimeDuration;
-            
-            if (in_array($dayTextFormat, $scheduleDays)) { 
+        
+            if (in_array($dayTextFormat, $scheduleDays)) {
                 $totalOfWorkDaysForCurrentMonth++;
+                
                 if (empty($clockEntry)) {
-                    $remarks[] = 'Absent';
+                    $remarks = ['Absent']; // Direct assignment to prevent appending duplicates
+                } else {
+                    $remarks = [];
+            
+                    if ($late > 0) {
+                        $remarks[] = 'Late';
+                    }
+            
+                    if ($undertime > 0) {
+                        $remarks[] = 'Undertime';
+                    }
                 }
-            } elseif ($undertime >  0) {
-                $remarks[] = 'Undertime';
             } else {
                 $totalRestDay++;
-                $remarks[] = 'Rest day';
+            
+                if (count($clockEntry) > 0) {
+                    $remarks = ['Overtime'];
+            
+                    if ($late > 0) {
+                        $remarks[] = 'Late';
+                    }
+                    
+                    if ($undertime > 0) {
+                        $remarks[] = 'Undertime';
+                    }
+
+                } else {
+                    $remarks = ['Rest day'];
+                }
             }
+            
         
             # Mark as holiday if applicable
             if (in_array($day, $convertedHolidays['regular']) || in_array($day, $convertedHolidays['special']) || in_array($day, $convertedHolidays['company'])) {
@@ -167,11 +192,16 @@ class DailyTimeRecordService {
             if ($totalMinutesConsumed > $requiredMinsToRender) {
                 $totalMinutesConsumed = $requiredMinsToRender;
             }
-
+        
             # Total of AUT per row
             $totalAutPerRow = $absent + $undertime + $late;
             $totalUndertimeDuration += $undertime;
             $totalLateDuration += $late;
+        
+            # Check for discrepancy (if clock records are between 1 and 3)
+            if (count($clockEntry) >= 1 && count($clockEntry) <= 3) {
+                $remarks[] = 'Discrepancy';
+            }
         
             # Add data for the current day
             $mappedClockData[] = [
@@ -190,18 +220,19 @@ class DailyTimeRecordService {
                 'total_mins_consumed' => !empty($clockEntry) ? $totalMinutesConsumed : null,
             ];
         }
-                    
+           
         # Format the final result
         $dtrNewFormat = [
             'employee_account' => [
                 'employee_no' => $employee->employee_no,
+                'bsd_no' => $employee->bsd_no,
                 'firstname' => $employee->firstname,
                 'lastname' => $employee->lastname,
                 'middlename' => $employee->middlename 
                     ? strtoupper(substr($employee->middlename, 0, 1)) . '.' 
                     : '',
-                'position' => $employee->position_name . ' (' . $employee->position_code . ')',
-                'department' => $employee->department_name . ' (' . $employee->department_code . ')',
+                'position' => $employee->position_name ?? 'N/A',
+                'department' => $employee->department_name ?? 'N/A',
                 'salary' => $employee->salary,
             ],
             'clock_in_out' => $mappedClockData,
@@ -226,8 +257,6 @@ class DailyTimeRecordService {
     */
     private function calculateTotalMinutesWorked($clockIn, $clockOut, $shift, $breakTimeDuration, $origin, &$remarks, &$late)
     {
-
-        Log::info('Calculate Total Minutes');
 
         if ($clockIn && $clockOut) {
 
@@ -309,7 +338,6 @@ class DailyTimeRecordService {
             ->whereRaw("MONTH(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$month])
             ->whereRaw("YEAR(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$year])
             ->orderByRaw("STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')") // Order by date
-            ->limit(100)
             ->get();
     
         // Initialize a collection
@@ -328,7 +356,6 @@ class DailyTimeRecordService {
     
             $formattedData[$date]->push($time);
         }
-        // dd($formattedData);
         return $formattedData;
     }
 
@@ -373,11 +400,7 @@ class DailyTimeRecordService {
      */
     private function fetchData($table, $id, &$errors, $errorMessage)
     {
-        $this->logInfo("Fetching data from $table for ID: $id.");
         $data = DB::table($table)->where('id', $id)->first();
-        if (!$data) {
-            $errors[] = $errorMessage . " (ID: $id)";
-        }
         return $data;
     }
     /**
@@ -414,7 +437,6 @@ class DailyTimeRecordService {
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
 
-        $this->logInfo("Fetching leaves for employee ID: $id.");
         return DB::table('employee_leave')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('employee_no', $id)
@@ -489,9 +511,4 @@ class DailyTimeRecordService {
             'company' => $companyHoliday,
         ];
     }
-    private function logInfo($message)
-    {
-        Log::info($message);
-    }
-
 }

@@ -83,7 +83,6 @@ class Index extends Component
             $data = $this->getLogs($id)[0] ?? [];
             $this->viewLogBsdNo = $id;
             $this->view_log = $data;
-
         }
     }
     
@@ -127,17 +126,8 @@ class Index extends Component
                     'accomplishment' => $log->accomplishment
                 ]
             ];
-        })->map(function ($entries, $hour) {
-            if ($hour == 12 || $hour == 13) {
-                return $entries->values()->toArray(); // Keep unique times
-            } elseif ($hour < 12) {
-                return [$entries->sortBy('time')->first()]; // Earliest log for AM
-            } else {
-                return [$entries->sortByDesc('time')->first()]; // Latest log for PM
-            }
         })->collapse()->values()->all();
     }
-    
     
     public function render()
     {

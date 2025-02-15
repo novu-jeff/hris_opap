@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | All Shift Schedules'
+    'title' => 'HRIS | DTR'
 ])
 
 @section('content')
