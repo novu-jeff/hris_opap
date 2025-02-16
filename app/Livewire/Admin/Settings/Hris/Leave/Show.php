@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings\Hris\Leave;
 
 use App\Http\Controllers\Admin\Services\LeaveCardService;
+use App\Imports\LeaveCreditsImport;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
@@ -12,11 +13,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
 
 class Show extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $selected_id;
     public $id;
@@ -29,9 +34,11 @@ class Show extends Component
     public $total_sl_credits = [];
     public $total_vl_credits = [];
     public $has_leave_card = [];
+    public $importFile;
+    public $isVlSL;
 
     public $leaveName;
-    protected $listeners = ['resetCredit', 'resetCreditVLSL'];
+    protected $listeners = ['resetCredits'];
 
     protected $paginationTheme = 'bootstrap';
 
@@ -88,6 +95,9 @@ class Show extends Component
 
                 $this->has_leave_card[$employee['employee_no']] = ($leaveTotalCreditsVL <= 0 || $leaveTotalCreditsSL <= 0) ? false : true;
             }
+
+            $this->isVlSL = true;
+
         } else {
             $leaveCredits = LeaveCredits::where('leave_type_id', $this->id)->get();
             foreach ($employees as $employee) {
@@ -97,6 +107,8 @@ class Show extends Component
                 $this->as_of[$employee['employee_no']] = $leaveCredit ? $leaveCredit->as_of : null;
                 $this->has_leave_card[$employee['employee_no']] = false;
             }
+
+            $this->isVlSL = false;
         }
 
     }
@@ -139,7 +151,7 @@ class Show extends Component
     }
     
 
-    public function resetCredit(bool $isNotify = true, string $employee_no = null) {
+    public function resetCredits(bool $isNotify = true, string $employee_no = null) {
 
         if (Gate::denies('write leave-credits')) {
             $this->dispatch('alert', [
@@ -155,68 +167,7 @@ class Show extends Component
 
             $title = 'Are you sure to continue?';
             $message = 'Please be informed that you are about to reset this employee\'s leave card. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'resetCredit';
-
-            $this->selected_id = $employee_no;
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
-
-        } else {
-               
-        
-            $record = LeaveCredits::where('employee_no', $this->selected_id)
-                    ->where('leave_type_id', $this->id) 
-                    ->first();
-                
-            if ($record) {
-
-                $record->update([
-                    'credits' => 0,
-                    'as_of' => '', 
-                ]);
-
-                
-                $this->loadRecords();
-        
-                $this->dispatch('alert', [
-                    'status' => 'success',
-                    'title' => 'Success!',
-                    'message' => 'Leave credits for ' . strtoupper($record->employee_no) . ' has been reset successfully'
-                ]);
-
-            } else {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'message' => 'Error: ID does not exist'
-                ]);
-            }
-
-        }
-                  
-    }
-
-    public function resetCreditVLSL(bool $isNotify = true, string $employee_no = null) {
-
-        if (Gate::denies('write leave-credits')) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Access Denied!', 
-                'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.',
-            ]);
-            return;
-        }
-        
-        if($isNotify) {
-
-            $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to reset this employee\'s leave card. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'resetCreditVLSL';
+            $action = 'resetCredits';
 
             $this->selected_id = $employee_no;
             $this->dispatch('showConfirmation', [
@@ -281,7 +232,7 @@ class Show extends Component
                 $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!',
-                    'message' => 'Leave Card for ' . strtoupper($record->employee_no) . ' has been reset successfully'
+                    'message' => 'Leave Card for ' . strtoupper($employee_no) . ' has been reset successfully'
                 ]);
             } else {
                 // If records don't exist, dispatch error alert
@@ -428,6 +379,109 @@ class Show extends Component
                 'message' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function select_employee(string $employee_no ) {
+        $this->selected_id = $employee_no ?? null;
+    }
+
+    public function upload_file() {
+
+        if (Gate::denies('write leave-credits')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!',
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
+
+
+        $this->validate([
+            'importFile' => 'required|mimes:csv',
+        ], [
+            'importFile.required' => 'Please select a file to upload.',
+            'importFile.mimes' => 'Invalid file type. Please upload a CSV file.',
+        ]);
+
+        try {
+            
+            $path = $this->importFile->store('temp');
+            $fullPath = storage_path("app/{$path}");
+            
+            // Extract the header row
+            $headings = (new HeadingRowImport())->toArray($fullPath);
+
+            $employee_nos = Excel::toArray([], $fullPath)[0] ?? [];
+
+            array_shift($employee_nos);
+
+            $employee_nos = array_filter(array_map(fn($row) => $row[0] ?? null, $employee_nos));
+            $employee_nos = array_values(array_unique($employee_nos));
+
+            $headerRow = array_values($headings[0][0] ?? []); // Ensure we access the first row correctly
+            
+            if($this->isVlSL) {
+                $requiredHeaders = [
+                    'employee_no', 'year', 'period', 'particulars', 
+                    'vl_earned', 'vl_aut_w_pay', 'vl_bal', 'vl_aut_wo_pay', 
+                    'sl_earned', 'sl_aut_w_pay', 'sl_bal', 'sl_aut_wo_pay', 
+                    'remarks'
+                ];
+            } else {
+                
+                $requiredHeaders = [
+                    'employee_no', 'credits', 'as_of'
+                ];
+                
+            }
+
+            $missingHeaders = array_diff($requiredHeaders, $headerRow);
+            
+            if (!empty($missingHeaders)) {
+                $this->dispatch('alert', [
+                    'status' => 'info',
+                    'title' => 'Please be informed!',
+                    'showAlert' => true,
+                    'message' => 'You are importing an invalid file!',
+                ]);
+                return;
+            }
+
+
+            if($this->isVlSL) {
+                EmployeeLeaveCard::whereIn('employee_no', $employee_nos)->delete();
+            } else {
+                LeaveCredits::whereIn('employee_no', $employee_nos)
+                    ->where('leave_type_id', $this->id)
+                    ->delete();
+            }
+
+            Excel::import(new LeaveCreditsImport($this->selected_id, $this->isVlSL, $this->id), $fullPath);
+
+
+            $this->loadRecords();
+
+            $this->reset('importFile');
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!',
+                'showAlert' => true,
+                'message' => 'Leave credits uploaded successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Error!',
+                'showAlert' => true,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
     }
     
     public function render()

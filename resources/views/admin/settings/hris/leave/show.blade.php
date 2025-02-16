@@ -33,8 +33,14 @@
                 <div class="section-title">
                     <h1>Add Credits</h1>
                 </div>
-                <div class="actions">
-                    <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                <div class="actions d-flex gap-3">
+                    <a href="{{route('leave.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    <button type="button" data-bs-toggle="modal" wire:click="select_employee" data-bs-target="#importModal" 
+                        class="btn btn-sm btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span>
+                            Import
+                        </span>
+                    </button>
                 </div>
             </div>
             <div class="mt-3">
