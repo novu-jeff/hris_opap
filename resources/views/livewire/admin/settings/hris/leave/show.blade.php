@@ -87,28 +87,36 @@
                                         </div>
                                     </td>      
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        @if($has_leave_card[$record->employee_no])
-                                            <div class="d-flex justify-content-center align-items-center gap-2">
-                                                <div class="btn btn-danger" wire:click="resetCreditVLSL(true, '{{ $record->employee_no }}')">
-                                                    <i class="fa-solid fa-rotate"></i>
+                                        <div style="white-space: normal !important;">
+                                            @if($has_leave_card[$record->employee_no])
+                                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                                    <div class="btn btn-danger" wire:click="resetCredits(true, '{{ $record->employee_no }}')">
+                                                        <i class="fa-solid fa-rotate"></i>
+                                                    </div>
+                                                    <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
+                                                        <i class="fa-solid fa-eye"></i>
+                                                    </a>
                                                 </div>
-                                                <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-primary">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                </a>
-                                            </div>
-                                        @else
-                                            <button 
-                                                wire:click="save('{{ $record->employee_no }}')" 
-                                                wire:key="save-{{ $record->employee_no }}" 
-                                                class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
-                                                <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
-                                                    Save
-                                                </span>
-                                                <span wire:loading wire:target="save-{{ $record->employee_no }}">
-                                                    Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                            @else
+                                                <button 
+                                                    wire:click="save('{{ $record->employee_no }}')" 
+                                                    wire:key="save-{{ $record->employee_no }}" 
+                                                    class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
+                                                    <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
+                                                        Save
+                                                    </span>
+                                                    <span wire:loading wire:target="save-{{ $record->employee_no }}">
+                                                        Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                                    </span>
+                                                </button>
+                                            @endif
+                                            <button type="button" data-bs-toggle="modal" wire:click="select_employee('{{$record->employee_no}}')" data-bs-target="#importModal" 
+                                                class="mt-3 btn btn-sm btn-dark px-3 py-2 w-100 text-uppercase fw-bold">
+                                                <span>
+                                                    Import
                                                 </span>
                                             </button>
-                                        @endif
+                                        </div>
                                     </td>       
                                 @else
                                     <td>
@@ -138,24 +146,17 @@
                                         </div>
                                     </td>
                                     <td>
-
-                                        @if($credits[$record->employee_no] > 0)
-                                            <div class="btn btn-danger" wire:click="resetCredit(true, '{{ $record->employee_no }}')">
-                                                <i class="fa-solid fa-rotate"></i>
-                                            </div>  
-                                        @else
-                                            <button 
-                                                wire:click="save('{{ $record->employee_no }}')" 
-                                                wire:key="save-{{ $record->employee_no }}" 
-                                                class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
-                                                <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
-                                                    Save
-                                                </span>
-                                                <span wire:loading wire:target="save-{{ $record->employee_no }}">
-                                                    Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
-                                                </span>
-                                            </button>   
-                                        @endif
+                                        <button 
+                                            wire:click="save('{{ $record->employee_no }}')" 
+                                            wire:key="save-{{ $record->employee_no }}" 
+                                            class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
+                                            <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
+                                                Save
+                                            </span>
+                                            <span wire:loading wire:target="save-{{ $record->employee_no }}">
+                                                Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                                            </span>
+                                        </button>   
                                         
                                     </td>
                                 @endif
@@ -173,4 +174,42 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="importModal" wire:ignore.self data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog "> 
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-uppercase fw-bold" id="importModalLabel">Import Leave Credits</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="importFile" class="form-label">File <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="importFile" wire:model="importFile">
+                        <div class="error-field mt-2">
+                            @error('importFile') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="alert alert-danger text-uppercase fw-bold mt-4">
+                            <small>
+                                Note: Importing a file will overwrite the current leave credits of the selected employee.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                @if($importFile)
+                    <div class="modal-footer">
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
+                                    wire:click="upload_file"
+                                    wire:loading.attr="disabled">
+                                <span wire:loading.remove>Upload File</span>
+                                <span wire:loading wire:target="upload_file">Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
