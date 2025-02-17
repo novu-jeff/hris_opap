@@ -87,7 +87,7 @@ class Upload extends Component
                 
                 } catch (\Exception $e) {
 
-                    $this->addError('file', 'There was an error saving the file to temporary storage.');
+                    $this->addError('file', 'There was an error saving the file to temporary storage : ' . $e->getMessage());
                     $this->isParsing = false;
 
                 }
