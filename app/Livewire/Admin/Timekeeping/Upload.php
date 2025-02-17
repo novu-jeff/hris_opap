@@ -223,12 +223,12 @@ class Upload extends Component
     public function cancelUpload($batchId) {
 
         $batch = Bus::findBatch($batchId);
-    
+
+        session()->forget('batch_import');
+        
         if ($batch) {
 
             $batch->cancel();
-
-            session()->forget('batch_import');
     
             return $this->dispatch('alert', [
                 'showAlert' => true,
