@@ -23,13 +23,13 @@ class TimeKeepingController extends Controller
 
         if (is_null($month) || is_null($day) || is_null($year)) {
             // Get the latest record from the database
-            $latestRecord = EmployeeTimelogs::orderByDesc('created_at')->first();
-        
+            $latestRecord = EmployeeTimelogs::orderByDesc('logdatetime')->first();
             if ($latestRecord) {
                 // Get the year, month, and day of the latest record
-                $year = $latestRecord->created_at->year;
-                $month = sprintf('%02d', $latestRecord->created_at->month);
-                $day = sprintf('%02d', $latestRecord->created_at->day);
+                $formattedDate = Carbon::createFromFormat('d/m/Y H:i', $latestRecord->logdatetime);
+                $year = $formattedDate->format('Y');
+                $month = $formattedDate->format('m');
+                $day = $formattedDate->format('d');
             } else {
                 // Use the current date if no latest record exists
                 $currentDate = now();

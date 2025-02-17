@@ -30,12 +30,11 @@ class Show extends Component
 
         $this->initializeService();
 
-        $this->dtrDate = Carbon::parse($month . ' ' . $year);
-        $this->monthDate = $this->dtrDate->format('Y-m');
-        $this->officialTime = Carbon::now()->format('h:i A');
-        $this->employee_no = $employee_no;
-
         try {
+            $this->dtrDate = Carbon::parse($month . ' ' . $year);
+            $this->monthDate = $this->dtrDate->format('Y-m');
+            $this->officialTime = Carbon::now()->format('h:i A');
+            $this->employee_no = $employee_no;
             $this->dtr = $this->dailyTimeRecordService->getDailyTimeRecord($this->employee_no, $this->dtrDate);
         } catch (\Exception $e) {
             $this->errors = array_merge($this->errors ?? [], explode("\n", trim($e->getMessage())));

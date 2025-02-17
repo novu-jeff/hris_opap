@@ -157,12 +157,13 @@
 
     .btn-correction {
         position: absolute;
-        left: 220px;
+        right: 0px;
         top: 50%;
-        transform: translateY(-50%);
+        transform: translate(160px, -50%);
         display: flex;
         align-items: center;
     }
+
 
 </style>
 @endsection

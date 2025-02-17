@@ -461,7 +461,6 @@ class Show extends Component
 
             Excel::import(new LeaveCreditsImport($this->selected_id, $this->isVlSL, $this->id), $fullPath);
 
-
             $this->loadRecords();
 
             $this->reset('importFile');
