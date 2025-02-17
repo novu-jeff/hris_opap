@@ -77,21 +77,21 @@
                         <div class="error-field">
                             @error('records.employee_information.section_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        </div>
+                    </div>
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="branch">Branch</label>
                         <input type="text" wire:model="records.employee_information.branch" id="records.employee_information.branch" class="form-control" readonly>
                         <div class="error-field">
                             @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        </div>
+                    </div>
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="department">Department</label>
                         <input type="text" wire:model="records.employee_information.department" id="records.employee_information.department" class="form-control" readonly>
                         <div class="error-field">
                             @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        </div>
+                    </div>
                     <div class="col-12 mt-4 mb-3">
                         <h5 class="mb-0 text-uppercase fw-bold pt-4 pb-0 ps-2">Employment Details</h5>
                         <hr>
@@ -190,7 +190,6 @@
                             @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
                        </div>
                     </div>
-                
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
                         <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">

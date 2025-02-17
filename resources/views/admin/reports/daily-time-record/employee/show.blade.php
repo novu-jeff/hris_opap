@@ -107,6 +107,11 @@
                 padding: 5px;
             }
             @media print {
+
+                .btn-correction {
+                    display: none;
+                }
+
                 .dtr {
                     width: 100%;
                     page-break-before: always;
@@ -126,6 +131,7 @@
                 }
             }
         `);
+        
         printWindow.document.write('</style>');
         
         printWindow.document.write('</head><body>');

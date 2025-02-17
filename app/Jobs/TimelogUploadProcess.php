@@ -33,6 +33,13 @@ class TimelogUploadProcess implements ShouldQueue
      */
     public function handle(): void
     {    
+
+        if ($this->batch()->cancelled()) {
+            Log::info('canceled');
+
+            return;
+        }
+
         foreach ($this->data as $item) {
             EmployeeTimelogs::updateOrCreate(
                 ['biometricdtrid' => $item['biometricdtrid']], 

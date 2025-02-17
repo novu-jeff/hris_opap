@@ -438,16 +438,16 @@ class Form extends Component
             ],
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
-            'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id|required_without:records.employee_information.type',
             'records.employee_information.job_completion' => 'required_if:records.employee_information.type,3|nullable|date',
             
 
+            'records.employee_information.section_id' => 'required|exists:sections,id',
+            'records.employee_information.type' => 'required|exists:employment_types,id',
+            'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id|required_without:records.employee_information.type',
 
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
-            'records.employee_information.section_id' => 'nullable|exists:sections,id',
             'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
-            'records.employee_information.type' => 'required|exists:employment_types,id',
 
             'records.employee_personal.firstname' => 'required|string|max:255',
             'records.employee_personal.lastname' => 'required|string|max:255',
@@ -530,11 +530,11 @@ class Form extends Component
             'records.employee_information.section_id.required' => 'The section is required.',
             'records.employee_information.section_id.exists' => 'The selected section does not exist.',
            
-            'records.employee_information.position_id.required_if' => 'The position field is required when employee type is 1 or 2.',
+            'records.employee_information.position_id.required_if' => 'The position field is required when employee type is not job order.',
             'records.employee_information.position_id.exists' => 'The selected position is invalid.',
             'records.employee_information.position_id.required_without' => 'The position is required unless an employee type is provided.',
         
-            'records.employee_information.job_completion.required_if' => 'The job completion date is required when employee type is 3.',
+            'records.employee_information.job_completion.required_if' => 'The job completion date is required when employee type is job order.',
             'records.employee_information.job_completion.date' => 'The job completion must be a valid date.',
             
 
@@ -649,7 +649,9 @@ class Form extends Component
         try {
             $this->validate($this->rules($id));
         } catch (ValidationException $e) {
-            $this->setErrorActiveTabAccordions($e->validator->errors()->keys());
+            $errors = $e->validator->errors()->keys();
+            $this->setErrorActiveTabAccordions($errors);
+            $this->dispatch('scrollToError', $errors);
             throw $e;
         }
 

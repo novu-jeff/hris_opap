@@ -226,4 +226,86 @@ Livewire.on('select2:init', () => {
     $('.select-2').select2();
 });
 
+Livewire.on('scrollToError', function(errors) {
+    if (errors.length) {
+        let errorField = Array.isArray(errors[0]) ? errors[0][0] : errors[0]; 
 
+        // Check for wire:model first
+        let $inputElement = $(`[wire\\:model="${errorField}"]`); 
+        // If the input element isn't found, check for wire:model.live
+        if (!$inputElement.length) {
+            $inputElement = $(`[wire\\:model\\.live="${errorField}"]`);
+        }
+
+        if ($inputElement.length) {
+            $('html, body').animate({
+                scrollTop: $inputElement.offset().top - 100 
+            }, 100);
+        }
+    }
+});
+
+
+
+Livewire.on('isUploadingLogs', (event) => {
+    console.log(event);
+    let batchId = event[0] ?? "";
+
+    console.log(batchId);
+
+    if (!batchId) {
+        console.warn("No batch ID found. Aborting job progress check.");
+        return;
+    }
+
+    // Ensure modal is initialized and shown
+    setTimeout(() => {
+        $('#modal-loading').modal('show');
+    }, 100);
+
+    function checkJobProgress(batchId) {
+        $.ajax({
+            url: `/admin/timekeeping/upload/job/${batchId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+
+                if (response.progress !== undefined) {
+
+                    $('#progress-text').text(`Uploading... ${response.progress}%`);
+
+                    if (response.progress < 100) {
+                        setTimeout(() => checkJobProgress(batchId), 2000); // Poll every 2 sec (fixed timeout)
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Yey!',
+                            html: 'Uploading Success',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            confirmButtonText: 'GOT IT',
+                            confirmButtonColor: '#143953',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#modal-loading').modal('hide');
+                            }
+                        });
+                    }
+                }
+
+            },
+            error: function(xhr) {
+                console.error("Error fetching job progress:", xhr);
+                $('#modal-loading').modal('hide');
+            }
+        });
+    }
+
+    // Start job progress check
+    setTimeout(() => checkJobProgress(batchId), 100); // Small delay to ensure modal visibility
+
+    $('#cancel-job').on('click', () => {
+        Livewire.dispatch('cancelUpload', [batchId]);
+    });
+
+});

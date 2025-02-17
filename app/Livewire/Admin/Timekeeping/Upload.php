@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Timekeeping;
 
 use App\Jobs\TimelogUploadProcess;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -158,12 +159,15 @@ class Upload extends Component
             // Dispatch batch with jobs
             if (!empty($jobs)) {
                 $batch = Bus::batch($jobs)
-                    ->then(function () {
-                        Artisan::call('compute-aut'); // Run only after all jobs complete
+                    ->finally(function () {
+                        Artisan::call('compute-aut'); 
                     })
                     ->dispatch();
 
-                session(['batchInfo' => $batch->id]);
+                session(['batch_import' => [
+                    'id' => $batch->id,
+                    'user' => Auth::user()->id, 
+                ]]);
 
                 $this->loadingUpload();
             }
@@ -202,13 +206,19 @@ class Upload extends Component
 
     public function loadingUpload() {
 
-        $batch_id = session('batchInfo');
+        // Retrieve the 'batch_import' session data
+        
+        $batchImport = session('batch_import');
+    
+        if ($batchImport && isset($batchImport['id']) && isset($batchImport['user']) == Auth::user()->id) {
+            
+            // Access the batch ID and dispatch with the batch ID
+            
+            $batch_id = $batchImport['id'];
 
-        if($batch_id) {
-            $this->dispatch('isLoading', $batch_id);
+            $this->dispatch('isUploadingLogs', $batch_id);
         }
-
-    }
+    }    
 
     public function cancelUpload($batchId) {
 
@@ -216,7 +226,9 @@ class Upload extends Component
     
         if ($batch) {
 
-            $batch->cancel(); 
+            $batch->cancel();
+
+            session()->forget('batch_import');
     
             return $this->dispatch('alert', [
                 'showAlert' => true,

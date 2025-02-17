@@ -14,7 +14,10 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('employee.daily-time-record')
+        @livewire('employee.daily-time-record', [
+            'month' => $month,
+            'year' => $year,
+        ])
     </div>
 </div>
 @endsection

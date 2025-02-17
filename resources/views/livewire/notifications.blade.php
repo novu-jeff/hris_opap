@@ -70,12 +70,12 @@
             }
         });
 
-        Livewire.on('notify', function(event) {
-            const videoPlayer = document.getElementById('notification-video'); // Select the <video> element
-            videoPlayer.play().catch((error) => {
-                console.error('Video playback failed:', error);
-            });
-        });
+        // Livewire.on('notify', function(event) {
+        //     const videoPlayer = document.getElementById('notification-video'); // Select the <video> element
+        //     videoPlayer.play().catch((error) => {
+        //         console.error('Video playback failed:', error);
+        //     });
+        // });
 
         Livewire.on('refreshPage', () => {
             location.reload();  

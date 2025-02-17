@@ -451,5 +451,4 @@ class LeaveCardService extends Controller
         }
     }
 
-
 }

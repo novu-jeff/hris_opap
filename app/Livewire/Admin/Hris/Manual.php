@@ -60,10 +60,27 @@ class Manual extends Component
 
         $this->shiftSchedule = ShiftSchedule::all();
         $this->employeeSchedule = EmployeeSchedule::all();
+
+        $this->records['employee_information'] = [
+            'employee_no' => '',
+            'section_id' => '',
+            'position_id' => '',
+            'date_hired' => '',
+            'biometrics_id' => '',
+            'date_resignation' => '',
+            'type' => '',
+            'status' => '',
+            'salary_method' => '',
+            'monthly_rate' => '',
+            'payroll_account_number' => '',
+            'job_completion' => '',
+            'step_id' => '',
+        ];
+
     }
 
     public function loadCountries() {
-        // Check cache first (e.g., using Laravel Cache)
+
         if (Cache::has('countries')) {
             return $this->countries = Cache::get('countries');
         }
@@ -77,46 +94,52 @@ class Manual extends Component
             if (!is_array($countries)) {
                 throw new \Exception('Invalid API response');
             }
-
-            // Sort countries by common name
             usort($countries, fn($a, $b) => strcmp($a['name']['common'], $b['name']['common']));
-
-            // Cache the result for 24 hours
             Cache::put('countries', $countries, now()->addHours(24));
-
             $this->countries = $countries;
             return $this->countries;
         } catch (\Exception $e) {
-            // Log the error
-            logger()->error('Failed to load countries: ' . $e->getMessage());
-
-            // Provide a default empty array if an error occurs
             return $this->countries = [];
         }
     }
 
     public function handleSalary() {
         
+        $eligible = $this->records['employee_information']['type'] ?? '';
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
-        if (!empty($position_id) && !empty($step_id)) {
-            $salaryGrade = Positions::where('id', $position_id)
-                ->value('salary_grade') ?? '';
-
-            $stepColumn = "step_" . ($step_id ?? '');
-
-            $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
-                $query->where('salary_grade', $salaryGrade)
-                    ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-            }])
-            ->where('isActive', true)
-            ->first();
-
-            $salary = $activeTranche->items->first()->$stepColumn ?? 0;
-
-            if ($activeTranche) {
-                $this->records['employee_information']['monthly_rate'] = $salary;
+        if($eligible != 3) {
+            
+            if(!empty($eligible)) {
+                $this->positions = Positions::where('type', $eligible)->get();
+            }
+    
+            if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
+    
+                $salaryGrade = Positions::where('id', $position_id)
+                    ->value('salary_grade') ?? '';
+    
+                $stepColumn = "step_" . ($step_id ?? '');
+    
+                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
+                        $query->where('salary_grade', $salaryGrade)
+                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                    }])
+                    ->where('eligible', $eligible)
+                    ->first();
+                
+                // Ensure that $activeTranche is not null before accessing its items
+                $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                    ? $activeTranche->items->first()->$stepColumn 
+                    : 0;
+            
+    
+                if ($activeTranche) {
+                    $this->records['employee_information']['monthly_rate'] = $salary;
+                }
+            } else {
+                $this->records['employee_information']['monthly_rate'] = 0;
             }
         } else {
             $this->records['employee_information']['monthly_rate'] = 0;
@@ -451,7 +474,9 @@ class Manual extends Component
         try {
             $this->validate($this->rules());
         } catch (ValidationException $e) {
-            $this->setErrorActiveTabAccordions($e->validator->errors()->keys());
+            $errors = $e->validator->errors()->keys();
+            $this->setErrorActiveTabAccordions($errors);
+            $this->dispatch('scrollToError', $errors);
             throw $e; 
         }
                 
