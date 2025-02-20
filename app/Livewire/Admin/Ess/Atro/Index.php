@@ -4,10 +4,13 @@ namespace App\Livewire\Admin\Ess\Atro;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeAtro;
+use App\Models\Sections;
 use App\Notifications\Notifications;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class Index extends Component
 {
@@ -15,6 +18,10 @@ class Index extends Component
     public $status;
     public $view_records;
     public $selected_id;
+    public $dates;
+    public $dateSelected;
+    public $officeSelected;
+    public $offices;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'disapproved', 'approved'];
 
@@ -23,10 +30,102 @@ class Index extends Component
     public $search = '';
 
 
+    public function mount() {
+        $this->loadRecords();
+    }
+
     public function loadRecords(int $id = null) {
         $this->view_records = EmployeeAtro::with('employment', 'employee')
             ->where('id', $id)
             ->first();
+        $this->dates = EmployeeAtro::selectRaw('DATE(created_at) as created_at')
+            ->distinct()
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->pluck('created_at');
+    }
+
+    public function showOffices(string $date) {
+
+        $this->dateSelected = Carbon::parse($date)->format('Y-m-d');
+        $this->offices = Sections::all();
+
+        if($this->offices) {
+            return $this->dispatch('showModal', [
+                'modal' => 'showOffices', 
+            ]);
+        }
+
+    }
+
+    public function download() {
+    
+        // Fetch leave record with employee details
+        $records = EmployeeAtro::with('employee.personal', 'employee.section', 'employee.positions')
+            ->whereHas('employee.section', function($query) {
+                return $query->where('id', $this->officeSelected);
+            })
+            ->whereDate('created_at', $this->dateSelected)
+            ->get();
+
+        if($records->isEmpty()) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'info',
+                'title' => 'Please be informed', 
+                'isRemoveRowDT' => false,
+                'message' => 'No approved applications found for the selected date and office' 
+            ]);
+        }
+
+        $earliestStartTime = Carbon::parse(collect($records)->min('start_time'))->format('g:i A');
+        $latestEndTime = Carbon::parse(collect($records)->max('end_time'))->format('g:i A');
+    
+        $currentDate = Carbon::now()->format('m-d-y');
+
+        // Template file path
+        $template = public_path('templates/forms/HRMS-PD Form 05.docx');
+        $outputPath = public_path('outputs/HRMS-PD FORM 05 | ' . $currentDate . ' .docx');
+    
+        // Check if template file exists
+        if (!file_exists($template)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops', 
+                'message' => 'File does not exists!'
+            ]);
+        }
+    
+        $names = [];
+
+        foreach($records as $record) {
+            $names[] = $record->employee->personal->firstname . ' ' . $record->employee->personal->lastname;
+        }
+
+        try {
+            
+            $templateProcessor = new TemplateProcessor($template);
+
+            $templateProcessor->setValue('requesting_unit', $records[0]->employee->section->name);
+            $templateProcessor->setValue('date', Carbon::parse($this->dateSelected)->format('F d, Y'));
+            $templateProcessor->setValue('time', $earliestStartTime . ' - ' . $latestEndTime);
+
+            $templateProcessor->setValue('names', implode("\n", $names));
+
+            $templateProcessor->saveAs($outputPath);
+
+            return response()->download($outputPath)->deleteFileAfterSend(true);
+
+            
+        } catch (\Exception $e) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops', 
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function view(int $id) {

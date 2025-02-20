@@ -60,7 +60,7 @@
                             </td>
                             <td>
                                 @if($record->status === 'pending')
-                                    <a href="{{route('employee.leave.show', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
                                     <a href="{{route('employee.leave.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">

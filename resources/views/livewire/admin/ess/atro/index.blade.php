@@ -14,7 +14,7 @@
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->employee->personal->firstname . ' ' . $view_records->employee->personal->lastname : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="date">Date</label>
@@ -46,14 +46,59 @@
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
-                        <button wire:click="disapproved" class="btn btn-danger text-uppercase fw-medium">Disapproved</button>
-                        <button wire:click="approved" class="btn btn-primary text-uppercase fw-medium">Approved</button>
+                        <button wire:click="disapproved" class="btn btn-danger text-uppercase fw-medium">Disapprove</button>
+                        <button wire:click="approved" class="btn btn-primary text-uppercase fw-medium">Approve</button>
                     </div>
                 @endif
             </div>
         </div>
     </div>
-
+    <div class="modal fade" wire:ignore.self id="showOffices" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Choose Office</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <select wire:model.live="officeSelected" class="form-select">
+                        <option value=""> - CHOOSE - </option>
+                        @if($offices)
+                            @foreach($offices as $office)
+                                <option value="{{$office->id}}">{{$office->name}}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+                @if ($officeSelected)
+                    <div class="modal-footer">
+                        <button wire:click="download" class="btn btn-primary text-uppercase fw-medium">Download</button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary fw-bold text-uppercase px-4 py-3">HRMS-PD Form 05</button>
+            <button type="button" class="btn btn-outline-primary fw-bold px-3 dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
+            <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                @foreach($dates as $date)
+                    <li>
+                        <a class="dropdown-item" wire:click="showOffices('{{\Carbon\Carbon::parse($date)->format('Y-m-d')}}')" href="javascript:void(0)">{{\Carbon\Carbon::parse($date)->format('F d, Y')}}</a>
+                    </li>
+                @endforeach
+                <hr class="mb-2 mt-2">
+                <li>
+                    <a href="javascript:void(0)" wire:change="showOffices($event.target.value)" class="dropdown-item text-center text-uppercase fw-bold">
+                        <input type="date" class="form-control">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">

@@ -161,8 +161,10 @@
                                                             @for ($i = 0; $i < 4; $i++)
                                                                 <td class="text-center py-1">
                                                                     @if (!empty($item['logs'][$i]['captured_image']))
-                                                                        <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
-                                                                            alt="logs" style="width: 100%; height: 100px; object-fit: cover">
+                                                                        <a href="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" style="cursor: pointer" data-fancybox data-fancybox="gallery-{{$i}}" data-src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}">
+                                                                            <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
+                                                                                alt="logs" style="width: 100%; height: 150px; object-fit: end; object-position:bottom !important">
+                                                                        </a>
                                                                     @else
                                                                         No Image
                                                                     @endif
@@ -173,9 +175,14 @@
                                                     @if(!empty($accomplishment))
                                                         <tr>
                                                             <td colspan="12">
-                                                                <div class="text-start mt-2 pb-3 px-3">
+                                                                <div class="text-start mt-2 px-3">
                                                                     <p class="mb-2 fw-bold">Accomplishment Report:</p>
-                                                                    <small>{{ $accomplishment['accomplishment'] }}</small>
+                                                                    <p class="text-primary d-flex align-items-center gap-2 mt-3">
+                                                                        <i class="fa-solid fa-download"></i>
+                                                                        <a href="{{ Storage::url('accomplishments/' . $accomplishment['accomplishment']) }}" download>
+                                                                            {{ $accomplishment['accomplishment'] }}
+                                                                        </a>
+                                                                    </p>
                                                                 </div>
                                                             </td>    
                                                         </tr>  

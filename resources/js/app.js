@@ -6,7 +6,8 @@ import {
     copy_link, 
     ckeditor, 
     formatTime,
-    convertToHoursAndMinutes
+    convertToHoursAndMinutes,
+    getLocation
 }
 from './helpers';
 
@@ -18,9 +19,14 @@ window.copy_link = copy_link;
 window.reinitializeDataTable = reinitializeDataTable;
 window.formatTime = formatTime;
 window.convertToHoursAndMinutes = convertToHoursAndMinutes;
+window.getLocation = getLocation;
 
 
 $(function() {
+
+    Fancybox.bind('[data-fancybox]', {
+        
+    });  
 
     reinitializeDataTable();
 

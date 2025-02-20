@@ -98,81 +98,79 @@ Livewire.on('alert', (event) => {
 });
 
 
-Livewire.on('showConfirmation', function(data) {
-    let textareaHtml = ''; // Initialize the variable for textarea HTML
+Livewire.on("showConfirmation", function (data) {
+    let fileInputHtml = "";
     let formData = {};
-    let isTextareaPresent = false; // Flag to track if textarea is present
-    let errorHtml = ''; // Variable to store error message HTML
-    // Check if 'textarea' exists in the 'plugin' and is an array
-    if (data[0].plugin && data[0].plugin[0] == 'textarea') {
-        // Add textarea HTML with default title
-        if (data[0].plugin && data[0].plugin[0] == 'textarea') {
-            const pluginTitle = data[0].plugin['title'] || ''; // Safely access the title
-            const hrElement = pluginTitle.trim() ? '<hr class="my-4">' : ''; // Add <hr> only if title is not empty
-        
-            // Add textarea HTML with the <hr> conditionally
-            textareaHtml = `
-                ${hrElement}
-                <div class="form-group">
-                    <label for="accomplishment-report">${pluginTitle}</label>
-                    <textarea id="accomplishment-report" class="form-control mt-2" rows="4"></textarea>
-                    ${errorHtml} <!-- Error message will be appended here -->
-                </div>
-            `;
-            isTextareaPresent = true; // Mark the textarea as present
-        }
-        
+    let isFileUploadPresent = false;
+
+    // Check if the plugin requires a file upload
+    if (data[0].plugin && data[0].plugin[0] === "file") {
+        const pluginTitle = data[0].plugin["title"] || "";
+        const hrElement = pluginTitle.trim() ? '<hr class="my-4">' : "";
+
+        fileInputHtml = `
+            ${hrElement}
+            <div class="form-group">
+                <label for="accomplishment-file">${pluginTitle}</label>
+                <input type="file" id="accomplishment-file" class="form-control mt-2 mb-3">
+                <a style="font-size: 12px;" href="/templates/forms/HRMS-PD Form 07.docx" class="text-primary text-uppercase mb-3" download>Download Template</a>
+                <div id="error-message"></div> <!-- Placeholder for error message -->
+            </div>
+        `;
+
+        isFileUploadPresent = true;
     }
 
-    Swal.fire({
-        icon: "info",
-        title: data[0].title,
-        html: data[0].message + textareaHtml, // Append the textarea HTML if applicable
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showCancelButton: true,        
-        cancelButtonText: 'Cancel',   
-        confirmButtonText: 'Proceed',   
-        confirmButtonColor: '#143953', 
-        cancelButtonColor: '#d33',      
-        reverseButtons: true,  
-    }).then(function(result) {
-        const textarea = document.getElementById('accomplishment-report');
-        if (result.isConfirmed) {
-            if (data[0].plugin && data[0].plugin[0] == 'textarea') {
+    function showSwal(errorMessage = "") {
+        Swal.fire({
+            icon: "info",
+            title: data[0].title,
+            html: data[0].message + fileInputHtml,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showCancelButton: true,
+            cancelButtonText: "Cancel",
+            confirmButtonText: "Proceed",
+            confirmButtonColor: "#143953",
+            cancelButtonColor: "#d33",
+            reverseButtons: true,
+            didOpen: () => {
+                if (errorMessage) {
+                    document.getElementById("error-message").innerHTML =
+                        `<p style="font-size:11px" class="text-danger mt-2 text-uppercase fw-bold">${errorMessage}</p>`;
+                }
+            },
+        }).then(function (result) {
+            const fileInput = document.getElementById("accomplishment-file");
+            const selectedFile = fileInput ? fileInput.files[0] : null;
 
-                const textareaValue = textarea ? textarea.value : '';
-
-                // If textarea is present, make sure it's not empty
-                if (isTextareaPresent && !textareaValue.trim()) {
-                    // Create the error message HTML
-                    errorHtml = `<p style="font-size:11px" class="text-danger mt-2 text-uppercase fw-bold mt-2">The accomplishment report is required.</p>`;
-                    
-                    // Reopen the Swal dialog and append the error message to the textarea
-                    Swal.fire({
-                        icon: "info",
-                        title: data[0].title,
-                        html: data[0].message + textareaHtml + errorHtml, // Append error message below textarea
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showCancelButton: true,        
-                        cancelButtonText: 'Cancel',   
-                        confirmButtonText: 'Proceed',   
-                        confirmButtonColor: '#143953', 
-                        cancelButtonColor: '#d33',      
-                        reverseButtons: true,  
-                    });
+            if (result.isConfirmed) {
+                if (isFileUploadPresent && !selectedFile) {
+                    showSwal("The accomplishment report file is required."); // Reopen modal with error message
                     return; // Prevent dispatching if validation fails
                 }
 
-                formData['report'] = textareaValue;
-                Livewire.dispatch(data[0].action, [formData, data[0]['time']]);
-            } else {
-                Livewire.dispatch(data[0].action, [false]);
+                if (selectedFile) {
+                    // Convert file to Base64 and send it to Livewire
+                    const reader = new FileReader();
+                    reader.readAsDataURL(selectedFile);
+                    reader.onload = () => {
+                        formData["report"] = reader.result;
+                        formData["filename"] = selectedFile.name;
+                        formData["mimeType"] = selectedFile.type;
+
+                        Livewire.dispatch(data[0].action, [formData, data[0]["time"]]);
+                    };
+                } else {
+                    Livewire.dispatch(data[0].action, [false]);
+                }
             }
-        }
-    });  
+        });
+    }
+
+    showSwal(); // Initial call to show the modal
 });
+
 
 Livewire.on('showModal', function(data) {
     var modal = new bootstrap.Modal($('#'+data[0].modal));
