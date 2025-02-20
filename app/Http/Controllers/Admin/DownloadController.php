@@ -70,7 +70,7 @@ class DownloadController extends Controller
 
     public function toPDS($data) {
 
-        $template = public_path('templates/ess/pds-revised.xlsx');
+        $template = public_path('templates/forms/PDS.xlsx');
     
         if (!file_exists($template)) {
             return response()->json(['error' => 'Error: PDS template does not exist!'], 404);

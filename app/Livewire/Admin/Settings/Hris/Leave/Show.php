@@ -149,7 +149,6 @@ class Show extends Component
             "as_of.$employee_no.required" => '*required',
         ];
     }
-    
 
     public function resetCredits(bool $isNotify = true, string $employee_no = null) {
 

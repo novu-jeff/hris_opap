@@ -156,8 +156,8 @@ class Clock extends Component
             $this->dispatch('showConfirmation', [
                 'title' => 'Please be informed!,',
                 'plugin' => [
-                    'textarea',
-                    'title' => 'Please write your today\'s accomplishment report.',
+                    'file',
+                    'title' => 'Please upload your today\'s accomplishment report.',
                 ],
                 'time' => $time,
                 'message' => 'You\'re clocking-out earlier than your expected time which may be considered and marked as undertime.',
@@ -290,8 +290,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.',
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.',
                         ],
                         'time' => $time,
                         'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
@@ -305,8 +305,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Before clocking out,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.'
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.'
                         ],
                         'time' => $time,
                         'message' => '',
@@ -320,8 +320,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.',
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.',
                         ],
                         'time' => $time,
                         'isForcedClockout' => false,
@@ -336,8 +336,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Before clocking out,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.'
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.'
                         ],
                         'time' => $time,
                         'message' => '',
@@ -365,8 +365,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.',
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.',
                         ],
                         'time' => $time,
                         'message' => 'You\'re clocking-out earlier than your expected time of <strong>' . $formattedExpectedClockOut . '</strong>, which may be considered and marked as undertime.',
@@ -380,8 +380,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Before clocking out,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.'
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.'
                         ],
                         'time' => $time,
                         'message' => '',
@@ -395,8 +395,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.',
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.',
                         ],
                         'time' => $time,
                         'isForcedClockout' => false,
@@ -411,8 +411,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Before clocking out,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.'
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.'
                         ],
                         'time' => $time,
                         'message' => '',
@@ -430,8 +430,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Please be informed!,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.',
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.',
                         ],
                         'time' => $time,
                         'isForcedClockout' => false,
@@ -446,8 +446,8 @@ class Clock extends Component
                     $this->dispatch('showConfirmation', [
                         'title' => 'Before clocking out,',
                         'plugin' => [
-                            'textarea',
-                            'title' => 'Please write your today\'s accomplishment report.'
+                            'file',
+                            'title' => 'Please upload your today\'s accomplishment report.'
                         ],
                         'time' => $time,
                         'message' => '',
@@ -504,7 +504,7 @@ class Clock extends Component
     }
 
     # handle the capturing of image
-    public function grabImage($image, $time,  $hasClearImage) {
+    public function grabImage($image, $time, $hasClearImage) {
         
         $this->hasClearImage = $hasClearImage;
 
@@ -536,15 +536,53 @@ class Clock extends Component
             ->update([
                 'captured_image' => $imageName,
             ]);
-
     }
 
     # save if accomplishment needed
-    public function saveAccomplishment($data) {
-        $this->accomplishment = $data['report'];
-        $this->triggerClock(false);
 
+    public function saveAccomplishment($data)
+    {
+        if (!empty($data['report'])) {
+            // Decode Base64 file
+            $fileData = explode(';base64,', $data['report']);
+            if (count($fileData) !== 2) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'Invalid file format.',
+                ]);
+                return;
+            }
+        
+            // Extract file extension from filename
+            $fileExt = pathinfo($data['filename'], PATHINFO_EXTENSION); 
+            $allowedExt = ['docx', 'doc'];
+        
+            if (!in_array(strtolower($fileExt), $allowedExt)) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'You\'re uploading an invalid file type. Only DOC or DOCX files are allowed.',
+                ]);
+                return;
+            }
+        
+            // Generate a unique filename
+            $fileName = $this->user_id . '_' . time() . '.' . $fileExt;
+            $filePath = 'accomplishments/' . $fileName;
+        
+            // Store the decoded file in storage/app/accomplishments/
+            Storage::put($filePath, base64_decode($fileData[1]));
+        
+            // Save the full storage path
+            $this->accomplishment = $fileName;
+        }        
+
+        $this->triggerClock(false);
     }
+
     
     private function getLogs() {
 

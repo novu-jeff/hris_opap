@@ -18,6 +18,9 @@ $theme-colors: (
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
 
+.fancybox__container  {
+  z-index: 9999;
+}
 
 .scroll-top {
   width: 50px;

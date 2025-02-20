@@ -97,8 +97,8 @@ class Apply extends Component
                     }
                 },
             ],
-            'fields.*.start_time' => 'required|date_format:H:i',
-            'fields.*.end_time' => 'required|date_format:H:i|after:fields.*.start_time',
+            'fields.*.start_time' => 'required',
+            'fields.*.end_time' => 'required|after:fields.*.start_time',
             'fields.*.justification' => 'required|string|max:255',
         ];
     }
