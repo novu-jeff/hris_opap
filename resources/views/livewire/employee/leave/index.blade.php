@@ -44,9 +44,9 @@
                             <td>#{{format_id($record->id, 6)}}</td>
                             <td>{{'(' . $record->leave_type->code . ') - ' . $record->leave_type->name}}</td>
                             <td>
-                                {{ format_date($record->from, 'date_string') }}
+                                {{ \Carbon\Carbon::parse($record->from)->format('F d, Y') }}
                                 @if($record->to)
-                                    - {{ format_date($record->to, 'date_string') }}
+                                    - {{ \Carbon\Carbon::parse($record->to)->format('F d, Y') }}
                                 @endif
                             </td>                            
                             <td>

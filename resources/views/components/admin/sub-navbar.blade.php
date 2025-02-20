@@ -27,7 +27,7 @@
 
                 <!-- HRIS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{route('payroll.index')}}">
                         <i class="fa-solid fa-dollar-sign"></i>
                         Payroll
                     </a>

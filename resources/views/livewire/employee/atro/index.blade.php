@@ -33,7 +33,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Date</th>
-                        <th>Time Span</th>
+                        <th>Clock Range</th>
                         <th>Status</th>
                         <th style="max-width: 200px;">Action</th>
                     </tr>
@@ -42,8 +42,8 @@
                     @forelse($records as $record)
                         <tr data-id="{{$record->id}}">
                             <td>#{{format_id($record->id, 6)}}</td>
-                            <td>{{format_date($record->date, 'day_date_string')}}</td>
-                            <td>{{format_time($record->start_time) . ' - ' . format_time($record->end_time)}}</td>
+                            <td>{{\Carbon\Carbon::parse($record->date)->format('F d, Y')}}</td>
+                            <td>{{\Carbon\Carbon::parse($record->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($record->end_time)->format('g:i A')}}</td>
                             <td>
                                 @if ($record->status == 'approved')
                                     <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Approved</div>
