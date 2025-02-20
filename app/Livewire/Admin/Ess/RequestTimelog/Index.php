@@ -9,6 +9,7 @@ use App\Models\EmployeeTimelogs;
 use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -104,30 +105,41 @@ class Index extends Component
                 return redirect()->route('ess.request-timelog.index');
             }
 
-
             $record->action_by_id = Auth::user()->id;
 
             $clock_in_am = Carbon::parse($record->clock_in)->format('H:i');
             $clock_out_am = Carbon::parse($record->break_out)->format('H:i');
             $clock_in_pm = Carbon::parse($record->break_in)->format('H:i');
             $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i');
-            $date = Carbon::parse($record->date)->format('j/n/Y');
+            $date = Carbon::parse($record->date)->format('d/m/Y');
 
-            $logs = [
-                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_am"],
-                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_am"],
-                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_pm"],
-                ['origin' => 'requested-timelog', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_pm"],
-            ];
+            $logs = collect([
+                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_am"],
+                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_am"],
+                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_pm"],
+                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_pm"],
+            ])->sortBy('logdatetime')->values()->all(); 
 
-            foreach ($logs as $log) {
-                EmployeeTimelogs::create($log);
+            $existingLogs = EmployeeTimelogs::where('bsd_no', $record->employee->bsd_no)
+                ->where('logdatetime', 'LIKE', "{$date}%")
+                ->orderBy('logdatetime', 'asc')
+                ->get();
+            
+            foreach ($logs as $key => $log) {
+                
+                if(isset($existingLogs[$key])) {
+                    $existingLogs[$key]->logdatetime = $log['logdatetime'];
+                    $existingLogs[$key]->captured_image = '';
+                    $existingLogs[$key]->captured_location = '';
+                    $existingLogs[$key]->save();
+                } else {
+                    EmployeeTimelogs::create($log);
+                }
             }
-
+            
             $record->update([
                 'status' => 'approved'
             ]);
-        
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,

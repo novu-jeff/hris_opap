@@ -65,45 +65,45 @@ class Index extends Component
 
             // FIRST
 
-            $sheet->setCellValue('A5', $records->employee->section->name ?? '');
-            $sheet->setCellValue('G5', Carbon::parse($records->date_filed)->format('F d, Y') ?? '');
-            $sheet->setCellValue('A7', $lastname ?? '');
-            $sheet->setCellValue('D7', $firstname ?? '');
-            $sheet->setCellValue('G7', $records->employee->personal->middlename ?? '');
-            $sheet->setCellValue('H7', $records->employee->positions->name ?? '');
-            $sheet->setCellValue('A9', $records->destination ?? '');
-            $sheet->setCellValue('F9', $records->purpose ?? '');
-            $sheet->setCellValue('A11', 'DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('F11', 'ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('A13', $firstname . ' ' . $lastname ?? '');
+            $sheet->setCellValue('A5', strtoupper($records->employee->section->name ?? ''));
+            $sheet->setCellValue('G5', strtoupper(Carbon::parse($records->date_filed)->format('F d, Y') ?? ''));
+            $sheet->setCellValue('A7', strtoupper($lastname ?? ''));
+            $sheet->setCellValue('D7', strtoupper($firstname ?? ''));
+            $sheet->setCellValue('G7', strtoupper($records->employee->personal->middlename ?? ''));
+            $sheet->setCellValue('H7', strtoupper($records->employee->positions->name ?? ''));
+            $sheet->setCellValue('A9', strtoupper($records->destination ?? ''));
+            $sheet->setCellValue('F9', strtoupper($records->purpose ?? ''));
+            $sheet->setCellValue('A11', strtoupper('DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('F11', strtoupper('ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('A13', strtoupper($firstname . ' ' . $lastname ?? ''));
 
             // SECOND
 
-            $sheet->setCellValue('A20', $records->employee->section->name ?? '');
-            $sheet->setCellValue('G20', Carbon::parse($records->date_filed)->format('F d, Y') ?? '');
-            $sheet->setCellValue('A22', $lastname ?? '');
-            $sheet->setCellValue('D22', $firstname ?? '');
-            $sheet->setCellValue('G22', $records->employee->personal->middlename ?? '');
-            $sheet->setCellValue('H22', $records->employee->positions->name ?? '');
-            $sheet->setCellValue('A24', $records->destination ?? '');
-            $sheet->setCellValue('F24', $records->purpose ?? '');
-            $sheet->setCellValue('A26', 'DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('F26', 'ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('A28', $firstname . ' ' . $lastname ?? '');
+            $sheet->setCellValue('A20', strtoupper($records->employee->section->name ?? ''));
+            $sheet->setCellValue('G20', strtoupper(Carbon::parse($records->date_filed)->format('F d, Y') ?? ''));
+            $sheet->setCellValue('A22', strtoupper($lastname ?? ''));
+            $sheet->setCellValue('D22', strtoupper($firstname ?? ''));
+            $sheet->setCellValue('G22', strtoupper($records->employee->personal->middlename ?? ''));
+            $sheet->setCellValue('H22', strtoupper($records->employee->positions->name ?? ''));
+            $sheet->setCellValue('A24', strtoupper($records->destination ?? ''));
+            $sheet->setCellValue('F24', strtoupper($records->purpose ?? ''));
+            $sheet->setCellValue('A26', strtoupper('DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('F26', strtoupper('ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('A28', strtoupper($firstname . ' ' . $lastname ?? ''));
 
             // THIRD
 
-            $sheet->setCellValue('A35', $records->employee->section->name ?? '');
-            $sheet->setCellValue('G35', Carbon::parse($records->date_filed)->format('F d, Y') ?? '');
-            $sheet->setCellValue('A37', $lastname ?? '');
-            $sheet->setCellValue('D37', $firstname ?? '');
-            $sheet->setCellValue('G37', $records->employee->personal->middlename ?? '');
-            $sheet->setCellValue('H37', $records->employee->positions->name ?? '');
-            $sheet->setCellValue('A39', $records->destination ?? '');
-            $sheet->setCellValue('F39', $records->purpose ?? '');
-            $sheet->setCellValue('A41', 'DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('F41', 'ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? '');
-            $sheet->setCellValue('A43', $firstname . ' ' . $lastname ?? '');
+            $sheet->setCellValue('A35', strtoupper($records->employee->section->name ?? ''));
+            $sheet->setCellValue('G35', strtoupper(Carbon::parse($records->date_filed)->format('F d, Y') ?? ''));
+            $sheet->setCellValue('A37', strtoupper($lastname ?? ''));
+            $sheet->setCellValue('D37', strtoupper($firstname ?? ''));
+            $sheet->setCellValue('G37', strtoupper($records->employee->personal->middlename ?? ''));
+            $sheet->setCellValue('H37', strtoupper($records->employee->positions->name ?? ''));
+            $sheet->setCellValue('A39', strtoupper($records->destination ?? ''));
+            $sheet->setCellValue('F39', strtoupper($records->purpose ?? ''));
+            $sheet->setCellValue('A41', strtoupper('DEPARTURE TIME: ' . Carbon::parse($records->departure_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('F41', strtoupper('ARRIVAL TIME: ' . Carbon::parse($records->arrival_time)->format('g:i A') ?? ''));
+            $sheet->setCellValue('A43', strtoupper($firstname . ' ' . $lastname ?? ''));
 
 
             return response()->streamDownload(function () use ($spreadsheet) {

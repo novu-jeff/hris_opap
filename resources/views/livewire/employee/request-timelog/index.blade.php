@@ -41,7 +41,7 @@
                     @forelse($records as $record)
                         <tr data-id="{{$record->id}}">
                             <td>#{{format_id($record->id, 6)}}</td>
-                            <td>{{$record->date}}</td>
+                            <td>{{\Carbon\Carbon::parse($record->date)->format('F d, Y')}}</td>
                             <td>
                                 @if ($record->status == 'approved')
                                     <div class="alert alert-success fw-bold text-uppercase text-center fw-medium mb-0">Approved</div>

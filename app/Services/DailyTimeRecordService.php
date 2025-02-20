@@ -233,6 +233,8 @@ class DailyTimeRecordService {
                     : '',
                 'position' => $employee->position_name ?? 'N/A',
                 'department' => $employee->department_name ?? 'N/A',
+                'section' => $employee->section_name ?? 'N/A',
+                'section_code' => $employee->section_code ?? 'N/A',
                 'salary' => $employee->salary,
             ],
             'clock_in_out' => $mappedClockData,
@@ -316,6 +318,8 @@ class DailyTimeRecordService {
               'positions.salary',
               'departments.name as department_name',
               'departments.code as department_code',
+              'sections.name as section_name',
+              'sections.code as section_code',
               'employee_schedules.*',
               'shift_schedule.*',
           )
@@ -390,7 +394,6 @@ class DailyTimeRecordService {
             $formattedData[$date]->push($log->lates);
         }
 
-        // dd($formattedData);
         return $formattedData;
 
     }

@@ -55,6 +55,9 @@
                             </td>
                             <td>
                                 @if($record->status === 'pending')
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
                                     <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>

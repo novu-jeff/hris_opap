@@ -67,12 +67,12 @@ class Apply extends Component
 
     public function rules() {
         return [
-            'date' => 'required|date|before:today',
+            'date' => 'required|date',
             'clock_in' => 'required|date_format:H:i',
             'break_out' => 'required|date_format:H:i',
             'break_in' => 'required|date_format:H:i',
             'clock_out' => 'required|date_format:H:i',
-            'reason' => 'required|string|min:100',
+            'reason' => 'required|string',
             'attachments' => 'required|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf',
         ];
@@ -162,9 +162,11 @@ class Apply extends Component
                     $user = EmployeeAccount::find($this->employee_id);
                     $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted an application for <strong>request timelog</strong>.';
                     $redirect = route('ess.request-timelog');
+
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
     
                     $this->resetExcept('employee_no', 'employee_id');
+
                     return;
                 } else {
                     return $this->dispatch('alert', [

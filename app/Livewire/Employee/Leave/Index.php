@@ -64,11 +64,11 @@ class Index extends Component
             $sheet = $spreadsheet->getActiveSheet();
     
             // Set employee information
-            $sheet->setCellValue('G9', $records->employee->personal->lastname ?? '');
-            $sheet->setCellValue('I9', $records->employee->personal->firstname ?? '');
-            $sheet->setCellValue('N9', $records->employee->personal->middlename ?? '');
-            $sheet->setCellValue('O11', $records->employee->monthly_rate ?? '');
-            $sheet->setCellValue('H11', $records->employee->positions->name ?? '');
+            $sheet->setCellValue('G9', strtoupper($records->employee->personal->lastname) ?? '');
+            $sheet->setCellValue('I9', strtoupper($records->employee->personal->firstname) ?? '');
+            $sheet->setCellValue('N9', strtoupper($records->employee->personal->middlename) ?? '');
+            $sheet->setCellValue('O11', strtoupper($records->employee->monthly_rate) ?? '');
+            $sheet->setCellValue('H11', strtoupper($records->employee->positions->name) ?? '');
 
             // Set created date
             $sheet->setCellValue('F11', Carbon::parse($records->created_at)->format('m/d/y'));
@@ -99,20 +99,20 @@ class Index extends Component
             if($records->leave_id == 1 || $records->leave_id == 6) {
                 if($records->location == 'ph') {
                     $sheet->setCellValue('J18', '/');
-                    $sheet->setCellValue('N18', $records->location_specific ?? '');
+                    $sheet->setCellValue('N18', strtoupper($records->location_specific) ?? '');
                 } else {
                     $sheet->setCellValue('J19', '/');
-                    $sheet->setCellValue('N19', $records->location_specific ?? '');
+                    $sheet->setCellValue('N19', strtoupper($records->location_specific) ?? '');
                 }
             }
     
             if($records->leave_id == 3) {
                 if($records->confinement == 'hospital') {
                     $sheet->setCellValue('J18', '/');
-                    $sheet->setCellValue('N18', $records->illness ?? '');
+                    $sheet->setCellValue('N18', strtoupper($records->illness) ?? '');
                 } else {
                     $sheet->setCellValue('J21', '/');
-                    $sheet->setCellValue('N21', $records->illness ?? '');
+                    $sheet->setCellValue('N21', strtoupper($records->illness) ?? '');
                 }
             }
     
@@ -122,12 +122,12 @@ class Index extends Component
                 } elseif($records->study == 'examination') {
                     $sheet->setCellValue('J27', '/');
                 } else {
-                    $sheet->setCellValue('M28', $records->study_other_purpose ?? '');
+                    $sheet->setCellValue('M28', strtoupper($records->study_other_purpose) ?? '');
                 }
             }
     
             // Handle commutation
-            $sheet->setCellValue($records->commutation == 'yes' ? 'J34' : 'J33', '/');
+            $sheet->setCellValue($records->commutation == 'YES' ? 'J34' : 'J33', '/');
     
             // Calculate the number of days covered
             $from = Carbon::parse($records->from);

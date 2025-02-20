@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ESSFAQController;
 use App\Http\Controllers\Admin\ESSRequestTimeLogController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
+use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\SchedulerController;
@@ -203,6 +204,13 @@ Route::prefix('admin')->group(function() {
 
             Route::get('correction/apply/{bsd_no}/{date}', [TimeKeepingController::class, 'correction_apply'])
                 ->name('timekeeping.correction-apply');
+        });
+
+        Route::prefix('payroll')->group(function() {
+            Route::get('/', [PayrollController::class, 'index'])
+                ->name('payroll.index');
+            Route::get('{month}/{year}', [PayrollController::class, 'show'])
+                ->name('payroll.show');
         });
 
         Route::prefix('employees')->group(function() {
