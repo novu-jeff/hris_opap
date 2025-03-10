@@ -13,16 +13,26 @@ return new class extends Migration
     {
         Schema::create('payroll', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_no');
             $table->string('payroll_date');
             $table->string('cut_off_period');
+            $table->string('status');
+            $table->timestamps();
+        });
+
+        Schema::create('payroll_employee', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('payroll_id')
+                ->constrained('payroll')
+                ->onDelete('cascade');
+            $table->string('employee_no');
             $table->string('position');
             $table->string('salary_grade');
             $table->float('basic_salary');
             $table->float('gross_amount_earned');
             $table->float('total_deductions');
             $table->float('net_amount');
-            $table->timestamps();
+            $table->string('status')
+                ->default('ongoing');
         });
 
         Schema::create('payroll_deductions', function (Blueprint $table) {
@@ -32,6 +42,8 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->string('name');
             $table->float('amount');
+            $table->string('status')
+                ->default('pending');
         });
 
         Schema::create('payroll_earnings', function (Blueprint $table) {
@@ -49,6 +61,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('payroll_earnings');
+        Schema::dropIfExists('payroll_deductions');
+        Schema::dropIfExists('payroll_employee');
         Schema::dropIfExists('payroll');
     }
 };

@@ -1,21 +1,21 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | All Payrolls'
+    'title' => 'HRIS | New Payroll'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Payrolls</h1>
+            <h1>Payroll</h1>
         </div>
     </div>
     <div class="action">
         <div class="d-md-flex justify-content-end gap-3">
-            <button type="button" class="btn btn-primary text-uppercase px-5 py-3 fw-medium" data-bs-toggle="modal" data-bs-target="#newPayroll">New Payroll</button>
+            <a href="{{route('payroll.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.payroll.index')
+        @livewire('admin.payroll.choose', ['payroll_id' => $id])
     </div>
 </div>
 @endsection

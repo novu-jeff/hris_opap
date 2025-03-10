@@ -106,7 +106,7 @@ class Notifications extends Component
 
         if ($this->user->roles[0]->name === 'employee') {
             $query->where('notifiable_id', $this->user->id)
-                  ->whereJsonContains('data->audience', 'employee'); // Filter JSON audience
+                  ->whereJsonContains('data->audience', 'employee');
         } else {
             $query->whereJsonContains('data->audience', 'admin');
         }

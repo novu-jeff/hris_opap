@@ -264,7 +264,7 @@
                                 @foreach ($records['other_deductions'] as $item)
                                     <li class="d-flex align-items-center gap-3 mb-2">
                                         <div>
-                                            <span>{{ ucwords($item->deduction->name) }}</span>
+                                            <span>{{ ucwords($item['deduction']['name']) }}</span>
                                             <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
                                             <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
                                         </div>
