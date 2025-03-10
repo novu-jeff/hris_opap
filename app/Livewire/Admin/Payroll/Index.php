@@ -45,7 +45,7 @@ class Index extends Component
             ]);
 
             return redirect()
-                ->route('payroll.choose', ['payroll_id' => $payroll->id]);
+                ->route('payroll.process', ['payroll_id' => $payroll->id]);
 
             DB::commit();
 
