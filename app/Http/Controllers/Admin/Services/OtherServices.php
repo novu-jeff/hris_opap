@@ -106,7 +106,8 @@ class OtherServices extends Controller
 
     public function deductions(string $employee_no) {
         
-        $otherDeductions = EmployeeDeductions::with('deduction')->where('employee_no', $employee_no)->get();
+        $otherDeductions = EmployeeDeductions::with('deduction')->where('employee_no', $employee_no)->get()
+            ->toArray();
         
         return $otherDeductions ?? [];
     

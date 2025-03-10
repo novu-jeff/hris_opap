@@ -207,10 +207,13 @@ Route::prefix('admin')->group(function() {
         });
 
         Route::prefix('payroll')->group(function() {
+
             Route::get('/', [PayrollController::class, 'index'])
                 ->name('payroll.index');
-            Route::get('{month}/{year}', [PayrollController::class, 'show'])
-                ->name('payroll.show');
+
+            Route::get('process/{payroll_id}/{employment_type?}', [PayrollController::class, 'process'])
+                ->name('payroll.process');
+
         });
 
         Route::prefix('employees')->group(function() {
