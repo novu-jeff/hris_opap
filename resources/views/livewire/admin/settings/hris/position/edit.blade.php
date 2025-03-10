@@ -23,7 +23,7 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="fields.type">Salary Grade <span class="text-danger">*</span></label>
+                            <label class="mb-2" for="fields.type">Employment Type <span class="text-danger">*</span></label>
                             <select wire:model="fields.type" class="form-select">
                                 <option value="1">Regular Contractual</option>
                                 <option value="2">Contract of Service</option>
