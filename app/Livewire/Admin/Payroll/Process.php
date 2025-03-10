@@ -99,6 +99,23 @@ class Process extends Component
                 $cir = collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0;
                 $allowance = collect($deductions)->firstWhere('deduction.code', 'allowance')['amount'] ?? 0;
     
+                $total_deduction = 
+                    (float) $hmdf + 
+                    (float) $philhealth + 
+                    (float) $consoloan + 
+                    (float) $emergency_loan + 
+                    (float) $plreg + 
+                    (float) $mpl + 
+                    (float) $cpl + 
+                    (float) $mp2 + 
+                    (float) $mplstlms + 
+                    (float) $cir + 
+                    (float) $allowance;
+            
+                $net_amount = (float) $gross_amount_earned - $total_deduction;
+
+                $halfSalaryAmount = $net_amount / 2;
+
                 $data[] = [
                     'employment_type' => $employment_type,
                     'name' => $employee_name,
@@ -121,19 +138,18 @@ class Process extends Component
                     'uca' => 0,
                     'allowance' => number_format($allowance, 2),
                     'aut' => 0,
-                    'total_deductions' => 0,
-                    'net_amount' => 0,
+                    'total_deductions' => number_format($total_deduction, 2),
+                    'net_amount' => number_format($net_amount, 2),
                     'dbp_branch' => 0,
                     'kawani' => 0,
                     'lbp_payroll_account' => 0,
-                    'first_half' => 0,
-                    'second_half' => 0,
+                    'first_half' => number_format($halfSalaryAmount, 2),
+                    'second_half' => number_format($halfSalaryAmount, 2),
                 ];
     
             }
 
             return $this->records = $data;
-
         }
         
         # FOR COS
@@ -178,6 +194,23 @@ class Process extends Component
                 $cir = collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0;
                 $allowance = collect($deductions)->firstWhere('deduction.code', 'allowance')['amount'] ?? 0;
     
+                $total_deduction = 
+                    (float) $hmdf + 
+                    (float) $philhealth + 
+                    (float) $consoloan + 
+                    (float) $emergency_loan + 
+                    (float) $plreg + 
+                    (float) $mpl + 
+                    (float) $cpl + 
+                    (float) $mp2 + 
+                    (float) $mplstlms + 
+                    (float) $cir + 
+                    (float) $allowance;
+            
+                $net_amount = (float) $gross_amount_earned - $total_deduction;
+
+                $halfSalaryAmount = $net_amount / 2;
+
                 $data[] = [
                     'employment_type' => $employment_type,
                     'name' => $employee_name,
@@ -191,13 +224,13 @@ class Process extends Component
                     'uca' => 0,
                     'w_tax' => 0,
                     'aut' => 0,
-                    'total_deductions' => 0,
-                    'net_amount' => 0,
+                    'total_deductions' => number_format($total_deduction, 2),
+                    'net_amount' => number_format($net_amount, 2),
                     'dbp_branch' => 0,
                     'kawani' => 0,
                     'lbp_payroll_account' => 0,
-                    'first_half' => 0,
-                    'second_half' => 0,
+                    'first_half' => number_format($halfSalaryAmount, 2),
+                    'second_half' => number_format($halfSalaryAmount, 2),
                 ];
     
             }
