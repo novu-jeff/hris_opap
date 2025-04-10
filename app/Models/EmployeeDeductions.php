@@ -13,7 +13,8 @@ class EmployeeDeductions extends Model
     protected $fillable = [
         'employee_no',
         'deduction_id',
-        'amount'
+        'amount',
+        'as_of'
     ];
 
     public function personal() {

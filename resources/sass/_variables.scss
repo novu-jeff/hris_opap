@@ -1,4 +1,3 @@
-// Body
 $body-bg: #f8fafc;
 
 $primary:    #225F8B;
@@ -10,11 +9,13 @@ $info:       #005668;
 $light:      #f8f9fa;
 $dark:       #212529;
 
-// Typography
 $font-family-sans-serif: "Helvetica", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
 
+// * {
+//     user-select: none !important;
+// }
 
 .form-control:hover,
 .form-control:focus,

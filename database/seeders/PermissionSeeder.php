@@ -32,7 +32,7 @@ class PermissionSeeder extends Seeder
                 'request-log',
                 'announcements',
                 'employee-profile-approval',
-                'request-status',
+                'messages',
                 'faqs'
             ],
             'reports' => [
@@ -68,10 +68,11 @@ class PermissionSeeder extends Seeder
             'employee' => [
                 'apply-leave',
                 'clock-in-out',
+                'remaining-credit',
                 'apply-atro',
                 'apply-request-timelog',
                 'payslip',
-                'employee-request-status',
+                'employee-messages',
                 'apply-obs',
                 'employee-dtr',
                 'my-directory',

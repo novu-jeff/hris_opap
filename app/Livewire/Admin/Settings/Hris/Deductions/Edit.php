@@ -109,13 +109,17 @@ class Edit extends Component
 
         
         try {
-            OtherDeductions::where('id', $this->id)->update([
-                'code' => $this->fields['code'] ?? null,
-                'name' => $this->fields['name'],
-                'frequency' => $this->fields['frequency'],
-                'eligible' => implode(',', $this->fields['eligible']),
-                'source' => $this->fields['source']
-            ]);
+            $deduction = OtherDeductions::find($this->id);
+            if (!$deduction) {
+                throw new \Exception('Deduction record not found.');
+            }
+
+            $deduction->code = $this->fields['code'] ?? null;
+            $deduction->name = $this->fields['name'];
+            $deduction->frequency = $this->fields['frequency'];
+            $deduction->eligible = implode(',', $this->fields['eligible']);
+            $deduction->source = $this->fields['source'];
+            $deduction->save();
 
             $message = 'Additional Deductions ' . strtoupper($this->fields['code']) . ' was updated successfully.';
 

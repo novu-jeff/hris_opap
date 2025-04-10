@@ -89,12 +89,12 @@ class Edit extends Component
 
             $isCummulative = $this->fields['isCummulative'] == 'yes' ? true : false;
 
-            LeaveType::where('id', $this->id)->update([
-                'code' => $this->fields['code'],
-                'name' => $this->fields['name'],
-                'credits' => $this->fields['credits'],
-                'isCummulative' => $isCummulative,
-            ]);
+            $leaveType = LeaveType::find($this->id);
+            $leaveType->code = $this->fields['code'];
+            $leaveType->name = $this->fields['name'];
+            $leaveType->credits = $this->fields['credits'];
+            $leaveType->isCummulative = $isCummulative;
+            $leaveType->save();
 
             DB::commit();
 

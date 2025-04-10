@@ -24,6 +24,8 @@ class EmployeePersonal extends Model
         'citizenship',
         'citizenship_type',
         'country',
+        'birth_certificate',
+        'marriage_certificate',
         'present_address',
         'present_province',
         'present_city',

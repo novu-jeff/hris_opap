@@ -50,11 +50,10 @@ class Edit extends Component
 
         try {
 
-            EmployementTypes::where('id', $this->id)
-                ->update([
-                    'code' => $this->fields['code'],
-                    'name' => $this->fields['name'],
-            ]);
+            $employmentType = EmployementTypes::find($this->id);
+            $employmentType->code = $this->fields['code'];
+            $employmentType->name = $this->fields['name'];
+            $employmentType->save();
 
             DB::commit();
 

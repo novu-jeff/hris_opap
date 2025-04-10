@@ -99,7 +99,7 @@
                 <div class="col-12 mb-3">
                     <div class="card">
                         <div class="card-header bg-primary text-white px-4">
-                            <h5 class="my-2 text-uppercase fw-bold">OBS Applications</h5>
+                            <h5 class="my-2 text-uppercase fw-bold">Official Business Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
                             <div class="d-lg-flex gap-3 w-100">
@@ -134,7 +134,7 @@
                 <div class="col-12 mb-3">
                     <div class="card">
                         <div class="card-header bg-primary text-white px-4">
-                            <h5 class="my-2 text-uppercase fw-bold">ATRO Applications</h5>
+                            <h5 class="my-2 text-uppercase fw-bold">Authority To Render Overtime Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
                             <div class="d-lg-flex gap-3 w-100">
@@ -295,7 +295,32 @@
                     </div>
                 </div>
             </div>
-            
+            <div class="col-12 col-md-7">
+                <div class="card trail">
+                    <div class="card-header bg-primary text-white px-4 d-flex justify-content-between">
+                        <div>
+                            <h5 class="my-2 text-uppercase fw-bold">Audit Trail Logs</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scrollable">
+                            <div class="px-4 pt-3">
+                                @if(!empty($this->trails))
+                                    <ul class="list-unstyled">
+                                        @foreach($this->trails as $index => $log)
+                                            <li>
+                                                <a href="javascript:void(0)" wire:click="download('{{$log}}')" class="d-flex align-items-center gap-2"><i class="fa-solid fa-download"></i> {{$log}}</a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else 
+                                    <p class="text-muted fw-bold text-uppercase text-center">no trails found</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>            
         </div>
     </div>
 </div>

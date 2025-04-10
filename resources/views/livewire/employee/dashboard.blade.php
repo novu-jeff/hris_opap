@@ -44,6 +44,17 @@
                 </a>
             </div>
             @endcanany
+
+            @canany(['read remaining-credit', 'write remaining-credit'])
+            <div class="col-12 col-md-6 col-xl-4 mb-4">
+                <a href="{{ route('employee.credit') }}" class="nav-link">
+                <div class="item">
+                    <img src="{{ asset('/img/remaining-credit.png') }}" class="w-100">
+                    <p>My Credits</p>
+                </div>
+                </a>
+            </div>
+            @endcanany
         
             @canany(['read apply-atro', 'write apply-atro'])
             <div class="col-12 col-md-6 col-xl-4 mb-4">
@@ -82,8 +93,8 @@
             <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <a href="{{ route('employee.request-status') }}" class="nav-link">
                 <div class="item">
-                    <img src="{{ asset('/img/request.png') }}" class="w-100">
-                    <p>Request Status</p>
+                    <img src="{{ asset('/img/message.png') }}" class="w-100">
+                    <p>Contact Us</p>
                 </div>
                 </a>
             </div>
@@ -94,7 +105,7 @@
                 <a href="{{ route('employee.obs.index') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/business-slip.png') }}" class="w-100">
-                    <p>Official Business Slip</p>
+                    <p>Official Business Application</p>
                 </div>
                 </a>
             </div>

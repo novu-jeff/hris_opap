@@ -208,22 +208,28 @@ class Edit extends Component
 
         
         try {
-            OtherEarnings::where('id', $this->id)->update([
-                'code' => $this->fields['code'],
-                'name' => $this->fields['name'],
-                'amount_basis' => $this->fields['amount_basis'],
-                'amount' => $amount,
-                'frequency_basis' => $this->fields['frequency_basis'],
-                'frequency' => $frequency,
-                'eligible' => implode(',', $this->fields['eligible']),
-                'isTaxable' => $this->fields['is_taxable'] === 'yes',
-                'forcasted' => $this->fields['is_forecasted'] === 'yes' ? 1 : 0,
-            
-                'duration' => $this->fields['duration'] ?? null,
-                'count' => $this->fields['count'] ?? null,
-                'context' => $this->fields['context'] ?? null, 
-                'date' => $this->fields['date'] ?? null
-            ]);
+
+            $otherEarning = OtherEarnings::find($this->id);
+
+            if (!$otherEarning) {
+                throw new \Exception('Record not found.');
+            }
+
+            $otherEarning->code = $this->fields['code'];
+            $otherEarning->name = $this->fields['name'];
+            $otherEarning->amount_basis = $this->fields['amount_basis'];
+            $otherEarning->amount = $amount;
+            $otherEarning->frequency_basis = $this->fields['frequency_basis'];
+            $otherEarning->frequency = $frequency;
+            $otherEarning->eligible = implode(',', $this->fields['eligible']);
+            $otherEarning->isTaxable = $this->fields['is_taxable'] === 'yes';
+            $otherEarning->forcasted = $this->fields['is_forecasted'] === 'yes' ? 1 : 0;
+            $otherEarning->duration = $this->fields['duration'] ?? null;
+            $otherEarning->count = $this->fields['count'] ?? null;
+            $otherEarning->context = $this->fields['context'] ?? null;
+            $otherEarning->date = $this->fields['date'] ?? null;
+
+            $otherEarning->save();
 
             $message = 'Additional Earning ' . strtoupper($this->fields['code']) . ' was updated successfully.';
 

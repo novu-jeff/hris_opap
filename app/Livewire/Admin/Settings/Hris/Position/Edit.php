@@ -51,11 +51,11 @@ class Edit extends Component
 
         try {
 
-            Positions::where('id', $this->id)
-                ->update([
-                    'name' => $this->fields['name'],
-                    'salary_grade' => $this->fields['salary_grade']
-            ]);
+            $position = Positions::find($this->id);
+            $position->name = $this->fields['name'];
+            $position->salary_grade = $this->fields['salary_grade'];
+            $position->type = $this->fields['type'];
+            $position->save();
 
             DB::commit();
 

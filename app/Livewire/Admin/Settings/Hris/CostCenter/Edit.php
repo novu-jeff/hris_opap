@@ -39,11 +39,10 @@ class Edit extends Component
 
         try {
 
-            CostCenters::where('id', $this->id)
-                ->update([
-                    'name' => $this->fields['name'],
-                    'code' => $this->fields['code'],
-            ]);
+            $costCenter = CostCenters::find($this->id);
+            $costCenter->name = $this->fields['name'];
+            $costCenter->code = $this->fields['code'];
+            $costCenter->save();
 
             DB::commit();
 

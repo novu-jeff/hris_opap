@@ -213,7 +213,6 @@ function handleResponse(response, tabs = null) {
 }
 
 function redirect(option) {
-    console.log(option);
     if(option == '_clear') {
         $('textarea, input').val('');
         $('select').prop('selectedIndex', 0);

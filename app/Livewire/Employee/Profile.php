@@ -36,6 +36,7 @@ class Profile extends Component
     public $activeTab = 'details';
     public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
+    public bool $isMarried = false;
 
     public function mount() {
         $this->loadRecords();
@@ -244,6 +245,14 @@ class Profile extends Component
                 $this->isDualCitizenship = true;
             } else {
                 $this->isDualCitizenship = false;
+            }
+        }
+
+        if($property == 'civil_status') {
+            if($this->records['employee_personal']['civil_status'] == 'married') {
+                $this->isMarried = true;
+            } else {
+                $this->isMarried = false;
             }
         }
 

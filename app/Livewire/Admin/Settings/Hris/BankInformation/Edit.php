@@ -53,12 +53,11 @@ class Edit extends Component
 
         try {
 
-            BankInformations::where('id', $this->id)
-                ->update([
-                    'name' => $this->fields['name'],
-                    'account_number' => $this->fields['account_number'],
-                    'department_id' => $this->fields['department'],
-            ]);
+            $bankInformation = BankInformations::find($this->id);
+            $bankInformation->name = $this->fields['name'];
+            $bankInformation->account_number = $this->fields['account_number'];
+            $bankInformation->department_id = $this->fields['department'];
+            $bankInformation->save();
 
             DB::commit();
 

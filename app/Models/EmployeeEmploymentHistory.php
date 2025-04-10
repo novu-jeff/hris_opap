@@ -20,6 +20,7 @@ class EmployeeEmploymentHistory extends Model
         'isGovernment',
         'from_year',
         'to_year',
+        'documents'
     ];
 
     public $timestamps = false;

@@ -68,6 +68,7 @@ use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\EmployeeRequestLogController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
+use App\Http\Controllers\Employee\RemainingCreditController as EmployeeRemainingCreditController;
 use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
@@ -186,6 +187,9 @@ Route::prefix('admin')->group(function() {
         
         Route::get('hris', [HRISController::class, 'index'])
             ->name('hris.index');
+
+        Route::get('hris/staffing', [HRISController::class, 'staffing'])
+            ->name('hris.staffing');
             
         Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
             ->name('hris.show');
@@ -239,9 +243,9 @@ Route::prefix('admin')->group(function() {
                     ->name('ess.announcements.edit');
             });
 
-            Route::prefix('request-status')->group(function() {
+            Route::prefix('messages')->group(function() {
                 Route::get('{employee_no?}', [ESSRequestStatusController::class, 'index'])
-                    ->name('ess.request-status');
+                    ->name('ess.messages');
             });
 
             Route::prefix('faqs')->group(function() {
@@ -428,14 +432,17 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
             ->name('employee.clock');
 
+        Route::get('remaining-credit', [EmployeeRemainingCreditController::class, 'index'])
+            ->name('employee.credit');
+
         Route::get('directory', [EmployeeDirectoryController::class, 'index'])
             ->name('employee.directory');
         
         Route::get('team', [EmployeeTeamController::class, 'index'])
             ->name('employee.team');
 
-        Route::get('request-status', [EmployeeRequestStatusController::class, 'index'])
-            ->name('employee.request-status');
+        Route::get('messages', [EmployeeRequestStatusController::class, 'index'])
+            ->name('employee.messages');
 
         Route::get('announcements', [EmployeeAnnouncementController::class, 'index'])
             ->name('employee.announcements.index');

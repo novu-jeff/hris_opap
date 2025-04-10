@@ -385,40 +385,38 @@ class Edit extends Component
         $employeeUpdatePersonal = EmployeeUpdatePersonal::where('employee_no', $employee_no)->first();
         if ($employeePersonal && $employeeUpdatePersonal && $employeeAccount) {
             // Update fields from the update table to the personal table, only if they are present in update data
-            $employeePersonal->update([
-                'profile' => $employeeUpdatePersonal->profile ?? $employeePersonal->profile,
-                'firstname' => $employeeUpdatePersonal->firstname ?? $employeePersonal->firstname,
-                'middlename' => $employeeUpdatePersonal->middlename ?? $employeePersonal->middlename,
-                'lastname' => $employeeUpdatePersonal->lastname ?? $employeePersonal->lastname,
-                'suffix' => $employeeUpdatePersonal->suffix ?? $employeePersonal->suffix,
-                'birthday' => $employeeUpdatePersonal->birthday ?? $employeePersonal->birthday,
-                'age' => $employeeUpdatePersonal->age ?? $employeePersonal->age,
-                'civil_status' => $employeeUpdatePersonal->civil_status ?? $employeePersonal->civil_status,
-                'sex' => $employeeUpdatePersonal->sex ?? $employeePersonal->sex,
-                'citizenship' => $employeeUpdatePersonal->citizenship ?? $employeePersonal->citizenship,
-                'citizenship_type' => $employeeUpdatePersonal->citizenship_type ?? $employeePersonal->citizenship_type,
-                'country' => $employeeUpdatePersonal->country ?? $employeePersonal->country,
-                'present_address' => $employeeUpdatePersonal->present_address ?? $employeePersonal->present_address,
-                'present_province' => $employeeUpdatePersonal->present_province ?? $employeePersonal->present_province,
-                'present_city' => $employeeUpdatePersonal->present_city ?? $employeePersonal->present_city,
-                'permanent_address' => $employeeUpdatePersonal->permanent_address ?? $employeePersonal->permanent_address,
-                'permanent_province' => $employeeUpdatePersonal->permanent_province ?? $employeePersonal->permanent_province,
-                'permanent_city' => $employeeUpdatePersonal->permanent_city ?? $employeePersonal->permanent_city,
-                'mobile_number' => $employeeUpdatePersonal->mobile_number ?? $employeePersonal->mobile_number,
-                'tel_no' => $employeeUpdatePersonal->tel_no ?? $employeePersonal->tel_no,
-                'height' => $employeeUpdatePersonal->height ?? $employeePersonal->height,
-                'weight' => $employeeUpdatePersonal->weight ?? $employeePersonal->weight,
-                'blood_type' => $employeeUpdatePersonal->blood_type ?? $employeePersonal->blood_type,
-                'gsis_no' => $employeeUpdatePersonal->gsis_no ?? $employeePersonal->gsis_no,
-                'pagibig_no' => $employeeUpdatePersonal->pagibig_no ?? $employeePersonal->pagibig_no,
-                'philhealth_no' => $employeeUpdatePersonal->philhealth_no ?? $employeePersonal->philhealth_no,
-                'sss_no' => $employeeUpdatePersonal->sss_no ?? $employeePersonal->sss_no,
-                'tin_no' => $employeeUpdatePersonal->tin_no ?? $employeePersonal->tin_no,
-            ]);
+            $employeePersonal->profile = $employeeUpdatePersonal->profile ?? $employeePersonal->profile;
+            $employeePersonal->firstname = $employeeUpdatePersonal->firstname ?? $employeePersonal->firstname;
+            $employeePersonal->middlename = $employeeUpdatePersonal->middlename ?? $employeePersonal->middlename;
+            $employeePersonal->lastname = $employeeUpdatePersonal->lastname ?? $employeePersonal->lastname;
+            $employeePersonal->suffix = $employeeUpdatePersonal->suffix ?? $employeePersonal->suffix;
+            $employeePersonal->birthday = $employeeUpdatePersonal->birthday ?? $employeePersonal->birthday;
+            $employeePersonal->age = $employeeUpdatePersonal->age ?? $employeePersonal->age;
+            $employeePersonal->civil_status = $employeeUpdatePersonal->civil_status ?? $employeePersonal->civil_status;
+            $employeePersonal->sex = $employeeUpdatePersonal->sex ?? $employeePersonal->sex;
+            $employeePersonal->citizenship = $employeeUpdatePersonal->citizenship ?? $employeePersonal->citizenship;
+            $employeePersonal->citizenship_type = $employeeUpdatePersonal->citizenship_type ?? $employeePersonal->citizenship_type;
+            $employeePersonal->country = $employeeUpdatePersonal->country ?? $employeePersonal->country;
+            $employeePersonal->present_address = $employeeUpdatePersonal->present_address ?? $employeePersonal->present_address;
+            $employeePersonal->present_province = $employeeUpdatePersonal->present_province ?? $employeePersonal->present_province;
+            $employeePersonal->present_city = $employeeUpdatePersonal->present_city ?? $employeePersonal->present_city;
+            $employeePersonal->permanent_address = $employeeUpdatePersonal->permanent_address ?? $employeePersonal->permanent_address;
+            $employeePersonal->permanent_province = $employeeUpdatePersonal->permanent_province ?? $employeePersonal->permanent_province;
+            $employeePersonal->permanent_city = $employeeUpdatePersonal->permanent_city ?? $employeePersonal->permanent_city;
+            $employeePersonal->mobile_number = $employeeUpdatePersonal->mobile_number ?? $employeePersonal->mobile_number;
+            $employeePersonal->tel_no = $employeeUpdatePersonal->tel_no ?? $employeePersonal->tel_no;
+            $employeePersonal->height = $employeeUpdatePersonal->height ?? $employeePersonal->height;
+            $employeePersonal->weight = $employeeUpdatePersonal->weight ?? $employeePersonal->weight;
+            $employeePersonal->blood_type = $employeeUpdatePersonal->blood_type ?? $employeePersonal->blood_type;
+            $employeePersonal->gsis_no = $employeeUpdatePersonal->gsis_no ?? $employeePersonal->gsis_no;
+            $employeePersonal->pagibig_no = $employeeUpdatePersonal->pagibig_no ?? $employeePersonal->pagibig_no;
+            $employeePersonal->philhealth_no = $employeeUpdatePersonal->philhealth_no ?? $employeePersonal->philhealth_no;
+            $employeePersonal->sss_no = $employeeUpdatePersonal->sss_no ?? $employeePersonal->sss_no;
+            $employeePersonal->tin_no = $employeeUpdatePersonal->tin_no ?? $employeePersonal->tin_no;
+            $employeePersonal->save();
 
-            $employeeAccount->update([
-                'email' => $employeeUpdatePersonal->email,
-            ]);
+            $employeeAccount->email = $employeeUpdatePersonal->email;
+            $employeeAccount->save();
 
         }    
 

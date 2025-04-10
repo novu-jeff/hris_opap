@@ -156,6 +156,22 @@
                                                             @error('records.employee_personal.citizenship_type') <span class="text-danger">{{ $message }}</span> @enderror
                                                         </div>
                                                     </div>
+                                                    <div class="col-12 col-md-4 mb-3">
+                                                        <label class="mb-2" for="birth_certificate">Birth Certificate - (img/pdf)</label>
+                                                        <input type="file" name="birth_certificate" id="birth_certificate" class="form-control">
+                                                        <div class="error-field">
+                                                            @error('records.employee_personal.birth_certificate') <span class="text-danger">{{ $message }}</span> @enderror
+                                                        </div>
+                                                    </div>
+                                                    @if($isMarried)
+                                                        <div class="col-12 col-md-4 mb-3">
+                                                            <label class="mb-2" for="marriage_certificate">Marriage Certificate - (img/pdf)</label>
+                                                            <input type="file" name="marriage_certificate" id="marriage_certificate" class="form-control">
+                                                            <div class="error-field">
+                                                                @error('records.employee_personal.marriage_certificate') <span class="text-danger">{{ $message }}</span> @enderror
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -296,14 +312,13 @@
                                 <div class="accordion" id="accordionTabFamily">
                                     <div class="accordion-item mb-4">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button text-uppercase fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-parents" aria-expanded="false" aria-controls="flush-parents">
-                                                Parents Details
+                                            <button class="accordion-button text-uppercase fw-bold " type="button"  data-bs-toggle="collapse" data-bs-target="#flush-parents" aria-expanded="false" aria-controls="flush-parents">
+                                                Relative Details
                                             </button>
                                         </h2>
-                                        <div id="flush-parents" class="accordion-collapse {{$activeAccordion == 'parents' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
+                                        <div id="flush-parents" class="accordion-collapse collapse show" data-bs-parent="#accordionTabFamily">
                                             <div class="accordion-body">
                                                 <div class="row">
-
                                                     <div class="col-12 col-md-3 mb-3">
                                                         <label class="mb-2" for="records.employee_parents.spouse_surname">Spouse's Surname</label>
                                                         <input type="text" wire:model="records.employee_parents.spouse_surname" id="records.employee_parents.spouse_surname" class="form-control text-uppercase">
@@ -440,11 +455,11 @@
                                     </div>
                                     <div class="accordion-item mb-4">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button text-uppercase fw-bold collapsed" type="button" wire:click="setActiveAccordion('children')" data-bs-toggle="collapse" data-bs-target="#flush-children" aria-expanded="false" aria-controls="flush-children">
+                                            <button class="accordion-button text-uppercase fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-children" aria-expanded="false" aria-controls="flush-children">
                                                 Children Details
                                             </button>
                                         </h2>
-                                        <div id="flush-children" class="accordion-collapse {{$activeAccordion == 'children' ? 'collapse show' : 'collapse'}}" data-bs-parent="#accordionTabFamily">
+                                        <div id="flush-children" class="accordion-collapse collapse {{$activeAccordion == 'children' ? 'collapse show' : ''}}" data-bs-parent="#accordionTabFamily">
                                             <div class="accordion-body mt-4">
                                                 <div class="d-flex justify-content-end mb-4">
                                                     <button type="button" class="btn btn-dark ms-auto text-white" wire:click="addRecord('family', 'employee_children', 'children')">Add Record</button>
@@ -459,6 +474,7 @@
                                                                     <th>Middle Name</th>
                                                                     <th>Last Name</th>
                                                                     <th>Date of Birth</th>
+                                                                    <th>Documents</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -470,27 +486,33 @@
                                                                             </button>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control text-uppercase">
+                                                                            <input type="text" style="width: 300px" wire:model="records.employee_children.{{$key}}.firstname" id="records.employee_children.{{$key}}.firstname" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control text-uppercase">
+                                                                            <input type="text" style="width: 300px" wire:model="records.employee_children.{{$key}}.middlename" id="records.employee_children.{{$key}}.middlename" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="text" wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control text-uppercase">
+                                                                            <input type="text" style="width: 300px" wire:model="records.employee_children.{{$key}}.lastname" id="records.employee_children.{{$key}}.lastname" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <input type="date" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control text-uppercase">
+                                                                            <input type="date" style="width: 300px" wire:model="records.employee_children.{{$key}}.birthdate" id="records.employee_children.{{$key}}.birthdate" class="form-control text-uppercase">
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
+                                                                            </div>
+                                                                        </td>     
+                                                                        <td>
+                                                                            <input type="file" style="width: 300px" wire:model="records.employee_children.{{$key}}.documents" id="records.employee_children.{{$key}}.documents" class="form-control text-uppercase">
+                                                                            <div class="error-field">
+                                                                                @error('records.employee_children.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
                                                                         </td>                                                                        
                                                                     </tr>
@@ -525,6 +547,7 @@
                                             <th>Basic Education / Strand / Degree / Course</th>
                                             <th>Attended From</th>
                                             <th>Attended To</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -575,6 +598,12 @@
                                                     @error('records.employee_education.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
                                             </td>
+                                            <td>
+                                                <input type="file" style="width: 300px" wire:model="records.employee_education.{{$key}}.documents" id="records.employee_education.{{$key}}.documents" class="form-control text-uppercase">
+                                                <div class="error-field">
+                                                    @error('records.employee_education.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
+                                                </div>
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -605,6 +634,7 @@
                                             <th>Is Government?</th>
                                             <th>From</th>
                                             <th>To</th>
+                                            <th>Document</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -672,6 +702,12 @@
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
+                                                </td>   
+                                                <td>
+                                                    <input style="width: 300px" type="file" wire:model="records.employee_employment_history.{{$key}}.documents" id="records.employee_employment_history.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="error-field">
+                                                        @error('records.employee_employment_history.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    </div>
                                                 </td>                                                
                                             </tr>
                                         @endforeach
@@ -702,6 +738,7 @@
                                             <th>Place of Exam</th>
                                             <th>License No.</th>
                                             <th>Date of Validity</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -747,6 +784,12 @@
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.date_validity') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
+                                                </td>     
+                                                <td>
+                                                    <input style="width: 300px" type="file" wire:model="records.employee_civil_service.{{$key}}.documents" id="records.employee_civil_service.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="error-field">
+                                                        @error('records.employee_civil_service.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    </div>
                                                 </td>                                                
                                             </tr>
                                         @endforeach
@@ -777,6 +820,7 @@
                                             <th>Date To</th>
                                             <th>Consumed Hours</th>
                                             <th>Sponsored By</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -822,6 +866,12 @@
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.sponsored_by') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
+                                                </td>     
+                                                <td>
+                                                    <input style="width: 300px" type="file" wire:model="records.employee_trainings.{{$key}}.documents" id="records.employee_trainings.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="error-field">
+                                                        @error('records.employee_trainings.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    </div>
                                                 </td>                                        
                                             </tr>
                                         @endforeach
@@ -852,6 +902,7 @@
                                             <th>Date To</th>
                                             <th>Consumed Hours</th>
                                             <th>Position</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -897,6 +948,12 @@
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
+                                                </td>  
+                                                <td>
+                                                    <input style="width: 300px" type="file" wire:model="records.employee_others.{{$key}}.documents" id="records.employee_others.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="error-field">
+                                                        @error('records.employee_others.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    </div>
                                                 </td>                                        
                                             </tr>
                                         @endforeach
@@ -924,6 +981,7 @@
                                             <th>Name</th>
                                             <th>Recognition</th>
                                             <th>Organization</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -950,6 +1008,12 @@
                                                     <input style="width: 300px" type="text" wire:model="records.employee_skills.{{$key}}.organization" id="records.employee_skills.{{$key}}.organization" class="form-control text-uppercase">
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
+                                                    </div>
+                                                </td>    
+                                                <td>
+                                                    <input style="width: 300px" type="file" wire:model="records.employee_skills.{{$key}}.documents" id="records.employee_skills.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="error-field">
+                                                        @error('records.employee_skills.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
                                                 </td>                                
                                             </tr>

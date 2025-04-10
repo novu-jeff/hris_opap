@@ -63,6 +63,14 @@ Livewire.on('alert', (event) => {
                 reloadDT();
             }
 
+            if (alert.hasOwnProperty('redirect') && alert.redirect == '_reload') {
+                return location.reload();
+            }
+
+            if (alert.hasOwnProperty('redirect') && alert.redirect == '_stay') {
+                return;
+            }
+
             if (alert.hasOwnProperty('redirect') && alert.redirect !== '') {
                 location.href = alert.redirect;
             }
@@ -97,13 +105,11 @@ Livewire.on('alert', (event) => {
     }
 });
 
-
 Livewire.on("showConfirmation", function (data) {
     let fileInputHtml = "";
     let formData = {};
     let isFileUploadPresent = false;
 
-    // Check if the plugin requires a file upload
     if (data[0].plugin && data[0].plugin[0] === "file") {
         const pluginTitle = data[0].plugin["title"] || "";
         const hrElement = pluginTitle.trim() ? '<hr class="my-4">' : "";

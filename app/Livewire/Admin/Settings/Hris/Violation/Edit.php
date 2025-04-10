@@ -49,10 +49,9 @@ class Edit extends Component
 
         try {
 
-            Violations::where('id', $this->id)
-                ->update([
-                    'name' => $this->fields['name'],
-            ]);
+            $violation = Violations::find($this->id);
+            $violation->name = $this->fields['name'];
+            $violation->save();
 
             DB::commit();
 
