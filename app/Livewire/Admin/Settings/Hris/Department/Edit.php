@@ -51,11 +51,10 @@ class Edit extends Component
 
         try {
 
-            Departments::where('id', $this->id)
-                ->update([
-                    'code' => $this->fields['code'],
-                    'name' => $this->fields['name'],
-            ]);
+            $department = Departments::find($this->id);
+            $department->code = $this->fields['code'];
+            $department->name = $this->fields['name'];
+            $department->save();
 
             DB::commit();
 

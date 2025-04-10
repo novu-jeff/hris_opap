@@ -11,7 +11,7 @@
         </div>
         <div class="action">
             @if ($action === 'send')
-                <a href="{{route('ess.request-status')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                <a href="{{route('ess.messages')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
             @endif
         </div>
     </div>

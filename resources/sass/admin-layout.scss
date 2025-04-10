@@ -16,6 +16,12 @@
   min-height: 150px;
 }
 
+.dashboard .card.trail .scrollable {
+  min-height: 10px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
 .swiper-container {
   width: 100%;
   padding: 20px 0;

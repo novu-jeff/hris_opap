@@ -37,6 +37,11 @@ return new class extends Migration
                 ->nullable();
             $table->string('country')
                 ->nullable();
+            $table->string('birth_certificate')
+                ->nullable();
+            $table->string('marriage_certificate')
+                ->nullable();
+
             $table->string('present_address')
                 ->nullable(); 
             $table->string('present_province')
@@ -120,6 +125,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('birthdate')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
         });
 
         Schema::create('employee_update_education', function(Blueprint $table) {
@@ -134,6 +141,8 @@ return new class extends Migration
             $table->string('from_year')
                 ->nullable();
             $table->string('to_year')
+                ->nullable();
+            $table->string('documents')
                 ->nullable();
         });
 
@@ -159,6 +168,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('to_year')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
         });
 
         Schema::create('employee_update_civil_service', function(Blueprint $table) {
@@ -175,6 +186,8 @@ return new class extends Migration
             $table->string('license_no')
                 ->nullable();
             $table->string('date_validity')
+                ->nullable();
+            $table->string('documents')
                 ->nullable();
         });
 
@@ -193,6 +206,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('sponsored_by')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
         });
 
         Schema::create('employee_update_other_works', function(Blueprint $table) {
@@ -210,6 +225,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('position')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
         });
 
         Schema::create('employee_update_skills_hobbies', function(Blueprint $table) {
@@ -220,6 +237,8 @@ return new class extends Migration
             $table->string('recognition')
                 ->nullable();
             $table->string('organization')
+                ->nullable();
+            $table->string('documents')
                 ->nullable();
         });
     }

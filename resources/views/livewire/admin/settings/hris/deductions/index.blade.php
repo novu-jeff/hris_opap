@@ -45,9 +45,9 @@
                                 <a href="{{route('other-deductions.edit', ['other_deduction' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                {{-- <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                     <i class="fa-solid fa-trash"></i>
-                                </button>
+                                </button> --}}
                             </td>
                         </tr>
                     @empty

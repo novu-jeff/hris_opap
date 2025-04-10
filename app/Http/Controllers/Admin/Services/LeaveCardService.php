@@ -276,7 +276,7 @@ class LeaveCardService extends Controller
         $mergedData = [];
     
         foreach ($a as $index => $itemA) {
-            $itemB = $b[$index] ?? []; // Get the corresponding item from array B if it exists
+            $itemB = $b[$index] ?? [];
             $mergedItem = [];
     
             foreach ($itemA as $key => $valueA) {

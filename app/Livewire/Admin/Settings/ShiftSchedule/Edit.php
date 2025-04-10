@@ -258,9 +258,12 @@ class Edit extends Component
                 }
 
                 // Update or create the shift schedule
-                $record = ShiftSchedule::updateOrCreate([
-                    'id' => $this->id,
-                ], $data);
+                if ($this->id) {
+                    $record = ShiftSchedule::find($this->id);
+                    $record->update($data);
+                } else {
+                    $record = ShiftSchedule::create($data);
+                }
 
                 // Success message after creating or updating the record
                 if (is_null($this->id)) {

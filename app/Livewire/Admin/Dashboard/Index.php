@@ -15,7 +15,9 @@ use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class Index extends Component
@@ -23,8 +25,11 @@ class Index extends Component
 
     public $product;
     public $stats;
+    public $now;
+    public $trails;
 
     public function mount() {
+        $this->now = Carbon::now();
         $this->loadRecords();
     }
 
@@ -64,7 +69,7 @@ class Index extends Component
             ->first();
 
         $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today())->get();
-
+        
         $this->stats = [
             'recruitment' => [
                 'pending' => $recruitmentCounts['pending'] ?? 0,
@@ -99,8 +104,39 @@ class Index extends Component
             'deductions' => $deductions,
             'gsis_billing' => $gsis_billing ? $gsis_billing->toArray() : [],
         ];
+        
+        $this->getTrails();
     }
    
+
+    private function getTrails() {
+        $directory = storage_path('logs/trails');
+        
+        if (!File::exists($directory)) {
+            $this->trails = [];
+            return;
+        }
+
+        $files = File::files($directory);
+
+        $this->trails = collect($files)->sortByDesc(function ($file) {
+            return $file->getFilename();
+        })->map(function ($file) {
+            return $file->getFilename();
+        })->toArray();
+    }
+
+    public function download(string $log) {
+        $directory = storage_path('logs/trails');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $log;
+
+        if (!File::exists($filePath)) {
+            session()->flash('error', 'Log file does not exist.');
+            return;
+        }
+
+        return response()->download($filePath);
+    }
 
     public function render()
     {

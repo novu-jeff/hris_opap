@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\Hris\Leave;
 
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
+use App\Models\LeaveCredits;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -31,6 +32,11 @@ class ViewCard extends Component
     public $vl_total_bal = [];
     public $sl_total_bal = [];
     public $total_bal = [];
+    public $activeYear;
+
+    protected $listeners = [
+        'removeYear',
+    ];
 
     public function mount() {
         $this->loadRecords();
@@ -83,6 +89,8 @@ class ViewCard extends Component
     
         $this->records = $sortedRecords;
     
+        $this->activeYear = array_key_last($sortedRecords->toArray());
+
         // Reset arrays
         $this->period = [];
         $this->particulars = [];
@@ -152,7 +160,7 @@ class ViewCard extends Component
             }
     
             // Compute the total balance for the year (fixing the incorrect indexing)
-            $this->total_bal[$year + 1][$code] = array_sum(array_map('floatval', $this->{$balProperty}[$year] ?? []));
+            $this->total_bal[$year + 1][$code] = max($this->{$balProperty}[$year]);
     
             // Move to the next year
             $year++;
@@ -161,6 +169,7 @@ class ViewCard extends Component
     }
     
     public function regroupRecords() {
+
         $updatedRecords = [];
 
         foreach ($this->period as $year => $periods) {
@@ -202,7 +211,140 @@ class ViewCard extends Component
         $this->records = $updatedRecords;
     }
 
+    public function setActiveYear(string $year) {
+        $this->activeYear = $year;
+    }
 
+    public function addYear() {
+
+        if ($this->records->isEmpty()) {
+            return;
+        }
+    
+        $lastYear = max($this->records->keys()->toArray());
+        $newYear = $lastYear + 1;
+    
+        $lastItem = collect($this->records[$lastYear]['items'])->last();
+    
+        if (!$lastItem) {
+            return;
+        }
+    
+        $previousBal = [
+            'vl' => $lastItem['vl_bal'] ?? 0,
+            'sl' => $lastItem['sl_bal'] ?? 0,
+        ];
+    
+        $months = [
+            "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+            "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+        ];
+
+        $this->period[$newYear] = $months;
+    
+        $newItems = collect();
+        $vlBalance = $previousBal['vl'];
+        $slBalance = $previousBal['sl'];
+    
+        foreach ($months as $month) {
+
+            $vlBalance += 1.25;
+            $slBalance += 1.25;
+    
+            $newItems->push([
+                "employee_no" => $lastItem['employee_no'],
+                "period" => $month,
+                "particulars" => "",
+                "vl_earned" => 1.25,
+                "vl_aut_w_pay" => "0",
+                "vl_bal" => $vlBalance,
+                "vl_aut_wo_pay" => "0",
+                "sl_earned" => 1.25,
+                "sl_aut_w_pay" => "0",
+                "sl_bal" => $slBalance,
+                "sl_aut_wo_pay" => "0",
+                "remarks" => "",
+                "year" => $newYear,
+                "created_at" => now(),
+                "updated_at" => now(),
+            ]);
+        }
+    
+        $this->records[$newYear] = [
+            'previous_bal' => $previousBal,
+            'items' => $newItems,
+        ];
+
+        $this->total_bal[$newYear] = [
+            'vl' => $previousBal['vl'],
+            'sl' => $previousBal['sl'],
+        ];
+
+        $this->vl_earned[$newYear] = $newItems->pluck('vl_earned')->toArray();
+        $this->vl_aut_w_pay[$newYear] = $newItems->pluck('vl_aut_w_pay')->toArray();
+        $this->vl_bal[$newYear] = $newItems->pluck('vl_bal')->toArray();
+        $this->vl_aut_wo_pay[$newYear] = $newItems->pluck('vl_aut_wo_pay')->toArray();
+
+        $this->sl_earned[$newYear] = $newItems->pluck('sl_earned')->toArray();
+        $this->sl_aut_w_pay[$newYear] = $newItems->pluck('sl_aut_w_pay')->toArray();
+        $this->sl_bal[$newYear] = $newItems->pluck('sl_bal')->toArray();
+        $this->sl_aut_wo_pay[$newYear] = $newItems->pluck('sl_aut_wo_pay')->toArray();
+
+        $LeaveCredits = LeaveCredits::where('employee_no', $this->employee_no)
+            ->where('leave_type_id', $this->id)
+            ->first();
+
+
+    }
+
+    public function removeYear(bool $isNotify = true) {
+    
+        $years = array_keys($this->records->toArray() ?? []);
+
+        if(empty($years)) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!',
+                'showAlert' => true,
+                'message' => 'No year available to be removed.',
+            ]);
+
+            return;
+        }
+
+        $lastYear = max($years);
+        
+        if($isNotify) {
+        
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that you are about remove previous year <b>' . strtoupper($lastYear) . '</b> in leave card. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'removeYear';
+
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        } else {
+
+            EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                ->where('year', $lastYear)
+                ->delete();
+                
+            unset($this->records[$lastYear]);
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Saved!',
+                'showAlert' => true,
+                'message' => 'Year ' . strtoupper($lastYear) . ' removed successfully.',
+            ]);
+
+        }
+
+    }
+    
     public function save() {
 
         if (Gate::denies('write leave-credits')) {
@@ -215,39 +357,49 @@ class ViewCard extends Component
             return;
         }
 
+
         $this->regroupRecords();
 
         try {
             
             DB::transaction(function () {
 
-                if($this->id == 1 || $this->id == 2) {
+                if ($this->id == 1 || $this->id == 2) {
                     foreach ($this->records as $year => $data) {
                         foreach ($data['items'] as $item) {
-                            EmployeeLeaveCard::where('employee_no', $this->employee_no)->updateOrCreate(
-                                [
-                                    'year' => $year,
-                                    'period' => $item['period'], 
-                                ],
-                                [
-                                    'particulars' => $item['particulars'],
-                                    'vl_earned' => $item['vl_earned'],
-                                    'vl_aut_w_pay' => $item['vl_aut_w_pay'],
-                                    'vl_bal' => $item['vl_bal'],
-                                    'vl_aut_wo_pay' => $item['vl_aut_wo_pay'],
-                                    'sl_earned' => $item['sl_earned'],
-                                    'sl_aut_w_pay' => $item['sl_aut_w_pay'],
-                                    'sl_bal' => $item['sl_bal'],
-                                    'sl_aut_wo_pay' => $item['sl_aut_wo_pay'],
-                                    'remarks' => $item['remarks'],
-                                ]
-                            );
+                            // Check if the record exists
+                            $record = EmployeeLeaveCard::where('employee_no', $this->employee_no)
+                                ->where('year', $year)
+                                ->where('period', $item['period'])
+                                ->first();
+                
+                            if (!$record) {
+                                // Create new record if it doesn't exist
+                                $record = new EmployeeLeaveCard();
+                                $record->employee_no = $this->employee_no;
+                                $record->year = $year;
+                                $record->period = $item['period'];
+                            }
+                
+                            // Assign values
+                            $record->particulars = $item['particulars'];
+                            $record->vl_earned = $item['vl_earned'];
+                            $record->vl_aut_w_pay = $item['vl_aut_w_pay'];
+                            $record->vl_bal = $item['vl_bal'];
+                            $record->vl_aut_wo_pay = $item['vl_aut_wo_pay'];
+                            $record->sl_earned = $item['sl_earned'];
+                            $record->sl_aut_w_pay = $item['sl_aut_w_pay'];
+                            $record->sl_bal = $item['sl_bal'];
+                            $record->sl_aut_wo_pay = $item['sl_aut_wo_pay'];
+                            $record->remarks = $item['remarks'];
+                
+                            // Save the record
+                            $record->save();
                         }
-                    }   
+                    }
                 }
-
+                
                 $this->loadRecords();
-        
               
             });
     
@@ -256,7 +408,9 @@ class ViewCard extends Component
                 'title' => 'Saved!',
                 'showAlert' => true,
                 'message' => 'Leave credits updated successfully.',
+                'redirect' => '_reload'
             ]);
+            
         } catch (\Exception $e) {
             DB::rollBack();
             
@@ -267,19 +421,11 @@ class ViewCard extends Component
                 'message' => $e->getMessage(),
             ]);
         }
-
-
     }
     
-    
-    
-    
-    
-    
-    
-
     public function render()
     {
         return view('livewire.admin.settings.hris.leave.view-card');
     }
+
 }

@@ -17,7 +17,8 @@ class EmployeeOtherWorks extends Model
         'date_from',
         'date_to',
         'consumed_hours',
-        'position'
+        'position',
+        'documents'
     ];
 
 }

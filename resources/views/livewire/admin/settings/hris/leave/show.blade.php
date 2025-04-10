@@ -87,7 +87,7 @@
                                         </div>
                                     </td>      
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        <div style="white-space: normal !important;">
+                                        <div style="white-space: normal !important;" class="py-2">
                                             @if($has_leave_card[$record->employee_no])
                                                 <div class="d-flex justify-content-center align-items-center gap-2">
                                                     <div class="btn btn-danger" wire:click="resetCredits(true, '{{ $record->employee_no }}')">
@@ -110,8 +110,15 @@
                                                     </span>
                                                 </button>
                                             @endif
+                                            @if(!$has_leave_card[$record->employee_no])
+                                                <a href="{{route('leave.show', ['leave' => $id, 'employee' => $record->employee_no, 'action' => 'view-card'])}}" class="btn btn-sm btn-info w-100 mt-2 text-uppercase fw-bold py-2">
+                                                    <span>
+                                                        Show
+                                                    </span>
+                                                </a>
+                                            @endif
                                             <button type="button" data-bs-toggle="modal" wire:click="select_employee('{{$record->employee_no}}')" data-bs-target="#importModal" 
-                                                class="mt-3 btn btn-sm btn-dark px-3 py-2 w-100 text-uppercase fw-bold">
+                                                class="mt-2 btn btn-sm btn-dark px-3 py-2 w-100 text-uppercase fw-bold">
                                                 <span>
                                                     Import
                                                 </span>

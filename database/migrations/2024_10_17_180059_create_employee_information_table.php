@@ -126,6 +126,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('country')
                 ->nullable();
+            $table->string('birth_certificate')
+                ->nullable();
+            $table->string('marriage_certificate')
+                ->nullable();
 
             $table->string('present_address')
                 ->nullable(); 
@@ -183,7 +187,6 @@ return new class extends Migration
             $table->string('spouse_contact_no')
                 ->nullable();  
 
-
             $table->string('father_surname')
                 ->nullable();
             $table->string('father_firstname')
@@ -213,10 +216,11 @@ return new class extends Migration
                 ->nullable();
             $table->string('birthdate')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
         });
 
         Schema::create('employee_education', function(Blueprint $table) {
-
             $table->id();
             $table->string('employee_no');
             $table->string('level')
@@ -229,6 +233,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('to_year')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_employment_history', function(Blueprint $table) {
@@ -254,6 +261,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('to_year')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_civil_service', function(Blueprint $table) {
@@ -272,6 +282,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('date_validity')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_trainings', function(Blueprint $table) {
@@ -290,6 +303,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('sponsored_by')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
+
         });
 
         Schema::create('employee_other_works', function(Blueprint $table) {
@@ -308,6 +325,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('position')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_skills_hobbies', function(Blueprint $table) {
@@ -320,6 +340,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('organization')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_leave', function(Blueprint $table) {
@@ -372,6 +395,8 @@ return new class extends Migration
                 ->constrained('other_deductions')
                 ->onDelete('cascade');
             $table->float('amount');
+            $table->string('as_of')
+                ->nullable();
             $table->timestamps();
         });
 

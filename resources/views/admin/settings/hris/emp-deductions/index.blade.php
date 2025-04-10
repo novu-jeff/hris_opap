@@ -12,7 +12,7 @@
             <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
         </div>
     </div>
-    <div class="mt-3">
+    <div class="mt-5">
         @livewire('admin.settings.hris.emp-deductions.index', ['id' => $id])
     </div>
 </div>

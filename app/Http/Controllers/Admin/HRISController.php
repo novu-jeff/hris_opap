@@ -16,6 +16,11 @@ class HRISController extends Controller
         return view('admin.hris.index');
     }
 
+    public function staffing()
+    {
+        return view('admin.hris.staffing');
+    }
+
     public function show(string $employee_no)
     {
         return view('admin.hris.index', compact('employee_no'));

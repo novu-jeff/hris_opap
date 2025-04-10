@@ -143,10 +143,10 @@ class Edit extends Component
 
         try {
 
-            Interview::where('id', $this->id)->update([
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
+            $interview = Interview::find($this->id);
+            $interview->name = $this->name;
+            $interview->description = $this->description;
+            $interview->save();
 
             
             InterviewItems::where('interview_id', $this->id)->delete();

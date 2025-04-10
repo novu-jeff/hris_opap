@@ -126,7 +126,7 @@
                                         <a href="#">My Payslip</a>
                                     </li>
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.request-status')}}">Request Status</a>
+                                        <a href="{{route('employee.messages')}}">Request Status</a>
                                     </li>
                                 </ul>
                             </div>

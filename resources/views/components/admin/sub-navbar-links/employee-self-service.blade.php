@@ -36,8 +36,8 @@
             <li><a class="dropdown-item" href="{{route('ess.approval-profile.index')}}">Employee Profile Approval</a></li>
         @endcan
 
-        @can('read request-status')
-            <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
+        @can('read messages')
+            <li><a class="dropdown-item" href="{{route('ess.messages')}}">Messages</a></li>
         @endcan
 
         @can('read faqs')

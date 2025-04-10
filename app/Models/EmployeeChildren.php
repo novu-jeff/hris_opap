@@ -16,6 +16,7 @@ class EmployeeChildren extends Model
         'middlename',
         'lastname',
         'birthdate',
+        'documents'
     ];
     public $timestamps = false;
 }

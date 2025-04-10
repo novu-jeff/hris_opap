@@ -17,7 +17,8 @@ class EmployeeTrainings extends Model
         'date_from',
         'date_to',
         'consumed_hours',
-        'sponsored_by'
+        'sponsored_by',
+        'documents'
     ];
 
 }
