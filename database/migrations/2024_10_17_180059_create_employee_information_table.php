@@ -85,11 +85,9 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('applicant_users');
             $table->string('email_id')
-                ->nullable()
-                ->unique();
+                ->nullable();
             $table->string('email')
-                ->nullable()
-                ->unique();
+                ->nullable();
             $table->string('password')
                 ->nullable();
             $table->boolean('isLoggedIn')

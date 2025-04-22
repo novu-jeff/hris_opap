@@ -352,8 +352,6 @@ class Index extends Component
                 'status' => 'onboarding',
             ]);
     
-            
-
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -390,8 +388,6 @@ class Index extends Component
                 $model->update([
                     'status' => 'hired',
                 ]);
-    
-                
 
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
@@ -477,14 +473,6 @@ class Index extends Component
             ]);
         }
 
-        $this->dispatch('alert', [
-            'id' => $this->selected_id,
-            'status' => 'processing',
-            'title' => 'Processing...',
-            'message' => 'Please wait while the job offer is being sent.',
-            'isRemoveRowDT' => false,
-            'isReloadDT' => false,
-        ]);
         
         DB::beginTransaction();
 
@@ -515,6 +503,15 @@ class Index extends Component
     
             $this->validate($rules, $messages);
     
+            $this->dispatch('alert', [
+                'id' => $this->selected_id,
+                'status' => 'processing',
+                'title' => 'Processing...',
+                'message' => 'Please wait while the job offer is being sent.',
+                'isRemoveRowDT' => false,
+                'isReloadDT' => false,
+            ]);
+
             $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
     
             $attachment = $this->job_offer['attachment'];
@@ -561,14 +558,16 @@ class Index extends Component
 
         } catch (ValidationException $e) {
             $validationErrors = $e->validator->errors()->all(); 
+
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
+                'message' => ($validationErrors[0] ?? 'Unknown validation error'),
                 'isRemoveRowDT' => false,
                 'isReloadDT' => true,
             ]);
+
         } catch (\Exception $e) {
             $this->dispatch('alert', [
                 'showAlert' => true,
