@@ -18,6 +18,7 @@ class EmployeeUpdateEducation extends Model
         'course',
         'from_year',
         'to_year',
+        'documents'
     ];
 
     public $timestamps = false;

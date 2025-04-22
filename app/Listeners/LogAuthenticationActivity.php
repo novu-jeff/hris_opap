@@ -45,6 +45,10 @@ class LogAuthenticationActivity
         } else if ($role == 'Employee') {
             $user_id = $user->id;
             $name = $user->personal->firstname . ' ' . $user->personal->lastname;
+        } else {
+            $role = 'Applicant';
+            $user_id = $user->id;
+            $name = $user->name . ' ' . $user->lastname;
         }
 
         $logEntry = sprintf(

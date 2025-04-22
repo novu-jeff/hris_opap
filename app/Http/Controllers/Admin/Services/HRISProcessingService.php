@@ -175,7 +175,7 @@ class HRISProcessingService extends Controller
     }
 
     public function employee_personal(string $employee_no, array $data, bool $isFirstTime = false)  {
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $birth_certificate = $this->uploadFile($employee_no, 'birth_certificate', $path,  $data['birth_certificate'] ?? null);
         $marriage_certificate = $this->uploadFile($employee_no, 'marriage_certificate', $path, $data['marriage_certificate'] ?? null);
@@ -256,7 +256,7 @@ class HRISProcessingService extends Controller
 
     public function employee_children(string $employee_no, array $data) {
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeChildren::where('employee_no', $employee_no)
             ->pluck('id')
@@ -315,7 +315,7 @@ class HRISProcessingService extends Controller
 
     public function employee_education(string $employee_no, array $data) {
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeEducation::where('employee_no', $employee_no)
             ->pluck('id')
@@ -380,7 +380,7 @@ class HRISProcessingService extends Controller
 
     public function employee_employment_history(string $employee_no, array $data) {
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeEmploymentHistory::where('employee_no', $employee_no)
             ->pluck('id')
@@ -455,7 +455,7 @@ class HRISProcessingService extends Controller
     public function employee_civil_service(string $employee_no, array $data) {
 
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeCivilService::where('employee_no', $employee_no)
             ->pluck('id')
@@ -523,7 +523,7 @@ class HRISProcessingService extends Controller
     public function employee_trainings(string $employee_no, array $data) {
 
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeTrainings::where('employee_no', $employee_no)
             ->pluck('id')
@@ -590,8 +590,7 @@ class HRISProcessingService extends Controller
 
     public function employee_others(string $employee_no, array $data) {
 
-
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeOtherWorks::where('employee_no', $employee_no)
             ->pluck('id')
@@ -658,7 +657,7 @@ class HRISProcessingService extends Controller
 
     public function employee_skills(string $employee_no, array $data) {
 
-        $path = 'documents';
+        $path = 'documents/' . $employee_no;
 
         $existingIds = EmployeeSkillsHobbies::where('employee_no', $employee_no)
             ->pluck('id')

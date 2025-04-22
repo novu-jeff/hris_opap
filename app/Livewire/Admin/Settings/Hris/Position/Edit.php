@@ -29,7 +29,8 @@ class Edit extends Component
         return $this->fields = [
             'name' => $records->name,
             'salary_grade' => $records->salary_grade,
-            'type' => $records->type
+            'type' => $records->type,
+            'w_tax' => $records->w_tax
         ];
     }
 
@@ -55,6 +56,7 @@ class Edit extends Component
             $position->name = $this->fields['name'];
             $position->salary_grade = $this->fields['salary_grade'];
             $position->type = $this->fields['type'];
+            $position->w_tax = $this->fields['w_tax'];
             $position->save();
 
             DB::commit();

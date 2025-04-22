@@ -21,6 +21,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('salary')
                 ->nullable();
+            $table->string('w_tax')
+                ->nullable();
             $table->timestamps();
         });
     }

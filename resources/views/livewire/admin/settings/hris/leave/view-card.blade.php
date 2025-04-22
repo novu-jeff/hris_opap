@@ -34,6 +34,7 @@
                             <td colspan="12">
                                 <strong>{{ $total_bal[$year]['sl'] != 0 ? $total_bal[$year]['sl'] : '' }}</strong>
                             </td>
+                            <div class="overlay">Click To Expand</div>
                         </tr>
                     
                         @foreach($data['items'] as $key => $item)
@@ -126,6 +127,7 @@
 @section('script')
 <script type="module">
     $(document).ready(function () {
+
         $(".year-header").click(function () {
             let year = $(this).data("year");
 

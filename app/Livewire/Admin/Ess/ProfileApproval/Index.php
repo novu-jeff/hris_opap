@@ -20,7 +20,7 @@ class Index extends Component
     public $search = '';
     protected $listeners = ['remove'];
 
-    public function remove(bool $isNotify = true, string $employee_no = null) {
+    public function remove(bool $isNotify = true, ? string $employee_no = null) {
 
         if (Gate::denies('write employee-profile-approval')) {
             $this->dispatch('alert', [

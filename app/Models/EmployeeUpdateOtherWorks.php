@@ -19,6 +19,7 @@ class EmployeeUpdateOtherWorks extends Model
         'date_to',
         'consumed_hours',
         'position',
+        'documents'
     ];
 
     public $timestamps = false;

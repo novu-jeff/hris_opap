@@ -455,6 +455,7 @@
                                                                 <th>Middle Name</th>
                                                                 <th>Last Name</th>
                                                                 <th>Date of Birth</th>
+                                                                <th>Document</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -483,7 +484,14 @@
                                                                         <div class="error-field">
                                                                             @error('records.employee_children.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                                                         </div>
-                                                                    </td>                                                                        
+                                                                    </td>    
+                                                                    <td>
+                                                                        @if($records['employee_children'][$key]['documents']['old'] || $records['employee_children'][$key]['documents']['new'])
+                                                                            <a href="javascript:void(0)" wire:click.prevent="download('documents', 'children', '{{$key}}')" class="btn {{$records['employee_children'][$key]['documents']['new'] !== $records['employee_children'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                                                <i class="fa-solid fa-download"></i>
+                                                                            </a>
+                                                                        @endif
+                                                                    </td>                                                                            
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>
@@ -511,6 +519,7 @@
                                         <th>Basic Education / Strand / Degree / Course</th>
                                         <th>Attended From</th>
                                         <th>Attended To</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -556,6 +565,13 @@
                                                 @error('records.employee_education.'.$key.'.to_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                             </div>
                                         </td>
+                                        <td>
+                                            @if($records['employee_education'][$key]['documents']['old'] || $records['employee_education'][$key]['documents']['new'])
+                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'education', '{{$key}}')" class="btn {{$records['employee_education'][$key]['documents']['new'] !== $records['employee_education'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                    <i class="fa-solid fa-download"></i>
+                                                </a>
+                                            @endif
+                                        </td>   
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -580,6 +596,7 @@
                                         <th>Is Government?</th>
                                         <th>From</th>
                                         <th>To</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -642,7 +659,14 @@
                                                 <div class="error-field">
                                                     @error('records.employee_employment_history.'.$key.'.to_year.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
-                                            </td>                                                
+                                            </td>    
+                                            <td>
+                                                @if($records['employee_employment_history'][$key]['documents']['old'] || $records['employee_employment_history'][$key]['documents']['new'])
+                                                    <a href="javascript:void(0)" wire:click.prevent="download('documents', 'employment_history', '{{$key}}')" class="btn {{$records['employee_employment_history'][$key]['documents']['new'] !== $records['employee_employment_history'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </a>
+                                                @endif
+                                            </td>                                               
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -666,6 +690,7 @@
                                         <th>Place of Exam</th>
                                         <th>License No.</th>
                                         <th>Date of Validity</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -706,7 +731,14 @@
                                                 <div class="error-field">
                                                     @error('records.employee_civil_service.'.$key.'.date_validity.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
-                                            </td>                                                
+                                            </td>    
+                                            <td>
+                                                @if($records['employee_civil_service'][$key]['documents']['old'] || $records['employee_civil_service'][$key]['documents']['new'])
+                                                    <a href="javascript:void(0)" wire:click.prevent="download('documents', 'civil_service', '{{$key}}')" class="btn {{$records['employee_civil_service'][$key]['documents']['new'] !== $records['employee_civil_service'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </a>
+                                                @endif
+                                            </td>                                             
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -730,6 +762,7 @@
                                         <th>Date To</th>
                                         <th>Consumed Hours</th>
                                         <th>Sponsored By</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -770,7 +803,14 @@
                                                 <div class="error-field">
                                                     @error('records.employee_trainings.'.$key.'.sponsored_by.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
-                                            </td>                                        
+                                            </td>        
+                                            <td>
+                                                @if($records['employee_trainings'][$key]['documents']['old'] || $records['employee_trainings'][$key]['documents']['new'])
+                                                    <a href="javascript:void(0)" wire:click.prevent="download('documents', 'trainings', '{{$key}}')" class="btn {{$records['employee_trainings'][$key]['documents']['new'] !== $records['employee_trainings'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </a>
+                                                @endif
+                                            </td>                                  
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -793,6 +833,7 @@
                                         <th>Date To</th>
                                         <th>Consumed Hours</th>
                                         <th>Position</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -833,7 +874,14 @@
                                                 <div class="error-field">
                                                     @error('records.employee_others.'.$key.'.position.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
-                                            </td>                                        
+                                            </td>    
+                                            <td>
+                                                @if($records['employee_others'][$key]['documents']['old'] || $records['employee_others'][$key]['documents']['new'])
+                                                    <a href="javascript:void(0)" wire:click.prevent="download('documents', 'others', '{{$key}}')" class="btn {{$records['employee_others'][$key]['documents']['new'] !== $records['employee_others'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </a>
+                                                @endif
+                                            </td>                                     
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -854,6 +902,7 @@
                                         <th>Name</th>
                                         <th>Recognition</th>
                                         <th>Organization</th>
+                                        <th>Documents</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -876,7 +925,14 @@
                                                 <div class="error-field">
                                                     @error('records.employee_skills.'.$key.'.organization.new') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
-                                            </td>                                
+                                            </td>   
+                                            <td>
+                                                @if($records['employee_skills'][$key]['documents']['old'] || $records['employee_skills'][$key]['documents']['new'])
+                                                    <a href="javascript:void(0)" wire:click.prevent="download('documents', 'skills', '{{$key}}')" class="btn {{$records['employee_skills'][$key]['documents']['new'] !== $records['employee_skills'][$key]['documents']['old'] ? 'btn-danger' : 'btn-primary'}}">
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </a>
+                                                @endif
+                                            </td>                               
                                         </tr>
                                     @endforeach
                                 </tbody>

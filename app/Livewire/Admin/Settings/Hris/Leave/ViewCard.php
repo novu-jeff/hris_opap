@@ -289,12 +289,7 @@ class ViewCard extends Component
         $this->sl_aut_w_pay[$newYear] = $newItems->pluck('sl_aut_w_pay')->toArray();
         $this->sl_bal[$newYear] = $newItems->pluck('sl_bal')->toArray();
         $this->sl_aut_wo_pay[$newYear] = $newItems->pluck('sl_aut_wo_pay')->toArray();
-
-        $LeaveCredits = LeaveCredits::where('employee_no', $this->employee_no)
-            ->where('leave_type_id', $this->id)
-            ->first();
-
-
+        
     }
 
     public function removeYear(bool $isNotify = true) {
