@@ -14,8 +14,8 @@
                     <div class="d-flex align-items-center gap-3 pb-0">
                         <img class="profile-img" style="width: 40px; height: 40px" src="https://ui-avatars.com/api/?background=005668&amp;color=ffffff&amp;font-size=0.4&amp;bold=true&amp;name=Kim+Mariano" alt="Profile Image">
                         <div class="name">
-                            <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">Kim Mariano</p>
-                            <small class="text-uppercase fw-bold text-muted mb-0">admin</small>
+                            <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{Auth::user()->name}}</p>
+                            <small class="text-uppercase fw-bold text-muted mb-0">{{ Auth::user()->getRoleNames()->first() }}</small>
                         </div>
                     </div>
                     <hr>

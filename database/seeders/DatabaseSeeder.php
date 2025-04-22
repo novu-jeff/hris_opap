@@ -35,12 +35,12 @@ class DatabaseSeeder extends Seeder
             EmployeeTestUserSeeder::class,
             HolidaySeeder::class,
             FAQSeeder::class,
+            RequirementSeeder::class,
+                InterviewSeeder::class,
         ]);
 
         if($product == 'testing' || $product == 'novu') {
             $this->call([
-                RequirementSeeder::class,
-                InterviewSeeder::class,
                 AnnouncementSeeder::class,
                 ApplicantTestUserSeeder::class,
                 EmployeeTestUserSeeder::class

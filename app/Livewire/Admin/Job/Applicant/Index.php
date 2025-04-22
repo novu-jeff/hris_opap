@@ -158,7 +158,7 @@ class Index extends Component
                     $this->delete($id);
                     break;
                 case 'navigate':
-                    $this->navigate();
+                    $this->navigate($id);
                     break;
                 default: 
                     return redirect()->route('job.applicants.index');
@@ -310,6 +310,7 @@ class Index extends Component
             $action = 'set_placement';
             $this->notify($title, $message, $action);
         } else {
+
             $model = JobApplicants::find($this->selected_id);
             $model->update([
                 'status' => 'placement',
@@ -403,7 +404,7 @@ class Index extends Component
     }
 
     # send offer in under placement
-    public function send_offer($isSaved, int $id = null) {
+    public function send_offer($isSaved, ? int $id = null) {
 
         if(!$isSaved) {
 
@@ -502,15 +503,6 @@ class Index extends Component
             ];
     
             $this->validate($rules, $messages);
-    
-            $this->dispatch('alert', [
-                'id' => $this->selected_id,
-                'status' => 'processing',
-                'title' => 'Processing...',
-                'message' => 'Please wait while the job offer is being sent.',
-                'isRemoveRowDT' => false,
-                'isReloadDT' => false,
-            ]);
 
             $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
     
@@ -686,8 +678,6 @@ class Index extends Component
             }
 
             $record->delete();
-    
-            
             
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -702,11 +692,9 @@ class Index extends Component
     
     }
 
-    public function navigate() {
+    public function navigate(string $id) {
 
-        $user_id = Auth::user()->id;
-
-        $employee = EmployeeAccount::where('applicant_id', $user_id)->first();
+        $employee = EmployeeAccount::where('applicant_id', $id)->first();
 
         if(!$employee) {
             return redirect()->route('job.applicants.index', ['status' => 'hired']);

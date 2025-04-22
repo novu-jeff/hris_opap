@@ -199,10 +199,10 @@ class Index extends Component
             unset($record->daysCovered);
 
             // Update the EmployeeLeave record's status
-            // $record->update([
-            //     'action_by_id' => Auth::user()->id,
-            //     'status' => 'approved'
-            // ]);
+            $record->update([
+                'action_by_id' => Auth::user()->id,
+                'status' => 'approved'
+            ]);
         
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -221,7 +221,7 @@ class Index extends Component
         
     }
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if($isNotify) {
 

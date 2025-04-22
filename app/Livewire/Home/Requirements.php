@@ -281,7 +281,7 @@ class Requirements extends Component
             'tab' => 'onboarding',
             'accordion' => '',
         ]);
-        return redirect()->route('home.profile.index');
+        return redirect()->route('home.profile');
     }
     public function render()
     {

@@ -84,7 +84,7 @@ class Edit extends Component
 
         $this->validate([
             'question' => 'required|string|max:255',
-            'type' => 'required|string|in:simple,explanatory,checkbox,radio,file',
+            'type' => 'required|string|in:simple,explanatory,checkbox,radio',
             'options' => 'required_if:type,checkbox,radio|array',
             'options.*' => 'required|string|max:255'
         ],[
