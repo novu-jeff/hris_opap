@@ -566,6 +566,8 @@ class Index extends Component
                 'status' => 'error',
                 'title' => 'Oops!',
                 'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
+                'isRemoveRowDT' => false,
+                'isReloadDT' => true,
             ]);
         } catch (\Exception $e) {
             $this->dispatch('alert', [
@@ -573,6 +575,8 @@ class Index extends Component
                 'status' => 'error',
                 'title' => 'Oops!',
                 'message' => 'Error: ' . $e->getMessage(),
+                'isRemoveRowDT' => false,
+                'isReloadDT' => true,
             ]);
         }
         
