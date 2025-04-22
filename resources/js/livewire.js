@@ -88,23 +88,21 @@ Livewire.on('alert', (event) => {
                 confirmButtonColor: '#143953',
             });
 
-        }     
-
-        if(alert.status === 'processing') {
-            Swal.fire({
-                title: alert.title,
-                text: alert.message,
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-        }
-        
+        }        
     }
 
+    if(alert.status === 'processing') {
+        Swal.fire({
+            title: alert.title,
+            text: alert.message,
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
 });
 
 Livewire.on("showConfirmation", function (data) {

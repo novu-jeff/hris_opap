@@ -41,7 +41,7 @@ class SignedOffer extends Component
             ->first();
 
         if(!$record) {
-            return redirect()->route('home.profile.index');
+            return redirect()->route('home.profile');
         }
 
         $this->record = $record;
@@ -172,7 +172,7 @@ class SignedOffer extends Component
             'tab' => 'placement',
             'accordion' => '',
         ]);
-        return redirect()->route('home.profile.index');
+        return redirect()->route('home.profile');
     }
 
     public function render()
