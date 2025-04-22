@@ -552,7 +552,7 @@ class Index extends Component
             return $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
-                'status' => 'processing',
+                'status' => 'success',
                 'title' => 'Yey!', 
                 'message' => 'Job offer has been sent to the applicant.',
                 'isRemoveRowDT' => false,
