@@ -552,7 +552,7 @@ class Index extends Component
             return $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
-                'status' => 'success',
+                'status' => 'processing',
                 'title' => 'Yey!', 
                 'message' => 'Job offer has been sent to the applicant.',
                 'isRemoveRowDT' => false,
@@ -565,7 +565,7 @@ class Index extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => '1Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
+                'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
                 'isRemoveRowDT' => false,
                 'isReloadDT' => true,
             ]);
