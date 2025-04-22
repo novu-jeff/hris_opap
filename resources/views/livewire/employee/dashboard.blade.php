@@ -167,21 +167,21 @@
             @endcanany
         
             <div class="col-12 col-md-6 col-xl-4 mb-4">
-            <a href="{{ route('employee.tutorial') }}" class="nav-link">
-                <div class="item">
-                <img src="{{ asset('/img/tutorial.png') }}" class="w-100">
-                <p>Tutorial</p>
-                </div>
-            </a>
+                <a href="{{ route('employee.tutorial') }}" class="nav-link">
+                    <div class="item">
+                    <img src="{{ asset('/img/tutorial.png') }}" class="w-100">
+                    <p>Tutorial</p>
+                    </div>
+                </a>
             </div>
         
             <div class="col-12 col-md-6 col-xl-4 mb-4">
-            <a href="{{ route('employee.logout') }}" class="nav-link">
-                <div class="item">
-                <img src="{{ asset('/img/logout.png') }}" class="w-100">
-                <p>Logout</p>
-                </div>
-            </a>
+                <a href="{{ route('employee.logout') }}" class="nav-link">
+                    <div class="item">
+                    <img src="{{ asset('/img/logout.png') }}" class="w-100">
+                    <p>Logout</p>
+                    </div>
+                </a>
             </div>
         </div>
     </div>

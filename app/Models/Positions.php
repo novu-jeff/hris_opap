@@ -16,7 +16,12 @@ class Positions extends Model
         'salary_grade',
         'salary',
         'type',
+        'w_tax',
         'isActive'
     ];
+
+    public function employment_type() {
+        return $this->hasOne(EmployementTypes::class, 'id', 'type');
+    }
 
 }

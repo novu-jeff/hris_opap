@@ -53,21 +53,21 @@
                                     <td>{{ $record->employee_no }}</td>
                                     <td>{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                     <td>
-                                        <input type="text" wire:key="deduction-{{$record->employee_no}}" wire:model="deductions.{{$record->employee_no}}.amount" class="form-control">
+                                        <input type="text" wire:key="deduction-{{$record->employee_no}}" wire:model="earnings.{{$record->employee_no}}.amount" class="form-control">
                                         <div class="error-field mt-2">
-                                            @error('deductions.' . $record->employee_no . '.amount') 
+                                            @error('earnings.' . $record->employee_no . '.amount') 
                                                 <span class="text-danger">{{ $message }}</span> 
                                             @enderror
                                         </div>
                                     </td>
                                     <td>
-                                        <input type="date" wire:key="as_of-{{$record->employee_no}}" wire:model="deductions.{{$record->employee_no}}.as_of" class="form-control">
+                                        <input type="date" wire:key="as_of-{{$record->employee_no}}" wire:model="earnings.{{$record->employee_no}}.as_of" class="form-control">
                                         <div class="error-field mt-2">
-                                            @error('deductions.' . $record->employee_no . '.as_of') 
+                                            @error('earnings.' . $record->employee_no . '.as_of') 
                                                 <span class="text-danger">{{ $message }}</span> 
                                             @enderror
                                         </div>
-                                    </td>                                    
+                                    </td>   
                                 </tr>
                             @empty
                                 <tr>

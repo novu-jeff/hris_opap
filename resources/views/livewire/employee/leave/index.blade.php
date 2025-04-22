@@ -22,7 +22,7 @@
                 <select wire:model.change="status" id="status" class="form-select w-50">
                     <option value=""> - ALL - </option>
                     <option value="pending"> Pending </option>
-                    <option value="approved"> Approved </option>
+                    <option value="granted"> Granted </option>
                     <option value="disapproved"> Disapproved </option>
                 </select>
             </div>

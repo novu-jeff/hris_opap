@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
+use App\Http\Controllers\Admin\Settings\HRIS\EarningsController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\Settings\RoleController;
@@ -86,6 +87,10 @@ use Illuminate\Support\Facades\Request;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/slip', function () {
+    return view('slip');
+})->name('welcome');
 
 Route::redirect('/', 'jobs', 301);;
 
@@ -322,12 +327,17 @@ Route::prefix('admin')->group(function() {
                 Route::resource('other-deductions', OtherDeductionsController::class)
                     ->names('other-deductions');
 
+                Route::get('employee/earnings/{id}', [EarningsController::class, 'index'])
+                    ->name('earnings.index');
+
+                Route::post('employee/earnings/{id}', [EarningsController::class, 'create'])
+                    ->name('earnings.create');
+
                 Route::get('employee/deductions/{id}', [DeductionController::class, 'index'])
                     ->name('deductions.index');
 
                 Route::post('employee/deductions/{id}', [DeductionController::class, 'create'])
                     ->name('deductions.create');
-
             });
 
             Route::resource('shift-schedule', ShiftScheduleController::class)

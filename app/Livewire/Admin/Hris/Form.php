@@ -503,6 +503,7 @@ class Form extends Component
             'records.employee_children.*.middlename' => 'nullable|string|max:255',
             'records.employee_children.*.lastname' => 'required|string|max:255',
             'records.employee_children.*.birthdate' => 'required|date',
+            'records.employee_children.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
             'records.employee_children.*.documents' => function ($attribute, $value, $fail) {
                 $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
                 $files = is_array($value) ? $value : [$value];
@@ -773,7 +774,7 @@ class Form extends Component
             }
         }
 
-        $path = 'documents/' . $file;
+        $path = 'documents/'. $this->employee_no . '/' . $file;
 
         if (Storage::disk('public')->exists($path)) {
             return Storage::disk('public')->download($path);

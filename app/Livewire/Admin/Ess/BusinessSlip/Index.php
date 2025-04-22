@@ -169,6 +169,12 @@ class Index extends Component
     public function render()
     {
 
+        if($this->status == 'granted') {
+            $status = 'approved';
+        } else {
+            $status = $this->status;
+        }
+
         $model = EmployeeBusinessSlip::with('employment', 'employee')
             ->where('status', $this->status)
             ->where('isDeleted', false);

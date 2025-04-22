@@ -25,6 +25,7 @@ use App\Notifications\Notifications;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class Edit extends Component
@@ -58,7 +59,6 @@ class Edit extends Component
             'civil_service', 'trainings', 'others', 'skills', 'account'
         ])->where('employee_no', $this->employee_no)->first();
     
-
         // Initialize result array
         $data = [];
     
@@ -140,7 +140,7 @@ class Edit extends Component
             'employee_others' => $data['others'] ? $data['others'] : [],
             'employee_skills' => $data['skills'] ? $data['skills'] : [],
         ];
-
+        
         return $data;
     }
     
@@ -155,44 +155,13 @@ class Edit extends Component
             // Store the results of comparison
             $result[$field] = [
                 'old' => $oldValue,
-                'new' => $newValue,
+                'new' => (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue,
             ];
         }
+
         return $result;
     }
     
-    
-    // public function loadRecords() {
-
-    //     $data = EmployeeUpdatePersonal::with([
-    //         'education', 'parents', 'children', 'employment_history', 
-    //         'civil_service', 'trainings', 'others', 'skills'
-    //     ])->where('employee_no', $this->employee_no)->first();
-    
-        
-    //     if (!$data) {
-    //         return redirect()->route('ess.approval-profile.index');
-    //     }
-    
-    //     // Populate employee records
-    //     $this->records = [
-    //         'employee_personal' => $this->formatEmployeePersonal($data),
-    //         'employee_education' => $data->education ? $data->education->toArray() : [],
-    //         'employee_parents' => $this->formatEmployeeParents($data),
-    //         'employee_children' => $data->children ? $data->children->toArray() : [],
-    //         'employee_employment_history' => $data->employment_history ? $data->employment_history->toArray() : [],
-    //         'employee_civil_service' => $data->civil_service ? $data->civil_service->toArray() : [],
-    //         'employee_trainings' => $data->trainings ? $data->trainings->toArray() : [],
-    //         'employee_others' => $data->others ? $data->others->toArray() : [],
-    //         'employee_skills' => $data->skills ? $data->skills->toArray() : [],
-    //     ];
-    
-    //     // Handle citizenship logic
-    //     if ($data->citizenship === 'dual_citizenship') {
-    //         $this->select_change('citizenship');
-    //     }
-        
-    // }
     
     protected function formatEmployeePersonal($data) {
         $data = $data['personal'];
@@ -256,6 +225,49 @@ class Edit extends Component
         $this->activeAccordion = $accordion;
     }
 
+    public function download(string $type, ?string $spec = null, ?int $key = null) {
+
+        $record = EmployeeUpdatePersonal::with([
+            'children',
+            'employment_history',
+            'civil_service',
+            'trainings',
+            'others',
+            'skills'
+        ])
+            ->where('employee_no', $this->employee_no)->first();
+
+        if($record) {
+
+            if($type == 'birth_certificate') {
+                $file = $record->birth_certificate;
+            }
+
+            if($type == 'marriage_certificate') {
+                $file = $record->marriage_certificate;
+            }
+
+            if($type == 'documents') {
+                $file = $record->$spec[$key]['documents'];
+                $this->setActiveAccordion('children');
+            }
+        }
+
+        $path = 'documents/'. $this->employee_no . '/' . $file;
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->download($path);
+        } else {
+            return $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops',
+                'isRemoveRowDT' => false,
+                'showAlert' => true,
+                'message' => 'Unable to download, File not found!'
+            ]);
+        }
+    }
+
     public function approved(bool $isNotify = true) {
 
         if (Gate::denies('write employee-profile-approval')) {
@@ -300,7 +312,7 @@ class Edit extends Component
                 DB::commit();
 
                 $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
-                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong> approvedD </strong>.', route('employee.profile'), 'employee'));
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong> approved </strong>.', route('employee.profile'), 'employee'));
 
                 return $this->dispatch('alert', [
                     'status' => 'success',
@@ -345,11 +357,12 @@ class Edit extends Component
                 'action' => $action
             ]);
         } else {
-            DB::beginTransaction();
 
+            $this->remove();
+
+            DB::beginTransaction();
             try {
 
-                $this->remove();
 
                 DB::commit();
 
@@ -434,6 +447,7 @@ class Edit extends Component
                     'course' => $personal->course ?? null,
                     'from_year' => $personal->from_year ?? null,
                     'to_year' => $personal->to_year ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -480,6 +494,7 @@ class Edit extends Component
                     'middlename' => $personal->middlename ?? null,
                     'lastname' => $personal->lastname ?? null,
                     'birthdate' => $personal->birthdate ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -500,6 +515,7 @@ class Edit extends Component
                     'isGovernment' => $personal->isGovernment ?? null,
                     'from_year' => $personal->from_year ?? null,
                     'to_year' => $personal->to_year ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -518,6 +534,7 @@ class Edit extends Component
                     'place_exam' => $personal->place_exam ?? null,
                     'license_no' => $personal->license_no ?? null,
                     'date_validity' => $personal->date_validity ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -536,6 +553,7 @@ class Edit extends Component
                     'date_to' => $personal->date_to ?? null,
                     'consumed_hours' => $personal->consumed_hours ?? null,
                     'sponsored_by' => $personal->sponsored_by ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -545,7 +563,7 @@ class Edit extends Component
         $employeeUpdatePersonal = EmployeeUpdateOtherWorks::where('employee_no', $employee_no)->get(); // Use get() for multiple rows
     
         foreach ($employeeUpdatePersonal as $personal) {
-            EmployeePersonal::updateOrCreate(
+            EmployeeOtherWorks::updateOrCreate(
                 ['employee_no' => $employee_no, 'organization' => $personal->organization], // Unique identifier, adding organization to differentiate entries
                 [
                     'organization' => $personal->organization ?? null,
@@ -554,6 +572,7 @@ class Edit extends Component
                     'date_to' => $personal->date_to ?? null,
                     'consumed_hours' => $personal->consumed_hours ?? null,
                     'position' => $personal->position ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }
@@ -569,6 +588,7 @@ class Edit extends Component
                     'name' => $personal->name ?? null,
                     'recognition' => $personal->recognition ?? null,
                     'organization' => $personal->organization ?? null,
+                    'documents' => $personal->documents ?? null
                 ]
             );
         }

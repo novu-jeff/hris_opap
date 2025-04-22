@@ -5,6 +5,7 @@ namespace App\Livewire\Employee;
 use App\Livewire\Admin\Hris\Manual;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
+use App\Models\EmployeePersonal;
 use App\Models\EmployeeUpdateChildren;
 use App\Models\EmployeeUpdateCivilService;
 use App\Models\EmployeeUpdateEducation;
@@ -19,12 +20,17 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 class Profile extends Component
 {
+
+    use WithFileUploads;
 
     public $employee_no;
     public $employee_id;
@@ -37,32 +43,33 @@ class Profile extends Component
     public $activeAccordion = 'personal';
     public bool $isDualCitizenship = false;
     public bool $isMarried = false;
+    public bool $hasBirthCert = false;
+    public bool $hasMarriageCert = false;
 
     public function mount() {
         $this->loadRecords();
         $this->loadCountries();
     }
 
-    public function loadRecords() {
-
+    public function loadRecords()
+    {
         $this->employee_no = Auth::user()->employee_no;
         $this->employee_id = Auth::user()->id;
     
-        // Fetch employee data with relations
+        // Load updated data
         $updating = EmployeeUpdatePersonal::with([
             'education', 'parents', 'children', 'employment_history', 
             'civil_service', 'trainings', 'others', 'skills', 
         ])->where('employee_no', $this->employee_no)->first();
     
-        // Determine the data source
-        $data = $updating ?? EmployeeInformation::with([
+        // Load stored data
+        $stored = EmployeeInformation::with([
             'personal', 'education', 'parents', 'children', 
             'employment_history', 'civil_service', 'trainings', 
             'others', 'skills', 'account'
         ])->where('employee_no', $this->employee_no)->first();
     
-        // Handle cases where no data is found
-        if (!$data) {
+        if (!$updating && !$stored) {
             $this->isFromUpdate = false;
             $this->records = [];
             return;
@@ -70,28 +77,45 @@ class Profile extends Component
     
         $this->isFromUpdate = (bool) $updating;
     
-        // Populate employee records
-        $this->records = [
-            'employee_personal' => $this->formatEmployeePersonal($data),
-            'employee_education' => $data->education->toArray(),
-            'employee_parents' => $this->formatEmployeeParents($data),
-            'employee_children' => $data->children->toArray(),
-            'employee_employment_history' => $data->employment_history->toArray(),
-            'employee_civil_service' => $data->civil_service->toArray(),
-            'employee_trainings' => $data->trainings->toArray(),
-            'employee_others' => $data->others->toArray(),
-            'employee_skills' => $data->skills->toArray(),
+        // Define relationships to fallback from updated -> stored
+        $fallbackRelations = [
+            'children', 'employment_history', 'civil_service',
+            'trainings', 'others', 'skills',
         ];
     
+        // Final data source: combine updated and stored
+        $data = $updating ?? $stored;
+
+        $this->records = [
+            'employee_personal' => $this->formatEmployeePersonal($data),
+            'employee_education' => $data->education?->toArray() ?? [],
+            'employee_parents' => $this->formatEmployeeParents($data),
+        ];
+    
+        // Loop through each fallback relationship
+        foreach ($fallbackRelations as $relation) {
+            $this->records["employee_{$relation}"] =
+                ($updating && $updating->$relation && $updating->$relation->isNotEmpty())
+                    ? $updating->$relation->toArray()
+                    : ($stored->$relation->toArray() ?? []);
+        }
+    
         // Handle citizenship logic
-        $citizenship = $this->isFromUpdate ? $data->citizenship : $data->personal->citizenship;
+        $citizenship = $updating->citizenship ?? $stored->personal->citizenship ?? null;
         if ($citizenship === 'dual_citizenship') {
             $this->select_change('citizenship');
         }
     }
-
     
     protected function formatEmployeePersonal($data) {
+
+        if($data->birth_certificate) {
+            $this->hasBirthCert = true;
+        } 
+
+        if($data->marriage_certificate) {
+            $this->hasMarriageCert = true;
+        } 
 
         // Determine if it's an update or from the given data
         $personal = $this->isFromUpdate ? $data : $data->personal;
@@ -106,7 +130,7 @@ class Profile extends Component
             'present_address', 'present_province', 'present_city', 'permanent_address',
             'permanent_province', 'permanent_city', 'mobile_number', 'tel_no', 'height',
             'weight', 'blood_type', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
-            'tin_no', 'email'  // email will be set from the account data
+            'tin_no', 'email' 
         ];
     
         // Generate the array with the personal fields and their values
@@ -117,7 +141,6 @@ class Profile extends Component
     
         return $formattedPersonal;
     }
-    
     
     protected function formatEmployeeParents($data) {
         $parents = $data->parents;
@@ -168,7 +191,6 @@ class Profile extends Component
             // Log the error
             logger()->error('Failed to load countries: ' . $e->getMessage());
 
-            // Provide a default empty array if an error occurs
             return $this->countries = [];
         }
     }
@@ -177,9 +199,9 @@ class Profile extends Component
         'employee_personal' => [
             'tab' => 'details',
             'accordions' => [
-                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
+                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type', 'birth_certificate', 'marriage_certificate'],
                 'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
-                'contact' => ['mobile_number', 'tel_no', 'email'],
+                'contact' => ['mobile_number', 'tel_no', 'company_email'],
                 'appearance' => ['height', 'weight', 'blood_type'],
                 'identification' => ['gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no']
             ]
@@ -188,15 +210,15 @@ class Profile extends Component
             'tab' => 'family',
             'accordions' => [
                 'parents' => ['spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix', 'spouse_occupation', 'spouse_business_name_employer', 'spouse_business_address', 'spouse_contact_no', 'father_surname', 'father_firstname', 'father_middlename', 'father_suffix', 'mother_surname', 'mother_firstname', 'mother_middlename'],
-                'children' => ['firstname', 'lastname', 'middlename', 'birthdate']
+                'children' => ['firstname', 'lastname', 'middlename', 'birthdate', 'documents']
             ]
         ],
-        'employee_education' => ['tab' => 'education'],
-        'employee_employment_history' => ['tab' => 'history'],
-        'employee_civil_service' => ['tab' => 'civil_service'],
-        'employee_trainings' => ['tab' => 'trainings'],
-        'employee_others' => ['tab' => 'others'],
-        'employee_skills' => ['tab' => 'skills'],
+        'employee_education' => ['tab' => 'education', 'documents'],
+        'employee_employment_history' => ['tab' => 'history', 'documents'],
+        'employee_civil_service' => ['tab' => 'civil_service', 'documents'],
+        'employee_trainings' => ['tab' => 'trainings', 'documents'],
+        'employee_others' => ['tab' => 'others', 'documents'],
+        'employee_skills' => ['tab' => 'skills', 'documents'],
         'employee_account' => ['tab' => 'account'],
     ];
 
@@ -207,6 +229,7 @@ class Profile extends Component
             'course' => '',
             'from_year' => '',
             'to_year' => '',
+            'documents' => '',
         ],
         'employee_employment_history' => [
             'position' => '',
@@ -216,18 +239,28 @@ class Profile extends Component
             'employment_status' => '',
             'isGovernment' => '',
             'from_year' => '',
-            'to_year' => ''
+            'to_year' => '',
+            'documents' => '',
         ],
         'employee_children' => [
             'firstname' => '',
             'middlename' => '',
             'lastname' => '',
             'birthdate' => '',
+            'documents' => '',
         ],
-        'employee_civil_service' => [],
-        'employee_trainings' => [],
-        'employee_others' => [],
-        'employee_skills' => [],
+        'employee_civil_service' => [
+            'documents' => ''
+        ],
+        'employee_trainings' => [
+            'documents' => ''
+        ],
+        'employee_others' => [
+            'documents' => ''
+        ],
+        'employee_skills' => [
+            'documents' => ''
+        ],
     ];
 
     public function setActiveTab($tab) {
@@ -301,7 +334,7 @@ class Profile extends Component
         return null;
     }
 
-    protected function rules(string $employee_no = null) {
+    protected function rules(?string $employee_no = null) {
         return [
          
             'records.employee_personal.firstname' => 'required|string|max:255',
@@ -322,12 +355,36 @@ class Profile extends Component
             'records.employee_children.*.middlename' => 'nullable|string|max:255',
             'records.employee_children.*.lastname' => 'required|string|max:255',
             'records.employee_children.*.birthdate' => 'required|date',
+            'records.employee_children.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_children.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_education.*.level' => 'required|string',
             'records.employee_education.*.school_name' => 'required|string|max:255',
             'records.employee_education.*.course' => 'required|string|max:255',
             'records.employee_education.*.from_year' => 'required|date',
             'records.employee_education.*.to_year' => 'required|date',
+            'records.employee_education.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_education.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_employment_history.*.position' => 'required|string|max:255',
             'records.employee_employment_history.*.department' => 'required|string|max:255',
@@ -337,6 +394,18 @@ class Profile extends Component
             'records.employee_employment_history.*.isGovernment' => 'required|string',
             'records.employee_employment_history.*.from_year' => 'required|date',
             'records.employee_employment_history.*.to_year' => 'required|date|after_or_equal:records.employee_employment_history.*.from_year',
+            'records.employee_employment_history.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_employment_history.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_civil_service.*.certification' => 'required|string|max:255',
             'records.employee_civil_service.*.rating' => 'required|string|max:255',
@@ -344,6 +413,18 @@ class Profile extends Component
             'records.employee_civil_service.*.place_exam' => 'required|string|max:255',
             'records.employee_civil_service.*.license_no' => 'required|string|max:255',
             'records.employee_civil_service.*.date_validity' => 'required|date',
+            'records.employee_civil_service.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_civil_service.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_trainings.*.type' => 'required|string|max:255',
             'records.employee_trainings.*.name' => 'required|string|max:255',
@@ -351,6 +432,18 @@ class Profile extends Component
             'records.employee_trainings.*.date_to' => 'required|string|max:255',
             'records.employee_trainings.*.consumed_hours' => 'required|integer',
             'records.employee_trainings.*.sponsored_by' => 'required|string|max:255',
+            'records.employee_trainings.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_trainings.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_others.*.organization' => 'required|string|max:255',
             'records.employee_others.*.address' => 'required|string|max:255',
@@ -358,11 +451,34 @@ class Profile extends Component
             'records.employee_others.*.date_to' => 'required|string|max:255',
             'records.employee_others.*.consumed_hours' => 'required|integer',
             'records.employee_others.*.position' => 'required|string|max:255',
+            'records.employee_others.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_others.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_skills.*.name' => 'required|string|max:255',
             'records.employee_skills.*.recognition' => 'required|string|max:255',
             'records.employee_skills.*.organization' => 'required|string|max:255',
-
+            'records.employee_skills.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_skills.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
         ];
     }
 
@@ -436,6 +552,85 @@ class Profile extends Component
         ];
     }
 
+    public function download(string $type, ?string $spec = null, ?int $key = null) {
+        $file = $this->getFileFromRecord($type, $spec, $key, EmployeePersonal::class);
+
+        if (!$file) {
+            $file = $this->getFileFromRecord($type, $spec, $key, EmployeeUpdatePersonal::class);
+        }
+
+        $path = 'documents/' . $this->employee_no . '/' . $file;
+
+        $this->setActiveAccordion($spec);
+
+        if ($file && Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->download($path);
+        }
+
+        return $this->dispatch('alert', [
+            'status' => 'error',
+            'title' => 'Oops',
+            'isRemoveRowDT' => false,
+            'showAlert' => true,
+            'message' => 'Unable to download, File not found!'
+        ]);
+    }
+
+    private function getFileFromRecord(string $type, ?string $spec, ?int $key, string $model) {
+        $record = $model::with([
+            'children',
+            'employment_history',
+            'civil_service',
+            'trainings',
+            'others',
+            'skills'
+        ])->where('employee_no', $this->employee_no)->first();
+
+        if (!$record) {
+            return null;
+        }
+
+        return match ($type) {
+            'birth_certificate' => $record->birth_certificate,
+            'marriage_certificate' => $record->marriage_certificate,
+            'documents' => $record->$spec[$key]['documents'] ?? null,
+            default => null,
+        };
+    }
+
+
+    private function uploadFile($employee_no, $identifier, $path, $file)
+    {
+        if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+            $record = EmployeePersonal::with([
+                'children', 'employment_history', 'civil_service', 'trainings', 'others', 'skills'
+            ])->where('employee_no', $employee_no)->first();
+        
+            if ($record) {
+                if (!empty($record->$identifier)) {
+                    Storage::disk('public')->delete("$path/{$record->$identifier}");
+                }
+        
+                if ($identifier === 'documents') {
+                    foreach (['children', 'employment_history', 'civil_service', 'trainings', 'others', 'skills'] as $relation) {
+                        if ($record->$relation && !empty($record->$relation->$identifier)) {
+                            Storage::disk('public')->delete("$path/{$record->$relation->$identifier}");
+                        }
+                    }
+                }
+            }
+            
+            $filename = uniqid(time()) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs($path, $filename, 'public');
+        
+            return $filename;
+        }
+        
+        $record = EmployeePersonal::where('employee_no', $employee_no)->first();
+        return $record->$identifier ?? null;
+        
+    }
+
     public function save() {
 
         $id = $this->employee_no;
@@ -461,7 +656,6 @@ class Profile extends Component
         DB::beginTransaction();
 
         try {
-
 
             $this->employee_personal($record->employee_no, $this->records['employee_personal'] ?? []);
             $this->employee_parents($record->employee_no, $this->records['employee_parents'] ?? []);
@@ -564,125 +758,603 @@ class Profile extends Component
     }
 
     public function employee_children(string $employee_no, array $data) {
-        $model = EmployeeUpdateChildren::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateChildren::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateChildren::whereIn('id', $missingIds)->delete();
+        }
+
+        foreach ($data as $item) {
+
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateChildren::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                          'employee_no' => $employee_no,
+                            'firstname' => $item['firstname'] ?? null,
+                            'lastname' => $item['lastname'] ?? null, 
+                            'middlename' => $item['middlename'] ?? null,
+                            'birthdate' => $item['birthdate'] ?? null,
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateChildren::create([
+                            'employee_no' => $employee_no,
+                            'firstname' => $item['firstname'] ?? null,
+                            'lastname' => $item['lastname'] ?? null, 
+                            'middlename' => $item['middlename'] ?? null,
+                            'birthdate' => $item['birthdate'] ?? null,
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateChildren::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'firstname' => $item['firstname'] ?? null,
+                            'lastname' => $item['lastname'] ?? null, 
+                            'middlename' => $item['middlename'] ?? null,
+                            'birthdate' => $item['birthdate'] ?? null,
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateChildren::create([
+                            'employee_no' => $employee_no,
+                            'firstname' => $item['firstname'] ?? null,
+                            'lastname' => $item['lastname'] ?? null, 
+                            'middlename' => $item['middlename'] ?? null,
+                            'birthdate' => $item['birthdate'] ?? null,
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateChildren::create([
                     'employee_no' => $employee_no,
-                    'firstname' => $value['firstname'] ?? null,
-                    'lastname' => $value['lastname'] ?? null, 
-                    'middlename' => $value['middlename'] ?? null,
-                    'birthdate' => $value['birthdate'] ?? null,
-                ]
-            );
+                    'firstname' => $item['firstname'] ?? null,
+                    'lastname' => $item['lastname'] ?? null, 
+                    'middlename' => $item['middlename'] ?? null,
+                    'birthdate' => $item['birthdate'] ?? null,
+                    'documents' => $documents
+                ]);
+            }
+
         }
     }
     
     public function employee_education(string $employee_no, array $data) {
-        $model = EmployeeUpdateEducation::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
+        
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateEducation::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateEducation::whereIn('id', $missingIds)->delete();
+        }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateEducation::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'level' => $item['level'],
+                            'school_name' => $item['school_name'],
+                            'course' => $item['course'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateEducation::create([
+                            'employee_no' => $employee_no,
+                            'level' => $item['level'],
+                            'school_name' => $item['school_name'],
+                            'course' => $item['course'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateEducation::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'level' => $item['level'],
+                            'school_name' => $item['school_name'],
+                            'course' => $item['course'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateEducation::create([
+                            'employee_no' => $employee_no,
+                            'level' => $item['level'],
+                            'school_name' => $item['school_name'],
+                            'course' => $item['course'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateEducation::create([
                     'employee_no' => $employee_no,
-                    'level' => $value['level'] ?? null,
-                    'school_name' => $value['school_name'] ?? null,
-                    'course' => $value['course'] ?? null,
-                    'from_year' => $value['from_year'] ?? null,
-                    'to_year' => $value['to_year'] ?? null,
-                ]
-            );
+                    'level' => $item['level'],
+                    'school_name' => $item['school_name'],
+                    'course' => $item['course'],
+                    'from_year' => $item['from_year'],
+                    'to_year' => $item['to_year'],
+                    'documents' => $documents
+                ]);
+            }
         }
     }
     
     public function employee_employment_history(string $employee_no, array $data) {
-        $model = EmployeeUpdateEmploymentHistory::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
-                    'employee_no' => $employee_no,
-                    'company_name' => $value['company_name'] ?? null,
-                    'position' => $value['position'] ?? null,
-                    'department' => $value['department'] ?? null,
-                    'monthly_salary' => $value['monthly_salary'] ?? null,
-                    'employment_status' => $value['employment_status'] ?? null,
-                    'isGovernment' => $value['isGovernment'] ?? null,
-                    'from_year' => $value['from_year'] ?? null,
-                    'to_year' => $value['to_year'] ?? null,
-                ]
-            );
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateEmploymentHistory::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateEmploymentHistory::whereIn('id', $missingIds)->delete();
         }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateEmploymentHistory::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'position' => $item['position'],
+                            'department' => $item['department'],
+                            'company_name' => $item['company_name'],
+                            'monthly_salary' => $item['monthly_salary'],
+                            'employment_status' => $item['employment_status'],
+                            'isGovernment' => $item['isGovernment'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateEmploymentHistory::create([
+                            'employee_no' => $employee_no,
+                            'position' => $item['position'],
+                            'department' => $item['department'],
+                            'company_name' => $item['company_name'],
+                            'monthly_salary' => $item['monthly_salary'],
+                            'employment_status' => $item['employment_status'],
+                            'isGovernment' => $item['isGovernment'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateEmploymentHistory::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'position' => $item['position'],
+                            'department' => $item['department'],
+                            'company_name' => $item['company_name'],
+                            'monthly_salary' => $item['monthly_salary'],
+                            'employment_status' => $item['employment_status'],
+                            'isGovernment' => $item['isGovernment'],
+                            'from_year' => $item['from_year'],
+                            'to_year' => $item['to_year'],
+                        ])->save();
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateEmploymentHistory::create([
+                    'employee_no' => $employee_no,
+                    'position' => $item['position'],
+                    'department' => $item['department'],
+                    'company_name' => $item['company_name'],
+                    'monthly_salary' => $item['monthly_salary'],
+                    'employment_status' => $item['employment_status'],
+                    'isGovernment' => $item['isGovernment'],
+                    'from_year' => $item['from_year'],
+                    'to_year' => $item['to_year'],
+                    'documents' => $documents
+                ]);
+            }
+        }
+
     }
     
     public function employee_civil_service(string $employee_no, array $data) {
-        $model = EmployeeUpdateCivilService::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
+
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateCivilService::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateCivilService::whereIn('id', $missingIds)->delete();
+        }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateCivilService::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'certification' => $item['certification'],
+                            'rating' => $item['rating'],
+                            'date_exam' => $item['date_exam'],
+                            'place_exam' => $item['place_exam'],
+                            'license_no' => $item['license_no'],
+                            'date_validity' => $item['date_validity'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateCivilService::create([
+                            'employee_no' => $employee_no,
+                            'certification' => $item['certification'],
+                            'rating' => $item['rating'],
+                            'date_exam' => $item['date_exam'],
+                            'place_exam' => $item['place_exam'],
+                            'license_no' => $item['license_no'],
+                            'date_validity' => $item['date_validity'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateCivilService::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'certification' => $item['certification'],
+                            'rating' => $item['rating'],
+                            'date_exam' => $item['date_exam'],
+                            'place_exam' => $item['place_exam'],
+                            'license_no' => $item['license_no'],
+                            'date_validity' => $item['date_validity'],
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateCivilService::create([
+                            'employee_no' => $employee_no,
+                            'certification' => $item['certification'],
+                            'rating' => $item['rating'],
+                            'date_exam' => $item['date_exam'],
+                            'place_exam' => $item['place_exam'],
+                            'license_no' => $item['license_no'],
+                            'date_validity' => $item['date_validity'],
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateCivilService::create([
                     'employee_no' => $employee_no,
-                    'certification' => $value['certification'] ?? null, 
-                    'rating' => $value['rating'] ?? null,
-                    'date_exam' => $value['date_exam'] ?? null,
-                    'place_exam' => $value['place_exam'] ?? null,
-                    'license_no' => $value['license_no'] ?? null,
-                    'date_validity' => $value['date_validity'] ?? null,
-                ]
-            );
+                    'certification' => $item['certification'],
+                    'rating' => $item['rating'],
+                    'date_exam' => $item['date_exam'],
+                    'place_exam' => $item['place_exam'],
+                    'license_no' => $item['license_no'],
+                    'date_validity' => $item['date_validity'],
+                    'documents' => $documents
+                ]);
+            }
         }
     }
     
     public function employee_trainings(string $employee_no, array $data) {
-        $model = EmployeeUpdateTrainings::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateTrainings::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateTrainings::whereIn('id', $missingIds)->delete();
+        }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateTrainings::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'type' => $item['type'],
+                            'name' => $item['name'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'sponsored_by' => $item['sponsored_by'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateTrainings::create([
+                            'employee_no' => $employee_no,
+                            'type' => $item['type'],
+                            'name' => $item['name'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'sponsored_by' => $item['sponsored_by'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateTrainings::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'type' => $item['type'],
+                            'name' => $item['name'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'sponsored_by' => $item['sponsored_by'],
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateTrainings::create([
+                            'employee_no' => $employee_no,
+                            'type' => $item['type'],
+                            'name' => $item['name'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'sponsored_by' => $item['sponsored_by'],
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateTrainings::create([
                     'employee_no' => $employee_no,
-                    'name' => $value['name'] ?? null,
-                    'type' => $value['type'] ?? null,
-                    'date_from' => $value['date_from'] ?? null,
-                    'date_to' => $value['date_to'] ?? null,
-                    'consumed_hours' => $value['consumed_hours'] ?? null,
-                    'sponsored_by' => $value['sponsored_by'] ?? null,
-                ]
-            );
+                    'type' => $item['type'],
+                    'name' => $item['name'],
+                    'date_from' => $item['date_from'],
+                    'date_to' => $item['date_to'],
+                    'consumed_hours' => $item['consumed_hours'],
+                    'sponsored_by' => $item['sponsored_by'],
+                    'documents' => $documents
+                ]);
+            }
         }
     }
     
     public function employee_others(string $employee_no, array $data) {
-        $model = EmployeeUpdateOtherWorks::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateOtherWorks::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateOtherWorks::whereIn('id', $missingIds)->delete();
+        }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateOtherWorks::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'organization' => $item['organization'],
+                            'address' => $item['address'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'position' => $item['position'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateOtherWorks::create([
+                            'employee_no' => $employee_no,
+                            'organization' => $item['organization'],
+                            'address' => $item['address'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'position' => $item['position'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateOtherWorks::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'organization' => $item['organization'],
+                            'address' => $item['address'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'position' => $item['position'],
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateOtherWorks::create([
+                            'employee_no' => $employee_no,
+                            'organization' => $item['organization'],
+                            'address' => $item['address'],
+                            'date_from' => $item['date_from'],
+                            'date_to' => $item['date_to'],
+                            'consumed_hours' => $item['consumed_hours'],
+                            'position' => $item['position'],
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateOtherWorks::create([
                     'employee_no' => $employee_no,
-                    'organization' => $value['organization'] ?? null, 
-                    'address' => $value['address'] ?? null,
-                    'date_from' => $value['date_from'] ?? null,
-                    'date_to' => $value['date_to'] ?? null,
-                    'consumed_hours' => $value['consumed_hours'] ?? null,
-                    'position' => $value['position'] ?? null,
-                ]
-            );
+                    'organization' => $item['organization'],
+                    'address' => $item['address'],
+                    'date_from' => $item['date_from'],
+                    'date_to' => $item['date_to'],
+                    'consumed_hours' => $item['consumed_hours'],
+                    'position' => $item['position'],
+                    'documents' => $documents
+                ]);
+            }
         }
     }
     
     public function employee_skills(string $employee_no, array $data) {
-        $model = EmployeeUpdateSkillsHobbies::class;
-        $model::where('employee_no', $employee_no)->delete();
-        foreach ($data as $value) {
-            $model::create(
-                [
-                    'employee_no' => $employee_no,
-                    'name' => $value['name'] ?? null, 
-                    'recognition' => $value['recognition'] ?? null,
-                    'organization' => $value['organization'] ?? null,
-                ]
-            );
+
+        $path = 'documents/' . $employee_no;
+
+        $existingIds = EmployeeUpdateSkillsHobbies::where('employee_no', $employee_no)
+            ->pluck('id')
+            ->toArray();
+
+        $dataIds = array_column($data, 'id');
+
+        $missingIds = array_diff($existingIds, $dataIds);
+
+        if (!empty($missingIds)) {
+            EmployeeUpdateSkillsHobbies::whereIn('id', $missingIds)->delete();
         }
+
+        foreach ($data as $item) {
+            if (isset($item['id'])) {
+                if($item['documents'] instanceof TemporaryUploadedFile) {
+                    $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                    $record = EmployeeUpdateSkillsHobbies::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'name' => $item['name'],
+                            'recognition' => $item['recognition'],
+                            'organization' => $item['organization'],
+                            'documents' => $documents
+                        ])->save();
+                    } else {
+                        EmployeeUpdateSkillsHobbies::create([
+                            'employee_no' => $employee_no,
+                            'name' => $item['name'],
+                            'recognition' => $item['recognition'],
+                            'organization' => $item['organization'],
+                            'documents' => $documents
+                        ]);
+                    }
+                } else {
+                    $record = EmployeeUpdateSkillsHobbies::where('id', $item['id'])
+                        ->where('employee_no', $employee_no)
+                        ->first();
+                    if ($record) {
+                        $record->fill([
+                            'employee_no' => $employee_no,
+                            'name' => $item['name'],
+                            'recognition' => $item['recognition'],
+                            'organization' => $item['organization'],
+                        ])->save();
+                    } else {
+                        $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                        EmployeeUpdateSkillsHobbies::create([
+                            'employee_no' => $employee_no,
+                            'name' => $item['name'],
+                            'recognition' => $item['recognition'],
+                            'organization' => $item['organization'],
+                            'documents' => $documents
+                        ]);
+                    }
+                }
+            } else {
+                $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
+                EmployeeUpdateSkillsHobbies::create([
+                    'employee_no' => $employee_no,
+                    'name' => $item['name'],
+                    'recognition' => $item['recognition'],
+                    'organization' => $item['organization'],
+                    'documents' => $documents
+                ]);
+            }
+        }
+
     }
     
 

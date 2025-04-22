@@ -41,7 +41,6 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 RequirementSeeder::class,
                 InterviewSeeder::class,
-                JobPostSeeder::class,
                 AnnouncementSeeder::class,
                 ApplicantTestUserSeeder::class,
                 EmployeeTestUserSeeder::class
@@ -56,7 +55,8 @@ class DatabaseSeeder extends Seeder
                 SectionSeeder::class,
                 OtherEarningsSeeder::class,
                 OtherDeductionsSeeder::class,
-                TimeEquivalentSeeder::class
+                TimeEquivalentSeeder::class,
+                JobPostSeeder::class,
             ]);
         }
     }

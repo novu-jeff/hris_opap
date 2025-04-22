@@ -160,7 +160,7 @@ class Chatbox extends Component
         $sender_name = $sender->name . ' (' . $sender->roles[0]->name . ')';
        
         $user = EmployeeAccount::where('employee_no', $this->selected_id)->first();
-        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('employee.request-status'), 'employee'));
+        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('employee.messages'), 'employee'));
 
         $this->reset('message', 'preview_attachments', 'attachments');
         $this->loadRecords($this->selected_id);

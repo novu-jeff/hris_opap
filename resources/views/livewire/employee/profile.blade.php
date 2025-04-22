@@ -510,11 +510,22 @@
                                                                             </div>
                                                                         </td>     
                                                                         <td>
-                                                                            <input type="file" style="width: 300px" wire:model="records.employee_children.{{$key}}.documents" id="records.employee_children.{{$key}}.documents" class="form-control text-uppercase">
+                                                                            <div class="d-flex align-items-center gap-2">
+                                                                                <div>
+                                                                                    <input type="file" style="width: 300px;" wire:change="setActiveAccordion('children')" wire:model="records.employee_children.{{$key}}.documents" id="records.employee_children.{{$key}}.documents" class="form-control">
+                                                                                </div>
+                                                                                @if($records['employee_children'][$key]['documents'])
+                                                                                    <div>
+                                                                                        <a href="javascript:void(0)" wire:click.prevent="download('documents', 'children', '{{$key}}')" class="btn btn-primary">
+                                                                                            <i class="fa-solid fa-download"></i>
+                                                                                        </a>
+                                                                                    </div>
+                                                                                @endif
+                                                                            </div>
                                                                             <div class="error-field">
                                                                                 @error('records.employee_children.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                                             </div>
-                                                                        </td>                                                                        
+                                                                        </td>                                                                             
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>
@@ -599,7 +610,18 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="file" style="width: 300px" wire:model="records.employee_education.{{$key}}.documents" id="records.employee_education.{{$key}}.documents" class="form-control text-uppercase">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <input type="file" style="width: 300px;" wire:change="setActiveAccordion('education')" wire:model="records.employee_education.{{$key}}.documents" id="records.employee_education.{{$key}}.documents" class="form-control">
+                                                    </div>
+                                                    @if($records['employee_education'][$key]['documents'])
+                                                        <div>
+                                                            <a href="javascript:void(0)" wire:click.prevent="download('documents', 'children', '{{$key}}')" class="btn btn-primary">
+                                                                <i class="fa-solid fa-download"></i>
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                                 <div class="error-field">
                                                     @error('records.employee_education.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                 </div>
@@ -634,7 +656,7 @@
                                             <th>Is Government?</th>
                                             <th>From</th>
                                             <th>To</th>
-                                            <th>Document</th>
+                                            <th>Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -702,13 +724,24 @@
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
-                                                </td>   
+                                                </td>
                                                 <td>
-                                                    <input style="width: 300px" type="file" wire:model="records.employee_employment_history.{{$key}}.documents" id="records.employee_employment_history.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div>
+                                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('employment_history')" wire:model="records.employee_employment_history.{{$key}}.documents" id="records.employee_employment_history.{{$key}}.documents" class="form-control">
+                                                        </div>
+                                                        @if($records['employee_employment_history'][$key]['documents'])
+                                                            <div>
+                                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'children', '{{$key}}')" class="btn btn-primary">
+                                                                    <i class="fa-solid fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                     <div class="error-field">
                                                         @error('records.employee_employment_history.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
-                                                </td>                                                
+                                                </td>                                                  
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -786,7 +819,18 @@
                                                     </div>
                                                 </td>     
                                                 <td>
-                                                    <input style="width: 300px" type="file" wire:model="records.employee_civil_service.{{$key}}.documents" id="records.employee_civil_service.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div>
+                                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('civil_service')" wire:model="records.employee_civil_service.{{$key}}.documents" id="records.employee_civil_service.{{$key}}.documents" class="form-control">
+                                                        </div>
+                                                        @if($records['employee_civil_service'][$key]['documents'])
+                                                            <div>
+                                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'civil_service', '{{$key}}')" class="btn btn-primary">
+                                                                    <i class="fa-solid fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                     <div class="error-field">
                                                         @error('records.employee_civil_service.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
@@ -827,7 +871,7 @@
                                         @foreach ($records['employee_trainings'] as $key => $item)
                                             <tr>
                                                 <td>
-                                                    <button type="button" class="btn btn-danger" wire:click="removeRecord('civil_service', 'employee_trainings', {{$key}})">
+                                                    <button type="button" class="btn btn-danger" wire:click="removeRecord('trainings', 'employee_trainings', {{$key}})">
                                                         <i class="fa-solid fa-circle-minus"></i>
                                                     </button>
                                                 </td>
@@ -868,11 +912,22 @@
                                                     </div>
                                                 </td>     
                                                 <td>
-                                                    <input style="width: 300px" type="file" wire:model="records.employee_trainings.{{$key}}.documents" id="records.employee_trainings.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div>
+                                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('trainings')" wire:model="records.employee_trainings.{{$key}}.documents" id="records.employee_trainings.{{$key}}.documents" class="form-control">
+                                                        </div>
+                                                        @if($records['employee_trainings'][$key]['documents'])
+                                                            <div>
+                                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'trainings', '{{$key}}')" class="btn btn-primary">
+                                                                    <i class="fa-solid fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                     <div class="error-field">
                                                         @error('records.employee_trainings.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
-                                                </td>                                        
+                                                </td>                                       
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -950,11 +1005,22 @@
                                                     </div>
                                                 </td>  
                                                 <td>
-                                                    <input style="width: 300px" type="file" wire:model="records.employee_others.{{$key}}.documents" id="records.employee_others.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div>
+                                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('others')" wire:model="records.employee_others.{{$key}}.documents" id="records.employee_others.{{$key}}.documents" class="form-control">
+                                                        </div>
+                                                        @if($records['employee_others'][$key]['documents'])
+                                                            <div>
+                                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'others', '{{$key}}')" class="btn btn-primary">
+                                                                    <i class="fa-solid fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                     <div class="error-field">
                                                         @error('records.employee_others.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
-                                                </td>                                        
+                                                </td>                                       
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -1011,11 +1077,22 @@
                                                     </div>
                                                 </td>    
                                                 <td>
-                                                    <input style="width: 300px" type="file" wire:model="records.employee_skills.{{$key}}.documents" id="records.employee_skills.{{$key}}.documents" class="form-control text-uppercase">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div>
+                                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('skills')" wire:model="records.employee_skills.{{$key}}.documents" id="records.employee_skills.{{$key}}.documents" class="form-control">
+                                                        </div>
+                                                        @if($records['employee_skills'][$key]['documents'])
+                                                            <div>
+                                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'skills', '{{$key}}')" class="btn btn-primary">
+                                                                    <i class="fa-solid fa-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                     <div class="error-field">
                                                         @error('records.employee_skills.'.$key.'.documents') <span class="text-danger">{{ $message }}</span> @enderror
                                                     </div>
-                                                </td>                                
+                                                </td>                         
                                             </tr>
                                         @endforeach
                                     </tbody>

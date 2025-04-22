@@ -33,7 +33,7 @@ class Index extends Component
     }
 
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if($isNotify) {
 

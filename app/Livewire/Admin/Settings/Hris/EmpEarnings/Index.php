@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Livewire\Admin\Settings\Hris\EmpDeductions;
+namespace App\Livewire\Admin\Settings\Hris\EmpEarnings;
 
 use App\Imports\DeductionImport;
+use App\Imports\EarningImport;
 use App\Models\EmployeeDeductions;
+use App\Models\EmployeeEarnings;
 use App\Models\EmployeeInformation;
 use App\Models\OtherDeductions;
+use App\Models\OtherEarnings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -24,7 +26,7 @@ class Index extends Component
     public $id;
     public $entries = 10;
     public $search = '';
-    public $deductions = [];
+    public $earnings = [];
     public $as_of = [];
     public $file;
 
@@ -43,16 +45,16 @@ class Index extends Component
         $employees = EmployeeInformation::with(['personal'])
             ->get();
             
-        $deductions = EmployeeDeductions::where('deduction_id', $this->id)->get();
+        $earnings = EmployeeEarnings::where('earning_id', $this->id)->get();
 
-        $this->deductions = [];
-        $storedDeductions = [];
+        $this->earnings = [];
+        $storedEarnings = [];
 
         foreach ($employees as $employee) {
-            $_deductions = $deductions->firstWhere('employee_no', $employee['employee_no']);
-            $storedDeductions[] = $_deductions;
-            $this->deductions[$employee['employee_no']]['amount'] = $_deductions ? $_deductions->amount : 0;
-            $this->deductions[$employee['employee_no']]['as_of'] = $_deductions ? $_deductions->as_of : 0;
+            $_earnings = $earnings->firstWhere('employee_no', $employee['employee_no']);
+            $storedEarnings[] = $_earnings;
+            $this->earnings[$employee['employee_no']]['amount'] = $_earnings ? $_earnings->amount : 0;
+            $this->earnings[$employee['employee_no']]['as_of'] = $_earnings ? $_earnings->as_of : 0;
         }
 
     }
@@ -76,14 +78,14 @@ class Index extends Component
 
         $value = $this->getValue($this->id);
 
-        Excel::import(new DeductionImport($this->id), $this->file);
+        Excel::import(new EarningImport($this->id), $this->file);
+
 
         $this->dispatch('alert', [
             'status' => 'success',
             'title' => 'Saved!',
             'showAlert' => true,
-            'redirect' => '_reload',
-            'message' => 'Deduction added for ' . $value['name'],
+            'message' => 'Earning added for ' . $value['name'],
         ]);
 
         return;
@@ -94,40 +96,28 @@ class Index extends Component
 
         $data = [
             '1' => [
-                'name' => 'DBP Savings',
-                'alias' => 'dbp_savings',
+                'name' => 'Personal Economic Relief Allowance',
+                'alias' => 'pera',
             ],
             '2' => [
-                'name' => 'Unlad Kawani',
-                'alias' => 'unlad_kawani',
+                'name' => 'Clothing Allowance',
+                'alias' => 'clothing',
             ],
             '3' => [
-                'name' => 'Unliquidated Cash Advances',
-                'alias' => 'unliquidated_cash_advances',
+                'name' => 'Mid Year Bonus',
+                'alias' => 'mid',
             ],
             '4' => [
-                'name' => 'Philhealth',
-                'alias' => 'philhealth',
+                'name' => 'Year End Bonus',
+                'alias' => 'yearend',
             ],
             '5' => [
-                'name' => 'HDMF',
-                'alias' => 'hdmf',
+                'name' => 'Cash Gift',
+                'alias' => 'cashgift',
             ],
             '6' => [
-                'name' => 'MP2',
-                'alias' => 'mp2',
-            ],
-            '7' => [
-                'name' => 'MPLSTLMS',
-                'alias' => 'mplstlms',
-            ],
-            '8' => [
-                'name' => 'CIR375, CIR449',
-                'alias' => 'cir375_cir449',
-            ],
-            '9' => [
-                'name' => 'ALLOWANCE',
-                'alias' => 'allowance',
+                'name' => 'Premium Pay',
+                'alias' => 'premium',
             ],
         ];
 
@@ -137,7 +127,7 @@ class Index extends Component
 
     public function save() {
         
-        if (Gate::denies('write employee-deductions')) {
+        if (Gate::denies('write employee-earnings')) {
             
             $this->dispatch('alert', [
                 'status' => 'error',
@@ -151,16 +141,16 @@ class Index extends Component
 
 
         $this->validate([
-            'deductions.*.amount' => 'required|numeric|min:0',
-            'deductions.*.as_of' => function ($attribute, $value, $fail) {
-                $index = str_replace(['deductions.', '.as_of'], '', $attribute);
-                if (isset($this->deductions[$index]['amount']) && $this->deductions[$index]['amount'] > 0 && empty($value)) {
+            'earnings.*.amount' => 'required|numeric|min:0',
+            'earnings.*.as_of' => function ($attribute, $value, $fail) {
+                $index = str_replace(['earnings.', '.as_of'], '', $attribute);
+                if (isset($this->earnings[$index]['amount']) && $this->earnings[$index]['amount'] > 0 && empty($value)) {
                     $fail('This field is required when amount is greater than 0.');
                 }
             },
         ], [
-            'deductions.*.amount.required' => '*required',
-            'deductions.*.amount.numeric' => '*number only',
+            'earnings.*.amount.required' => '*required',
+            'earnings.*.amount.numeric' => '*number only',
         ]);
 
         DB::beginTransaction();
@@ -169,22 +159,22 @@ class Index extends Component
                         
             $record = null; 
 
-            foreach ($this->deductions as $employeeId => $deduction) {
-                if ($employeeId && $deduction !== null) {
-                    if ($deduction['amount'] == 0) {
-                        EmployeeDeductions::where('employee_no', $employeeId)
-                            ->where('deduction_id', $this->id)
+            foreach ($this->earnings as $employeeId => $earnings) {
+                if ($employeeId && $earnings !== null) {
+                    if ($earnings['amount'] == 0) {
+                        EmployeeEarnings::where('employee_no', $employeeId)
+                            ->where('earning_id', $this->id)
                             ->delete();
                     } else {
-                        $record = EmployeeDeductions::firstOrNew(
+                        $record = EmployeeEarnings::firstOrNew(
                             [
                                 'employee_no' => $employeeId,
-                                'deduction_id' => $this->id,
+                                'earning_id' => $this->id,
                             ]
                         );
 
-                        $record->amount = $deduction['amount'] ?? 0;
-                        $record->as_of = $deduction['as_of'];
+                        $record->amount = $earnings['amount'] ?? 0;
+                        $record->as_of = $earnings['as_of'];
                         $record->save();
                     }
                 }
@@ -192,7 +182,7 @@ class Index extends Component
 
             DB::commit();
 
-            $deduction = OtherDeductions::find($this->id);
+            $earning = OtherEarnings::find($this->id);
 
             $action = $record && $record->wasRecentlyCreated ? 'added' : 'updated';
 
@@ -200,7 +190,7 @@ class Index extends Component
                 'status' => 'success',
                 'title' => 'Saved!',
                 'showAlert' => true,
-                'message' => 'Deduction for ' . $deduction->name . ' was ' . $action . '.',
+                'message' => 'Earning for ' . $earning->name . ' was ' . $action . '.',
             ]);
         } catch (\Exception $e) {
 
@@ -231,7 +221,7 @@ class Index extends Component
 
         $records = $model->paginate($this->entries);
 
-        return view('livewire.admin.settings.hris.emp-deductions.index', [
+        return view('livewire.admin.settings.hris.emp-earnings.index', [
             'records' => $records
         ]);
     }

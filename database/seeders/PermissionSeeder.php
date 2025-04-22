@@ -56,6 +56,7 @@ class PermissionSeeder extends Seeder
                 'leave-types',
                 'leave-credits',
                 'gsis-billing',
+                'employee-earnings',
                 'employee-deductions',
                 'other-earnings',
                 'other-deductions',

@@ -8,9 +8,9 @@
         <div class="section-title">
             <h1>Other Deductions</h1>
         </div>
-        <div class="actions">
+        {{-- <div class="actions">
             <a href="{{route('other-deductions.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Create New</a>
-        </div>
+        </div> --}}
     </div>
     <div class="mt-3">
         @livewire('admin.settings.hris.deductions.index')

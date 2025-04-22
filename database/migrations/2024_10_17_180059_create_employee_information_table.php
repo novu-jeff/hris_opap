@@ -400,6 +400,20 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('employee_earnings', function(Blueprint $table) {
+            $table->id();
+            $table->string('employee_no')
+                ->constrained('employee_information')
+                ->onDelete('cascade');
+            $table->foreignId('earning_id')
+                ->constrained('other_earnings')
+                ->onDelete('cascade');
+            $table->float('amount');
+            $table->string('as_of')
+                ->nullable();
+            $table->timestamps();
+        });
+
     }
 
     /**
@@ -408,6 +422,7 @@ return new class extends Migration
     public function down(): void
     {
 
+        Schema::dropIfExists('employee_earnings');
         Schema::dropIfExists('employee_deduction');
         Schema::dropIfExists('employee_leave');
         Schema::dropIfExists('employee_skills_hobbies');
