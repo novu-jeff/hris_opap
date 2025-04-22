@@ -565,7 +565,7 @@ class Index extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
+                'message' => '1Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
                 'isRemoveRowDT' => false,
                 'isReloadDT' => true,
             ]);
