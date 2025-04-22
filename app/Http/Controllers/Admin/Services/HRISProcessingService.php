@@ -39,7 +39,6 @@ class HRISProcessingService extends Controller
             ->whereHas('applied', fn($query) => $query->where('id', $job_id))
             ->find($employee_no);
         
-
         if ($isFirstTime && $record) {
 
             $data = [
@@ -71,7 +70,6 @@ class HRISProcessingService extends Controller
             $record = $this->employee_information($employee_no, $data , true);            
             $this->employee_account($record->employee_no, $data['employee_account'], true);
             $this->employee_personal($record->employee_no, $data['employee_personal'], true);
-            $this->employee_parents($record->employee_no, null, true);
 
         } else {
 

@@ -89,9 +89,9 @@
             </div>
             @endcanany
         
-            @canany(['read employee-request-status', 'write employee-request-status'])
+            @canany(['read employee-messages', 'write employee-messages'])
             <div class="col-12 col-md-6 col-xl-4 mb-4">
-                <a href="{{ route('employee.request-status') }}" class="nav-link">
+                <a href="{{ route('employee.messages') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/message.png') }}" class="w-100">
                     <p>Contact Us</p>

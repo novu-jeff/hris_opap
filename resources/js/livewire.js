@@ -34,6 +34,7 @@ Livewire.on('alert', (event) => {
 
     if (alert.status === 'success') {
 
+
         if (alert.resetFields === true) {
             resetErrorsAndFields();
         }
@@ -75,8 +76,20 @@ Livewire.on('alert', (event) => {
                 location.href = alert.redirect;
             }
         });
-
+        
+    } else if(alert.status === 'processing') {
+        Swal.fire({
+            title: alert.title,
+            text: alert.message,
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
     } else {
+        
         if (alert.showAlert === true) {
             Swal.fire({
                 icon: alert.status,
@@ -88,21 +101,10 @@ Livewire.on('alert', (event) => {
                 confirmButtonColor: '#143953',
             });
 
-        }        
+        }     
+        
     }
 
-    if(alert.status === 'processing') {
-        Swal.fire({
-            title: alert.title,
-            text: alert.message,
-            icon: 'info',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-    }
 });
 
 Livewire.on("showConfirmation", function (data) {

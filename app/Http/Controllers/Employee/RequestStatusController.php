@@ -9,7 +9,7 @@ class RequestStatusController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read employee-request-status')->only('index');
+        $this->middleware('permission:read employee-messages')->only('index');
     }
 
     public function index() {
