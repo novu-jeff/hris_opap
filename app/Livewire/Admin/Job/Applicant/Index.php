@@ -383,6 +383,8 @@ class Index extends Component
 
             if($this->create_employee()) {
 
+                dd(123);
+
                 $model->job->slots -= 1;
                 $model->job->save();
 

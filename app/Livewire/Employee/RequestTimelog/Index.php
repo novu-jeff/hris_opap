@@ -74,11 +74,17 @@ class Index extends Component
 
     public function render()
     {
+
+        if($this->status == 'granted') {
+            $status = 'approved';
+        } else {
+            $status = $this->status;
+        }
         
         $model = EmployeeRequestLog::where('employee_no', $this->user_id);
 
-        if ($this->status) {
-            $records = $model->where('status', $this->status);
+        if ($status) {
+            $records = $model->where('status', $status);
         }
 
         $records = $model->latest()->paginate($this->entries);
