@@ -70,7 +70,7 @@
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
                         <button wire:click="disapproved" class="btn btn-danger text-uppercase fw-medium">Disapprove</button>
-                        <button wire:click="approve" class="btn btn-primary text-uppercase fw-medium">Approve</button>
+                        <button wire:click="approved" class="btn btn-primary text-uppercase fw-medium">Approve</button>
                     </div>
                 @endif
             </div>

@@ -272,7 +272,7 @@ class Index extends Component
         }
 
         $model = EmployeeAtro::with('employment', 'employee')
-            ->where('status', $this->status)
+            ->where('status', $status)
             ->where('isDeleted', false);
 
         if ($this->search) {
