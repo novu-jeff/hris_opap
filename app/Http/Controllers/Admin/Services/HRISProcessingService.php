@@ -35,9 +35,13 @@ class HRISProcessingService extends Controller
     public function save(bool $isFirstTime = false, string $employee_no, ?string $job_id = null, ?array $data = null) 
     {    
 
-        $record = ApplicantUsers::with('applied.offer')
-            ->whereHas('applied', fn($query) => $query->where('id', $job_id))
-            ->find($employee_no);
+        $record = ApplicantUsers::with(['applied' => function ($query) use ($job_id) {
+                $query->where('id', $job_id)->with('offer');
+            }])
+            ->whereHas('applied', function ($query) use ($job_id) {
+                $query->where('id', $job_id);
+            })
+            ->first();
         
         if ($isFirstTime && $record) {
 
