@@ -41,6 +41,8 @@ class HRISProcessingService extends Controller
         
         if ($isFirstTime && $record) {
 
+            dd($record);
+
             $data = [
                 'employee_information' => [
                     'salary' => $record->applied[0]->offer->salary

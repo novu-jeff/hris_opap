@@ -746,8 +746,6 @@ class Index extends Component
             $account->password = $password['hashed'];
             $account->save();
             
-            dd($record->toArray());
-
             $data = [
                 'is_newly_hired' => true,
                 'employee_no' => null,
@@ -759,7 +757,7 @@ class Index extends Component
                 'setup' => $record->job->setup,
                 'type' => $record->job->type,
                 'starting_date' => $record->offer->starting_date,
-                'salary' => $record->offer->salary ?? '', 
+                'salary' => $record->offer->salary, 
                 'email' => $account->email,
                 'password' => $password['plain'],
             ];
