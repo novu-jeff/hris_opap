@@ -208,8 +208,14 @@ class Index extends Component
     public function render()
     {
        
+        if($this->status == 'granted') {
+            $status = 'approved';
+        } else {
+            $status = $this->status;
+        }
+
         $model = EmployeeRequestLog::with('attachments', 'employee')
-            ->where('status', $this->status)
+            ->where('status', $status)
             ->where('isDeleted', false);
 
         if ($this->search) {
