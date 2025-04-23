@@ -41,7 +41,7 @@ class HRISProcessingService extends Controller
         
         if ($isFirstTime && $record) {
 
-            dd($record);
+            dd($record->toArray());
 
             $data = [
                 'employee_information' => [
