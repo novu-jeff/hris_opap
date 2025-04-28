@@ -17,7 +17,7 @@ class AdminAccountSeeder extends Seeder
 
         $product = config('app.product');
 
-        if($product == 'opap') {
+        if($product == 'government') {
             $admins = [
                 [
                     'name' => 'Opapru Superadmin', 

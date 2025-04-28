@@ -11,7 +11,7 @@ class Dashboard extends Component
 
     public $announcements;
 
-    public bool $isAllowedLeave;
+    public bool $isForRCOnly;
 
     public function mount() {
         
@@ -28,11 +28,11 @@ class Dashboard extends Component
     public function checkAllowed() {
         $product = config('app.product');
 
-        if($product == 'opap') {
+        if($product == 'government') {
             if(Auth::user()->information->employment_type_id !== 1) {
-                return $this->isAllowedLeave = false;
+                return $this->isForRCOnly = false;
             }
-            return $this->isAllowedLeave = true;
+            return $this->isForRCOnly = true;
         }
     }
 

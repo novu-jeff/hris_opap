@@ -22,7 +22,7 @@
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
         <div class="row">
             @canany(['read apply-leave', 'write apply-leave'])
-                @if($isAllowedLeave)
+                @if($isForRCOnly)
                     <div class="col-12 col-md-6 col-xl-4 mb-4">
                         <a href="{{ route('employee.leave') }}" class="nav-link">
                         <div class="item">
@@ -50,7 +50,7 @@
                 <a href="{{ route('employee.credit') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/remaining-credit.png') }}" class="w-100">
-                    <p>My Credits</p>
+                    <p>Leave Credits</p>
                 </div>
                 </a>
             </div>

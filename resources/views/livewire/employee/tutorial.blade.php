@@ -1,6 +1,9 @@
 <div>
     <div class="mt-5">
-        <iframe width="100%" height="600" src="https://www.youtube-nocookie.com/embed/PIyPkoxdHsk?si=NzdoYwmel2BHSQZ7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <video width="100%" height="600" controls>
+            <source src="{{ asset('tutorials/ESS Tutorial.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
         <hr class="my-4">
         <div class="text-uppercase my-5">
             <h4 class="fw-bold">Frequently Asked Questions</h4>

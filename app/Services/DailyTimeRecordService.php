@@ -197,11 +197,7 @@ class DailyTimeRecordService {
             $totalAutPerRow = $absent + $undertime + $late;
             $totalUndertimeDuration += $undertime;
             $totalLateDuration += $late;
-        
-            # Check for discrepancy (if clock records are between 1 and 3)
-            if (count($clockEntry) >= 1 && count($clockEntry) <= 3) {
-                $remarks[] = 'Discrepancy';
-            }
+    
         
             # Add data for the current day
             $mappedClockData[] = [
