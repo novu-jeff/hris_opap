@@ -4,6 +4,7 @@ namespace App\Livewire\Employee\Atro;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeAtro;
+use App\Models\EmployeeInformation;
 use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -14,6 +15,7 @@ class Apply extends Component
     public $record_id;
     public $employee_id;
     public $employee_no;
+    public $OtherEmployees;
     public array $fields = [
         [
             'date' => '',
@@ -37,6 +39,8 @@ class Apply extends Component
         $this->employee_id = $employee_id;
         $this->employee_no = $employee_no;
 
+        $this->getOtherEmployees();
+
         if(!is_null($this->record_id)) {
 
             $records = EmployeeAtro::where('id', $this->record_id)
@@ -59,6 +63,16 @@ class Apply extends Component
 
         }
 
+    }
+
+    private function getOtherEmployees() {
+        $employees = EmployeeInformation::with('personal')
+            ->where('employee_no', '!=', $this->employee_no)
+            ->get();
+
+        $this->OtherEmployees = $employees;
+
+        return;
     }
 
     public function addField() {

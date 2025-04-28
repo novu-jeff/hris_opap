@@ -767,7 +767,7 @@ class Manual extends Component
 
         $product = config('app.product');
 
-        if ($product == 'opap') {
+        if ($product == 'government') {
             if ($data['employee_information']['type'] == 1) {
                 foreach ($leaveDefaultCredits as $leave) {
 

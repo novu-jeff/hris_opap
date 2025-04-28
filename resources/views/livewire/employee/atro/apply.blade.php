@@ -46,6 +46,18 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-12 mb-3">
+                                <label for="co-employee-{{ $index }}" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
+                                <select class="form-select multi-select" name="states[]" multiple="multiple">
+                                    <option value=""> - CHOOSE - </option>
+                                    @foreach($OtherEmployees as $employee)
+                                        <option value="{{ $employee->employee_no }}">{{ '(' . $employee->employee_no . ') ' . $employee->personal->firstname . ' ' . $employee->personal->lastname }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="error-field">
+                                    @error('fields.' . $index . '.justification') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12 mb-3">
                                 <label for="justification-{{ $index }}" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
                                 <textarea 
                                     rows="5" 
@@ -83,3 +95,11 @@
         </div>
     </div>
 </form>
+
+@section('script')
+    <script>
+        $(function() {
+            $('.multi-select').select2();
+        });
+    </script>
+@endsection

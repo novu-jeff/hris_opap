@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             EmploymentTypesSeeder::class,
-            // PositionSeeder::class,
             ViolationSeeder::class,
             SkillListSeeder::class,   
             LeaveTypesSeeder::class,
@@ -39,16 +38,17 @@ class DatabaseSeeder extends Seeder
                 InterviewSeeder::class,
         ]);
 
-        if($product == 'testing' || $product == 'novu') {
+        if($product == 'private') {
             $this->call([
                 AnnouncementSeeder::class,
                 ApplicantTestUserSeeder::class,
-                EmployeeTestUserSeeder::class
+                EmployeeTestUserSeeder::class,
+                // PositionSeeder::class,
             ]);
         }
 
         
-        if($product == 'opap') {
+        if($product == 'government') {
             $this->call([
                 BranchSeeder::class,
                 DepartmentSeeder::class,

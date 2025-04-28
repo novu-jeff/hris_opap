@@ -263,20 +263,28 @@
                                     @endif
                                 </td>
     
-                                <!-- AM -->
-                                <td>
-                                    @isset($day['clock_in'])
-                                        {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i') }}{{ \Carbon\Carbon::parse($day['clock_in'])->format('A') === 'PM' ? ' PM' : '' }}
-                                    @else
-                                        {{ ' ' }}
-                                    @endisset
-                                </td>
-                                <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i') : ' ' }}</td>
+                                @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])))
+                                    <td colspan="4">
+                                        Rest Day
+                                    </td>
+                                @else
+                                    <!-- AM -->
+                                    <td>
+                                        @isset($day['clock_in'])
+                                            {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i A') }}{{ \Carbon\Carbon::parse($day['clock_in'])->format('A') === 'PM' ? ' PM' : '' }}
+                                        @else
+                                            {{ ' ' }}
+                                        @endisset
+                                    </td>
+                                    <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i A') : ' ' }}</td>
+        
+                                    <!-- PM -->
+                                    <td>{{ isset($day['break_in']) ? \Carbon\Carbon::parse($day['break_in'])->format('g:i A') : ' ' }}</td>
+                                    <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
     
-                                <!-- PM -->
-                                <td>{{ isset($day['break_in']) ? \Carbon\Carbon::parse($day['break_in'])->format('g:i') : ' ' }}</td>
-                                <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i') : ' ' }}</td>
-    
+                                @endif
+
+
                                 <!-- Overtime: Calculate Hours and Mins-->
                                 <td>
                                     {{-- hours --}}
@@ -317,21 +325,22 @@
                                         {{ ($hours != 0 && $minutes == 0) ? '0' : ($minutes ? str_pad($minutes, 2, '0', STR_PAD_LEFT) : '') }}
                                     @endif
                                 </td>
-                                
                                 <td style="width: 100px; !important">
                                     @if(isset($day['remarks']) && is_array($day['remarks']))
                                         @foreach($day['remarks'] as $index => $remark)
-                                            <small>{{ $remark }}</small>
-                                            @php 
-                                                $nextIndex = $index + 1;
-                                                $totalRemarks = count($day['remarks']);
-                                            @endphp
-                                    
-                                            @if ($nextIndex < $totalRemarks)
-                                                @if ($nextIndex % 2 == 0)
-                                                    <br> 
-                                                @else
-                                                    <small>, </small>
+                                            @if(strtolower($remark) != 'rest day')
+                                                <small>{{ $remark }}</small>
+                                                @php 
+                                                    $nextIndex = $index + 1;
+                                                    $totalRemarks = count($day['remarks']);
+                                                @endphp
+                                        
+                                                @if ($nextIndex < $totalRemarks)
+                                                    @if ($nextIndex % 2 == 0)
+                                                        <br> 
+                                                    @else
+                                                        <small>, </small>
+                                                    @endif
                                                 @endif
                                             @endif
                                         @endforeach
