@@ -15,7 +15,8 @@ class EmployeeAtro extends Model
         'date',
         'start_time',
         'end_time',
-        'justification'
+        'justification',
+        'status'
     ];
 
     public function information() {
@@ -28,5 +29,13 @@ class EmployeeAtro extends Model
 
     public function employee() {
         return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
+    }
+
+    public function personal() {
+        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
+    }
+
+    public function relative() {
+        return $this->hasMany(EmployeeAtroRelative::class, 'employee_atro_id', 'id');
     }
 }

@@ -1,4 +1,16 @@
 <div>
+    <div class="company-information mt-5 text-uppercase">
+        <h2 class="fw-bold">{{$companyInfo->name}}</h2>
+        <h5 class="fw-medium">{{$companyInfo->address}}</h5>
+        <h5 class="fw-medium">{{$companyInfo->type->name . ' • ' . $companyInfo->contact}}</h5>
+    </div>
+    <hr class="mt-4 mb-4">
+    <div class="d-lg-flex justify-content-between align-items-center">
+        <div class="section-title">
+            <h1>Dashboard</h1>
+            <p>Track and monitor your employment records.</p>
+        </div>
+    </div>
     <div class="latest-announcements">
         <div class="wrapper d-flex gap-4">
             @forelse($announcements as $announcement)

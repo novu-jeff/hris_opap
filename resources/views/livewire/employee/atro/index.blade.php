@@ -51,6 +51,8 @@
                                     <div class="alert alert-danger fw-bold text-uppercase text-center fw-medium mb-0">Disapproved</div>
                                 @elseif($record->status === 'pending')
                                     <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">Pending</div>
+                                @elseif($record->status === 'mentioned')
+                                    <div class="alert alert-info fw-bold text-uppercase text-center fw-medium mb-0">{{$record->atro->status}}</div>
                                 @endif
                             </td>
                             <td>
@@ -64,6 +66,10 @@
                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
+                                @elseif($record->status == 'mentioned')
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
                                 @endif
                             </td>
                         </tr>
