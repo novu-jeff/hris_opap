@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Dashboard;
 
 use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
+use App\Models\CompanyInformation;
 use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
 use App\Models\EmployeeClockInOut;
@@ -14,6 +15,7 @@ use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
+use Faker\Provider\ar_EG\Company;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +29,7 @@ class Index extends Component
     public $stats;
     public $now;
     public $trails;
+    public $companyInfo;
 
     public function mount() {
         $this->now = Carbon::now();
@@ -70,6 +73,8 @@ class Index extends Component
 
         $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today())->get();
         
+        $this->companyInfo = $this->getCompanyInformation();
+
         $this->stats = [
             'recruitment' => [
                 'pending' => $recruitmentCounts['pending'] ?? 0,
@@ -124,6 +129,11 @@ class Index extends Component
         })->map(function ($file) {
             return $file->getFilename();
         })->toArray();
+    }
+
+    private function getCompanyInformation() {
+        $companyInfo = CompanyInformation::with('type')->first();
+        return $companyInfo;
     }
 
     public function download(string $log) {

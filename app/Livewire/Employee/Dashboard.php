@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Employee;
 
+use App\Models\CompanyInformation;
 use App\Models\EmployeeAnnouncements;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -10,6 +11,7 @@ class Dashboard extends Component
 {
 
     public $announcements;
+    public $companyInfo;
 
     public bool $isForRCOnly;
 
@@ -19,10 +21,13 @@ class Dashboard extends Component
 
         $this->checkAllowed();
 
+        $this->companyInfo = $this->getCompanyInformation();
+
     }
 
     public function loadRecords() {
         $this->announcements = EmployeeAnnouncements::latest()->take(10)->get();
+        $this->companyInfo = $this->getCompanyInformation();
     }
 
     public function checkAllowed() {
@@ -34,6 +39,11 @@ class Dashboard extends Component
             }
             return $this->isForRCOnly = true;
         }
+    }
+
+    private function getCompanyInformation() {
+        $companyInfo = CompanyInformation::with('type')->first();
+        return $companyInfo;
     }
 
     public function render()
