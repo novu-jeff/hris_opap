@@ -6,9 +6,10 @@
         <h5 class="mb-2 fw-bold">Section: <span class="ms-1 text-decoration-underline">{{ $records['section']['section_name'] }}</span></h5>
     </div>
     
-    <div class="mt-3">
+    <hr class="mt-5 mb-5">
+    <div>
         @foreach ($records['positions'] as $position)
-            <div class="mt-5 mb-2">
+            <div class="mt-4 mb-2">
                 <div class="d-flex justify-content-between">
                     <h5 class="text-uppercase fw-bold">Position: {{ $position['position_name'] }}</h5>
                     <h5 class="text-uppercase text-muted fw-bold">({{ count($position['employees']) }} Employee{{ count($position['employees']) > 1 ? 's' : '' }})</h5>

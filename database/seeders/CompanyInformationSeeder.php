@@ -18,10 +18,10 @@ class CompanyInformationSeeder extends Seeder
 
         if($product == 'government') {
             $information = [
-            'name' => 'Office of the Presidential Adviser on Peace, Reconciliation and Unity', 
-            'address' => 'Agusting 1 Bldg., F, Ortigas Jr. Road, Ortigas Center, Pasig, Metro Manila',
-            'contact' => '8636-0707',
-            'type_id' => 10
+                'name' => 'Office of the Presidential Adviser on Peace, Reconciliation and Unity', 
+                'address' => 'Agusting 1 Bldg., F, Ortigas Jr. Road, Ortigas Center, Pasig, Metro Manila',
+                'contact' => '8636-0707',
+                'type_id' => 10
             ];
         } else if ($product == 'private') {
             $information = [
