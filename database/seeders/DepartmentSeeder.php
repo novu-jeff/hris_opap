@@ -16,12 +16,12 @@ class DepartmentSeeder extends Seeder
             ['code' => 'P1', 'name' => 'Program 1', 'description' => 'GPH - MILF Peace Process'],
             ['code' => 'P2', 'name' => 'Program 2', 'description' => 'GPH - MNLF Peace Process'],
             ['code' => 'P3', 'name' => 'Program 3', 'description' => 'Localized Peace Engagement'],
-            ['code' => 'P4', 'name' => 'Program 4', 'description' => 'GPH - RPM-P/RPA/ABB/CBA-CPLA Peace Process'],
+            ['code' => 'P4', 'name' => 'Program 4', 'description' => 'GPH - RPM-P / RPA / ABB / CBA-CPLA Peace Process'],
             ['code' => 'P5', 'name' => 'Program 5', 'description' => 'Social Healing and Peacebuilding'],
             ['code' => 'P6', 'name' => 'Program 6', 'description' => 'PAyapa at MAsaganang PamayaNAn (PAMANA) Program'],
             ['code' => 'P7', 'name' => 'Program 7', 'description' => 'Internal Cooperation and Partnership'],
-            ['code' => 'P8', 'name' => 'Program 8', 'description' => 'Human Capital/Organization Capital/Finance and Resources/Strategic Communications'],
-            ['code' => 'EO', 'name' => 'Executive Offices']
+            ['code' => 'P8', 'name' => 'Program 8', 'description' => 'Human Capital / Organization Capital / Finance and Resources / Strategic Communications'],
+            ['code' => 'EO', 'name' => 'Executive Offices', 'description' => 'Executive Office']
         ];
 
         foreach ($departments as $department) {

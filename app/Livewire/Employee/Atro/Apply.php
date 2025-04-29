@@ -180,7 +180,8 @@ class Apply extends Component
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
-                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                        'message' => 'Your application has been submitted. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.',
+                        'redirect' => '_reload'
                     ]);
 
                     $user = EmployeeAccount::find($this->employee_id);
@@ -190,20 +191,30 @@ class Apply extends Component
 
                     $this->resetExcept('employee_no', 'employee_id');
 
+                    $this->fields['employees'] = [];
+
+                    $this->getOtherEmployees();
+
                     return;
 
                 } else {
                     
+                    $this->getOtherEmployees();
+
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'success',
                         'title' => 'Yey!', 
-                        'message' => 'Your application has been updated. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.'
+                        'message' => 'Your application has been updated. You will receive an email regarding your application status as soon as we review it. Thank you for your understanding.',
                     ]);
 
                 }
 
+
             } catch (\Exception $e) {
+
+                $this->getOtherEmployees();
+
                 $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',

@@ -54,7 +54,7 @@ class Team extends Component
             ];
             $groupedRecords['department'] = [
                 'department_id' => $firstRecord->section->department_id ?? null,
-                'department_name' => $firstRecord->section->department->name ?? 'Unassigned Department',
+                'department_name' => $firstRecord->section->department->description ?? 'Unassigned Department',
             ];
             $groupedRecords['section'] = [
                 'section_id' => $firstRecord->section->id ?? null,
