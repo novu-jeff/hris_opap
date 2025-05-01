@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -114,39 +114,89 @@
                         <div class="useful-links d-block d-md-flex mt-4 mt-md-0">
                             <div>
                                 <ul class="list-unstyled">
+                                    @canany(['read apply-leave', 'write apply-leave'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.leave')}}">Apply Leave</a>
+                                        <a href="{{ route('employee.leave') }}">Apply Leave</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read clock-in-out', 'write clock-in-out'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.atro')}}">Apply Authority to render overtime</a>
+                                        <a href="{{ route('employee.clock') }}">Clock In Out</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read remaining-credit', 'write remaining-credit'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.obs.index')}}">Apply Official BusinessSlip</a>
+                                        <a href="{{ route('employee.credit') }}">Leave Credits</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read apply-atro', 'write apply-atro'])
+                                    <li class="list-unstyled-item">
+                                        <a href="{{ route('employee.atro') }}">Apply Render Overtime</a>
+                                    </li>
+                                    @endcanany
+                                    
+                                    @canany(['read apply-request-timelog', 'write apply-request-timelog'])
+                                    <li class="list-unstyled-item">
+                                        <a href="{{ route('employee.request-timelog') }}">Request Timelog</a>
+                                    </li>
+                                    @endcanany
+                                    
+                                    @canany(['read payslip', 'write payslip'])
                                     <li class="list-unstyled-item">
                                         <a href="#">My Payslip</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read employee-messages', 'write employee-messages'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.messages')}}">Request Status</a>
+                                        <a href="{{ route('employee.messages') }}">Contact HR</a>
                                     </li>
+                                    @endcanany                                    
                                 </ul>
                             </div>
                             <div>
                                 <ul class="list-unstyled">
+                                    @canany(['read apply-obs', 'write apply-obs'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.team')}}">My Team</a>
+                                        <a href="{{ route('employee.obs.index') }}">Apply Business Application</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read employee-dtr', 'write employee-dtr'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.directory')}}">My directory</a>
+                                        <a href="{{ route('employee.dtr') }}">My DTR</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read my-directory', 'write my-directory'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.announcements.index')}}">Announcements</a>
+                                        <a href="{{ route('employee.directory') }}">My directory</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read my-team', 'write my-team'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.profile')}}">My Profile</a>
+                                        <a href="{{ route('employee.team') }}">My Team</a>
                                     </li>
+                                    @endcanany
+                                    
+                                    @canany(['read employee-announcements', 'write employee-announcements'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{route('employee.tutorial')}}">Tutorial</a>
+                                        <a href="{{ route('employee.announcements.index') }}">Announcements</a>
+                                    </li>
+                                    @endcanany
+                                    
+                                    @canany(['read my-profile', 'write my-profile'])
+                                    <li class="list-unstyled-item">
+                                        <a href="{{ route('employee.profile') }}">My Profile</a>
+                                    </li>
+                                    @endcanany
+                                    
+                                    <li class="list-unstyled-item">
+                                        <a href="{{ route('employee.tutorial') }}">Tutorial</a>
                                     </li>
                                 </ul>
                             </div>

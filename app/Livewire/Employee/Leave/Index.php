@@ -159,26 +159,26 @@ class Index extends Component
 
             if($records->leave_id == 1) {
                 $vl_latest = $leaveCardBalance->vl_bal;
-                $vl_coveredBal = round(count($dates), 3);
-                $vl_bal = $vl_latest - $vl_coveredBal;
+                $vl_covered = number_format($daysCovered, 2);
+                $vl_bal = $vl_latest - $vl_covered;
             } else if($records->leave_id == 2) {
                 $sl_latest = $leaveCardBalance->sl_bal;
-                $sl_coveredBal = round(count($dates), 3);
-                $sl_bal = $sl_latest - $sl_coveredBal;
+                $sl_covered = number_format($daysCovered, 2);
+                $sl_bal = $sl_latest - $sl_covered;
             }
 
             $sheet->setCellValue('F42', $currentTimestamp ?? '');
 
             $sheet->setCellValue('F45', $vl_latest ?? 0);
-            $sheet->setCellValue('F46', $vl_coveredBal ?? 0);
+            $sheet->setCellValue('F46', $vl_covered ?? 0);
             $sheet->setCellValue('F47', $vl_bal ?? 0);
 
             $sheet->setCellValue('G45', $sl_latest ?? 0);
-            $sheet->setCellValue('G46', $sl_coveredBal ?? 0);
+            $sheet->setCellValue('G46', $sl_covered ?? 0);
             $sheet->setCellValue('G47', $sl_bal ?? 0);
 
             // Set the days covered and list of dates
-            $sheet->setCellValue('E33', count($dates) . ($daysCovered > 1 ? ' days' : ' day'));
+            $sheet->setCellValue('E33', $daysCovered . ($daysCovered > 1 ? ' days' : ' day'));
             $sheet->setCellValue('E35', implode(', ', $dates));
     
             return response()->streamDownload(function () use ($spreadsheet) {

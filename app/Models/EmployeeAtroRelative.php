@@ -22,4 +22,5 @@ class EmployeeAtroRelative extends Model
     public function personal() {
         return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
+    
 }
