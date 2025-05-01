@@ -66,7 +66,6 @@ class Apply extends Component
                     ->route('employee.leave');
             }
 
-
             $this->type = $records->leave_id;
             
             if(is_null($records->to)) {
@@ -75,10 +74,8 @@ class Apply extends Component
                 $this->duration = 2;
             }
 
-
             $this->selectDuration();
             $this->handleLeaveCredits($this->duration);
-
 
             $this->from = $records->from;
             $this->to = $records->to;
@@ -96,6 +93,7 @@ class Apply extends Component
     }
 
     public function selectDuration() {
+
         if(!empty($this->duration)) {
             if($this->duration == 2) {
                 return $this->isMoreThanOne = true;
@@ -108,8 +106,6 @@ class Apply extends Component
     }
 
     public function handleLeaveCredits(int $duration = null) {
-
-        $this->reset('duration', 'isDurationDisabled', 'isMoreThanOne');
     
         $leaveType = LeaveType::where('id', $this->type)
             ->first();

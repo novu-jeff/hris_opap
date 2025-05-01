@@ -61,7 +61,7 @@
             <div class="content mt-4">
                 {!!$view->content!!}
             </div>
-            @if(!is_null($view->attachments))
+            @if($view->attachments->isNotEmpty())
                 <hr>
                 <div class="attachments mt-4">
                     <h5>Downloadable Attachments</h5>
@@ -77,6 +77,19 @@
                     </ul>
                 </div>
             @endif
+            <p style="cursor: pointer;">
+                <span class="text-uppercase fw-bold text-muted">Seen By:</span> 
+                <span class="text-capitalize" style="text-decoration: underline; text-underline-offset: 4px;">
+                    @foreach(collect($seenBy) as $user)
+                        <span 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="{{ \Carbon\Carbon::parse($user['timestamp'])->format('F d, Y \a\t h:i A')}}">
+                            {{ $user['name'] }}
+                        </span>{{ !$loop->last ? ',' : '' }}
+                    @endforeach
+                </span>
+            </p>
         </div>
         <div class="mt-5">
             <div class="float-start">

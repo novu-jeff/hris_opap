@@ -140,7 +140,10 @@ class Apply extends Component
         } else {
             try {
                 
+                $self_ = $this->employee_no;
+
                 if (is_null($this->record_id)) {
+
                     $atro = EmployeeAtro::create([
                         'employee_no' => $this->employee_no,
                         'date' => $this->fields['date'],
@@ -149,14 +152,22 @@ class Apply extends Component
                         'justification' => $this->fields['justification'],
                     ]);
 
+                    
+                    if(!in_array($self_, $this->fields['employees'])) {
+                        $this->fields['employees'][] = $self_;
+                    }
+
                     foreach ($this->fields['employees'] as $employee_no) {
                         EmployeeAtroRelative::create([
                             'employee_atro_id' => $atro->id,
                             'employee_no' => $employee_no,
                         ]);
                     }
+
                 } else {
+
                     $atro = EmployeeAtro::find($this->record_id);
+
                     $atro->update([
                         'date' => $this->fields['date'],
                         'start_time' => $this->fields['start_time'],
@@ -165,6 +176,10 @@ class Apply extends Component
                     ]);
 
                     EmployeeAtroRelative::where('employee_atro_id', $atro->id)->delete();
+
+                    if(!in_array($self_, $this->fields['employees'])) {
+                        $this->fields['employees'][] = $self_;
+                    }
 
                     foreach ($this->fields['employees'] as $employee_no) {
                         EmployeeAtroRelative::create([

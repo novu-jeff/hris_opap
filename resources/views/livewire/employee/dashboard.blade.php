@@ -28,8 +28,26 @@
             @endforelse
         </div>          
     </div>
+    <div class="applications mt-5">
+        <div class="row">
+            @foreach ($applications as $application)
+                <div class="col-12 col-md-3">
+                    <a href="{{route($application['route'])}}" class="text-decoration-none">
+                        <div class="card mb-4 shadow" style="cursor: pointer">
+                            <div class="card-body d-flex align-items-center p-4">
+                                <div>
+                                    <h1 class="fw-bold">{{$application['count']}}</h1>
+                                    <h6 class="card-title text-uppercase fw-bold nowrap mt-3">{{$application['title']}}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+        @endforeach
+        </div>
+    </div>
     @if($announcements)
-        <hr class="mt-5">
+        <hr class="mt-3">
     @endif
     <div class="dashboard {{$announcements ? 'mt-5' : ''}}">
         <div class="row">
