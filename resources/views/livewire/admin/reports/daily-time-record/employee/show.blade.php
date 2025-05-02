@@ -1,7 +1,8 @@
 @section('style')
 <style>
 
-td {
+
+    td {
         position: relative;
     }
 
@@ -27,6 +28,7 @@ td {
     }
 
     .dtr {
+        width: 800px;
         margin: 50px auto;
         padding: 10mm 5mm;
         box-sizing: border-box;

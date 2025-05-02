@@ -18,7 +18,7 @@
         var elements = $('.dtr');  
         var printWindow = window.open('', '_blank', 'width=800,height=600');
 
-        printWindow.document.write('<html><head><title>Print</title>');
+        printWindow.document.write('<html><head><title>{{$employee_no . ' | DTR'}}</title>');
         
         printWindow.document.write('<style>');
         printWindow.document.write(`
@@ -64,12 +64,17 @@
                 margin: 5px 0;
             }
 
-        .dtr-info {
+            .dtr-info {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr); /* Create two equal columns */
                 gap: 10px; /* Space between grid items */
                 margin-bottom: 20px;
                 font-size: 8px;
+
+                div {
+                    margin: 0 !important;
+                }
+
             }
 
             .dtr-info div {
@@ -139,6 +144,10 @@
                 .dtr-table th, .dtr-table td {
                     font-size: 8px;
                     padding: 2px;
+                }
+
+                .btn-correction {
+                    display: none;
                 }
 
                 @page {
