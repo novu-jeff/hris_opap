@@ -227,7 +227,7 @@
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
                         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['department'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
@@ -419,7 +419,7 @@
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
                         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['department'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
