@@ -239,11 +239,12 @@ td {
                             <h1>For the month of <div class="underline" style="min-width: auto !important; padding: 0 15px 0 15px !important; text-transform: uppercase">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </div>(FY)</h1>
                         </div>
                     </div>
+
                     <div class="dtr-info">
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
                         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['department'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
@@ -435,7 +436,7 @@ td {
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
                         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['department'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
