@@ -31,7 +31,10 @@ class Dashboard extends Component
 
         $employee_no = Auth::user()->employee_no;
 
-        $this->announcements = EmployeeAnnouncements::latest()->take(10)->get();
+        $this->announcements = EmployeeAnnouncements::where('isDeleted', false)
+            ->latest()
+            ->take(10)
+            ->get();
         $this->companyInfo = $this->getCompanyInformation();
         $this->applications = [
             'leave' => [
