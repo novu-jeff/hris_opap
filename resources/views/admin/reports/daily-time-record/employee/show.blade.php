@@ -15,7 +15,7 @@
 
 <script>
       $(document).on('click', '.save-as-pdf', function() {
-        var element = $('.dtr')[0];  
+        var element = $('.print-container')[0];  
         var printWindow = window.open('', '_blank', 'width=800,height=600');
 
         printWindow.document.write('<html><head><title>Print</title>');
