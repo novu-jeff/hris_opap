@@ -15,6 +15,7 @@
 
 <script>
     $(document).on('click', '.save-as-pdf', function() {
+
         var elements = $('.dtr');  
         var printWindow = window.open('', '_blank', 'width=800,height=600');
 
@@ -22,8 +23,8 @@
         
         printWindow.document.write('<style>');
         printWindow.document.write(`
-            /* Add any custom styling here */
-            .underline {
+
+        .underline {
                 text-decoration: underline;
             }
 

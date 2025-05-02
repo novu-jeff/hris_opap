@@ -92,7 +92,7 @@
                     <a href="{{route('ess.request-timelog', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.request-timelog', ['status' => 'approved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'approved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Approved</a>
+                    <a href="{{route('ess.request-timelog', ['status' => 'granted'])}}" class="nav-link text-uppercase fw-medium {{$status === 'granted' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a href="{{route('ess.request-timelog', ['status' => 'disapproved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'disapproved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Disapproved</a>

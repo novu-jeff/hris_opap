@@ -1,7 +1,6 @@
 @section('style')
 <style>
 
-
     td {
         position: relative;
     }
