@@ -28,7 +28,7 @@
 
 
 <script>
-      $(document).on('click', '.save-as-pdf', function() {
+    $(document).on('click', '.save-as-pdf', function() {
         var element = $('.dtr')[0];  
         var printWindow = window.open('', '_blank', 'width=800,height=600');
 
@@ -41,6 +41,7 @@
                 text-decoration: underline;
             }
             .dtr {
+                max-width: 320px;
                 width: 100%;
                 margin: 0 auto;
                 padding: 10mm 5mm;
@@ -150,6 +151,6 @@
         printWindow.print();  
         printWindow.close(); 
     });
-  </script>
+</script>
   
 @endsection

@@ -22,6 +22,10 @@ td {
         padding: 0 80px 0 80px;
     }
 
+    .print-container .dtr:nth-of-type(2) {
+        display: none;
+    }
+
     .dtr {
         margin: 50px auto;
         padding: 10mm 5mm;
@@ -175,7 +179,7 @@ td {
 
 </style>
 @endsection
-<div>
+<div class="mahcon">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
             <div class="section-title">
@@ -222,7 +226,7 @@ td {
             @endif
         </div>
     </div>
-    <div>
+    <div class="container">
         @if($dtr)
             <div class="print-container">
                 <div class="dtr">
