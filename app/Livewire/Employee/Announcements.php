@@ -127,7 +127,7 @@ class Announcements extends Component
                 $seen->employee_no = $employee_no;
                 $seen->save();
 
-                return redirect()->route('ess.announcements.index');
+                return redirect()->route('employee.announcements.view', ['id' => $announcement_id]);
 
             }
         }
