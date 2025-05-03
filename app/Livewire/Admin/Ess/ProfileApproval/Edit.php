@@ -367,14 +367,14 @@ class Edit extends Component
                 DB::commit();
 
                 $user = EmployeeAccount::where('employee_no', $this->employee_no)->first();
-                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong>disapprovedED</strong>. Click this notification to view more details.', route('employee.profile'), 'employee'));
+                $user?->notify(new Notifications('success', 'You\'re profile update application was <strong>disapproved</strong>. Click this notification to view more details.', route('employee.profile'), 'employee'));
 
                 return $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!',
                     'isRemoveRowDT' => false,
                     'isReloadDT' => false,
-                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was disapproveded for updating profile.',
+                    'message' => 'Employee ' . strtoupper($this->employee_no) . ' was disapproved for updating profile.',
                     'redirect' => route('ess.approval-profile.index')
                 ]);
 

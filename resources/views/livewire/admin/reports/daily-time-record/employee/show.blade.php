@@ -32,7 +32,7 @@
         padding: 10mm 5mm;
         box-sizing: border-box;
         border: 1px solid rgb(178, 178, 178);
-        background-color: #fdffe4;
+        background-color: #fff;
         border-radius: 12px;
         position: relative;
     }

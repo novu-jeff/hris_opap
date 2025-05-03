@@ -6,7 +6,7 @@
         </video>
         <hr class="my-4">
         <div class="text-uppercase my-5">
-            <h4 class="fw-bold">Frequently Asked Questions</h4>
+            <h4 class="fw-bold">Frequently Asked Questions (FAQs)</h4>
             <p>Here are the following questions that are frequently asked.</p>
         </div>
         <div class="accordion mt-5" id="employeeGuideAccordion">

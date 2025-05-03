@@ -30,7 +30,9 @@
                             <div class="card-body">
                                 <div class="row">
                                     @if (session()->has('error'))
-                                        <div class="alert alert-danger mb-4 text-uppercase fw-bold text-center" style="font-size:12px">{{session('error')}}</div>
+                                        <div class="alert alert-danger mb-4 text-uppercase fw-bold text-center" style="font-size:12px;">
+                                            {!! session('error') !!}
+                                        </div>
                                     @endif
                                     <div class="col-12 mb-3">
                                         <label for="email" class="mb-2">Login <span class="text-danger">*</span></label>

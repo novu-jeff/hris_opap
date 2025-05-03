@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\EmployeeAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -22,10 +23,19 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'email' => 'required|email|exists:employee_account,email',
         ], [
-            'email.exists' => 'The email provided does not exists.'
+            'email.exists' => 'The email provided does not exist.'
         ]);
-        
-        // // Attempt to send the reset link to the user's email
+
+        // Check if the account is locked
+        $employeeAccount = EmployeeAccount::where('email', $request->email)->first();
+
+        if ($employeeAccount && $employeeAccount->isLocked) {
+            return back()->withErrors([
+                'email' => 'Unable to send reset link because your account is locked.',
+            ]);
+        }
+
+        // Attempt to send the reset link to the user's email
         $status = Password::broker('employees')->sendResetLink(
             $request->only('email')
         );
