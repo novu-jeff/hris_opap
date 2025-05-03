@@ -532,7 +532,6 @@ class Form extends Component
                     } 
                 }
             },
-
             'records.employee_employment_history.*.position' => 'required|string|max:255',
             'records.employee_employment_history.*.department' => 'required|string|max:255',
             'records.employee_employment_history.*.company_name' => 'required|string|max:255',
@@ -572,7 +571,6 @@ class Form extends Component
                     } 
                 }
             },
-
             'records.employee_trainings.*.type' => 'required|string|max:255',
             'records.employee_trainings.*.name' => 'required|string|max:255',
             'records.employee_trainings.*.date_from' => 'required|string|max:255',
@@ -591,7 +589,6 @@ class Form extends Component
                     } 
                 }
             },
-
             'records.employee_others.*.organization' => 'required|string|max:255',
             'records.employee_others.*.address' => 'required|string|max:255',
             'records.employee_others.*.date_from' => 'required|string|max:255',
@@ -610,7 +607,6 @@ class Form extends Component
                     } 
                 }
             },
-
             'records.employee_skills.*.name' => 'required|string|max:255',
             'records.employee_skills.*.recognition' => 'required|string|max:255',
             'records.employee_skills.*.organization' => 'required|string|max:255',
@@ -626,7 +622,6 @@ class Form extends Component
                     } 
                 }
             },
-
             'records.employee_account.notify_user' => 'boolean',
             'records.employee_account.password' => 'required_with:records.employee_account.notify_user,true|min:8|same:records.employee_account.confirm_password',
             'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
@@ -739,10 +734,12 @@ class Form extends Component
             'records.employee_skills.*.organization.required' => 'The organization field is required for each skill record.',  
             'records.employee_skills.*.documents.mimes' => 'The document must be an image or pdf',
 
-            'records.employee_account.notify_user.boolean' => 'The Notify User field must be true or false.',
-            'records.employee_account.password.required_with' => 'The Password field is required when Notify User is enabled.',
-            'records.employee_account.password.min' => 'The Password must be at least 8 characters.',
-            'records.employee_account.password.same' => 'The Password and Confirm Password must match.',
+            'records.employee_account.notify_user.boolean' => 'The Notify User field must be true or false.',        
+            'records.employee_account.password.required' => 'The password is required.',
+            'records.employee_account.password.max' => 'The password must be at least 8 characters.',
+            'records.employee_account.password.same' => 'The password and confirmation password must match.',
+            'records.employee_account.confirm_password.required_with' => 'The confirm password field is required.',
+            'records.employee_account.confirm_password.max' => 'The confirm password must be at least 8 characters.',
         ];
     }
 

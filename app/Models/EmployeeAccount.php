@@ -23,7 +23,9 @@ class EmployeeAccount extends Authenticatable
         'token',
         'isNew',
         'isToUpdatePassword',
-        'last_password_updated'
+        'last_password_updated',
+        'isLocked',
+        'login_attempts'
     ];
     public $timestamps = false;
 

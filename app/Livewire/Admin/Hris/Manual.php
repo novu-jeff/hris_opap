@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class Manual extends Component
 {
@@ -43,10 +44,14 @@ class Manual extends Component
     public object $employmentTypes;
     public object $shiftSchedule;
     public object $employeeSchedule;
-    public bool $isDualCitizenship = false;
     public array $countries;
+    
     public $activeTab = 'details';
     public $activeAccordion = 'personal';
+    public bool $isDualCitizenship = false;
+    public bool $isMarried = false;
+    public bool $hasBirthCert = false;
+    public bool $hasMarriageCert = false;
 
     public function mount() {
         $this->loadRecords();
@@ -150,7 +155,7 @@ class Manual extends Component
         'employee_personal' => [
             'tab' => 'details',
             'accordions' => [
-                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type'],
+                'personal' => ['firstname', 'lastname', 'middlename', 'suffix', 'birthday', 'civil_status', 'sex', 'citizenship', 'citizenship_type', 'birth_certificate', 'marriage_certificate'],
                 'address' => ['present_address', 'present_province', 'present_city', 'permanent_address', 'permanent_province', 'permanent_city'],
                 'contact' => ['mobile_number', 'tel_no', 'email'],
                 'appearance' => ['height', 'weight', 'blood_type'],
@@ -180,26 +185,38 @@ class Manual extends Component
             'course' => '',
             'from_year' => '',
             'to_year' => '',
+            'documents' => '',
         ],
         'employee_employment_history' => [
             'position' => '',
             'department' => '',
             'company_name' => '',
+            'monthly_salary' => '',
             'employment_status' => '',
             'isGovernment' => '',
             'from_year' => '',
-            'to_year' => ''
+            'to_year' => '',
+            'documents' => '',
         ],
         'employee_children' => [
             'firstname' => '',
             'middlename' => '',
             'lastname' => '',
             'birthdate' => '',
+            'documents' => '',
         ],
-        'employee_civil_service' => [],
-        'employee_trainings' => [],
-        'employee_others' => [],
-        'employee_skills' => [],
+        'employee_civil_service' => [
+            'documents' => ''
+        ],
+        'employee_trainings' => [
+            'documents' => ''
+        ],
+        'employee_others' => [
+            'documents' => ''
+        ],
+        'employee_skills' => [
+            'documents' => ''
+        ],
     ];
     
     public function setActiveTab($tab) {
@@ -278,7 +295,7 @@ class Manual extends Component
         return null;
     }
 
-    protected function rules(int $id = null) {
+    protected function rules(? int $id = null) {
         return [
             'records.employee_information.employee_no' => [
                 'required',
@@ -307,6 +324,9 @@ class Manual extends Component
             'records.employee_personal.citizenship_type' => 'nullable|required_with:records.employee_personal.citizenship',
             'records.employee_personal.country' => 'required_if:records.employee_personal.citizenship,dual_citizenship',
 
+            'records.employee_personal.birth_certificate' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_personal.marriage_certificate' => 'nullable|mimes:jpg,png,jpeg,pdf',
+
             'records.employee_personal.mobile_number' => 'nullable|regex:/^09\d{9}$/',
             'records.employee_personal.email' => [
                 'required',
@@ -316,14 +336,37 @@ class Manual extends Component
             'records.employee_children.*.firstname' => 'required|string|max:255',
             'records.employee_children.*.middlename' => 'nullable|string|max:255',
             'records.employee_children.*.lastname' => 'required|string|max:255',
-            'records.employee_children.*.birthdate' => 'required|date',
+            'records.employee_children.*.birthdate' => 'required|date', 
+            'records.employee_children.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_children.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
 
             'records.employee_education.*.level' => 'required|string',
             'records.employee_education.*.school_name' => 'required|string|max:255',
             'records.employee_education.*.course' => 'required|string|max:255',
             'records.employee_education.*.from_year' => 'required|date',
             'records.employee_education.*.to_year' => 'required|date',
-
+            'records.employee_education.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_education.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
             'records.employee_employment_history.*.position' => 'required|string|max:255',
             'records.employee_employment_history.*.department' => 'required|string|max:255',
             'records.employee_employment_history.*.company_name' => 'required|string|max:255',
@@ -331,35 +374,90 @@ class Manual extends Component
             'records.employee_employment_history.*.isGovernment' => 'required|string',
             'records.employee_employment_history.*.from_year' => 'required|date',
             'records.employee_employment_history.*.to_year' => 'required|date|after_or_equal:records.employee_employment_history.*.from_year',
-
+            'records.employee_employment_history.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_employment_history.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
             'records.employee_civil_service.*.certification' => 'required|string|max:255',
             'records.employee_civil_service.*.rating' => 'required|string|max:255',
             'records.employee_civil_service.*.date_exam' => 'required|string|max:255',
             'records.employee_civil_service.*.place_exam' => 'required|string|max:255',
             'records.employee_civil_service.*.license_no' => 'required|string|max:255',
             'records.employee_civil_service.*.date_validity' => 'required|date',
-
+            'records.employee_civil_service.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_civil_service.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
             'records.employee_trainings.*.type' => 'required|string|max:255',
             'records.employee_trainings.*.name' => 'required|string|max:255',
             'records.employee_trainings.*.date_from' => 'required|string|max:255',
             'records.employee_trainings.*.date_to' => 'required|string|max:255',
             'records.employee_trainings.*.consumed_hours' => 'required|integer',
             'records.employee_trainings.*.sponsored_by' => 'required|string|max:255',
-
+            'records.employee_trainings.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_trainings.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
             'records.employee_others.*.organization' => 'required|string|max:255',
             'records.employee_others.*.address' => 'required|string|max:255',
             'records.employee_others.*.date_from' => 'required|string|max:255',
             'records.employee_others.*.date_to' => 'required|string|max:255',
             'records.employee_others.*.consumed_hours' => 'required|integer',
             'records.employee_others.*.position' => 'required|string|max:255',
-
+            'records.employee_others.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_others.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
             'records.employee_skills.*.name' => 'required|string|max:255',
             'records.employee_skills.*.recognition' => 'required|string|max:255',
             'records.employee_skills.*.organization' => 'required|string|max:255',
-
+            'records.employee_skills.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
+            'records.employee_skills.*.documents' => function ($attribute, $value, $fail) {
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $files = is_array($value) ? $value : [$value];
+                foreach ($files as $file) {
+                    if ($file instanceof TemporaryUploadedFile) {
+                        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                            $fail("The document must be a JPEG, PNG, or PDF file.");
+                        }
+                    } 
+                }
+            },
+            'records.employee_account.notify_user' => 'boolean',
             'records.employee_account.password' => 'required|min:8|same:records.employee_account.confirm_password',
             'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
-
         ];
     }
 
@@ -396,33 +494,34 @@ class Manual extends Component
             'records.employee_personal.sex.in' => 'The sex must be either male or female.',
             'records.employee_personal.citizenship_type.required_with' => 'The citizenship type is required when citizenship is provided.',
             'records.employee_personal.country.required_if' => 'The country is required when citizenship is dual citizenship.',
+            'records.employee_personal.birth_certificate.mimes' => 'The birth certificate must be an image or pdf',
+            'records.employee_personal.marriage_certificate.mimes' => 'The birth certificate must be an image or pdf',
 
             'records.employee_personal.mobile_number.regex' => 'The mobile number format is invalid. It should start with 09 and be followed by 9 digits.',
             'records.employee_personal.email.email' => 'The email must be a valid email address.',
             'records.employee_personal.email.required' => 'The email is required.',
             'records.employee_personal.email.unique' => 'The email is already taken.',
-            'records.employee_children.*.firstname.required' => 'Each child must have a first name.',
-            'records.employee_children.*.middlename.string' => 'The middle name must be a string.',
-            'records.employee_children.*.lastname.required' => 'Each child must have a last name.',
-            'records.employee_children.*.birthdate.required' => 'The birthdate is required for each child.',
-            'records.employee_children.*.birthdate.date' => 'The birthdate must be a valid date.',
-
+            
             'records.employee_education.*.level.required' => 'The education level is required.',
             'records.employee_education.*.school_name.required' => 'The school name is required.',
             'records.employee_education.*.course.required' => 'The course name is required.',
             'records.employee_education.*.from_year.required' => 'The start year is required.',
             'records.employee_education.*.to_year.required' => 'The end year is required.',
             'records.employee_education.*.to_year.after_or_equal' => 'The end year must be the same or after the start year.',
+            'records.employee_education.*.documents.mimes' => 'The document must be an image or pdf',
 
             'records.employee_employment_history.*.position.required' => 'The position is required for each employment history entry.',
             'records.employee_employment_history.*.department.required' => 'The department is required for each employment history entry.',
             'records.employee_employment_history.*.company_name.required' => 'The company name is required for each employment history entry.',
+            'records.employee_employment_history.*.monthly_salary.required' => 'The monthly salary is required.',
+            'records.employee_employment_history.*.monthly_salary.numeric' => 'The monthly salary must be a number.',
             'records.employee_employment_history.*.employment_status.required' => 'The employment status is required.',
             'records.employee_employment_history.*.isGovernment.required' => 'The field indicating government employment is required.',
             'records.employee_employment_history.*.from_year.required' => 'The start date is required.',
             'records.employee_employment_history.*.to_year.required' => 'The end date is required.',
             'records.employee_employment_history.*.to_year.after_or_equal' => 'The end date must be on or after the start date for each employment history entry.',
-            
+            'records.employee_employment_history.*.documents.mimes' => 'The document must be an image or pdf',
+
             'records.employee_civil_service.*.certification.required' => 'The certification field is required for each civil service record.',
             'records.employee_civil_service.*.rating.required' => 'The rating field is required for each civil service record.',
             'records.employee_civil_service.*.date_exam.required' => 'The date of the exam is required for each civil service record.',
@@ -430,6 +529,7 @@ class Manual extends Component
             'records.employee_civil_service.*.license_no.required' => 'The license number is required for each civil service record.',
             'records.employee_civil_service.*.date_validity.required' => 'The date of validity is required for each civil service record.',
             'records.employee_civil_service.*.date_validity.date' => 'The date validity must be a valid date for each civil service record.',
+            'records.employee_civil_service.*.documents.mimes' => 'The document must be an image or pdf',
 
             'records.employee_trainings.*.type.required' => 'The training type is required for each training record.',
             'records.employee_trainings.*.name.required' => 'The training name is required for each training record.',
@@ -438,6 +538,7 @@ class Manual extends Component
             'records.employee_trainings.*.consumed_hours.required' => 'The consumed hours field is required for each training record.',
             'records.employee_trainings.*.consumed_hours.integer' => 'The consumed hours must be a valid integer for each training record.',
             'records.employee_trainings.*.sponsored_by.required' => 'The sponsored by field is required for each training record.',
+            'records.employee_trainings.*.documents.mimes' => 'The document must be an image or pdf',
 
             'records.employee_others.*.organization.required' => 'The organization field is required for each other record.',
             'records.employee_others.*.address.required' => 'The address field is required for each other record.',
@@ -446,11 +547,14 @@ class Manual extends Component
             'records.employee_others.*.consumed_hours.required' => 'The consumed hours field is required for each other record.',
             'records.employee_others.*.consumed_hours.integer' => 'The consumed hours must be a valid integer for each other record.',
             'records.employee_others.*.position.required' => 'The position field is required for each other record.',
+            'records.employee_others.*.documents.mimes' => 'The document must be an image or pdf',
 
             'records.employee_skills.*.name.required' => 'The skill name field is required for each skill record.',
             'records.employee_skills.*.recognition.required' => 'The recognition field is required for each skill record.',
             'records.employee_skills.*.organization.required' => 'The organization field is required for each skill record.',  
-            
+            'records.employee_skills.*.documents.mimes' => 'The document must be an image or pdf',
+
+            'records.employee_account.notify_user.boolean' => 'The Notify User field must be true or false.',        
             'records.employee_account.password.required' => 'The password is required.',
             'records.employee_account.password.max' => 'The password must be at least 8 characters.',
             'records.employee_account.password.same' => 'The password and confirmation password must match.',

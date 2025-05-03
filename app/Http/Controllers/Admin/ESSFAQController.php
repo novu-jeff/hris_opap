@@ -16,8 +16,8 @@ class ESSFAQController extends Controller
     {
         return view('admin.ess.faqs.index', [
             'action' => 'view',
-            'title' => 'All FAQs',
-            'header' => 'Manage FAQs',
+            'title' => 'All Frequently Asked Questions (FAQs)',
+            'header' => 'Manage Frequently Asked Questions (FAQs)',
             'sub' => 'Latest FAQs and updates.'
         ]);
     }
@@ -26,8 +26,8 @@ class ESSFAQController extends Controller
     {
         return view('admin.ess.faqs.index', [
             'action' => 'create',
-            'title' => 'Add an Announcement',
-            'header' => 'Create an announcement',
+            'title' => 'Create Frequently Asked Questions (FAQs)',
+            'header' => 'Create a Frequently Asked Questions (FAQs)',
             'sub' => 'Create FAQs or inform employees for latest happennings.'
         ]);
 
@@ -38,8 +38,8 @@ class ESSFAQController extends Controller
         return view('admin.ess.faqs.index', [
             'id' => $id,
             'action' => 'edit',
-            'title' => 'Edit FAQs',
-            'header' => 'Edit Announcement',
+            'title' => 'Edit Frequently Asked Questions (FAQs)',
+            'header' => 'Edit Frequently Asked Questions (FAQs)',
             'sub' => 'Modify or update posted FAQs.'
         ]);
 

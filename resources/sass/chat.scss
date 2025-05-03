@@ -240,6 +240,7 @@ a.add img {
 
 .msg-body {
     padding: 10px 30px;
+    height: 500px;
 }
 
 .msg-body ul {
@@ -431,7 +432,7 @@ li.reply .time {
     resize: none;
 }
 
-.send-box button {
+.send-box .send {
     border: none;
     background: $primary;
     padding: 20px 8px;
@@ -442,7 +443,7 @@ li.reply .time {
     width: 200px !important;
 }
 
-.send-box button i {
+.send-box .send i {
     margin-right: 5px;
 }
 
@@ -451,9 +452,7 @@ li.reply .time {
     height: auto;
     text-align: left;
     display: block;
-    background: #F6F7FA;
     border-radius: 3px;
-    padding: 8px 15px;
     margin-right: 5px;
     margin-bottom: 5px;
     overflow: hidden;
@@ -499,10 +498,28 @@ li.reply .time {
     display: flex;
     justify-content: center;
     align-items: center;
-    object-fit: scale-down;
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
+    position: relative;
 
+    button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+}
+
+.attachment-files {
+    color: $primary;
+    i {
+        font-size: 20px;
+        margin-bottom: 2px;
+    }
+
+    .btn-danger i {
+        font-size: 12px;
+    }
 }
 
 .send-btns .attach .form-control {

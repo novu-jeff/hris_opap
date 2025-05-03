@@ -81,7 +81,6 @@ if (!function_exists('relative_time_duration')) {
     }
 }
 
-
 if(!function_exists('see_more')) {
     function see_more($text, $lengthAllowed = null) {
         if($lengthAllowed != null && strlen($text) > $lengthAllowed) {
@@ -229,6 +228,38 @@ if(!function_exists('format_time')) {
             return Carbon::parse($time)->format('h:i A');
         } catch (\Exception $e) {
             return $time;
+        }
+    }
+}
+
+if (!function_exists('format_getFileName')) {
+    
+    function format_getFileName($path) {
+
+        $file = basename($path);
+        
+        return $file;
+    }
+}
+
+
+if (!function_exists('format_extension')) {
+
+    function format_extension($path) {
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        
+        switch (strtolower($extension)) {
+            case 'doc':
+            case 'docx':
+                return 'fa-solid fa-file-word'; 
+            case 'pdf':
+                return 'fa-solid fa-file-pdf'; 
+            case 'xls':
+            case 'xlsx':
+                return 'fa-solid fa-file-excel'; 
+            default:
+                return 'fa-solid fa-file'; 
         }
     }
 }
