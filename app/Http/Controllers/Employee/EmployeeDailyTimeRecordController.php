@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeDailyTimeRecordController extends Controller
 {
@@ -16,6 +17,8 @@ class EmployeeDailyTimeRecordController extends Controller
 
     public function index(Request $request)
     {
+
+        $employee_no = Auth::user()->employee_no;
 
         $month = $request->input('month'); 
         $year = $request->input('year');
@@ -55,7 +58,8 @@ class EmployeeDailyTimeRecordController extends Controller
             'header' => 'Daily Time Record',
             'sub' => 'My Daily Time Record',
             'month' => $month,
-            'year' => $year
+            'year' => $year,
+            'employee_no' => $employee_no
         ]);        
     }
 

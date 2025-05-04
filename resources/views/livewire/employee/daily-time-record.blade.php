@@ -1,6 +1,5 @@
 @section('style')
 <style>
-    /* Add any custom styling here */
 
     td {
         position: relative;
@@ -23,13 +22,17 @@
         padding: 0 80px 0 80px;
     }
 
+    .print-container .dtr:nth-of-type(2) {
+        display: none;
+    }
+
     .dtr {
-        width: 850px;
+        width: 800px;
         margin: 50px auto;
         padding: 10mm 5mm;
         box-sizing: border-box;
         border: 1px solid rgb(178, 178, 178);
-        background-color: #ffffff;
+        background-color: #fff;
         border-radius: 12px;
         position: relative;
     }
@@ -79,13 +82,14 @@
     .dtr-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px;
+        font-size: 12px !important;
     }
 
     .dtr-table th, .dtr-table td {
         border: 1px solid black;
         text-align: center;
         padding: 5px;
+        font-size: 12px; 
     }
 
     .dtr-summary {
@@ -173,6 +177,7 @@
         align-items: center;
     }
 
+
 </style>
 @endsection
 <div class="container">
@@ -223,6 +228,7 @@
                             <h1>For the month of <div class="underline" style="min-width: auto !important; padding: 0 15px 0 15px !important; text-transform: uppercase">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </div>(FY)</h1>
                         </div>
                     </div>
+
                     <div class="dtr-info">
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
                         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
@@ -282,8 +288,8 @@
                                         <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
         
                                     @endif
-    
-    
+
+
                                     <!-- Overtime: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}
@@ -474,8 +480,8 @@
                                         <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
         
                                     @endif
-    
-    
+
+
                                     <!-- Overtime: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}

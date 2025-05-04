@@ -14,7 +14,7 @@
                                 <div 
                                     class="clock-process card border-3 
                                         {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
-                                        {{ in_array($status, ['Break In', 'Break Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
+                                        {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
                                         {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
                                     wire:click="triggerClock" wire:target="triggerClock">
                                     <div class="card-body d-flex align-items-center">
@@ -34,7 +34,7 @@
                                         </div>
                                     </div>      
                                 </div>  
-                                @if (in_array($status, ['Break Out']))
+                                @if (in_array($status, ['Lunch Out']))
                                     <div class="text-center mt-3">
                                         <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut(true)" wire:target="triggerClockOut">
                                             Clock Out
@@ -122,8 +122,8 @@
                                                 <thead>
                                                     <tr>
                                                         <th>Clock In</th>
-                                                        <th>Break Out</th>
-                                                        <th>Break In</th>
+                                                        <th>Lunch Out</th>
+                                                        <th>Lunch In</th>
                                                         <th>Clock Out</th>
                                                     </tr>
                                                 </thead>
