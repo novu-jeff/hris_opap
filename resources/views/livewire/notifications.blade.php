@@ -13,12 +13,27 @@
                 </div>
             </div>
             <div class="d-flex gap-3 align-items-center">
-                @if($notifications['unread'] > 0) 
-                    <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
+                @if(!$isShowSearch)
+                    <button class="btn btn-primary" wire:click="toggleSearch">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size: 16px"></i>
+                    </button>
+                    @if($notifications['unread'] > 0) 
+                        <button wire:click="markAsRead" class="btn btn-info mb-0 px-3 fw-bold" style="font-size:12px">Mark as Read</button>
+                    @endif
+                    <div class="overlay close d-lg-none">
+                        <i class="fa-solid fa-xmark" wire:click="toggle"></i>
+                    </div>
+                @else
+                    <input type="text" wire:model="search_param" id="search" class="form-control">
+                    <div class="d-flex align-items-center gap-1">
+                        <button class="btn btn-primary" wire:click="search">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 16px"></i>
+                        </button>
+                        <button class="btn btn-primary" wire:click="toggleSearch">
+                            <i class="fa-solid fa-xmark" style="font-size: 16px"></i>
+                        </button>
+                    </div>
                 @endif
-                <div class="overlay close d-lg-none">
-                    <i class="fa-solid fa-xmark" wire:click="toggle"></i>
-                </div>
             </div>
         </div>
         <div class="scrollable" id="notificationList">

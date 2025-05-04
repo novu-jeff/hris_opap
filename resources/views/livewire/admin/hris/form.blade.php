@@ -67,7 +67,7 @@
                         <hr>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="mb-2" for="section_id">Office <span class="text-danger">*</span></label>
+                        <label class="mb-2" for="section_id">Section <span class="text-danger">*</span></label>
                         <select wire:model="records.employee_information.section_id" wire:change="select_change('section')" id="records.employee_information.section_id" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($sections as $section)
@@ -79,14 +79,14 @@
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="mb-2" for="branch">Branch</label>
+                        <label class="mb-2" for="branch">Central / Field Office</label>
                         <input type="text" wire:model="records.employee_information.branch" id="records.employee_information.branch" class="form-control" readonly>
                         <div class="error-field">
                             @error('records.employee_information.branch') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="mb-2" for="department">Department</label>
+                        <label class="mb-2" for="department">Cluster</label>
                         <input type="text" wire:model="records.employee_information.department" id="records.employee_information.department" class="form-control" readonly>
                         <div class="error-field">
                             @error('records.employee_information.department') <span class="text-danger">{{ $message }}</span> @enderror

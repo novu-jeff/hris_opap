@@ -215,6 +215,11 @@
                                     <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info">
                                         <i class="fa-solid fa-business-time"></i>
                                     </a>
+                                    @if($item->account->isLocked)
+                                        <button wire:click="unlock('true', '{{$item->employee_no}}')" class="btn btn-info">
+                                            <i class="fa-solid fa-lock-open"></i>
+                                        </button>
+                                    @endif
                                     <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>

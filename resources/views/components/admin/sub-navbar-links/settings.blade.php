@@ -24,11 +24,11 @@
                 </a>
                 <ul class="dropdown-menu">
                     @can('read branches')
-                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branches</a></li>
+                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Central / Field Office</a></li>
                     @endcan
 
                     @can('read departments')
-                        <li><a class="dropdown-item" href="{{route('department.index')}}">Departments</a></li>
+                        <li><a class="dropdown-item" href="{{route('department.index')}}">Clusters</a></li>
                     @endcan
 
                     @can('read sections')

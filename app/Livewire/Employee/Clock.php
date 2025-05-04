@@ -762,13 +762,13 @@ class Clock extends Component
 
             if($entry == 1) {
 
-                $this->status = 'Break Out';
+                $this->status = 'Lunch Out';
               
             }
 
             if($entry == 2) {
 
-                $this->status = 'Break In';
+                $this->status = 'Lunch In';
 
             }
 

@@ -31,12 +31,12 @@
                         </div>
                         
                         <div class="col-12 col-md-3 mb-4">
-                            <label class="mb-2" for="break_out">Break Out</label>
+                            <label class="mb-2" for="break_out">Lunch Out</label>
                             <input type="time" id="break_out" class="form-control restricted" value="{{ isset($view_records) && $view_records->break_out ? $view_records->break_out : '' }}" readonly>
                         </div>
                         
                         <div class="col-12 col-md-3 mb-4">
-                            <label class="mb-2" for="break_in">Break In</label>
+                            <label class="mb-2" for="break_in">Lunch In</label>
                             <input type="time" id="break_in" class="form-control restricted" value="{{ isset($view_records) && $view_records->break_in ? $view_records->break_in : '' }}" readonly>
                         </div>
                         

@@ -4,12 +4,12 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployementTypes;
-use App\Models\Message;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -44,7 +44,7 @@ class Index extends Component
 
     public bool $lazy = true;
 
-    protected $listeners = ['remove', 'loading'];
+    protected $listeners = ['remove', 'unlock', 'loading'];
     
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -385,7 +385,7 @@ class Index extends Component
         return true;
     }
     
-    public function remove(bool $isNotify = true, string $employee_no = null) {
+    public function remove(bool $isNotify = true, ? string $employee_no = null) {
 
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
@@ -443,10 +443,67 @@ class Index extends Component
         }
     }
 
+    public function unlock(bool $isNotify = true, ? string $employee_no = null) {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that this account has been locked due to multiple login attempts. Are you sure to unlock account  <b>' . strtoupper($employee_no) . '?</b>. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'unlock';
+
+            $this->selected_id = $employee_no;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeAccount::where('employee_no', $this->selected_id)->first();
+            
+            if($record) {
+                
+                $record->isLocked = false;
+                $record->login_attempts = 0;
+                $record->save();
+
+                $this->loadRecords();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!', 
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been unlocked.' 
+                ]);
+
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!', 
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists' 
+                ]);
+            }
+        }
+    }
+
     public function render()
     {
         
-        $model = EmployeeInformation::with('personal')
+        $model = EmployeeInformation::with('account', 'personal')
             ->where('isDeleted', false);
 
         if ($this->search) {
