@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
-use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,7 +10,6 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-
     use WithPagination;
 
     public $month;
@@ -32,24 +30,23 @@ class Index extends Component
         $this->loadRecords();
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->resetPage();
+    }
+
     public function loadRecords() {
-        // Default to the current day, month, and year
         $currentDate = Carbon::createFromDate($this->year, $this->month, $this->day);
 
-
-        // Calculate the previous date
         $previousDate = $currentDate->copy()->subDay();
-        $previousDay = $previousDate->day;
-        $previousMonth = $previousDate->month;
-        $previousYear = $previousDate->year;
-
-        // Calculate the next date
         $nextDate = $currentDate->copy()->addDay();
-        $nextDay = $nextDate->day;
-        $nextMonth = $nextDate->month;
-        $nextYear = $nextDate->year;
 
-        // Populate the records array
         $this->records = [
             'current' => [
                 'day' => $this->day,
@@ -58,24 +55,22 @@ class Index extends Component
                 'day_of_week' => $currentDate->format('l'),
             ],
             'previous' => [
-                'day' => $previousDay,
-                'month' => $previousMonth,
-                'year' => $previousYear,
+                'day' => $previousDate->day,
+                'month' => $previousDate->month,
+                'year' => $previousDate->year,
                 'day_of_week' => $previousDate->format('l'),
             ],
             'next' => [
-                'day' => $nextDay,
-                'month' => $nextMonth,
-                'year' => $nextYear,
+                'day' => $nextDate->day,
+                'month' => $nextDate->month,
+                'year' => $nextDate->year,
                 'day_of_week' => $nextDate->format('l'),
             ],
             'data' => []
         ];
-                
     }
 
     public function findLogs(int $id) {
-
         if ($this->viewLogBsdNo === $id) {
             $this->viewLogBsdNo = null;
             $this->view_log = null;
@@ -85,25 +80,41 @@ class Index extends Component
             $this->view_log = $data;
         }
     }
-    
-    private function getLogs(int $bsd_no = null)
+
+    private function getLogs(?int $bsd_no = null)
     {
         $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('d/m/Y');
-        
+
         $query = EmployeeTimelogs::with('employee.personal')
             ->where('logdatetime', 'LIKE', "{$timestamp}%");
 
         if (!is_null($bsd_no)) {
             $query->where('bsd_no', $bsd_no);
         }
-    
+
+        if (!empty($this->search)) {
+            $search = $this->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('employee', function ($subQuery) use ($search) {
+                    $subQuery->where('employee_no', 'LIKE', "%{$search}%")
+                        ->orWhere('bsd_no', 'LIKE', "%{$search}%")
+                        ->orWhereHas('personal', function ($personalQuery) use ($search) {
+                            $personalQuery->where('firstname', 'LIKE', "%{$search}%")
+                                ->orWhere('middlename', 'LIKE', "%{$search}%")
+                                ->orWhere('lastname', 'LIKE', "%{$search}%");
+                        });
+                });
+            });
+        }
+
         $records = $query->get();
-    
+
         return $records->groupBy(function ($record) {
             return Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('d/m/Y') . '|' . ($record->bsd_no ?? 'undefined');
         })->map(function ($logs, $key) {
             [$date, $bsd_no] = explode('|', $key);
-    
+
             return [
                 'date' => $date,
                 'bsd_no' => $bsd_no,
@@ -113,7 +124,7 @@ class Index extends Component
             ];
         })->values();
     }
-    
+
     private function processLogs($logs)
     {
         return $logs->mapToGroups(function ($log) {
@@ -128,22 +139,20 @@ class Index extends Component
             ];
         })->collapse()->values()->all();
     }
-    
+
     public function render()
     {
-        
         $data = $this->getLogs();
 
-        // Manual pagination for collections
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = $this->entries;
         $pagedData = $data->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        
+
         $paginatedLogs = new LengthAwarePaginator(
-            $pagedData, 
+            $pagedData,
             count($data),
-            $perPage, 
-            $currentPage, 
+            $perPage,
+            $currentPage,
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
@@ -151,6 +160,4 @@ class Index extends Component
             'timelogs' => $paginatedLogs
         ]);
     }
-    
-    
 }
