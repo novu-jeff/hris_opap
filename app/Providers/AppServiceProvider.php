@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use App\Observers\ModelActivityObserver;
 use App\Services\DailyTimeRecordService;
 use Illuminate\Database\Eloquent\Model;

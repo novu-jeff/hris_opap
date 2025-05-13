@@ -73,6 +73,7 @@ use App\Http\Controllers\Employee\RemainingCreditController as EmployeeRemaining
 use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
+use App\Http\Controllers\TestController;
 use App\Livewire\Employee\DailyTimeRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
@@ -87,6 +88,8 @@ use Illuminate\Support\Facades\Request;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/test', [TestController::class, 'index']);
 
 Route::get('/slip', function () {
     return view('slip');

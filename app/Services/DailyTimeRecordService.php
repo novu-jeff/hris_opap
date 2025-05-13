@@ -71,8 +71,8 @@ class DailyTimeRecordService {
         object $employee, 
         object $shift, 
         object $schedule, 
-        Object $clockData, 
-        Object $employeeAut, 
+        object $clockData, 
+        object $employeeAut, 
         object $overtime, 
         int $leaves,
         object $holiday,
@@ -337,11 +337,11 @@ class DailyTimeRecordService {
         $year = Carbon::parse($coverageDate)->format('Y'); // Get selected year
     
         // Fetch logs within the given month & year
-        $logs = EmployeeTimelogs::where('bsd_no', $employee->bsd_no)
-            ->whereRaw("STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i') IS NOT NULL")
-            ->whereRaw("MONTH(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$month])
-            ->whereRaw("YEAR(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$year])
-            ->orderByRaw("STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')") // Order by date
+        $logs = EmployeeTimelogs::where('employee_id', $employee->bsd_no)
+            ->whereRaw("STR_TO_DATE(timestamp, '%d/%m/%Y %H:%i') IS NOT NULL")
+            ->whereRaw("MONTH(STR_TO_DATE(timestamp, '%d/%m/%Y %H:%i')) = ?", [$month])
+            ->whereRaw("YEAR(STR_TO_DATE(timestamp, '%d/%m/%Y %H:%i')) = ?", [$year])
+            ->orderByRaw("STR_TO_DATE(timestamp, '%d/%m/%Y %H:%i')") // Order by date
             ->get();
     
         // Initialize a collection
@@ -349,7 +349,7 @@ class DailyTimeRecordService {
     
         foreach ($logs as $log) {
             // Ensure correct datetime parsing
-            $dateTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
+            $dateTime = Carbon::createFromFormat('d/m/Y H:i', $log->timestamp);
             $date = $dateTime->format('Y-m-d'); // Format as YYYY-MM-DD
             $time = $dateTime->format('H:i:s'); // Format as HH:MM:SS
     
@@ -373,7 +373,6 @@ class DailyTimeRecordService {
             ->whereRaw("MONTH(STR_TO_DATE(date, '%d/%m/%Y')) = ?", [$month])
             ->whereRaw("YEAR(STR_TO_DATE(date, '%d/%m/%Y')) = ?", [$year])
             ->orderByRaw("STR_TO_DATE(date, '%d/%m/%Y')") // Order by date
-            ->limit(100)
             ->get();
 
         // Initialize a collection

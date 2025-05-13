@@ -47,7 +47,6 @@ class Chatbox extends Component
             ->when($employee_no, fn($query) => $query->where('employee_no', $employee_no))
             ->first();
 
-
         if (!$user) {
             return redirect()->route('ess.request-status');
         }

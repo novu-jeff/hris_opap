@@ -182,7 +182,7 @@
 @endsection
 <div class="container">
     <div class="mt-3">
-        @if($dtr)
+        @if($logs)
             <div class="py-3 d-flex justify-content-between gap-3 align-items-center">
                 <div class="d-flex gap-3">
                     <div class="d-flex align-items-center">
@@ -230,10 +230,10 @@
                     </div>
 
                     <div class="dtr-info">
-                        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
-                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
+                        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</div></div>
+                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
@@ -259,16 +259,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($dtr['clock_in_out'] as $day)
+                            @foreach ($logs['dtr']['logs'] as $key => $day)
                                 <tr>
                                     <td style="position: relative; ">
-                                        {{ \Carbon\Carbon::parse($day['date'])->format('d D') }}
+                                        {{ \Carbon\Carbon::parse($key)->format('d D') }}
                                         @if ($day['clock_in'] !== null && $day['origin'] === 'web')
                                             <div class="shaded-box">|</div>
                                         @endif
                                     </td>
         
-                                    @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])))
+                                    @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])) && !$day['workOnHoliday'])
                                         <td colspan="4">
                                             Rest Day
                                         </td>
@@ -281,15 +281,15 @@
                                                 {{ ' ' }}
                                             @endisset
                                         </td>
-                                        <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i A') : ' ' }}</td>
+                                        <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
             
                                         <!-- PM -->
-                                        <td>{{ isset($day['break_in']) ? \Carbon\Carbon::parse($day['break_in'])->format('g:i A') : ' ' }}</td>
+                                        <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
                                         <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
         
                                     @endif
-
-
+    
+    
                                     <!-- Overtime: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}
@@ -350,11 +350,8 @@
                                                 @endif
                                             @endforeach
                                         @else
-                                            <small> </small>
-                                        @endif
-                                        @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks']))
-                                            <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $dtr['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($day['date'])->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
-                                        @endif   
+                                            <small></small>
+                                        @endif 
                                     </td>                      
                                 </tr>
                             @endforeach
@@ -363,31 +360,23 @@
                     <div class="dtr-summary">
                         <h5 class="text-center text-uppercase">Total Summary</h5>
                         <div class="dtr-summary-container">
-                            <div class="dtr-summary-item">Days Worked - {{ $dtr['summary']['days_works'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Tardiness 
-                                @isset($dtr['summary']['tota_late'])
-                                    {{ floor($dtr['summary']['tota_late'] / 60) }} hr - {{ $dtr['summary']['tota_late'] % 60 }} min
-                                @else
-                                    {{ ' ' }}
-                                @endisset
+                            <div class="dtr-summary-item">Days Worked = {{ $logs['dtr']['summary']['worked_days'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Tardiness =
+                                {{$logs['dtr']['summary']['tardiness'] ?? '0'}}
                             </div>
-                            <div class="dtr-summary-item">Leave - {{ $dtr['summary']['leaves'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Absences - {{ $dtr['summary']['absences'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">TA Freq. 0</div>
-                            <div class="dtr-summary-item">Rest Day - {{ $dtr['summary']['rest_days'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Overtime - {{ $dtr['summary']['overtime'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Undertime 
-                                @isset($dtr['summary']['total_undertime'])
-                                    {{ floor($dtr['summary']['total_undertime'] / 60) }} hr - {{ $dtr['summary']['total_undertime'] % 60 }} min
-                                @else
-                                    {{ ' ' }}
-                                @endisset
+                            <div class="dtr-summary-item">Leave = {{ $logs['dtr']['summary']['leaves'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Absences = {{ $logs['dtr']['summary']['absences'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">TA Freq. = {{$logs['dtr']['summary']['tardiness_freq']}} </div>
+                            <div class="dtr-summary-item">Rest Day = {{ $logs['dtr']['summary']['rest_days'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Overtime = {{ $logs['dtr']['summary']['overtime'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Undertime =
+                                {{ $logs['dtr']['summary']['overtime'] ?? '0' }}
                             </div>
-                            <div class="dtr-summary-item">Special Hol. - {{ $dtr['summary']['special_holidays'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Total Days of Work - {{ $dtr['summary']['total_days_work'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">UT Freq. 0</div>
-                            <div class="dtr-summary-item">Legal Hol. - {{ $dtr['summary']['regular_holidays'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Less TA/UT 0</div>
+                            <div class="dtr-summary-item">Special Hol. = {{ $logs['dtr']['summary']['special_hol'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Total Days of Work = {{ $logs['dtr']['summary']['total_days_of_work'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">UT Freq. = {{$logs['dtr']['summary']['undertime_freq']}}</div>
+                            <div class="dtr-summary-item">Legal Hol. = {{ $logs['dtr']['summary']['legal_hol'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Less TA/UT  = 0 </div>
                         </div>
                     </div>
                     <div class="sepe" style="margin-top: 40px;"></div>
@@ -396,7 +385,7 @@
                         performed, record of which was made daily at the time of arrival and departure from office.
                     </div>
                     <div class="signature">
-                        <h5>{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</h5>
+                        <h5>{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</h5>
                         <div class="sepe"></div>
                         <h6>(Name and Signature of Employee)</h6>
                         <div class="sepe" style="margin-top: 30px;"></div>
@@ -404,7 +393,7 @@
                     </div>
                     <div class="remarks">
                         <h6 style="text-transform: uppercase">Remarks:</h6>
-                        <p>{{ $dtr['remarks'] ?? '' }}</p>   
+                        <p>{{ $logs['remarks'] ?? '' }}</p>   
                     </div>
                 </div>
                 <div class="dtr">
@@ -422,10 +411,10 @@
                         </div>
                     </div>
                     <div class="dtr-info">
-                        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</div></div>
-                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['position'] }}</div></div>
+                        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</div></div>
+                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['positions']['name'] ?? 'N/A' }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $dtr['employee_account']['section'] }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section']['name'] ?? 'N/A' }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
@@ -451,16 +440,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($dtr['clock_in_out'] as $day)
+                            @foreach ($logs['dtr']['logs'] as $day)
+                                {{ is_array($day['remarks']) ? implode(',', $day['remarks']) : '' }}
+
                                 <tr>
                                     <td style="position: relative; ">
-                                        {{ \Carbon\Carbon::parse($day['date'])->format('d D') }}
+                                        {{ \Carbon\Carbon::parse($key)->format('d D') }}
                                         @if ($day['clock_in'] !== null && $day['origin'] === 'web')
                                             <div class="shaded-box">|</div>
                                         @endif
                                     </td>
         
-                                    @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])))
+                                    @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])) && !$day['workOnHoliday'])
                                         <td colspan="4">
                                             Rest Day
                                         </td>
@@ -473,15 +464,15 @@
                                                 {{ ' ' }}
                                             @endisset
                                         </td>
-                                        <td>{{ isset($day['break_out']) ? \Carbon\Carbon::parse($day['break_out'])->format('g:i A') : ' ' }}</td>
+                                        <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
             
                                         <!-- PM -->
-                                        <td>{{ isset($day['break_in']) ? \Carbon\Carbon::parse($day['break_in'])->format('g:i A') : ' ' }}</td>
+                                        <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
                                         <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
         
                                     @endif
-
-
+    
+    
                                     <!-- Overtime: Calculate Hours and Mins-->
                                     <td>
                                         {{-- hours --}}
@@ -508,7 +499,7 @@
                                         {{-- Hours --}}
                                         @if(isset($day['total_aut']))
                                             @php
-                                                $hours = intdiv($day['total_aut'], 60); // Get hours
+                                                $hours = intdiv($day['total_aut'], 60); 
                                             @endphp
                                             {{ $hours ?: ' ' }}
                                         @endif
@@ -517,7 +508,7 @@
                                         {{-- Minutes --}}
                                         @if(isset($day['total_aut']))
                                             @php
-                                                $minutes = $day['total_aut'] % 60; // Get remaining minutes
+                                                $minutes = $day['total_aut'] % 60; 
                                             @endphp
                                             {{ ($hours != 0 && $minutes == 0) ? '0' : ($minutes ? str_pad($minutes, 2, '0', STR_PAD_LEFT) : '') }}
                                         @endif
@@ -545,7 +536,7 @@
                                             <small> </small>
                                         @endif
                                         @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks']))
-                                            <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $dtr['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($day['date'])->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
+                                            <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $logs['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($key)->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
                                         @endif   
                                     </td>                      
                                 </tr>
@@ -555,31 +546,23 @@
                     <div class="dtr-summary">
                         <h5 class="text-center text-uppercase">Total Summary</h5>
                         <div class="dtr-summary-container">
-                            <div class="dtr-summary-item">Days Worked - {{ $dtr['summary']['days_works'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Tardiness 
-                                @isset($dtr['summary']['tota_late'])
-                                    {{ floor($dtr['summary']['tota_late'] / 60) }} hr - {{ $dtr['summary']['tota_late'] % 60 }} min
-                                @else
-                                    {{ ' ' }}
-                                @endisset
+                            <div class="dtr-summary-item">Days Worked = {{ $logs['dtr']['summary']['worked_days'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Tardiness =
+                                {{$logs['dtr']['summary']['tardiness'] ?? '0'}}
                             </div>
-                            <div class="dtr-summary-item">Leave - {{ $dtr['summary']['leaves'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Absences - {{ $dtr['summary']['absences'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">TA Freq. 0</div>
-                            <div class="dtr-summary-item">Rest Day - {{ $dtr['summary']['rest_days'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Overtime - {{ $dtr['summary']['overtime'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Undertime 
-                                @isset($dtr['summary']['total_undertime'])
-                                    {{ floor($dtr['summary']['total_undertime'] / 60) }} hr - {{ $dtr['summary']['total_undertime'] % 60 }} min
-                                @else
-                                    {{ ' ' }}
-                                @endisset
+                            <div class="dtr-summary-item">Leave = {{ $logs['dtr']['summary']['leaves'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Absences = {{ $logs['dtr']['summary']['absences'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">TA Freq. = {{$logs['dtr']['summary']['tardiness_freq']}} </div>
+                            <div class="dtr-summary-item">Rest Day = {{ $logs['dtr']['summary']['rest_days'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Overtime = {{ $logs['dtr']['summary']['overtime'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Undertime =
+                                {{ $logs['dtr']['summary']['overtime'] ?? '0' }}
                             </div>
-                            <div class="dtr-summary-item">Special Hol. - {{ $dtr['summary']['special_holidays'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Total Days of Work - {{ $dtr['summary']['total_days_work'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">UT Freq. 0</div>
-                            <div class="dtr-summary-item">Legal Hol. - {{ $dtr['summary']['regular_holidays'] ?? ' ' }}</div>
-                            <div class="dtr-summary-item">Less TA/UT 0</div>
+                            <div class="dtr-summary-item">Special Hol. = {{ $logs['dtr']['summary']['special_hol'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Total Days of Work = {{ $logs['dtr']['summary']['total_days_of_work'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">UT Freq. = {{$logs['dtr']['summary']['undertime_freq']}}</div>
+                            <div class="dtr-summary-item">Legal Hol. = {{ $logs['dtr']['summary']['legal_hol'] ?? '0' }}</div>
+                            <div class="dtr-summary-item">Less TA/UT  = 0 </div>
                         </div>
                     </div>
                     <div class="sepe" style="margin-top: 40px;"></div>
@@ -588,7 +571,7 @@
                         performed, record of which was made daily at the time of arrival and departure from office.
                     </div>
                     <div class="signature">
-                        <h5>{{ $dtr['employee_account']['firstname'] . ' ' . $dtr['employee_account']['middlename'] . ' ' . $dtr['employee_account']['lastname']}}</h5>
+                        <h5>{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</h5>
                         <div class="sepe"></div>
                         <h6>(Name and Signature of Employee)</h6>
                         <div class="sepe" style="margin-top: 30px;"></div>
@@ -596,7 +579,7 @@
                     </div>
                     <div class="remarks">
                         <h6 style="text-transform: uppercase">Remarks:</h6>
-                        <p>{{ $dtr['remarks'] ?? '' }}</p>   
+                        <p>{{ $logs['remarks'] ?? '' }}</p>   
                     </div>
                 </div>
             </div>

@@ -18,15 +18,15 @@ class TimeKeepingController extends Controller
         $this->middleware('permission:read correction-timelogs')->only(['correction_apply']);
     }
 
-    public function index(string $month = null, int $day = null, int $year = null)
+    public function index(? string $month = null, ? int $day = null, ? int $year = null)
     {
 
         if (is_null($month) || is_null($day) || is_null($year)) {
             // Get the latest record from the database
-            $latestRecord = EmployeeTimelogs::orderByDesc('logdatetime')->first();
+            $latestRecord = EmployeeTimelogs::orderByDesc('timestamp')->first();
             if ($latestRecord) {
                 // Get the year, month, and day of the latest record
-                $formattedDate = Carbon::createFromFormat('d/m/Y H:i', $latestRecord->logdatetime);
+                $formattedDate = Carbon::parse($latestRecord->timestamp);
                 $year = $formattedDate->format('Y');
                 $month = $formattedDate->format('m');
                 $day = $formattedDate->format('d');

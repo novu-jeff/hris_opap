@@ -54,8 +54,8 @@ class Clock extends Component
 
 
     public function delete() {
-        $date = Carbon::now()->format('d/m/Y');
-        EmployeeTimelogs::where('logdatetime', 'like', "%{$date}%")->delete();
+        $date = Carbon::now()->format('Y-m-d');
+        EmployeeTimelogs::where('timestamp', 'like', "%{$date}%")->delete();
     }
 
 
@@ -83,10 +83,10 @@ class Clock extends Component
 
         $shift = $this->employeeShift();
 
-        $date = Carbon::now()->format('d/m/Y');
+        $date = Carbon::now()->format('Y-m-d');
 
-        $model = EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-            ->where('logdatetime', 'LIKE', "{$date}%");
+        $model = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+            ->where('timestamp', 'LIKE', "{$date}%");
         $clockRecords = $model->get();
         
         $entry = $model->count();
@@ -169,7 +169,7 @@ class Clock extends Component
         } else {
 
             $this->dispatch('captureImage', ['time' => $time]);
-            $this->insertLog(4, $time);
+            $this->insertLog(4, $time, true);
 
         }
 
@@ -184,8 +184,8 @@ class Clock extends Component
     
         $logTypes = [
             1 => 'Clock-In',
-            2 => 'Break-Out',
-            3 => 'Break-In',
+            2 => 'Lunch-Out',
+            3 => 'Lunch-In',
             4 => 'Clock-Out'
          ];
                      
@@ -216,11 +216,11 @@ class Clock extends Component
             $breakTimeFrom = Carbon::parse($shift->break_out);
             $breakTimeTo = Carbon::parse($shift->break_in);
 
-            $date = Carbon::now()->format('d/m/Y');
+            $date = Carbon::now()->format('Y-m-d');
             $time = Carbon::now()->format('H:i');
             
-            $clockRecords = EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-                ->where('logdatetime', 'LIKE', "{$date}%");
+            $clockRecords = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+                ->where('timestamp', 'LIKE', "{$date}%");
             
             $firstLog = $clockRecords->first()->logdatetime ?? null;
             $expectedOut = null;
@@ -228,7 +228,7 @@ class Clock extends Component
             if ($firstLog) {
                 if ($entry > 1) {
                     // Convert firstLog to Carbon instance
-                    $firstLogTime = Carbon::createFromFormat('d/m/Y H:i', $firstLog);  
+                    $firstLogTime = Carbon::createFromFormat('Y-m-d H:i', $firstLog);  
             
                     // Default expectedOut to firstLog + 9 hours
                     $expectedOut = $firstLogTime->copy()->addHours(9);
@@ -466,9 +466,9 @@ class Clock extends Component
     }
    
     # hanlde inserting log to db
-    public function insertLog($entry, $time) {
+    public function insertLog($entry, $time, $isForcedClockout = false) {
 
-        $date = Carbon::now()->format('d/m/Y');
+        $date = Carbon::now()->format('Y-m-d');
         $time = Carbon::parse($time)->format('H:i');
 
         $timestamp = $date . ' ' . $time;
@@ -483,12 +483,16 @@ class Clock extends Component
         ];
 
         EmployeeTimelogs::create([
-            'origin' => 'web',
-            'bsd_no' => $this->bsd_no,
-            'type' => $type[$entry],
-            'logdatetime' => $timestamp,
+            'sn' => 'RUU5242500021',
+            'table' => 'ATTLOG',
+            'stamp' => '9999',
+            'employee_id' => $this->bsd_no,
+            'timestamp' => $timestamp,
+            'status1' => $type[$entry],
+            'isWeb' => 1,
             'captured_location' => $location,
             'accomplishment' => $this->accomplishment ?? null,
+            'isForcedOut' => $isForcedClockout ? true : false
         ]);   
 
         $this->dispatch('alert', [
@@ -521,7 +525,7 @@ class Clock extends Component
         $image = str_replace(' ', '+', $image);
         $imageName = $this->user_id . '_' . time() . '.png';
 
-        $date = Carbon::now()->format('d/m/Y');
+        $date = Carbon::now()->format('Y-m-d');
         $time = Carbon::parse($time)->format('H:i');
 
         $timestamp = $date . ' ' . $time;
@@ -531,8 +535,8 @@ class Clock extends Component
 
         # store image name
 
-        EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-            ->where('logdatetime', $timestamp)
+        EmployeeTimelogs::where('employee_id', $this->bsd_no)
+            ->where('timestamp', $timestamp)
             ->update([
                 'captured_image' => $imageName,
             ]);
@@ -584,113 +588,90 @@ class Clock extends Component
     }
 
     
-    private function getLogs() {
-
-        $month = Carbon::now()->month;
-        $year = Carbon::now()->year;
+    private function getLogs()
+    {
+        $month = now()->month;
+        $year = now()->year;
     
         $records = EmployeeTimelogs::with('employee.personal')
-            ->where('bsd_no', $this->bsd_no)
-            ->whereRaw("MONTH(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$month])
-            ->whereRaw("YEAR(STR_TO_DATE(logdatetime, '%d/%m/%Y %H:%i')) = ?", [$year])
+            ->where('employee_id', $this->bsd_no)
+            ->whereMonth('timestamp', $month)
+            ->whereYear('timestamp', $year)
             ->get();
     
         $groupedData = $records->groupBy(function ($record) {
             try {
-                $date = Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('j/n/Y');
+                $date = Carbon::parse($record->timestamp)->format('j/n/Y');
             } catch (\Exception $e) {
-                return null; // Skip invalid dates
+                return null;
             }
     
-            return $date . '|' . ($record->bsd_no ?? 'undefined');
+            return $date . '|' . ($record->employee_id ?? 'undefined');
         })->filter()->map(function ($logs, $key) {
-            [$date, $bsd_no] = explode('|', $key);
-            
-            // Extract logs and sort by time
+            [$date, $employee_id] = explode('|', $key);
+    
+            // Sort logs by timestamp
             $logEntries = $logs->sortBy(function ($log) {
                 try {
-                    return Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
+                    return Carbon::parse($log->timestamp);
                 } catch (\Exception $e) {
                     return null;
                 }
             })->values();
     
-            if ($logEntries->count() === 2 && !empty($logEntries->last()->accomplishment)) {
-                return [
-                    'date' => $date,
-                    'bsd_no' => $bsd_no,
-                    'employee' => $logs->first()->employee,
-                    'origin' => $logs->first()->origin,
-                    'logs' => [
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[0]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[0]->captured_image,
-                            'captured_location' => $logEntries[0]->captured_location
-                        ],
-                        [], // Empty array for consistency
-                        [], // Empty array for consistency
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[1]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[1]->captured_image,
-                            'captured_location' => $logEntries[1]->captured_location,
-                            'accomplishment' => $logEntries[1]->accomplishment
-                        ]
-                    ]
-                ];
-            }
-    
-            if ($logEntries->count() === 3 && !empty($logEntries->last()->accomplishment)) {
-                return [
-                    'date' => $date,
-                    'bsd_no' => $bsd_no,
-                    'employee' => $logs->first()->employee,
-                    'origin' => $logs->first()->origin,
-                    'logs' => [
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[0]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[0]->captured_image,
-                            'captured_location' => $logEntries[0]->captured_location
-                        ],
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[1]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[1]->captured_image,
-                            'captured_location' => $logEntries[1]->captured_location,
-                            'accomplishment' => $logEntries[1]->accomplishment
-                        ],
-                        [], // Empty array for consistency
-                        [
-                            'time' => Carbon::createFromFormat('d/m/Y H:i', $logEntries[2]->logdatetime)->format('H:i:s'),
-                            'captured_image' => $logEntries[2]->captured_image,
-                            'captured_location' => $logEntries[2]->captured_location,
-                            'accomplishment' => $logEntries[2]->accomplishment
-                        ]
-                    ]
-                ];
-            }
-    
-            return [
-                'date' => $date,
-                'bsd_no' => $bsd_no,
-                'employee' => $logs->first()->employee,
-                'origin' => $logs->first()->origin,
-                'logs' => collect($logs)->map(function ($log) {
-                    try {
-                        $time = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime)->format('H:i:s');
-                    } catch (\Exception $e) {
-                        return null;
-                    }
+            $formatLog = function ($log) {
+                try {
+                    $time = Carbon::parse($log->timestamp)->format('H:i:s');
                     return [
                         'time' => $time,
                         'captured_image' => $log->captured_image,
                         'captured_location' => $log->captured_location,
-                        'accomplishment' => $log->accomplishment
+                        'accomplishment' => $log->accomplishment ?? null
                     ];
-                })->filter()->values()->all()
+                } catch (\Exception $e) {
+                    return null;
+                }
+            };
+    
+            $baseData = [
+                'date' => $date,
+                'bsd_no' => $employee_id,
+                'employee' => $logs->first()->employee,
+                'origin' => $logs->first()->origin,
             ];
+    
+            // Handle specific log count scenarios
+            if ($logEntries->count() === 2 && !empty($logEntries->last()->accomplishment)) {
+                return array_merge($baseData, [
+                    'logs' => [
+                        $formatLog($logEntries[0]),
+                        [],
+                        [],
+                        $formatLog($logEntries[1])
+                    ]
+                ]);
+            }
+    
+            if ($logEntries->count() === 3 && !empty($logEntries->last()->accomplishment)) {
+                return array_merge($baseData, [
+                    'logs' => [
+                        $formatLog($logEntries[0]),
+                        $formatLog($logEntries[1]),
+                        [],
+                        $formatLog($logEntries[2])
+                    ]
+                ]);
+            }
+    
+            // Default fallback
+            return array_merge($baseData, [
+                'logs' => $logEntries->map(fn($log) => $formatLog($log))->filter()->values()->all()
+            ]);
         })->values();
     
         return $groupedData;
     }
+    
     
 
     public function showLogs() {
@@ -732,10 +713,10 @@ class Clock extends Component
 
     public function toggleStatus() {
 
-        $date = Carbon::now()->format('d/m/Y');
+        $date = Carbon::now()->format('Y-m-d');
 
-        $model = EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-            ->where('logdatetime', 'LIKE', "{$date}%");
+        $model = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+            ->where('timestamp', 'LIKE', "{$date}%");
     
         $clockRecords = $model->get();
         
@@ -752,7 +733,7 @@ class Clock extends Component
         if($shift && $shift->shift_duration == 'flexible') {
 
     
-            $date = Carbon::now()->format('d/m/Y');
+            $date = Carbon::now()->format('Y-m-d');
                         
             if($entry == 0) {
 
@@ -785,7 +766,6 @@ class Clock extends Component
         } else {
             $this->status = 'Clock In';
         }
-        
 
         return true;
 

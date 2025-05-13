@@ -11,21 +11,29 @@ return new class extends Migration {
             $table->id(); 
             $table->string('origin')
                 ->nullable();
-            $table->string('biometricdtrid')
+            $table->string('employee_id')
                 ->nullable();
-            $table->string('bsd_no')
-                ->nullable()
-                ->index();
-            $table->string('isindtr')
+            $table->string('clock_in')
                 ->nullable();
-            $table->string('logdatetime')
+            $table->string('lunch_in')
                 ->nullable();
-            $table->string('nfcdeviceid')
-                ->index()
+            $table->string('lunch_out')
                 ->nullable();
-            $table->string('type')
+            $table->string('clock_out')
                 ->nullable();
-            $table->string('ismanual')
+            $table->string('tardiness')
+                ->nullable();
+            $table->string('undertime')
+                ->nullable();
+            $table->string('undertime_reason')
+                ->nullable();
+            $table->string('early_lunch_in')
+                ->nullable();
+            $table->string('early_lunch_in_reason')
+                ->nullable();
+            $table->string('overtime')
+                ->nullable();
+            $table->string('overtime_reason')
                 ->nullable();
             $table->string('captured_image')
                 ->nullable();
