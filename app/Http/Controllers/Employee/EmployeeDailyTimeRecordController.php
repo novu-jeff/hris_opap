@@ -31,7 +31,7 @@ class EmployeeDailyTimeRecordController extends Controller
                 $month = $date->format('F');
                 $year = $date->format('Y');
             } else {
-                $date = Carbon::createFromFormat('d/m/Y H:i', $date)->format('F, Y');
+                $date = Carbon::parse($date)->format('F, Y');
 
                 $month = trim(explode(',', $date)[0]);
                 $year = trim(explode(',', $date)[1]);
@@ -64,11 +64,13 @@ class EmployeeDailyTimeRecordController extends Controller
     }
 
     private function getLatestRecordDate() {
-        $latestRecord = EmployeeTimelogs::orderBy('logdatetime', 'desc')->first();
+        $latestRecord = EmployeeTimelogs::orderBy('timestamp', 'desc')->first();
+        
         if(is_null($latestRecord)) {
             return null;
         }
 
-        return $latestRecord->logdatetime;
+        return $latestRecord->timestamp;
     }
+
 }

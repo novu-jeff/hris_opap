@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
+use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeAUT;
 use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeInformation;
@@ -34,64 +35,31 @@ class CorrectionApply extends Component
         }
     
         $logs = $this->getLogs($this->bsd_no, $this->date);
-            
-        if (!empty($logs) && isset($logs[0])) {
-            $records = $logs[0]['logs'] ?? [];
-            $this->clockin = isset($records[0]['time']) ? Carbon::parse($records[0]['time'])->format('H:i') : null;
-            $this->breakout = isset($records[1]['time']) ? Carbon::parse($records[1]['time'])->format('H:i') : null;
-            $this->breakin = isset($records[2]['time']) ? Carbon::parse($records[2]['time'])->format('H:i') : null;
-            $this->clockout = isset($records[3]['time']) ? Carbon::parse($records[3]['time'])->format('H:i') : null;  // Corrected this line
 
+        if (!empty($logs)) {
+            $this->clockin = Carbon::parse($logs['clock_in'])->format('H:i');
+            $this->breakout = Carbon::parse($logs['lunch_in'])->format('H:i');
+            $this->breakin = Carbon::parse($logs['lunch_out'])->format('H:i');
+            $this->clockout = Carbon::parse($logs['clock_out'])->format('H:i');
         } else {
             $this->clockin = $this->breakout = $this->breakin = $this->clockout = null;
         }
         
     }
 
-    private function getLogs(int $bsd_no = null, string $date) {
+    private function getLogs(? int $bsd_no = null, string $date) {
 
-        $timestamp = Carbon::create($date)->format('d/m/Y');
+        $timestamp = Carbon::create($date)->format('Y-m-d');
         
-        $query = EmployeeTimelogs::where('logdatetime', 'LIKE', "{$timestamp}%");
+        $logService = new TimeLogService;
                 
-        if (!is_null($bsd_no)) {
-            $query->where('bsd_no', $bsd_no);
-        }
-    
-        $records = $query->get();
-    
-        return $records->groupBy(function ($record) {
-            return Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('d/m/Y') . '|' . ($record->bsd_no ?? 'undefined');
-        })->map(function ($logs, $key) {
-            [$date, $bsd_no] = explode('|', $key);
-    
-            return [
-                'date' => $date,
-                'bsd_no' => $bsd_no,
-                'origin' => $logs->first()->origin,
-                'logs' => $this->processLogs($logs)
-            ];
-        })->values();
-    }
-    
-    /**
-     * Process logs to merge IN/OUT timestamps.
-     */
-    private function processLogs($logs)
-    {
-        return $logs->mapToGroups(function ($log) {
-            $logTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
-            return [
-                $logTime->format('H') => [
-                    'time' => $logTime->format('H:i'),
-                    'captured_location' => $log->captured_location,
-                    'captured_image' => $log->captured_image,
-                    'accomplishment' => $log->accomplishment
-                ]
-            ];
-        })->collapse()->values()->all();
-    }
+        $logs = $logService->getLogs($timestamp);
 
+        $logs = $logs[$timestamp][$bsd_no] ?? null;
+
+        return $logs ? $logs : [];
+    }
+    
     protected function rules()
     {
         return [
@@ -238,7 +206,7 @@ class CorrectionApply extends Component
 
             try {
 
-                $timestamp = Carbon::create($this->date)->format('d/m/Y');
+                $timestamp = Carbon::create($this->date)->format('Y-m-d');
 
                 $logs = [
                     $this->clockin,
@@ -257,20 +225,24 @@ class CorrectionApply extends Component
                 ];
                 
                 // Delete existing records for the same timestamp
-                EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-                    ->where('logdatetime', 'LIKE', "{$timestamp}%")
+                EmployeeTimelogs::where('employee_id', $this->bsd_no)
+                    ->where('timestamp', 'LIKE', "{$timestamp}%")
                     ->delete();
-                
+
+
                 // Re-insert the new records
                 foreach ($logTimes as $key => $log) {
                     if (!empty($log['time'])) {
+                        // Ensure date is in YYYY-MM-DD format and time is HH:MM
+                        $timestamp = "{$this->date} {$log['time']}:00"; // appending seconds
+                
                         EmployeeTimelogs::create([
-                            'bsd_no'      => $this->bsd_no,
-                            'logdatetime' => $timestamp . ' ' . $log['time'],
-                            'origin'      => 'biometrics',
-                            'isindtr'     => '',
-                            'type'        => $log['type'], 
-                            'ismanual'    => 1,
+                            'sn' => 'RUU5242500021',
+                            'table' => 'ATTLOG',
+                            'stamp' => '9999',
+                            'employee_id' => $this->bsd_no,
+                            'timestamp' => $timestamp, // Now in valid format
+                            'status1' => $log['type'],
                         ]);
                     }
                 }

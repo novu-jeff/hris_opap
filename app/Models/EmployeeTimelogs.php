@@ -9,25 +9,25 @@ class EmployeeTimelogs extends Model
 {
     use HasFactory;
 
-    protected $table = 'employee_timelogs';
+    protected $connection = 'mysql2'; 
+    protected $table = 'attendances';
 
     protected $fillable = [
-        'origin',
-        'biometricdtrid',
-        'bsd_no',
-        'isindtr',
-        'logdatetime',
-        'nfcdeviceid',
-        'type',
-        'ismanual',
+        'sn',
+        'table',
+        'stamp',
+        'employee_id',
+        'timestamp',
+        'status1',
+        'isWeb',
         'captured_image',
-        'captured_location',
+        'capture_location',
         'accomplishment',
-        'isComputed',
     ];
 
-    public function employee() {
-        return $this->hasOne(EmployeeInformation::class, 'bsd_no', 'bsd_no');
+    public function employee()
+    {
+        return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'bsd_no');
     }
 
 }

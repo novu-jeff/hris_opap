@@ -63,54 +63,37 @@
             <tbody>
                 @forelse ($timelogs as $key => $item)
                     @php
-                        // Check if the condition is met (avoid repeating the logic)
-                        $highlightBG = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite') ? '#014959' : null;
-                        $highlightColor = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite') ? '#fff' : null;
+                        $highlight = ($item['origin'] == 'web' && $setup == 'wfh') || ($item['origin'] == 'biometrics' && $setup == 'onsite');
+                        $highlightBG = $highlight ? '#014959' : null;
+                        $highlightColor = $highlight ? '#fff' : null;
                     @endphp
-                        <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
-                            <!-- Display Employee No, BSD No., and Employee Name -->
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['employee']->employee_no ?? '' }}</td>
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">{{ $item['bsd_no'] ?? '' }}</td>
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                                {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
-                            </td>                    
-                            <td style="color:{{$highlightColor}};background-color: {{ $highlightBG }}">
-                                <button wire:click="findLogs({{$item['bsd_no'] ?? ''}})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
-                            </td>
-                        </tr>   
-                        @if($view_log && $item['bsd_no'] == $viewLogBsdNo)
+            
+                    <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
+                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">{{ $item['employee']->employee_no ?? '' }}</td>
+                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">{{ $item['bsd_no'] ?? '' }}</td>
+                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">
+                            {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
+                        </td>
+                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">
+                            <button wire:click="findLogs({{ $item['bsd_no'] ?? '' }})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                        </td>
+                    </tr>
+            
+                    @if($view_log && $item['bsd_no'] == $viewLogBsdNo)
+
                         @php
-                            // Extract clock-in and clock-out times dynamically
-                            
-                            $clockEntry = $view_log['logs'] ?? [];
-
-                            $clock_in  = !empty($clockEntry) ? ($clockEntry[0]['time'] ?? null) : null;
-                            $break_out = !empty($clockEntry) && count($clockEntry) > 1 ? $clockEntry[1]['time'] ?? null : null;
-                            $break_in = !empty($clockEntry) && count($clockEntry) > 2 ? $clockEntry[2]['time'] ?? null : null;
-                            $clock_out = !empty($clockEntry) && count($clockEntry) > 1 ? end($clockEntry)['time'] ?? null : null;
-
-                            $clock_in  = !empty($clock_in) ? \Carbon\Carbon::parse($clock_in)->format('h:i A') : 'N/A';
-                            $break_out = !empty($break_out) ? \Carbon\Carbon::parse($break_out)->format('h:i A') : 'N/A';
-                            $break_in  = !empty($break_in) ? \Carbon\Carbon::parse($break_in)->format('h:i A') : 'N/A';
-                            $clock_out = !empty($clock_out) ? \Carbon\Carbon::parse($clock_out)->format('h:i A') : 'N/A';
-
-                            $hasLocation = false;
-                            $hasImage = false;
-                        
-                            // Check if any of the logs have a captured location or image
-                            for ($i = 0; $i < 4; $i++) {
-                                if (!empty($item['logs'][$i]['captured_location'])) {
-                                    $hasLocation = true;
-                                }
-                                if (!empty($item['logs'][$i]['captured_image'])) {
-                                    $hasImage = true;
-                                }
-                            }
-
-                            $accomplishment = collect($item['logs'])->firstWhere('accomplishment');
-                        
+                            $clock_in  = $view_log['clock_in'] ?? 'N/A';
+                            $break_out = $view_log['lunch_in'] ?? 'N/A';
+                            $break_in  = $view_log['lunch_out'] ?? 'N/A';
+                            $clock_out = $view_log['clock_out'] ?? 'N/A';
+                            $aut = $view_log['aut'];
+            
+                            $hasLocation = collect($view_log['aut'])->contains(fn($log) => !empty($log['captured_location']));
+                            $hasImage = collect($view_log['aut'])->contains(fn($log) => !empty($log['captured_image']));
+            
+                            $accomplishment = collect($view_log['aut'])->firstWhere('accomplishment');
                         @endphp
-                    
+            
                         <tr class="child-row">
                             <td colspan="100%">
                                 <div class="mb-3">
@@ -124,69 +107,71 @@
                                                 <li>Biometrics ID: <strong><u>{{ $view_log['bsd_no'] ?? 'N/A' }}</u></strong></li>
                                             </ul>
                                         </div>
-                    
+            
                                         <div class="col-12 col-md-12">
                                             <hr>
                                             <strong>Employee Clock In & Out</strong>
                                             <div class="d-flex justify-content-end mb-4">
-                                                <a target="_blank" href="{{route('timekeeping.correction-apply', ['bsd_no' => $view_log['bsd_no'], 'date' => $currentDate])}}" type="button" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
+                                                <a target="_blank" href="{{ route('timekeeping.correction-apply', ['bsd_no' => $view_log['bsd_no'], 'date' => $currentDate]) }}" class="btn btn-danger px-3 text-uppercase fw-medium" id="applyCorrectionLink">Apply Correction</a>
                                             </div>
+            
                                             <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
                                                 <thead class="bg-gray-200">
                                                     <tr>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Clock In</th>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Lunch Out</th>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Lunch In</th>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Clock Out</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Clock In</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Lunch Out</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Lunch In</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Clock Out</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clock_in }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $break_out }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $break_in }}</u></strong></td>
-                                                        <td class="border text-uppercase text-center px-4 py-2"><strong><u>{{ $clock_out }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $clock_in }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $break_out }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $break_in }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $clock_out }}</u></strong></td>
                                                     </tr>
-                                                    @if($hasLocation)
-                                                        <tr>
-                                                            @for ($i = 0; $i < 4; $i++)
-                                                                <td class="text-center py-1">
-                                                                    {{ isset($item['logs'][$i]['captured_location']) ? $item['logs'][$i]['captured_location'] : 'N/A' }}
-                                                                </td>
-                                                            @endfor
-                                                        </tr>
-                                                    @endif
-                                                    @if ($hasImage)
-                                                        <tr>
-                                                            @for ($i = 0; $i < 4; $i++)
-                                                                <td class="text-center py-1">
-                                                                    @if (!empty($item['logs'][$i]['captured_image']))
-                                                                        <a href="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" style="cursor: pointer" data-fancybox data-fancybox="gallery-{{$i}}" data-src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}">
-                                                                            <img src="{{ Storage::url('timelogs/' . $item['logs'][$i]['captured_image']) }}" 
-                                                                                alt="logs" style="width: 100%; height: 150px; object-fit: end; object-position:bottom !important">
-                                                                        </a>
-                                                                    @else
-                                                                        No Image
-                                                                    @endif
-                                                                </td>
-                                                            @endfor
-                                                        </tr>
-                                                    @endif
-                                                    @if(!empty($accomplishment))
-                                                        <tr>
-                                                            <td colspan="12">
-                                                                <div class="text-start mt-2 px-3">
-                                                                    <p class="mb-2 fw-bold">Accomplishment Report:</p>
-                                                                    <p class="text-primary d-flex align-items-center gap-2 mt-3">
-                                                                        <i class="fa-solid fa-download"></i>
-                                                                        <a href="{{ Storage::url('accomplishments/' . $accomplishment['accomplishment']) }}" download>
-                                                                            {{ $accomplishment['accomplishment'] }}
-                                                                        </a>
-                                                                    </p>
-                                                                </div>
-                                                            </td>    
-                                                        </tr>  
-                                                    @endif
+                                                </tbody>
+                                            </table>
+                                            <table class="table-auto my-3 border-collapse border border-gray-300 w-full">
+                                                <thead class="bg-gray-200">
+                                                    <tr>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Undertime (mins)</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Tardiness (mins)</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2 bg-primary text-white">Overtime (mins)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                        function formatDuration($minutes) {
+                                                            $hours = floor($minutes / 60);
+                                                            $remainingMinutes = $minutes % 60;
+                                                    
+                                                            if ($hours > 0) {
+                                                                return $hours . 'hrs' . ($remainingMinutes > 0 ? ' ' . $remainingMinutes . ' mins' : '');
+                                                            }
+                                                    
+                                                            return $minutes . ' mins';
+                                                        }
+                                                    @endphp
+                                                    
+                                                    <tr>
+                                                        <td class="border text-center px-4 py-2">
+                                                            <strong><u>{{ formatDuration($aut['undertime']['minutes']) }}</u></strong>
+                                                        </td>
+                                                        <td class="border text-center px-4 py-2">
+                                                            <strong><u>{{ formatDuration($aut['tardiness']['minutes']) }}</u></strong>
+                                                        </td>
+                                                        <td class="border text-center px-4 py-2">
+                                                            <strong><u>{{ formatDuration($aut['overtime']['minutes']) }}</u></strong>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $aut['undertime']['reason'] ?? 'N/A' }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $aut['tardiness']['reason'] ?? 'N/A' }}</u></strong></td>
+                                                        <td class="border text-center px-4 py-2"><strong><u>{{ $aut['overtime']['reason'] ?? 'N/A' }}</u></strong></td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -194,13 +179,13 @@
                                 </div>
                             </td>
                         </tr>
-                    @endif                    
+                    @endif
                 @empty
                     <tr>
                         <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                    </tr>            
+                    </tr>
                 @endforelse
-            </tbody>        
+            </tbody>               
         </table>
     </div>
     <div class="mt-4">

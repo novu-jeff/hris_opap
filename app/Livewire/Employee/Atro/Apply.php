@@ -153,9 +153,9 @@ class Apply extends Component
                     ]);
 
                     
-                    if(!in_array($self_, $this->fields['employees'])) {
-                        $this->fields['employees'][] = $self_;
-                    }
+                    // if(!in_array($self_, $this->fields['employees'])) {
+                    //     $this->fields['employees'][] = $self_;
+                    // }
 
                     foreach ($this->fields['employees'] as $employee_no) {
                         EmployeeAtroRelative::create([
