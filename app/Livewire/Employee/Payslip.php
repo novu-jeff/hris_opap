@@ -12,6 +12,7 @@ class Payslip extends Component
 
     public $payroll;
     public $payslip;
+    public $error;
 
     public function mount() {
         $this->loadRecords();
@@ -25,6 +26,10 @@ class Payslip extends Component
         $payroll = Payroll::where('status', 'approved')
             ->orderBy('payroll_date', 'desc')
             ->first();
+
+        if(!$payroll) {
+            return $this->error = 'No Payslip Found';
+        }
 
         $this->payroll = $payroll;
 
