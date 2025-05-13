@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Payroll;
 
 use App\Http\Controllers\Admin\Services\OtherServices;
+use App\Http\Controllers\Admin\Services\PayrollService;
+use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
 use App\Models\EmployementTypes;
 use App\Models\GSISBilling;
@@ -15,9 +17,11 @@ class Process extends Component
 
     public $header;
     public $payroll_id;
-    public $employee_no;
-    public $employment_type;
     public $records;
+    public $isApproved = false;
+
+    protected $listeners = ['save'];
+
 
     public function mount() {
         $this->loadRecords();
@@ -25,225 +29,44 @@ class Process extends Component
 
     public function loadRecords() {
         
+        $payroll_service = new PayrollService;
+
         $payroll = Payroll::find($this->payroll_id);
-        $employment_type = EmployementTypes::find($this->employment_type);
-        if ($employment_type) {
-            $employment_type = $employment_type->first();
-        }
 
-        if($this->employment_type) {
-
-            if(!$payroll || !$employment_type) {
-                return redirect()->route('payroll.index');
-            }
-
-            $this->employment_type = $employment_type->id;
-
-            $this->payrollInfo($payroll, $employment_type);
-
-        }
-    }
-
-    public function payrollInfo($payroll, $employment_type) {
-
-        $employment_id = $employment_type->id;
-
-        $employees = EmployeeInformation::with('section', 'personal', 'positions')
-                            ->where('employment_type_id', $employment_id)
-                            ->get();
-
-        $other_service = new OtherServices;
-
-        $data = [];
-
-        # FOR PLANTILYA
-
-
-        if($employment_id == 1) {
-
-            foreach($employees as $employee) {
-
-                $employee_no = $employee->employee_no;
-            
-                $employee_name = $employee->personal->firstname . ' ' . $employee->personal->lastname;
-                $employee_position = $employee->positions->name;
-                $employee_salary = $employee->monthly_rate;
-    
-                $deductions = $other_service->deductions($employee_no);
-    
-                $current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
-                $employment_type = $employee->employment_type_id;
-    
-                $gsis_no = $employee->personal->gsis_no;
-    
-                $gsis_billing = GSISBilling::with(['items' => function ($query) use ($gsis_no) {
-                            $query->where('crn_no', $gsis_no);
-                        }])
-                        ->where('billing_month', $current_date)
-                        ->whereHas('items', function ($query) use ($gsis_no) {
-                            $query->where('crn_no', $gsis_no);
-                        })
-                        ->first();
-
-                $pera = collect($deductions)->firstWhere('code', 'PERA')['amount'] ?? 0;
-                $gross_amount_earned = (float) $employee_salary + (float) $pera;
-                $hmdf = collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0;
-                $philhealth = collect($deductions)->firstWhere('deduction.code', 'PHILHEALTH')['amount'] ?? 0;
-                $consoloan = $gsis_billing['items'][0]->consoloan ?? 0;
-                $emergency_loan = $gsis_billing['items'][0]->emrgy_loan ?? 0;
-                $plreg = $gsis_billing['items'][0]->plreg ?? 0;
-                $mpl = $gsis_billing['items'][0]->mpl ?? 0;
-                $cpl = $gsis_billing['items'][0]->cpl ?? 0;
-                $mp2 = collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0;
-                $mplstlms = collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0;
-                $cir = collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0;
-                $allowance = collect($deductions)->firstWhere('deduction.code', 'allowance')['amount'] ?? 0;
-    
-                $total_deduction = 
-                    (float) $hmdf + 
-                    (float) $philhealth + 
-                    (float) $consoloan + 
-                    (float) $emergency_loan + 
-                    (float) $plreg + 
-                    (float) $mpl + 
-                    (float) $cpl + 
-                    (float) $mp2 + 
-                    (float) $mplstlms + 
-                    (float) $cir + 
-                    (float) $allowance;
-            
-                $net_amount = (float) $gross_amount_earned - $total_deduction;
-
-                $halfSalaryAmount = $net_amount / 2;
-
-                $data[] = [
-                    'employment_type' => $employment_type,
-                    'name' => $employee_name,
-                    'position' => $employee_position,
-                    'basic_salary' => number_format($employee_salary, 2),
-                    'pera' => number_format($pera, 2),
-                    'gross_amount_earned' => number_format($gross_amount_earned, 2),
-                    'rlip' => 0,
-                    'hdmf' => number_format($hmdf, 2),
-                    'philhealth' => number_format($philhealth, 2),
-                    'consoloan' => number_format($consoloan, 2),
-                    'emergency_loan' => number_format($emergency_loan, 2),
-                    'plreg' => number_format($plreg, 2),
-                    'mpl' => number_format($mpl, 2),
-                    'cpl' => number_format($cpl, 2),
-                    'mp2' => number_format($mp2, 2),
-                    'mplstlms' => number_format($mplstlms, 2),
-                    'cir375_cir449' => number_format($cir, 2),
-                    'w_tax' => 0,
-                    'uca' => 0,
-                    'allowance' => number_format($allowance, 2),
-                    'aut' => 0,
-                    'total_deductions' => number_format($total_deduction, 2),
-                    'net_amount' => number_format($net_amount, 2),
-                    'dbp_branch' => 0,
-                    'kawani' => 0,
-                    'lbp_payroll_account' => 0,
-                    'first_half' => number_format($halfSalaryAmount, 2),
-                    'second_half' => number_format($halfSalaryAmount, 2),
-                ];
-    
-            }
-
-            return $this->records = $data;
-        }
+        $this->isApproved = $payroll->status == 'approved' ? true : false;
         
-        # FOR COS
+        $payroll = $payroll_service->getData($payroll);
 
-        if($employment_id == 2) {
-            
-            foreach($employees as $employee) {
-
-                $employee_no = $employee->employee_no;
-            
-                $employee_name = $employee->personal->firstname . ' ' . $employee->personal->lastname;
-                $employee_position = $employee->positions->name;
-                $employee_salary = $employee->monthly_rate;
-    
-                $deductions = $other_service->deductions($employee_no);
-    
-                $current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
-                $employment_type = $employee->employment_type_id;
-    
-                $gsis_no = $employee->personal->gsis_no;
-    
-                $gsis_billing = GSISBilling::with(['items' => function ($query) use ($gsis_no) {
-                            $query->where('crn_no', $gsis_no);
-                        }])
-                        ->where('billing_month', $current_date)
-                        ->whereHas('items', function ($query) use ($gsis_no) {
-                            $query->where('crn_no', $gsis_no);
-                        })
-                        ->first();
-
-                $pera = collect($deductions)->firstWhere('code', 'PERA')['amount'] ?? 0;
-                $gross_amount_earned = (float) $employee_salary + (float) $pera;
-                $hmdf = collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0;
-                $philhealth = collect($deductions)->firstWhere('deduction.code', 'PHILHEALTH')['amount'] ?? 0;
-                $consoloan = $gsis_billing['items'][0]->consoloan ?? 0;
-                $emergency_loan = $gsis_billing['items'][0]->emrgy_loan ?? 0;
-                $plreg = $gsis_billing['items'][0]->plreg ?? 0;
-                $mpl = $gsis_billing['items'][0]->mpl ?? 0;
-                $cpl = $gsis_billing['items'][0]->cpl ?? 0;
-                $mp2 = collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0;
-                $mplstlms = collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0;
-                $cir = collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0;
-                $allowance = collect($deductions)->firstWhere('deduction.code', 'allowance')['amount'] ?? 0;
-    
-                $total_deduction = 
-                    (float) $hmdf + 
-                    (float) $philhealth + 
-                    (float) $consoloan + 
-                    (float) $emergency_loan + 
-                    (float) $plreg + 
-                    (float) $mpl + 
-                    (float) $cpl + 
-                    (float) $mp2 + 
-                    (float) $mplstlms + 
-                    (float) $cir + 
-                    (float) $allowance;
-            
-                $net_amount = (float) $gross_amount_earned - $total_deduction;
-
-                $halfSalaryAmount = $net_amount / 2;
-
-                $data[] = [
-                    'employment_type' => $employment_type,
-                    'name' => $employee_name,
-                    'position' => $employee_position,
-                    'basic_salary' => number_format($employee_salary, 2),
-                    'hdmf' => number_format($hmdf, 2),
-                    'philhealth' => number_format($philhealth, 2),
-                    'mp2' => number_format($mp2, 2),
-                    'mplstlms' => number_format($mplstlms, 2),
-                    'cir375_cir449' => number_format($cir, 2),
-                    'uca' => 0,
-                    'w_tax' => 0,
-                    'aut' => 0,
-                    'total_deductions' => number_format($total_deduction, 2),
-                    'net_amount' => number_format($net_amount, 2),
-                    'dbp_branch' => 0,
-                    'kawani' => 0,
-                    'lbp_payroll_account' => 0,
-                    'first_half' => number_format($halfSalaryAmount, 2),
-                    'second_half' => number_format($halfSalaryAmount, 2),
-                ];
-    
-            }
-
-            return $this->records = $data;
-
-        }
-
+        return $this->records = $payroll;
     }
 
-    public function save() {
-        return redirect()
-            ->route('payroll.process', ['payroll_id' => $this->payroll_id, 'employment_type' => $this->employment_type]);
+    public function save(bool $isNotify = true) {
+
+        if($isNotify) {
+            
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that once proceed payslip will be released to the employees. This action cannot be reverted';
+            $action = 'save';
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        } else {
+            $payroll = Payroll::find($this->payroll_id);
+            $payroll->status = 'approved';
+            $payroll->save();
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!', 
+                'showAlert' => true,
+                'message' => 'Payroll was approved, Payslip will be visible to employees',
+                'redirect' => route('payroll.process', ['payroll_id' => $this->payroll_id])
+            ]);
+        }
+
     }
 
     public function render()

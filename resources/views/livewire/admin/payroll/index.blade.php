@@ -96,6 +96,18 @@
                                 @error('payroll_date') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="employmentType" clsass="form-label">Employment Type</label>
+                            <select name="employment_type" id="employment_type" wire:model="employment_type" class="form-select mt-2">
+                                <option value=""> - CHOOSE - </option>
+                                @foreach($employmentTypes as $type)
+                                    <option value="{{$type->id}}">{{$type->name}}</option>
+                                @endforeach
+                            </select>
+                            <div class="error-field">
+                                @error('payroll_date') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-end mt-3">
                             <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase">Create</button>
                         </div>

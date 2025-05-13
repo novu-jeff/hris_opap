@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             HolidaySeeder::class,
             FAQSeeder::class,
             RequirementSeeder::class,
-                InterviewSeeder::class,
+            InterviewSeeder::class,
         ]);
 
         if($product == 'private') {

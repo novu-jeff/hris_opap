@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Payroll;
 
 use App\Models\EmployeeBusinessSlip;
+use App\Models\EmployementTypes;
 use App\Models\Payroll;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -16,9 +17,11 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $status = '';
+    public $employmentTypes;
 
     public $payroll_date;
-    public $cut_off_period = '';
+    public $cut_off_period;
+    public $employment_type;
 
     protected function rules() {
         return [
@@ -27,10 +30,14 @@ class Index extends Component
                 'required',
                 'unique:payroll,cut_off_period',
                 'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
-            ]
+            ],
+            'employment_type' => 'required|exists:employment_types,id'
         ];
     }
     
+    public function mount() {
+        $this->employmentTypes = EmployementTypes::all();
+    }
     
     public function createPayroll() {
 
@@ -41,7 +48,8 @@ class Index extends Component
             $payroll = Payroll::create([
                 'payroll_date' => $this->payroll_date,
                 'cut_off_period' => $this->cut_off_period,
-                'status' => 'ongoing'
+                'employment_type' => $this->employment_type,
+                'status' => 'pending'
             ]);
 
             return redirect()

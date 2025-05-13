@@ -67,6 +67,7 @@ use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\EmployeeRequestLogController;
+use App\Http\Controllers\Employee\PayslipController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 use App\Http\Controllers\Employee\RemainingCreditController as EmployeeRemainingCreditController;
@@ -223,7 +224,7 @@ Route::prefix('admin')->group(function() {
             Route::get('/', [PayrollController::class, 'index'])
                 ->name('payroll.index');
 
-            Route::get('process/{payroll_id}/{employment_type?}', [PayrollController::class, 'process'])
+            Route::get('process/{payroll_id}', [PayrollController::class, 'process'])
                 ->name('payroll.process');
 
         });
@@ -438,6 +439,10 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 ->name('employee.request-timelog.show');
         });
 
+        Route::prefix('payslip')->group(function() {
+            Route::get('/', [PayslipController::class, 'index'])
+                ->name('employee.payslip');
+        });
 
         Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
             ->name('employee.dtr');
