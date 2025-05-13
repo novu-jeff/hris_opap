@@ -90,12 +90,6 @@ use Illuminate\Support\Facades\Request;
 |
 */
 
-Route::get('/test', [TestController::class, 'index']);
-
-Route::get('/slip', function () {
-    return view('slip');
-})->name('welcome');
-
 Route::redirect('/', 'jobs', 301);;
 
 Route::get('jobs', [HomeController::class, 'index'])
