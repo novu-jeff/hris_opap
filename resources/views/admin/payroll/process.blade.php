@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.payroll.process', ['payroll_id' => $id, 'employment_type' => $employment_type])
+        @livewire('admin.payroll.process', ['payroll_id' => $id])
     </div>
 </div>
 @endsection

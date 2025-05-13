@@ -143,18 +143,16 @@ class TimeLogService extends Controller
         $clock_out = $this->parseTime($record['clock_out']);
         $lunch_in = $this->parseTime($record['lunch_in']);
         $lunch_out = $this->parseTime($record['lunch_out']);
-    
-        if (!$clock_in && !$clock_out) {
+        
+        // Mark as Absent only if all logs are missing
+        if (!$clock_in && !$clock_out && !$lunch_in && !$lunch_out) {
             $record['remarks'][] = 'Absent';
             return;
         }
-    
-        $requiredFields = ['clock_in', 'lunch_in', 'lunch_out', 'clock_out'];
-        foreach ($requiredFields as $field) {
-            if (empty($record[$field])) {
-                $record['remarks'][] = 'Discrepancy';
-                break;
-            }
+        
+        // Mark as Discrepancy if any one of the logs is missing
+        if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
+            $record['remarks'][] = 'Discrepancy';
         }
     
         $actualStart = $clock_in && $clock_in->lt($startTime) ? $startTime->copy() : $clock_in;
@@ -227,8 +225,7 @@ class TimeLogService extends Controller
                 }
             }
         }
-    }
-           
+    }       
 
     private function parseTime(?string $time)
     {
@@ -340,7 +337,6 @@ class TimeLogService extends Controller
         return $formattedLogs;
     }
     
-    
     private function getSummary($logs)
     {
         $summary = [
@@ -442,5 +438,50 @@ class TimeLogService extends Controller
         return $summary;
     }
     
+    public function getDTRByRange(string $biometrics_id, string $monthYear, $range) {
+
+        $dtr = $this->getDTR($biometrics_id, $monthYear);
+
+        $logs = $dtr['logs'];
+
+        [$start, $end] = explode(' to ', $range);
+        $startDate = Carbon::parse($start)->format('Y-m-d');
+        $endDate = Carbon::parse($end)->format('Y-m-d');
+
+        $filteredLogs = collect($logs)->filter(function ($value, $key) use ($startDate, $endDate) {
+            return $key >= $startDate && $key <= $endDate;
+        });
+
+        $totalOvertime = 0;
+        $totalAUT = 0;
+        $totalWorkedDays = 0;
+        
+        foreach ($filteredLogs as $date => $log) {
+            // Count worked days
+            if (!empty($log['clock_in']) && !empty($log['clock_out'])) {
+                $totalWorkedDays++;
+            }
+        
+            // Compute AUT and Overtime if present
+            if (isset($log['aut']) && is_array($log['aut'])) {
+                $tardiness = $log['aut']['tardiness']['minutes'] ?? 0;
+                $undertime = $log['aut']['undertime']['minutes'] ?? 0;
+                $overtime = $log['aut']['overtime']['minutes'] ?? 0;
+        
+                $totalOvertime += $overtime;
+                $totalAUT += ($tardiness + $undertime);
+            }
+        }
+        
+
+        $summary = [
+            'worked_days' => $totalWorkedDays ?? 0,
+            'overtime' => $totalOvertime ?? 0,
+            'aut' => $totalAUT ?? 0
+        ];
+
+        return $summary;
+
+    }
     
 }

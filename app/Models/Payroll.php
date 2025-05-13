@@ -15,6 +15,7 @@ class Payroll extends Model
     protected $fillable = [
         'payroll_date',
         'cut_off_period',
+        'employment_type',
         'status'
     ];
 

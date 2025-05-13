@@ -110,7 +110,7 @@
         
             @canany(['read payslip', 'write payslip'])
             <div class="col-12 col-md-6 col-xl-4 mb-4">
-                <a href="#" class="nav-link">
+                <a href="{{ route('employee.payslip') }}" class="nav-link">
                 <div class="item">
                     <img src="{{ asset('/img/payslip.png') }}" class="w-100">
                     <p>Payslip</p>

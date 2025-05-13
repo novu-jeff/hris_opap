@@ -162,13 +162,13 @@ class Index extends Component
             foreach ($this->earnings as $employeeId => $earnings) {
                 if ($employeeId && $earnings !== null) {
                     if ($earnings['amount'] == 0) {
-                        EmployeeEarnings::where('employee_no', $employeeId)
+                        EmployeeEarnings::where('employee_no', (string) $employeeId)
                             ->where('earning_id', $this->id)
                             ->delete();
                     } else {
                         $record = EmployeeEarnings::firstOrNew(
                             [
-                                'employee_no' => $employeeId,
+                                'employee_no' => (string) $employeeId,
                                 'earning_id' => $this->id,
                             ]
                         );
@@ -212,12 +212,18 @@ class Index extends Component
         $model = EmployeeInformation::with(['personal']);
 
         if ($this->search) {
-
-            $this->resetPage(); 
-
-            $records = $model->where('employee_no', 'like', '%' . $this->search . '%');
+            
+            $this->resetPage();
         
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('personal', function ($q) {
+                          $q->where('firstname', 'like', '%' . $this->search . '%')
+                            ->orWhere('lastname', 'like', '%' . $this->search . '%');
+                      });
+            });
         }
+        
 
         $records = $model->paginate($this->entries);
 

@@ -169,22 +169,20 @@ class Index extends Component
                         
             $record = null; 
 
-            foreach ($this->deductions as $employeeId => $deduction) {
-                if ($employeeId && $deduction !== null) {
+            foreach ($this->deductions as $employeeNo => $deduction) {
+                if ($employeeNo && $deduction !== null) {
                     if ($deduction['amount'] == 0) {
-                        EmployeeDeductions::where('employee_no', $employeeId)
+                        EmployeeDeductions::where('employee_no', (string) $employeeNo)
                             ->where('deduction_id', $this->id)
                             ->delete();
                     } else {
-                        $record = EmployeeDeductions::firstOrNew(
-                            [
-                                'employee_no' => $employeeId,
-                                'deduction_id' => $this->id,
-                            ]
-                        );
-
+                        $record = EmployeeDeductions::firstOrNew([
+                            'employee_no' => (string) $employeeNo,
+                            'deduction_id' => $this->id,
+                        ]);
+            
                         $record->amount = $deduction['amount'] ?? 0;
-                        $record->as_of = $deduction['as_of'];
+                        $record->as_of = $deduction['as_of'] ?? null; // add null fallback
                         $record->save();
                     }
                 }
@@ -222,12 +220,17 @@ class Index extends Component
         $model = EmployeeInformation::with(['personal']);
 
         if ($this->search) {
-
-            $this->resetPage(); 
-
-            $records = $model->where('employee_no', 'like', '%' . $this->search . '%');
+            $this->resetPage();
         
+            $records = $model->where(function ($query) {
+                $query->where('employee_no', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('personal', function ($q) {
+                          $q->where('firstname', 'like', '%' . $this->search . '%')
+                            ->orWhere('lastname', 'like', '%' . $this->search . '%');
+                      });
+            });
         }
+        
 
         $records = $model->paginate($this->entries);
 

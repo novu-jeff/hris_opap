@@ -18,17 +18,15 @@ class PayrollController extends Controller
         return view('admin.payroll.index');
     }
 
-    public function process(int $id, int $employment_type = null) {
+    public function process(int $id) {
 
         $payroll = Payroll::find($id);
-        $employment_type = EmployementTypes::where('id', $employment_type)->first();
-
 
         if(!$payroll) {
             return redirect()->route('payroll.index');
         }
 
-        return view('admin.payroll.process', compact('id', 'employment_type'));
+        return view('admin.payroll.process', compact('id'));
     }
 
 }
