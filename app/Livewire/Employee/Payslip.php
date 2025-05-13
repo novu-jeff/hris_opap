@@ -29,7 +29,7 @@ class Payslip extends Component
         $this->payroll = $payroll;
 
         $this->payslip = $payrollService->getData($payroll, $employee_no) ?? [];
-        
+
     }
 
     public function changePeriod($control, $direction)
@@ -55,10 +55,8 @@ class Payslip extends Component
             $employee_no = Auth::user()->employee_no;
             $payrollService = new PayrollService;
             
-            // Important: Re-fetch and assign to $this->payslip
             $payslip = $payrollService->getData($nextPayroll, $employee_no);
     
-            // If you're returning a collection or model, clone or reassign directly
             $this->payslip = $payslip;
         }
     }
