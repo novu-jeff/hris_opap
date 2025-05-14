@@ -11,11 +11,11 @@
                     <div class="row">
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_no">Employee No.</label>
-                            <input type="text" id="employee_no" class="form-control restricted" value="{{ isset($view_records->employee) ? ($view_records->employee->employee_no) : '' }}" readonly>
+                            <input type="text" id="employee_no" class="form-control restricted" value="{{ isset($view_records->personal) ? ($view_records->personal->employee_no) : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records->employee) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records->personal) ? $view_records->personal->firstname . ' ' . $view_records->personal->lastname : '' }}" readonly>
                         </div>
                         <div class="col-12 mb-4">
                             <hr>

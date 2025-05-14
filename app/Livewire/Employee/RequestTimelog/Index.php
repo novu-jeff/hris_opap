@@ -30,7 +30,7 @@ class Index extends Component
         return $this->user_id = $user_id;
     }
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if($isNotify) {
 

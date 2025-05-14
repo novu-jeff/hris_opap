@@ -21,6 +21,10 @@ class EmployeeRequestLog extends Model
         'status'
     ];
 
+    public function personal() {
+        return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
+    }
+
     public function employee() {
         return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
     }
