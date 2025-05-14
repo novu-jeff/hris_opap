@@ -10,6 +10,7 @@ use Livewire\Component;
 class Payslip extends Component
 {
 
+    public $employee_no;
     public $payroll;
     public $payslip;
     public $error;
@@ -20,7 +21,7 @@ class Payslip extends Component
 
     public function loadRecords() {
 
-        $employee_no = Auth::user()->employee_no;
+        $this->employee_no = Auth::user()->employee_no;
         $payrollService = new PayrollService;
 
         $payroll = Payroll::where('status', 'approved')
@@ -33,7 +34,7 @@ class Payslip extends Component
 
         $this->payroll = $payroll;
 
-        $this->payslip = $payrollService->getData($payroll, $employee_no) ?? [];
+        $this->payslip = $payrollService->getData($payroll, $this->employee_no) ?? [];
 
     }
 
@@ -57,10 +58,9 @@ class Payslip extends Component
 
             $this->payroll = $nextPayroll;
     
-            $employee_no = Auth::user()->employee_no;
             $payrollService = new PayrollService;
             
-            $payslip = $payrollService->getData($nextPayroll, $employee_no);
+            $payslip = $payrollService->getData($nextPayroll, $this->employee_no);
     
             $this->payslip = $payslip;
         }
