@@ -39,7 +39,7 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $this->view_records = EmployeeRequestLog::with('attachments')
+        $this->view_records = EmployeeRequestLog::with('personal', 'attachments')
             ->where('id', $id)
             ->first();
     }
@@ -107,35 +107,59 @@ class Index extends Component
 
             $record->action_by_id = Auth::user()->id;
 
-            $clock_in_am = Carbon::parse($record->clock_in)->format('H:i');
-            $clock_out_am = Carbon::parse($record->break_out)->format('H:i');
-            $clock_in_pm = Carbon::parse($record->break_in)->format('H:i');
-            $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i');
-            $date = Carbon::parse($record->date)->format('d/m/Y');
+            $clock_in_am = Carbon::parse($record->clock_in)->format('H:i:s');
+            $clock_out_am = Carbon::parse($record->break_out)->format('H:i:s');
+            $clock_in_pm = Carbon::parse($record->break_in)->format('H:i:s');
+            $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i:s');
+            $date = Carbon::parse($record->date)->format('Y-m-d');
 
-            $logs = collect([
-                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_am"],
-                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_am"],
-                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_in_pm"],
-                ['origin' => 'web', 'bsd_no' => $record->employee->bsd_no, 'logdatetime' => "$date $clock_out_pm"],
-            ])->sortBy('logdatetime')->values()->all(); 
-
-            $existingLogs = EmployeeTimelogs::where('bsd_no', $record->employee->bsd_no)
-                ->where('logdatetime', 'LIKE', "{$date}%")
-                ->orderBy('logdatetime', 'asc')
+            $rawTimestamps = [
+                'clock_in' => [
+                    'timestamp' => $clock_in_am,
+                    'type' => 0,
+                ],
+                'lunch_in' => [
+                    'timestamp' => $clock_out_am,
+                    'type' => 1,
+                ],
+                'lunch_out' => [
+                    'timestamp' => $clock_in_pm,
+                    'type' => 0,
+                ],
+                'clock_out' => [
+                    'timestamp' => $clock_out_pm,
+                    'type' => 1,
+                ]
+            ];
+            
+            $logs = collect($rawTimestamps)->map(function ($time) use ($date, $record) {
+                $timestamp = "$date {$time['timestamp']}";
+                return [
+                    'isWeb' => true,
+                    'sn' => 'RUU5242500021',
+                    'table' => 'ATTLOG',
+                    'stamp' => '9999',
+                    'employee_id' => $record->employee->bsd_no,
+                    'timestamp' => $timestamp,
+                    'status1' => $time['type'],
+                ];
+            })->sortBy('timestamp')->values()->all();
+            
+            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->bsd_no)
+                ->where('timestamp', 'LIKE', "{$date}%")
+                ->orderBy('timestamp', 'asc')
                 ->get();
             
             foreach ($logs as $key => $log) {
-                
-                if(isset($existingLogs[$key])) {
-                    $existingLogs[$key]->logdatetime = $log['logdatetime'];
+                if (isset($existingLogs[$key])) {
+                    $existingLogs[$key]->timestamp = $log['timestamp'];
                     $existingLogs[$key]->captured_image = '';
                     $existingLogs[$key]->captured_location = '';
                     $existingLogs[$key]->save();
                 } else {
                     EmployeeTimelogs::create($log);
                 }
-            }
+            }            
             
             $record->update([
                 'status' => 'approved'
