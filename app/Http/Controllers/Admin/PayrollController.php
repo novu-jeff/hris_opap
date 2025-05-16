@@ -14,8 +14,23 @@ class PayrollController extends Controller
     public $payroll_id;
     public $employment_type;
 
-    public function index() {
-        return view('admin.payroll.index');
+    public function index(Request $request) {
+        
+        $type = $request->input('type');
+
+        $allowed_types = ['salary', 'mid_year', '13th_month', 'cto'];
+
+        if(empty($type) || is_null($type)) {
+            return redirect()->route('payroll.index', ['type' => 'salary']);
+        }
+
+        if(!in_array($type, $allowed_types)) {
+            return redirect()->route('payroll.index', ['type' => 'salary']);
+        }
+
+        $type = strtolower($type);
+
+        return view('admin.payroll.index', compact('type'));
     }
 
     public function process(int $id) {

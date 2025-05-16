@@ -74,6 +74,7 @@ class TimeLogService extends Controller
     
                 $employee = $data['employee'];
                 $record = $this->initializeRecord($employeeId, $employee, $monthYear);
+                
                 $this->assignTimestamps($record, $timestamps);
                 $this->calculateAUTO($record);
     
@@ -103,6 +104,7 @@ class TimeLogService extends Controller
                 'undertime' => ['minutes' => 0, 'reason' => null],
                 'overtime' => ['minutes' => 0, 'reason' => null],
             ],
+            'total_aut' => 0,
             'employee' => $employee,
         ];
     }
@@ -113,43 +115,50 @@ class TimeLogService extends Controller
             $record['lunch_in'] = $timestamps[1]->format('h:i A');
             $record['lunch_out'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
             $record['clock_out'] = $timestamps[$timestamps->count() - 1]->format('h:i A');
+        } elseif ($timestamps->count() === 2) {
+            // Special case: exactly two logs
+            $record['clock_in'] = $timestamps[0]->format('h:i A');
+            $record['clock_out'] = $timestamps[1]->format('h:i A');
+        } elseif($timestamps->count() == 1) {
+            $record['clock_in'] = $timestamps[0]->format('h:i A');
         } else {
+            // Fallback: assign based on time ranges
             foreach ($timestamps as $ts) {
                 $hour = (int) $ts->format('H');
-                if (!$record['clock_in'] && $hour >= 5 && $hour <= 9) {
+                if (!isset($record['clock_in']) && $hour >= 5 && $hour <= 9) {
                     $record['clock_in'] = $ts->format('h:i A');
-                } elseif (!$record['lunch_in'] && $hour >= 11 && $hour <= 12) {
+                } elseif (!isset($record['lunch_in']) && $hour >= 11 && $hour <= 12) {
                     $record['lunch_in'] = $ts->format('h:i A');
-                } elseif (!$record['lunch_out'] && $hour >= 12 && $hour <= 13) {
+                } elseif (!isset($record['lunch_out']) && $hour >= 12 && $hour <= 13) {
                     $record['lunch_out'] = $ts->format('h:i A');
-                } elseif (!$record['clock_out'] && $hour >= 15 && $hour <= 18) {
+                } elseif (!isset($record['clock_out']) && $hour >= 15 && $hour <= 18) {
                     $record['clock_out'] = $ts->format('h:i A');
                 }
             }
-        }
+        }        
     }
 
     private function calculateAUTO(&$record)
     {
-
         $startTime = Carbon::createFromTime(7, 0);
         $latestAllowedIn = Carbon::createFromTime(9, 0);
         $breakStart = Carbon::createFromTime(12, 0);
         $minimumOvertime = 120;
     
         $record['remarks'] = [];
+        $record['total_aut'] = 0; // ✅ Initialize
     
         $clock_in = $this->parseTime($record['clock_in']);
         $clock_out = $this->parseTime($record['clock_out']);
         $lunch_in = $this->parseTime($record['lunch_in']);
         $lunch_out = $this->parseTime($record['lunch_out']);
-        
+    
         // Mark as Absent only if all logs are missing
         if (!$clock_in && !$clock_out && !$lunch_in && !$lunch_out) {
             $record['remarks'][] = 'Absent';
             return;
         }
-        
+    
         // Mark as Discrepancy if any one of the logs is missing
         if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
             $record['remarks'][] = 'Discrepancy';
@@ -165,6 +174,7 @@ class TimeLogService extends Controller
                 'reason' => "Late by {$late} minute(s). Time-in at {$record['clock_in']}, beyond 09:00 AM.",
             ];
             $record['remarks'][] = 'Late';
+            $record['total_aut'] += $late; // ✅ Add tardiness to total
         }
     
         if ($actualStart && $clock_out) {
@@ -197,6 +207,7 @@ class TimeLogService extends Controller
                         'reason' => "Expected out at {$expectedOut->format('h:i A')} (8 hrs + 1 hr lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
                     ];
                     $record['remarks'][] = 'Undertime';
+                    $record['total_aut'] += $ut; // ✅ Add undertime to total
                 } elseif ($totalWorked >= 480 + $minimumOvertime) {
                     $ot = $totalWorked - 480;
                     $record['aut']['overtime'] = [
@@ -215,6 +226,7 @@ class TimeLogService extends Controller
                         'reason' => "Worked only {$totalWorked} minute(s), {$ut} minute(s) short of 480 minutes (irregular time-in).",
                     ];
                     $record['remarks'][] = 'Undertime';
+                    $record['total_aut'] += $ut; // ✅ Add undertime to total
                 } elseif ($totalWorked >= 480 + $minimumOvertime) {
                     $ot = $totalWorked - 480;
                     $record['aut']['overtime'] = [
@@ -225,7 +237,8 @@ class TimeLogService extends Controller
                 }
             }
         }
-    }       
+    }
+          
 
     private function parseTime(?string $time)
     {
@@ -318,6 +331,9 @@ class TimeLogService extends Controller
                     $formattedLogs[$dateString]['remarks'] ?? [],
                     $remarks
                 );
+
+                $formattedLogs[$dateString]['isFuture'] = $isFuture;
+
             } else {
                 $formattedLogs[$dateString] = [
                     'bsd_no' => null,
@@ -327,8 +343,10 @@ class TimeLogService extends Controller
                     'clock_out' => null,
                     'origin' => null,
                     'aut' => null,
+                    'total_aut' => null,
                     'employee_no' => null,
                     'workOnHoliday' => null,
+                    'isFuture' => $isFuture,
                     'remarks' => $remarks,
                 ];
             }

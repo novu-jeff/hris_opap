@@ -73,11 +73,11 @@
             </div>
         </div>
     </div>
-    <div wire:ignore.self class="modal fade" data-bs-backdrop="static" id="newPayroll" tabindex="-1" aria-labelledby="newPayrollLabel" aria-hidden="true">
+    <div wire:ignore.self class="modal fade" data-bs-backdrop="static" id="newSalaryPayroll" tabindex="-1" aria-labelledby="newSalaryPayrollLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-medium" id="newPayrollLabel">Create New Payroll</h5>
+                    <h5 class="modal-title text-uppercase fw-medium" id="newSalaryPayrollLabel">Create New Payroll</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

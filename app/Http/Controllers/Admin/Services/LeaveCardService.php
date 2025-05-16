@@ -11,6 +11,7 @@ use App\Models\LeaveType;
 use App\Models\TimeEquivalent;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use DateTime;
 use InvalidArgumentException;
 
 class LeaveCardService extends Controller
@@ -449,6 +450,44 @@ class LeaveCardService extends Controller
             }
             
         }
+    }
+
+    public function leaveCard($employee_no) {
+        
+        $records = EmployeeLeaveCard::where('employee_no', $employee_no)->get();
+    
+        $sortedRecords = collect($records)
+            ->groupBy('year')
+            ->map(function ($items, $year) use ($records) {
+                $lastItem = $items->last();
+    
+                $prevBal = [
+                    'vl' => (float)($lastItem['vl_bal'] ?? 0),
+                    'sl' => (float)($lastItem['sl_bal'] ?? 0),
+                ];
+    
+                $previousYearRecord = $records->where('year', $year - 1)->last();
+    
+                if ($previousYearRecord) {
+                    $prevBal['vl'] = (float)($previousYearRecord['vl_bal'] ?? 0);
+                    $prevBal['sl'] = (float)($previousYearRecord['sl_bal'] ?? 0);
+                } else {
+                    $prevBal['vl'] = 0;
+                    $prevBal['sl'] = 0;
+                }
+    
+                $sortedItems = $items->sortBy(function ($item) {
+                    return DateTime::createFromFormat('F', $item['period'])->format('m');
+                })->values();
+    
+                return [
+                    'previous_bal' => $prevBal,
+                    'items' => $sortedItems
+                ];
+            })
+            ->sortKeys();
+    
+        return $sortedRecords;
     }
 
 }

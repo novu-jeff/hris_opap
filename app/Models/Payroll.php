@@ -13,9 +13,11 @@ class Payroll extends Model
 
     protected $table = 'payroll';
     protected $fillable = [
+        'type',
         'payroll_date',
         'cut_off_period',
         'employment_type',
+        'saved_payroll',
         'status'
     ];
 

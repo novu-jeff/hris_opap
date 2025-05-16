@@ -15,6 +15,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('notification:clear')->everyMinute();
         $schedule->command('update:password')->everyMinute();
         $schedule->command('reset:leaves')->everyMinute();
+        $schedule->command('reset:leaves')->everyMinute();
+        $schedule->command('generate:leave-card')->cron('0 0 31 12 *');
+        
     }
 
     /**

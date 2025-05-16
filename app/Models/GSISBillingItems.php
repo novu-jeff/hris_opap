@@ -43,6 +43,7 @@ class GSISBillingItems extends Model
         'mpl',
         'cpl',
         'gel',
+        'mpl_lite'
     ];
 
     public $timestamps = false;

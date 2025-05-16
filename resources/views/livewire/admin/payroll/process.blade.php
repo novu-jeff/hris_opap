@@ -1,16 +1,16 @@
 <div>
     @if ($records)
-        <div class="d-flex justify-content-start">
-            <div>
-                <hr class="mt-0">
-                <div class="text-uppercase fw-bold">
-                    @if($isApproved)
-                        <h2 class="text-success fw-bold text-uppercase text-center">Approved</h2>
-                    @else
-                        <h2 class="text-danger fw-bold text-uppercase text-center">Pending</h2>
-                    @endif
-                </div>
-                <hr>
+        <hr class="mt-0">
+        <div class="text-uppercase fw-bold">
+            @if($isApproved)
+                <h2 class="text-success fw-bold text-uppercase text-center">Approved</h2>
+            @else
+                <h2 class="text-danger fw-bold text-uppercase text-center">Pending</h2>
+            @endif
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-12 col-md-6">
                 <div class="text-uppercase fw-bold">
                     Payroll Date : <span class="ms-2">{{$records['payroll_date']}}</span>
                 </div>
@@ -32,6 +32,15 @@
                 </div>
                 <hr class="mb-2">
             </div>
+            <div class="col-12 col-md-6">
+                <h4 class="text-uppercase fw-bold">Other Earnings</h4>
+                <ul class="list-unstyled">
+                    <li class="d-flex align-items-center gap-2 text-uppercase">
+                        <input type="checkbox" name="clothingAllowance" id="clothingAllowance" wire:model="isClothingAllowance">
+                        Clothing Allowance
+                    </li>
+                </ul>
+            </div>
         </div>
 
         @if($records['employment_type_id'] == '1') 
@@ -44,11 +53,11 @@
                             <th rowspan="2" class="text-center sticky-top">Position</th>
                             <th rowspan="2" class="text-center sticky-top">Basic Salary</th>
                             <th rowspan="2" class="text-center sticky-top">Pera</th>
-                            <th rowspan="2" class="text-center sticky-top">Overtime</th>
                             <th rowspan="2" class="text-center sticky-top">Gross Amount Earned</th>
-                            <th colspan="30" class="text-center sticky-top">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                            <th colspan="28" class="text-center sticky-top">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                            <th colspan="2" class="text-center sticky-top">AUT</th>
                             <th colspan="8" class="text-center sticky-top"></th>
-                            <th colspan="4" class="text-center sticky-top"></th>
+                            <th colspan="9" class="text-center sticky-top">Salary</th>
                         </tr>
                         <tr>
                             <th colspan="2" class="vertical-text sticky-top">RLIP</th>
@@ -65,24 +74,32 @@
                             <th colspan="2" class="vertical-text sticky-top">W/TAX</th>
                             <th colspan="2" class="vertical-text sticky-top">UCA</th>
                             <th colspan="2" class="vertical-text sticky-top">Allowance</th>
-                            <th colspan="2" class="vertical-text sticky-top">AUT's</th>
+                            <th class="vertical-text sticky-top">1st Half</th>
+                            <th class="vertical-text sticky-top">2nd Half</th>
+
                             <th class="text-center sticky-top">TOTAL DED.</th>
                             <th class="text-center sticky-top">NET AMOUNT</th>
                             <th colspan="2" class="vertical-text sticky-top">DBP</th>
                             <th colspan="2" class="vertical-text sticky-top">KAWANI</th>
                             <th colspan="2" class="vertical-text sticky-top">LBP PAYROLL ACCOUNT</th>
-                            <th colspan="2" class="text-center sticky-top">Salary <br> (cut-off)</th>
+                            <th colspan="2" class="text-center sticky-top">First Half</th>
+                            <th colspan="2" class="text-center sticky-top">Second Half</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($records['payroll'] as $key => $record)
                             <tr>
-                                <td>{{$key + 1}}</td>
-                                <td>{{$record['name']}}</td>
+                                <td>#{{$key + 1}}</td>
+                                <td>
+                                    <a href="{{ route('hris.show', ['employee_no' => $record['employee_no']]) }}" 
+                                        class="text-dark" 
+                                        target="_blank">
+                                         {{ $record['name'] }}
+                                     </a>
+                                </td>
                                 <td>{{$record['position']}}</td>
                                 <td>{{$record['basic_salary']}}</td>
                                 <td>{{$record['pera']}}</td>
-                                <td>{{$record['overtime']}}</td>
                                 <td>{{$record['gross_amount_earned']}}</td>
                                 <td colspan="2">{{$record['rlip']}}</td>
                                 <td colspan="2">{{$record['hdmf']}}</td>
@@ -98,12 +115,14 @@
                                 <td colspan="2">{{$record['w_tax']}}</td>
                                 <td colspan="2">{{$record['uca']}}</td>
                                 <td colspan="2">{{$record['allowance']}}</td>
-                                <td colspan="2">{{$record['aut']}}</td>
+                                <td>{{$record['total_aut']}}</td>
+                                <td>{{$record['total_aut']}}</td>
                                 <td>{{$record['total_deductions']}}</td>
                                 <td>{{$record['net_amount']}}</td>
                                 <td colspan="2">{{$record['dbp']}}</td>
                                 <td colspan="2">{{$record['kawani']}}</td>
                                 <td colspan="2">{{$record['lbp_payroll_account']}}</td>
+                                <td colspan="2">{{$record['salary']}}</td>
                                 <td colspan="2">{{$record['salary']}}</td>
                             </tr>
                         @endforeach
