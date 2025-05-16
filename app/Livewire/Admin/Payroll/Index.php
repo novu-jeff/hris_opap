@@ -19,6 +19,7 @@ class Index extends Component
     public $status = '';
     public $employmentTypes;
 
+    public $type;
     public $payroll_date;
     public $cut_off_period;
     public $employment_type;
@@ -74,7 +75,11 @@ class Index extends Component
 
     public function render() {
         
-        $records = Payroll::paginate($this->entries);
+        $records = Payroll::where('type', $this->type)
+            ->when($this->status, function($query) {
+                return $query->where('status', $this->status);
+            })
+            ->paginate($this->entries);
 
         return view('livewire.admin.payroll.index', [
             'records' => $records

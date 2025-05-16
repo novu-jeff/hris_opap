@@ -134,7 +134,7 @@
             </li>
         </ul>
         <hr class="mt-4">
-        <div class="table-responsive mt-4">
+        <div class="table-responsive mt-4" id="gsis_table">
             <table class="table data-tables w-100">
                 <thead>
                     <tr>
@@ -169,6 +169,7 @@
                         <th>MPL</th>
                         <th>CPL</th>
                         <th>GEL</th>
+                        <th>MPL LITE</th>
                     </tr>
                 </thead>                
                 <tbody>
@@ -205,11 +206,19 @@
                             <td style="width: 300px !important">{{$item->mpl}}</td>
                             <td style="width: 300px !important">{{$item->cpl}}</td>
                             <td style="width: 300px !important">{{$item->gel}}</td>
+                            <td style="width: 300px !important">{{$item->mpl_lite}}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     @endif
+
+    <style>
+        #gsis_table {
+            height: 500px !important;
+            overflow-y: scroll;
+        }
+    </style>
 
 </div>

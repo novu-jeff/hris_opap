@@ -127,7 +127,7 @@ class Index extends Component
                 'CONSOLOAN', 'ECARDPLUS', 'SALARY_LOAN', 'CASH_ADV', 'EMRGYLN', 'EDUC_ASST', 
                 'ELA', 'SOS', 'PLREG', 'PLOPT', 'REL', 'LCH_DCS', 'STOCK_PURCHASE', 
                 'OPT_LIFE', 'CEAP', 'EDU_CHILD', 'GENESIS', 'GENPLUS', 'GENFLEXI', 
-                'GENSPCL', 'HELP', 'GFAL', 'MPL', 'CPL', 'GEL'
+                'GENSPCL', 'HELP', 'GFAL', 'MPL', 'CPL', 'GEL', 'MPL_LITE'
             ];
         
             foreach ($expectedNotNullable as $key => $value) {
@@ -197,6 +197,7 @@ class Index extends Component
                     'mpl' => $row[35] ?? 0,
                     'cpl' => $row[36] ?? 0,
                     'gel' => $row[37] ?? 0,
+                    'mpl_lite' => $row[38] ?? 0,
                 ];
 
                 // Check if the item exists and update or create

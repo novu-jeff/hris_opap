@@ -48,6 +48,7 @@ class PayrollService extends Controller {
                 $employee_position = $employee->positions->name;
                 $employee_salary = $employee->monthly_rate;
                 $employee_biometrics = $employee->bsd_no;
+                
                 $monthYear = Carbon::parse($employee->payroll_date)->format('m-Y');
 
                 $dtr = $dtr_service->getDTRByRange($employee_biometrics, $monthYear, $cut_off_period);
@@ -113,6 +114,7 @@ class PayrollService extends Controller {
                 $halfSalaryAmount = $net_amount / 2;
 
                 $data[] = [
+                    'employee_no' => $employee_no,
                     'employment_type' => $employment_type,
                     'name' => $employee_name,
                     'position' => $employee_position,
@@ -144,6 +146,7 @@ class PayrollService extends Controller {
                 ];
     
             }
+            
         }
         
         # FOR COS

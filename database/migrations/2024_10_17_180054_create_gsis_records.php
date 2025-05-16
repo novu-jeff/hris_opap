@@ -58,6 +58,7 @@ return new class extends Migration
             $table->float('mpl');
             $table->float('cpl');
             $table->float('gel');
+            $table->float('mpl_lite');
         });
     }
 

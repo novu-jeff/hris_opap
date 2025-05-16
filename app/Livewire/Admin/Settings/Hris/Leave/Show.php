@@ -266,7 +266,6 @@ class Show extends Component
     
         try {
 
-
             DB::beginTransaction();
 
             if($this->id == 1 || $this->id == 2) {

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Leave;
 
+use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
@@ -54,41 +55,12 @@ class ViewCard extends Component
             return redirect()->route('leave.show', ['leave' => $this->id]);
         }
     
-        $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)->get();
-    
-        $sortedRecords = collect($records)
-            ->groupBy('year')
-            ->map(function ($items, $year) use ($records) {
-                $lastItem = $items->last();
-    
-                $prevBal = [
-                    'vl' => (float)($lastItem['vl_bal'] ?? 0),
-                    'sl' => (float)($lastItem['sl_bal'] ?? 0),
-                ];
-    
-                $previousYearRecord = $records->where('year', $year - 1)->last();
-    
-                if ($previousYearRecord) {
-                    $prevBal['vl'] = (float)($previousYearRecord['vl_bal'] ?? 0);
-                    $prevBal['sl'] = (float)($previousYearRecord['sl_bal'] ?? 0);
-                } else {
-                    $prevBal['vl'] = 0;
-                    $prevBal['sl'] = 0;
-                }
-    
-                $sortedItems = $items->sortBy(function ($item) {
-                    return DateTime::createFromFormat('F', $item['period'])->format('m');
-                })->values();
-    
-                return [
-                    'previous_bal' => $prevBal,
-                    'items' => $sortedItems
-                ];
-            })
-            ->sortKeys();
+        $leaveCardService = new LeaveCardService;
+
+        $sortedRecords = $leaveCardService->leaveCard($this->employee_no);
     
         $this->records = $sortedRecords;
-    
+        
         $this->activeYear = array_key_last($sortedRecords->toArray());
 
         // Reset arrays
@@ -215,8 +187,8 @@ class ViewCard extends Component
         $this->activeYear = $year;
     }
 
-    public function addYear() {
-
+    public function addYear()
+    {
         if ($this->records->isEmpty()) {
             return;
         }
@@ -239,58 +211,69 @@ class ViewCard extends Component
             "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
             "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
         ];
-
+    
         $this->period[$newYear] = $months;
     
-        $newItems = collect();
+        $newItems = [];
         $vlBalance = $previousBal['vl'];
         $slBalance = $previousBal['sl'];
     
         foreach ($months as $month) {
-
             $vlBalance += 1.25;
             $slBalance += 1.25;
     
-            $newItems->push([
+            $newItems[] = [
                 "employee_no" => $lastItem['employee_no'],
                 "period" => $month,
                 "particulars" => "",
                 "vl_earned" => 1.25,
-                "vl_aut_w_pay" => "0",
+                "vl_aut_w_pay" => 0,
                 "vl_bal" => $vlBalance,
-                "vl_aut_wo_pay" => "0",
+                "vl_aut_wo_pay" => 0,
                 "sl_earned" => 1.25,
-                "sl_aut_w_pay" => "0",
+                "sl_aut_w_pay" => 0,
                 "sl_bal" => $slBalance,
-                "sl_aut_wo_pay" => "0",
+                "sl_aut_wo_pay" => 0,
                 "remarks" => "",
                 "year" => $newYear,
                 "created_at" => now(),
                 "updated_at" => now(),
-            ]);
+            ];
         }
     
+        // ✅ Insert all items in one go
+        DB::table('employee_leave_cards')->insert($newItems);
+    
+        // ⏬ Update component-level properties if needed
         $this->records[$newYear] = [
             'previous_bal' => $previousBal,
-            'items' => $newItems,
+            'items' => collect($newItems),
         ];
-
+    
         $this->total_bal[$newYear] = [
             'vl' => $previousBal['vl'],
             'sl' => $previousBal['sl'],
         ];
-
-        $this->vl_earned[$newYear] = $newItems->pluck('vl_earned')->toArray();
-        $this->vl_aut_w_pay[$newYear] = $newItems->pluck('vl_aut_w_pay')->toArray();
-        $this->vl_bal[$newYear] = $newItems->pluck('vl_bal')->toArray();
-        $this->vl_aut_wo_pay[$newYear] = $newItems->pluck('vl_aut_wo_pay')->toArray();
-
-        $this->sl_earned[$newYear] = $newItems->pluck('sl_earned')->toArray();
-        $this->sl_aut_w_pay[$newYear] = $newItems->pluck('sl_aut_w_pay')->toArray();
-        $this->sl_bal[$newYear] = $newItems->pluck('sl_bal')->toArray();
-        $this->sl_aut_wo_pay[$newYear] = $newItems->pluck('sl_aut_wo_pay')->toArray();
-        
+    
+        $this->vl_earned[$newYear] = array_column($newItems, 'vl_earned');
+        $this->vl_aut_w_pay[$newYear] = array_column($newItems, 'vl_aut_w_pay');
+        $this->vl_bal[$newYear] = array_column($newItems, 'vl_bal');
+        $this->vl_aut_wo_pay[$newYear] = array_column($newItems, 'vl_aut_wo_pay');
+    
+        $this->sl_earned[$newYear] = array_column($newItems, 'sl_earned');
+        $this->sl_aut_w_pay[$newYear] = array_column($newItems, 'sl_aut_w_pay');
+        $this->sl_bal[$newYear] = array_column($newItems, 'sl_bal');
+        $this->sl_aut_wo_pay[$newYear] = array_column($newItems, 'sl_aut_wo_pay');
+    
+        return $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Saved!',
+            'showAlert' => true,
+            'redirect' => '_reload',
+            'message' => 'Year ' . strtoupper($newYear) . ' added successfully.',
+        ]);
     }
+    
 
     public function removeYear(bool $isNotify = true) {
     
@@ -333,6 +316,7 @@ class ViewCard extends Component
                 'status' => 'success',
                 'title' => 'Saved!',
                 'showAlert' => true,
+                'redirect' => '_reload',
                 'message' => 'Year ' . strtoupper($lastYear) . ' removed successfully.',
             ]);
 

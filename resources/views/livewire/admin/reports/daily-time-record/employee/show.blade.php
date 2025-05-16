@@ -306,45 +306,84 @@
         
                                     @endif
     
+                                    @php
+                                        // Flag to check if it's a future date
+                                        $isFuture = $day['isFuture'] ?? false;
+                                    
+                                        // Allowed remarks
+                                        $allowedRemarks = ['absent', 'rest day', 'special hol', 'legal hol'];
+                                    
+                                        // Normalize and check remarks
+                                        $remarks = $day['remarks'] ?? null;
+                                        $isEmpty = false;
+                                    
+                                        if (is_array($remarks)) {
+                                            $normalized = array_map('strtolower', array_map('trim', $remarks));
+                                            $isEmpty = count($normalized) === 1 && in_array($normalized[0], $allowedRemarks);
+                                        } elseif (is_string($remarks)) {
+                                            $normalized = strtolower(trim($remarks));
+                                            $isEmpty = in_array($normalized, $allowedRemarks);
+                                        }
+                                    
+                                        // Check if any required clock times are missing or empty
+                                        $clockIn = $day['clock_in'] ?? null;
+                                        $lunchIn = $day['lunch_in'] ?? null;
+                                        $lunchOut = $day['lunch_out'] ?? null;
+                                        $clockOut = $day['clock_out'] ?? null;
+                                    
+                                        // If any clock times are empty or null, mark isEmpty = true
+                                        if (empty($clockIn) || empty($lunchIn) || empty($lunchOut) || empty($clockOut)) {
+                                            $isEmpty = true;
+                                        }
+                                    
+                                        // Overtime calculation
+                                        $totalOvertime = $day['aut']['overtime']['minutes'] ?? 0;
+                                        $overtimeHours = intdiv($totalOvertime, 60);
+                                        $overtimeMinutes = $totalOvertime % 60;
+                                    
+                                        // Total AUT calculation
+                                        $totalMinutes = $day['total_aut'] ?? 0;
+                                        $hours = intdiv($totalMinutes, 60);
+                                        $minutes = $totalMinutes % 60;
+                                    @endphp
+                                
+                                    
                                     <!-- Overtime: Calculate Hours -->
                                     <td>
-                                        {{-- hours --}}
-                                        @php
-                                            $hrs = isset($day['aut']['overtime']['minutes']) ? $day['aut']['overtime']['minutes'] : null;
-                                        @endphp
-                                        {{ $hrs = 0 ?: ''}}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $overtimeHours > 0 ? str_pad($overtimeHours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
+                                        @endif
                                     </td>
-
+                                    
                                     <!-- Overtime: Calculate Minutes -->
                                     <td>
-                                        {{-- minutes --}}
-                                        @php
-                                            $mins = isset($day['aut']['overtime']['minutes']) ? $day['aut']['overtime']['minutes'] : null;
-                                        @endphp
-                                        {{ $mins = 0 ?: ''}}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $overtimeMinutes > 0 ? str_pad($overtimeMinutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
+                                        @endif
                                     </td>
-
-                                    <!-- Combined Tardiness + Undertime: Calculate Total Hours -->
+                                    
+                                    <!-- Total Combined Hours -->
                                     <td>
-                                        {{-- total combined mins as hours --}}
-                                        @php
-                                            $tardiness = isset($day['aut']['tardiness']['minutes']) ? $day['aut']['tardiness']['minutes'] : 0;
-                                            $undertime = isset($day['aut']['undertime']['minutes']) ? $day['aut']['undertime']['minutes'] : 0;
-
-                                            $total = $tardiness + $undertime;
-                                            $hours = intdiv($total, 60);
-                                        @endphp
-                                        {{ $hours = 0 ?: ''}}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $hours > 0 ? str_pad($hours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
+                                        @endif
                                     </td>
-
-                                    <!-- Combined Tardiness + Undertime: Remaining Minutes -->
+                                    
+                                    <!-- Remaining Minutes -->
                                     <td>
-                                        @php
-                                            $minutes = ($tardiness + $undertime) % 60;
-                                        @endphp
-                                        {{ $minutes = 0 ?: ''}}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $minutes > 0 ? str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
+                                        @endif
                                     </td>
-
+                                    
                                     <td style="width: 100px; !important">
                                         @if(isset($day['remarks']) && is_array($day['remarks']))
                                             @foreach($day['remarks'] as $index => $remark)
@@ -428,11 +467,12 @@
                             <h1>For the month of <div class="underline" style="min-width: auto !important; padding: 0 15px 0 15px !important; text-transform: uppercase">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </div>(FY)</h1>
                         </div>
                     </div>
+
                     <div class="dtr-info">
                         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</div></div>
-                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['positions']['name'] ?? 'N/A' }}</div></div>
+                        <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['position'] }}</div></div>
                         <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
-                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section']['name'] ?? 'N/A' }}</div></div>
+                        <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section'] }}</div></div>
                     </div>
                     <table class="dtr-table">
                         <thead>
@@ -458,9 +498,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($logs['dtr']['logs'] as $day)
-                                {{ is_array($day['remarks']) ? implode(',', $day['remarks']) : '' }}
-
+                            @foreach ($logs['dtr']['logs'] as $key => $day)
                                 <tr>
                                     <td style="position: relative; ">
                                         {{ \Carbon\Carbon::parse($key)->format('d D') }}
@@ -468,7 +506,6 @@
                                             <div class="shaded-box">|</div>
                                         @endif
                                     </td>
-        
                                     @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])) && !$day['workOnHoliday'])
                                         <td colspan="4">
                                             Rest Day
@@ -490,45 +527,84 @@
         
                                     @endif
     
-                                    <!-- Overtime: Calculate Hours and Mins-->
+                                    @php
+                                        // Flag to check if it's a future date
+                                        $isFuture = $day['isFuture'] ?? false;
+                                    
+                                        // Allowed remarks
+                                        $allowedRemarks = ['absent', 'rest day', 'special hol', 'legal hol'];
+                                    
+                                        // Normalize and check remarks
+                                        $remarks = $day['remarks'] ?? null;
+                                        $isEmpty = false;
+                                    
+                                        if (is_array($remarks)) {
+                                            $normalized = array_map('strtolower', array_map('trim', $remarks));
+                                            $isEmpty = count($normalized) === 1 && in_array($normalized[0], $allowedRemarks);
+                                        } elseif (is_string($remarks)) {
+                                            $normalized = strtolower(trim($remarks));
+                                            $isEmpty = in_array($normalized, $allowedRemarks);
+                                        }
+                                    
+                                        // Check if any required clock times are missing or empty
+                                        $clockIn = $day['clock_in'] ?? null;
+                                        $lunchIn = $day['lunch_in'] ?? null;
+                                        $lunchOut = $day['lunch_out'] ?? null;
+                                        $clockOut = $day['clock_out'] ?? null;
+                                    
+                                        // If any clock times are empty or null, mark isEmpty = true
+                                        if (empty($clockIn) || empty($lunchIn) || empty($lunchOut) || empty($clockOut)) {
+                                            $isEmpty = true;
+                                        }
+                                    
+                                        // Overtime calculation
+                                        $totalOvertime = $day['aut']['overtime']['minutes'] ?? 0;
+                                        $overtimeHours = intdiv($totalOvertime, 60);
+                                        $overtimeMinutes = $totalOvertime % 60;
+                                    
+                                        // Total AUT calculation
+                                        $totalMinutes = $day['total_aut'] ?? 0;
+                                        $hours = intdiv($totalMinutes, 60);
+                                        $minutes = $totalMinutes % 60;
+                                    @endphp
+                                
+                                    
+                                    <!-- Overtime: Calculate Hours -->
                                     <td>
-                                        {{-- hours --}}
-                                        @if(isset($day['overtime_approved']))
-                                            @php
-                                                $hours = floor($day['overtime_approved'] / 60); // Get hours
-                                            @endphp
-                                            {{ $hours }}
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {{-- minutes --}}
-                                        @if(isset($day['overtime_approved']))
-                                            @php
-                                                $minutes = str_pad($day['overtime_approved'] % 60, 2, '0', STR_PAD_LEFT); // Get remaining minutes
-                                            @endphp
-                                            {{ $minutes }}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $overtimeHours > 0 ? str_pad($overtimeHours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
                                         @endif
                                     </td>
                                     
-                                    <!-- AUT: Calculate Hours and Mins-->
+                                    <!-- Overtime: Calculate Minutes -->
                                     <td>
-                                        {{-- Hours --}}
-                                        @if(isset($day['total_aut']))
-                                            @php
-                                                $hours = intdiv($day['total_aut'], 60); 
-                                            @endphp
-                                            {{ $hours ?: ' ' }}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $overtimeMinutes > 0 ? str_pad($overtimeMinutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
                                         @endif
                                     </td>
+                                    
+                                    <!-- Total Combined Hours -->
                                     <td>
-                                        {{-- Minutes --}}
-                                        @if(isset($day['total_aut']))
-                                            @php
-                                                $minutes = $day['total_aut'] % 60; 
-                                            @endphp
-                                            {{ ($hours != 0 && $minutes == 0) ? '0' : ($minutes ? str_pad($minutes, 2, '0', STR_PAD_LEFT) : '') }}
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $hours > 0 ? str_pad($hours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
                                         @endif
                                     </td>
+                                    
+                                    <!-- Remaining Minutes -->
+                                    <td>
+                                        @if(!$isFuture)
+                                            @if(!$isEmpty)
+                                                {{ $minutes > 0 ? str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                            @endif
+                                        @endif
+                                    </td>
+                                    
                                     <td style="width: 100px; !important">
                                         @if(isset($day['remarks']) && is_array($day['remarks']))
                                             @foreach($day['remarks'] as $index => $remark)
@@ -551,9 +627,9 @@
                                         @else
                                             <small> </small>
                                         @endif
-                                        @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks']))
+                                        {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
                                             <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $logs['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($key)->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
-                                        @endif   
+                                        {{-- @endif    --}}
                                     </td>                      
                                 </tr>
                             @endforeach

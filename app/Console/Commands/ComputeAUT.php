@@ -2,158 +2,108 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmployeeAUT;
-use App\Models\EmployeeInformation;
-use App\Models\EmployeeTimelogs;
-use App\Models\ShiftSchedule;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Admin\Services\LeaveCardService;
+use App\Http\Controllers\Admin\Services\TimeLogService;
+use App\Models\EmployeeInformation;
+use App\Models\EmployeeLeaveCard;
+use Carbon\Carbon;
 
 class ComputeAUT extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'compute-aut';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Run command after uploading bulk logs';
 
+    protected TimeLogService $timelogService;
+    protected LeaveCardService $leaveCardService;
 
-    private function getLogs() {
-
-        $records = EmployeeTimelogs::where('isComputed', false)
-            ->get();
-        
-        $groupedData = $records->groupBy(function ($record) {
-            try {
-                $date = Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('j/n/Y');
-            } catch (\Exception $e) {
-                return null; 
-            }
-            return $date . '|' . ($record->bsd_no ?? 'undefined');
-        })->filter()->map(function ($logs, $key) {
-            [$date, $bsd_no] = explode('|', $key);
-        
-            $logEntries = $logs->sortBy(function ($log) {
-                try {
-                    return Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
-                } catch (\Exception $e) {
-                    return null;
-                }
-            })->values();
-        
-            return [
-                'date' => $date,
-                'bsd_no' => $bsd_no,
-                'origin' => $logs->first()->origin,
-                'logs' => collect($logs)->map(function ($log) {
-                    try {
-                        $time = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime)->format('H:i:s');
-                    } catch (\Exception $e) {
-                        return null;
-                    }
-                    return [
-                        'time' => $time,
-                        'captured_image' => $log->captured_image,
-                        'captured_location' => $log->captured_location,
-                        'accomplishment' => $log->accomplishment
-                    ];
-                })->filter()->values()->all()
-            ];
-        })->values();
-    
-        return $groupedData;
+    public function __construct(TimeLogService $timelogService, LeaveCardService $leaveCardService)
+    {
+        parent::__construct();
+        $this->timelogService = $timelogService;
+        $this->leaveCardService = $leaveCardService;
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        
-        $aut = [];
+        $now = Carbon::now();
+        $monthFormatted = strtoupper($now->format('F'));
+        $yearFormatted = $now->format('Y');
+        $monthYear = $now->format('m-Y');
 
-        $records = $this->getLogs();
+        $months = [
+            'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+            'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+        ];
 
-        foreach ($records as $record) {
+        $currentIndex = array_search($monthFormatted, $months);
+        if ($currentIndex === false) return;
 
-            $earliestIn = Carbon::parse('07:00 AM');
-            $latestIn = Carbon::parse('09:00 AM');
-            
-            $logs = $record['logs'];
+        EmployeeInformation::where('employment_type_id', 1)
+            ->chunk(1, function ($employees) use ($monthFormatted, $yearFormatted, $monthYear, $months, $currentIndex) {
+                foreach ($employees as $employee) {
+                    try {
+                        $bio_id = $employee->bsd_no;
+                        $employee_no = $employee->employee_no;
 
-            usort($logs, function ($a, $b) {
-                return Carbon::parse($a['time'])->greaterThan(Carbon::parse($b['time']));
+                        $logs = $this->timelogService->getDTR($bio_id, $monthYear);
+                        $aut = $logs['summary']['less_aut'] ?? 0;
+                        $converted = $aut * 0.002;
+
+                        $leaveCard = $this->leaveCardService->leaveCard($employee_no);
+                        $items = collect($leaveCard[$yearFormatted]['items'] ?? []);
+
+                        $currentItem = $items->firstWhere('period', $monthFormatted);
+                        if (!$currentItem) continue;
+
+                        $prevItem = $currentIndex > 0 ? $items->firstWhere('period', $months[$currentIndex - 1]) : null;
+
+                        $prevBal = $prevItem['vl_bal'] ?? 0;
+                        $vlEarned = $currentItem['vl_earned'] ?? 0;
+                        $computedBal = $prevBal + $vlEarned - $converted;
+
+                        $currentDb = EmployeeLeaveCard::find($currentItem['id']);
+                        if (!$currentDb) continue;
+
+                        if ($computedBal < 0) {
+                            $currentDb->vl_aut_w_pay = $prevBal + $vlEarned;
+                            $currentDb->vl_aut_wo_pay = $converted - ($prevBal + $vlEarned);
+                            $currentDb->vl_bal = null;
+                        } else {
+                            $currentDb->vl_aut_w_pay = $converted;
+                            $currentDb->vl_aut_wo_pay = null;
+                            $currentDb->vl_bal = $computedBal;
+                        }
+
+                        $currentDb->particulars = "AUT: {$aut} mins";
+                        $currentDb->save();
+
+                        $runningBalance = $currentDb->vl_bal;
+
+                        $remainingItems = $items->filter(function ($item) use ($months, $currentIndex) {
+                            $index = array_search(strtoupper($item['period']), $months);
+                            return $index !== false && $index > $currentIndex;
+                        });
+
+                        foreach ($remainingItems as $item) {
+                            $earned = $item['vl_earned'] ?? 0;
+                            $runningBalance += $earned;
+
+                            $dbItem = EmployeeLeaveCard::find($item['id']);
+                            if (!$dbItem) continue;
+
+                            $dbItem->vl_bal = $runningBalance;
+                            $dbItem->save();
+                        }
+                    } catch (\Throwable $e) {
+                        Log::error("Error processing employee #{$employee->employee_no}: {$e->getMessage()}");
+                    }
+                }
+
+                Log::info("Processed batch of 100 employees at " . now());
             });
-        
-            $firstLog = Carbon::parse($logs[0]['time']);
-        
-            if ($firstLog->greaterThan($latestIn)) {
-                
-                $lateMins = $firstLog->diffInMinutes($latestIn);
-        
-                $aut[$record['date']][$record['bsd_no']] = [
-                    'late' => $lateMins,
-                ];
-            }
-        
-            if($firstLog->lessThan($earliestIn)) {
-                $expectedOut = $earliestIn->copy()->addHours(9);
-            } else if($firstLog->between($earliestIn, $latestIn)) {
-                $expectedOut = $firstLog->copy()->addHours(9);
-            } else {
-                $expectedOut = Carbon::parse('18:00');
-            }
 
-            $outLog = !empty($logs) && count($logs) > 1 ? Carbon::parse(end($logs)['time']) : $expectedOut;
-
-            if ($outLog->lessThan($expectedOut) || $outLog->equalTo($expectedOut)) {
-                $undertimeMinutes = $expectedOut->diffInMinutes($outLog);
-                $aut[$record['date']][$record['bsd_no']]['undertime'] = $undertimeMinutes;
-            }
-        }
-
-        $batchInsert = [];
-        $bsdNumbers = [];
-        
-        foreach ($aut as $date => $employees) {
-            $formattedDate = Carbon::createFromFormat('d/m/Y', $date)->format('d/m/Y');
-            foreach ($employees as $bsd_no => $values) {
-                $batchInsert[] = [
-                    'date' => $formattedDate,
-                    'bsd_no' => $bsd_no,
-                    'lates' => $values['late'] ?? 0,
-                    'undertime' => $values['undertime'] ?? 0,
-                    'absences' => $values['absences'] ?? 0,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
-                ];
-        
-                $bsdNumbers[$formattedDate][] = $bsd_no;
-            }
-        }
-        
-        if (!empty($batchInsert)) {
-            EmployeeAUT::insert($batchInsert);
-        }
-        
-        foreach ($bsdNumbers as $date => $bsdNos) {
-            EmployeeTimelogs::where('logdatetime', 'like', "%$date%")
-                ->whereIn('bsd_no', $bsdNos)
-                ->update(['isComputed' => true]);
-        }     
-
+        $this->info('AUT computed: ' . now()->format('Y-m-d H:i:s'));
     }
-
-
-    
-
 }

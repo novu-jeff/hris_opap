@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('payroll', function (Blueprint $table) {
             $table->id();
+            $table->string('type');
             $table->string('payroll_date');
             $table->string('cut_off_period');
             $table->string('employment_type');
+            $table->json('saved_payroll')
+                ->nullable();
             $table->string('status')
                 ->default('pending');
             $table->timestamps();
