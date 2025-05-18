@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin\Reports\DailyTimeRecord\Employee;
 
+use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
 use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -19,12 +21,15 @@ class Show extends Component
     public $monthDate;
     public $employee_no;
     public $errors;
+    public $hasLeaveCard;
 
     protected $timeLogService;
+    protected $leaveCardService;
 
     public function initializeService()
     {
         $this->timeLogService = app(TimeLogService::class);
+        $this->leaveCardService = app(LeaveCardService::class);
     }
 
     public function mount($employee_no, $month, $year)
@@ -33,6 +38,8 @@ class Show extends Component
         $this->initializeService();
 
         try {
+
+            Artisan::call('compute-aut');
 
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
@@ -44,6 +51,9 @@ class Show extends Component
 
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
+
+            $hasLeaveCard = $this->leaveCardService->leaveCard($employee_no);   
+            $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;
 
             $this->logs = [
                 'employee_account' => [

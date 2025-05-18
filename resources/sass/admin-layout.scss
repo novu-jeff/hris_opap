@@ -550,6 +550,19 @@
   z-index: 9999 !important;
 }
 
-.navbar-brand img {
-  width: 120px;
+.footer {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  border-top: 1px solid #e7e7e7;
+  box-shadow: 0 -4px 10px rgba(1, 196, 245, 0.1);
+
+  img:nth-child(1) {
+    width: 85px;
+  }
+
+  img:nth-child(2) {
+    width: 95px;
+  }
+
 }

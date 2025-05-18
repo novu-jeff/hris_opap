@@ -28,7 +28,7 @@
 
     .dtr {
         width: 800px;
-        margin: 50px auto;
+        margin: 10px 0 50px 0;
         padding: 10mm 5mm;
         box-sizing: border-box;
         border: 1px solid rgb(178, 178, 178);
@@ -231,7 +231,17 @@
     </div>
     <div class="container">
         @if($logs)
-            <div class="print-container">
+            @if(!$hasLeaveCard)
+                <div class="warning mt-5 mb-3">
+                    <div class="alert alert-info fw-bold text-center" role="alert">
+                        <p class="m-0 text-uppercase">No Leave Card Detected</p>
+                        <small class="text-uppercase" style="font-size: 12px;">
+                            <a href="{{route('leave.show', ['leave' => 1, 'employee' => $employee_no])}}">Click here to add</a>
+                        </small>
+                    </div>
+                </div>
+            @endif
+            <div class="print-container mt-4">
                 <div class="dtr">
                     <div wire:loading class="ml-2 loading-screen">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

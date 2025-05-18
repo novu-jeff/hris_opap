@@ -46,6 +46,19 @@
                 @yield('content')
             </div>
         </main>
+        <div class="footer mt-5 py-4">
+            <div class="container d-flex justify-content-center">
+                <div class="text-center">
+                    <div class="logo">
+                        <img src="{{asset('/img/novu-blue-logo.png')}}" alt="logo">
+                        <img src="{{asset('/img/logo.png')}}" alt="logo">
+                    </div>
+                    <p class="text-uppercase fw-bold mb-0">Powered by Novulutions Inc.</p>
+                    <hr class="my-2" style="width: 600px;">
+                    <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">Transform IT: Unify your data silos</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>

@@ -88,7 +88,6 @@ class Apply extends Component
             'fields.date' => [
                 'required',
                 'date',
-                'before:today',
                 function ($attribute, $value, $fail) {
                     if(is_null($this->record_id)) {
                         $employeeNo = $this->employee_no; 
@@ -112,7 +111,6 @@ class Apply extends Component
     protected function messages()
     {
         return [
-            'fields.date.before' => 'The date must be on previous days.',
             'fields.date.required' => 'The date field is required.',
             'fields.date.date' => 'The date must be a valid date.',
             'fields.start_time.required' => 'The start time field is required.',

@@ -24,6 +24,7 @@ class Show extends Component
     use WithPagination;
     use WithFileUploads;
 
+    public $employee_no;
     public $selected_id;
     public $id;
     public $entries = 10;
@@ -152,7 +153,7 @@ class Show extends Component
         ];
     }
 
-    public function resetCredits(bool $isNotify = true, string $employee_no = null) {
+    public function resetCredits(bool $isNotify = true, ?string $employee_no = null) {
 
         if (Gate::denies('write leave-credits')) {
             $this->dispatch('alert', [
@@ -396,8 +397,6 @@ class Show extends Component
             return;
         }
 
-
-
         $this->validate([
             'importFile' => 'required|mimes:csv',
         ], [
@@ -485,9 +484,14 @@ class Show extends Component
     
     public function render()
     {
+
         $model = EmployeeInformation::with(['personal'])
             ->where('employment_type_id', 1);
     
+        if(!is_null($this->employee_no)) {
+            $this->search = $this->employee_no;
+        }
+
         if ($this->search) {
             $this->resetPage(); 
             $model->where(function ($query) {

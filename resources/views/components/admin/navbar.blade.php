@@ -1,7 +1,8 @@
 <nav class="navbar navbar-dark text-dark bg-light shadow-sm">
-    <div class="container px-5">
+    <div class="container px-4">
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-            <img src="{{asset('img/logo.png')}}" alt="" srcset="" style="width: 120px;">
+            <img src="{{asset('img/client-logo.png')}}" alt="" srcset="">
+            <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
         </a>
         <div class="d-flex align-items-center gap-5">
             <div class="dropdown ms-3 d-none d-md-flex align-items-start gap-1 dropdown-toggle" data-bs-toggle="dropdown" style="cursor: pointer">

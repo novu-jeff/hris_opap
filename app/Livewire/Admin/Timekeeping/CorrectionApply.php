@@ -37,10 +37,13 @@ class CorrectionApply extends Component
         $logs = $this->getLogs($this->bsd_no, $this->date);
 
         if (!empty($logs)) {
-            $this->clockin = Carbon::parse($logs['clock_in'])->format('H:i');
-            $this->breakout = Carbon::parse($logs['lunch_in'])->format('H:i');
-            $this->breakin = Carbon::parse($logs['lunch_out'])->format('H:i');
-            $this->clockout = Carbon::parse($logs['clock_out'])->format('H:i');
+
+            $formatTime = fn($value) => !empty($value) ? Carbon::parse($value)->format('H:i') : null;
+            $this->clockin = $formatTime($logs['clock_in'] ?? null);
+            $this->breakout = $formatTime($logs['lunch_in'] ?? null);
+            $this->breakin = $formatTime($logs['lunch_out'] ?? null);
+            $this->clockout = $formatTime($logs['clock_out'] ?? null);
+
         } else {
             $this->clockin = $this->breakout = $this->breakin = $this->clockout = null;
         }
