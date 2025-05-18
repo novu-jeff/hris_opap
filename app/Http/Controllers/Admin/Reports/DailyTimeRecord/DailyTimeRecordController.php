@@ -11,7 +11,8 @@ class DailyTimeRecordController extends Controller
 {
     public function index(Request $request)
     {
-        return view('admin.reports.daily-time-record.index');
+        $type = $request->input('type');
+        return view('admin.reports.daily-time-record.index', compact('type'));
     }
 
     public function show(Request $request, string $employee_no)

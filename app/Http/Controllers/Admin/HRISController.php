@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class HRISController extends Controller
 {
@@ -11,9 +12,11 @@ class HRISController extends Controller
         $this->middleware('permission:read hris')->only('index', 'manual');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.hris.index');
+        $employment_type = $request->input('employment_type');
+        
+        return view('admin.hris.index', compact('employment_type'));
     }
 
     public function staffing()

@@ -1,6 +1,26 @@
 <div>
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('reports.dtr') }}"
+                    class="nav-link text-uppercase fw-bold {{ is_null($selectedType) ? 'active' : '' }}">
+                        All
+                    </a>
+
+                    @foreach($employmentTypes as $employmentType)
+                        <a href="{{ route('reports.dtr', ['type' => $employmentType->id]) }}"
+                        class="nav-link text-uppercase fw-bold {{ $selectedType == $employmentType->id ? 'active' : '' }}">
+                            {{ $employmentType->name }}
+                        </a>
+                    @endforeach
+
+                    <a href="{{ route('reports.dtr', ['type' => 'unassigned']) }}"
+                    class="nav-link text-uppercase fw-bold {{ $selectedType === 'unassigned' ? 'active' : '' }}">
+                        Unassigned
+                    </a>
+                </li>
+            </ul>
             <div class="row mb-4">
                 <div class="col-md-6 d-flex align-items-center gap-2">
                     <label for="entries" class="form-label mb-0">Show entries:</label>

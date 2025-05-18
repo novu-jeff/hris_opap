@@ -27,6 +27,7 @@ class Index extends Component
     use WithFileUploads;
     use WithPagination;
 
+    
     public $employee_no;
     public $isParsing;
     public $isUploading = false;
@@ -41,6 +42,8 @@ class Index extends Component
     public $roles;
     public $shift_id;
     public $schedule_id;
+    public $employmentTypes;
+    public $selectedType;
 
     public bool $lazy = true;
 
@@ -62,6 +65,7 @@ class Index extends Component
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
         $this->roles = EmployementTypes::all();
+        $this->employmentTypes = EmployementTypes::all();
     }
 
     public function close_upload_employee() {
@@ -502,29 +506,36 @@ class Index extends Component
 
     public function render()
     {
-        
-        $model = EmployeeInformation::with('account', 'personal')
+        $query = EmployeeInformation::with('account', 'personal')
             ->where('isDeleted', false);
 
-        if ($this->search) {
+        // Filter by selected employment type
+        if ($this->selectedType !== null) {
+            if ($this->selectedType === 'unassigned') {
+                $query->whereNull('employment_type_id');
+            } else {
+                $query->where('employment_type_id', $this->selectedType);
+            }
+        }
 
-            $this->resetPage(); 
+        // Search by employee number or full name
+        if (!empty($this->search)) {
+            $this->resetPage();
 
-            $employees = $model->where(function ($query) {
-                $query->where('employee_no', 'like', '%' . $this->search . '%')
+            $query->where(function ($q) {
+                $q->where('employee_no', 'like', '%' . $this->search . '%')
                 ->orWhereHas('personal', function ($subQuery) {
                     $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
                 });
             });
-        } else {
-            $employees = $model;
         }
 
-        $employees = $employees->latest()->paginate($this->entries);
+        $employees = $query->latest()->paginate($this->entries);
 
         return view('livewire.admin.hris.index', [
             'employees' => $employees
         ]);
     }
+
 
 }

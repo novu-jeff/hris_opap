@@ -207,7 +207,7 @@
                     &copy; 2025. All rights reserved Novulutions Inc.
                 </p>
             </div>
-        </div class="footer">
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>

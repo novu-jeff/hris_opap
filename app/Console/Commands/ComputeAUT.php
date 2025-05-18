@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class ComputeAUT extends Command
 {
@@ -38,10 +39,20 @@ class ComputeAUT extends Command
         ];
 
         $currentIndex = array_search($monthFormatted, $months);
-        if ($currentIndex === false) return;
+        if ($currentIndex === false) {
+            Log::warning("Month {$monthFormatted} not found in months array.");
+            return;
+        }
+
+        $batchSize = 100;  
+        $batchNumber = 0;
 
         EmployeeInformation::where('employment_type_id', 1)
-            ->chunk(1, function ($employees) use ($monthFormatted, $yearFormatted, $monthYear, $months, $currentIndex) {
+            ->chunk($batchSize, function ($employees) use (
+                $monthFormatted, $yearFormatted, $monthYear, $months, $currentIndex, &$batchNumber
+            ) {
+                $batchNumber++;
+
                 foreach ($employees as $employee) {
                     try {
                         $bio_id = $employee->bsd_no;
@@ -76,11 +87,23 @@ class ComputeAUT extends Command
                             $currentDb->vl_bal = $computedBal;
                         }
 
-                        $currentDb->particulars = "AUT: {$aut} mins";
+                        $autFormatted = $this->formatTime($aut);
+                        $autEntry = "AUT: {$autFormatted}";
+
+                        $existingParticulars = $currentDb->particulars ?? '';
+
+                        if (Str::contains($existingParticulars, 'AUT:')) {
+                            $existingParticulars = preg_replace('/AUT:\s*[^,]*/', $autEntry, $existingParticulars);
+                        } else {
+                            $existingParticulars = trim($existingParticulars);
+                            $existingParticulars = $existingParticulars === '' ? $autEntry : "{$existingParticulars}, {$autEntry}";
+                        }
+
+                        $currentDb->particulars = $existingParticulars;
                         $currentDb->save();
 
-                        $runningBalance = $currentDb->vl_bal;
-
+                        // Update future leave balances
+                        $runningBalance = $currentDb->vl_bal ?? 0;
                         $remainingItems = $items->filter(function ($item) use ($months, $currentIndex) {
                             $index = array_search(strtoupper($item['period']), $months);
                             return $index !== false && $index > $currentIndex;
@@ -101,9 +124,34 @@ class ComputeAUT extends Command
                     }
                 }
 
-                Log::info("Processed batch of 100 employees at " . now());
+                // Log progress with batch number
+                Log::info("AUT computed {$batchNumber} batch(es) at " . now());
             });
+    }
 
-        $this->info('AUT computed: ' . now()->format('Y-m-d H:i:s'));
+
+    private function formatTime($totalMinutes)
+    {
+        $hours = floor($totalMinutes / 60);
+        $minutes = $totalMinutes % 60;
+
+        $result = '';
+
+        if ($hours > 0) {
+            $result .= $hours . 'hr';
+            if ($minutes > 0) {
+                $result .= ' ';
+            }
+        }
+
+        if ($minutes > 0) {
+            $result .= $minutes . 'mins';
+        }
+
+        if (empty($result)) {
+            $result = '0mins';
+        }
+
+        return $result;
     }
 }

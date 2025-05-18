@@ -8,6 +8,7 @@ use App\Models\EmployeeTimelogs;
 use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TimeLogService extends Controller
 {
@@ -53,6 +54,7 @@ class TimeLogService extends Controller
     }
 
     private function processLogs($logs, $monthYear, $isDTR = false) {
+        
         $grouped = [];
     
         foreach ($logs as $log) {
@@ -143,29 +145,30 @@ class TimeLogService extends Controller
         $startTime = Carbon::createFromTime(7, 0);
         $latestAllowedIn = Carbon::createFromTime(9, 0);
         $breakStart = Carbon::createFromTime(12, 0);
-        $minimumOvertime = 120;
-    
+        $breakEnd = Carbon::createFromTime(13, 0);
+
         $record['remarks'] = [];
-        $record['total_aut'] = 0; // ✅ Initialize
-    
+        $record['total_aut'] = 0;
+
         $clock_in = $this->parseTime($record['clock_in']);
         $clock_out = $this->parseTime($record['clock_out']);
         $lunch_in = $this->parseTime($record['lunch_in']);
         $lunch_out = $this->parseTime($record['lunch_out']);
-    
-        // Mark as Absent only if all logs are missing
+
+        // Absent
         if (!$clock_in && !$clock_out && !$lunch_in && !$lunch_out) {
             $record['remarks'][] = 'Absent';
-            return;
+            return 480;
         }
-    
-        // Mark as Discrepancy if any one of the logs is missing
+
+        // Discrepancy
         if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
             $record['remarks'][] = 'Discrepancy';
         }
-    
-        $actualStart = $clock_in && $clock_in->lt($startTime) ? $startTime->copy() : $clock_in;
-    
+
+        $actualStart = ($clock_in && $clock_in->lt($startTime)) ? $startTime : $clock_in;
+        $totalAUT = 0;
+
         // Tardiness
         if ($actualStart && $actualStart->gt($latestAllowedIn)) {
             $late = $actualStart->diffInMinutes($latestAllowedIn);
@@ -174,71 +177,86 @@ class TimeLogService extends Controller
                 'reason' => "Late by {$late} minute(s). Time-in at {$record['clock_in']}, beyond 09:00 AM.",
             ];
             $record['remarks'][] = 'Late';
-            $record['total_aut'] += $late; // ✅ Add tardiness to total
+            $totalAUT += $late;
         }
-    
+
+        // Work Duration
         if ($actualStart && $clock_out) {
             $totalWorked = $clock_out->diffInMinutes($actualStart);
-    
-            // Deduct lunch
-            $lunchMinutes = 0;
+
+            // Deduct lunch break
             if ($lunch_in && $lunch_out && $lunch_out->gt($lunch_in)) {
-                $lunchMinutes = $lunch_out->diffInMinutes($lunch_in);
-                $totalWorked -= $lunchMinutes;
-            } elseif ($actualStart->lt($breakStart) && $clock_out->gt(Carbon::createFromTime(13))) {
-                $lunchMinutes = 60;
+                $totalWorked -= $lunch_out->diffInMinutes($lunch_in);
+            } elseif ($actualStart->lt($breakStart) && $clock_out->gt($breakEnd)) {
                 $totalWorked -= 60;
             }
-    
-            // Deduct early lunch-in
-            $earlyLunchDeduct = 0;
+
+            // Early lunch in penalty
             if ($lunch_in && $lunch_in->lt($breakStart)) {
-                $earlyLunchDeduct = $breakStart->diffInMinutes($lunch_in);
-                $totalWorked -= $earlyLunchDeduct;
+                $totalWorked -= $breakStart->diffInMinutes($lunch_in);
             }
-    
-            // CASE 1: Expected out used (normal range clock-in)
+
+            // Undertime
+            $expectedWorkMinutes = 480; // 8 hours
             if ($actualStart->betweenIncluded($startTime, $latestAllowedIn)) {
-                $expectedOut = $actualStart->copy()->addHours(9); // 8 work hours + 1 lunch hour
+                $expectedOut = $actualStart->copy()->addHours(9); // 8 + 1 (lunch)
                 if ($clock_out->lt($expectedOut)) {
                     $ut = $expectedOut->diffInMinutes($clock_out);
                     $record['aut']['undertime'] = [
                         'minutes' => $ut,
-                        'reason' => "Expected out at {$expectedOut->format('h:i A')} (8 hrs + 1 hr lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
+                        'reason' => "Expected out at {$expectedOut->format('h:i A')} (9 hrs incl. lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
                     ];
                     $record['remarks'][] = 'Undertime';
-                    $record['total_aut'] += $ut; // ✅ Add undertime to total
-                } elseif ($totalWorked >= 480 + $minimumOvertime) {
-                    $ot = $totalWorked - 480;
-                    $record['aut']['overtime'] = [
-                        'minutes' => $ot,
-                        'reason' => "Worked {$totalWorked} minutes, which is {$ot} minute(s) of overtime.",
-                    ];
-                    $record['remarks'][] = 'Overtime';
+                    $totalAUT += $ut;
+                }
+            } elseif ($totalWorked < $expectedWorkMinutes) {
+                $ut = $expectedWorkMinutes - $totalWorked;
+                $record['aut']['undertime'] = [
+                    'minutes' => $ut,
+                    'reason' => "Worked only {$totalWorked} minute(s), {$ut} minute(s) short of 480 minutes.",
+                ];
+                $record['remarks'][] = 'Undertime';
+                $totalAUT += $ut;
+            }
+        }
+        
+        if (isset($record['date'])) {
+            $dateStr = $record['date'];
+            $formats = ['m-Y', 'Y-m-d'];
+            $month = null;
+            $year = null;
+
+            foreach ($formats as $format) {
+                try {
+                    $dt = Carbon::createFromFormat($format, $dateStr);
+                    if ($dt && $dt->format($format) === $dateStr) {
+                        $month = strtolower($dt->format('F'));
+                        $year = $dt->format('Y');
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    // ignore, try next
                 }
             }
-            // CASE 2: Irregular clock-in (before 7 AM or after 9 AM)
-            else {
-                if ($totalWorked < 480) {
-                    $ut = 480 - $totalWorked;
-                    $record['aut']['undertime'] = [
-                        'minutes' => $ut,
-                        'reason' => "Worked only {$totalWorked} minute(s), {$ut} minute(s) short of 480 minutes (irregular time-in).",
-                    ];
-                    $record['remarks'][] = 'Undertime';
-                    $record['total_aut'] += $ut; // ✅ Add undertime to total
-                } elseif ($totalWorked >= 480 + $minimumOvertime) {
-                    $ot = $totalWorked - 480;
-                    $record['aut']['overtime'] = [
-                        'minutes' => $ot,
-                        'reason' => "Worked {$totalWorked} minutes, which is {$ot} minute(s) of overtime.",
-                    ];
-                    $record['remarks'][] = 'Overtime';
+
+            if ($month && $year) {
+                $leaveCard = (new LeaveCardService())->leaveCard($record['employee_no']);
+                $leaveItems = $leaveCard[$year]['items'] ?? null;
+
+                if ($leaveItems) {
+                    $hasAutWoPay = $leaveItems->filter(
+                        fn($item) => strtolower($item->period) === $month && !empty($item->vl_aut_wo_pay)
+                    )->isNotEmpty();
+
+                    if ($hasAutWoPay) {
+                        $record['total_aut'] = $totalAUT;
+                    }
                 }
             }
         }
     }
-          
+
+
 
     private function parseTime(?string $time)
     {
