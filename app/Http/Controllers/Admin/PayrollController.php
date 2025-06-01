@@ -7,6 +7,7 @@ use App\Models\EmployeeInformation;
 use App\Models\EmployementTypes;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PayrollController extends Controller
 {
@@ -14,23 +15,29 @@ class PayrollController extends Controller
     public $payroll_id;
     public $employment_type;
 
-    public function index(Request $request) {
-        
-        $type = $request->input('type');
+    public function index(Request $request)
+    {
+        $defaultType = 'salary';
+        $defaultEmploymentType = 1;
 
-        $allowed_types = ['salary', 'mid_year', '13th_month', 'cto'];
+        $validator = Validator::make($request->all(), [
+            'type' => 'nullable|in:salary,mid_year,13th_month,cto',
+            'employment_type' => 'nullable|exists:employment_types,id',
+        ]);
 
-        if(empty($type) || is_null($type)) {
-            return redirect()->route('payroll.index', ['type' => 'salary']);
+        if ($validator->fails()) {
+            return redirect()->route('payroll.index', [
+                'type' => $defaultType,
+                'employment_type' => $defaultEmploymentType,
+            ]);
         }
 
-        if(!in_array($type, $allowed_types)) {
-            return redirect()->route('payroll.index', ['type' => 'salary']);
-        }
+        $type = strtolower($request->input('type', $defaultType));
+        $employment_type = $request->input('employment_type', $defaultEmploymentType);
 
-        $type = strtolower($type);
+        $employmentTypes = EmployementTypes::all();
 
-        return view('admin.payroll.index', compact('type'));
+        return view('admin.payroll.index', compact('type', 'employment_type', 'employmentTypes'));
     }
 
     public function process(int $id) {

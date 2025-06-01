@@ -33,8 +33,8 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Payroll Date</th>
                             <th>Cut Off Period</th>
+                            <th>Payroll Date</th>
                             <th>Status</th>
                             <th style="max-width: 200px;">Action</th>
                         </tr>
@@ -43,7 +43,6 @@
                         @forelse($records as $record)
                             <tr data-id="{{$record->id}}">
                                 <td>#{{format_id($record->id, 6)}}</td>
-                                <td>{{\Carbon\Carbon::parse($record->payroll_date)->format('F d, Y')}}</td>
                                 <td>
                                     @php
                                         $dates = explode(' to ', $record->cut_off_period);
@@ -53,6 +52,7 @@
 
                                     {{ $startDate }} - {{ $endDate }}
                                 </td>
+                                <td>{{\Carbon\Carbon::parse($record->payroll_date)->format('F d, Y')}}</td>
                                 <td>{{$record->status}}</td>
                                 <td>
                                     <a href="{{route('payroll.process', ['payroll_id' => $record->id])}}" class="btn btn-primary">

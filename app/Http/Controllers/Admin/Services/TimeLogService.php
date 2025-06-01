@@ -146,6 +146,7 @@ class TimeLogService extends Controller
         $latestAllowedIn = Carbon::createFromTime(9, 0);
         $breakStart = Carbon::createFromTime(12, 0);
         $breakEnd = Carbon::createFromTime(13, 0);
+        $maxOTTime = Carbon::createFromTime(22, 0); // 10:00 PM cutoff for OT
 
         $record['remarks'] = [];
         $record['total_aut'] = 0;
@@ -155,13 +156,11 @@ class TimeLogService extends Controller
         $lunch_in = $this->parseTime($record['lunch_in']);
         $lunch_out = $this->parseTime($record['lunch_out']);
 
-        // Absent
         if (!$clock_in && !$clock_out && !$lunch_in && !$lunch_out) {
             $record['remarks'][] = 'Absent';
             return 480;
         }
 
-        // Discrepancy
         if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
             $record['remarks'][] = 'Discrepancy';
         }
@@ -169,7 +168,6 @@ class TimeLogService extends Controller
         $actualStart = ($clock_in && $clock_in->lt($startTime)) ? $startTime : $clock_in;
         $totalAUT = 0;
 
-        // Tardiness
         if ($actualStart && $actualStart->gt($latestAllowedIn)) {
             $late = $actualStart->diffInMinutes($latestAllowedIn);
             $record['aut']['tardiness'] = [
@@ -180,31 +178,29 @@ class TimeLogService extends Controller
             $totalAUT += $late;
         }
 
-        // Work Duration
         if ($actualStart && $clock_out) {
             $totalWorked = $clock_out->diffInMinutes($actualStart);
 
-            // Deduct lunch break
             if ($lunch_in && $lunch_out && $lunch_out->gt($lunch_in)) {
                 $totalWorked -= $lunch_out->diffInMinutes($lunch_in);
             } elseif ($actualStart->lt($breakStart) && $clock_out->gt($breakEnd)) {
                 $totalWorked -= 60;
             }
 
-            // Early lunch in penalty
             if ($lunch_in && $lunch_in->lt($breakStart)) {
                 $totalWorked -= $breakStart->diffInMinutes($lunch_in);
             }
 
-            // Undertime
-            $expectedWorkMinutes = 480; // 8 hours
+            $expectedWorkMinutes = 480;
+            $standardEnd = $actualStart->copy()->addHours(9); // 8hrs + 1hr break
+
+            // Undertime calculation
             if ($actualStart->betweenIncluded($startTime, $latestAllowedIn)) {
-                $expectedOut = $actualStart->copy()->addHours(9); // 8 + 1 (lunch)
-                if ($clock_out->lt($expectedOut)) {
-                    $ut = $expectedOut->diffInMinutes($clock_out);
+                if ($clock_out->lt($standardEnd)) {
+                    $ut = $standardEnd->diffInMinutes($clock_out);
                     $record['aut']['undertime'] = [
                         'minutes' => $ut,
-                        'reason' => "Expected out at {$expectedOut->format('h:i A')} (9 hrs incl. lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
+                        'reason' => "Expected out at {$standardEnd->format('h:i A')} (9 hrs incl. lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
                     ];
                     $record['remarks'][] = 'Undertime';
                     $totalAUT += $ut;
@@ -218,8 +214,24 @@ class TimeLogService extends Controller
                 $record['remarks'][] = 'Undertime';
                 $totalAUT += $ut;
             }
+
+            // Overtime calculation with 2hr minimum and max until 10pm
+            if ($clock_out->gt($standardEnd)) {
+                $otEnd = $clock_out->lt($maxOTTime) ? $clock_out : $maxOTTime;
+                $otMinutes = $otEnd->diffInMinutes($standardEnd);
+
+                if ($otMinutes >= 120) {
+                    $record['aut']['overtime'] = [
+                        'minutes' => $otMinutes,
+                        'reason' => "Worked {$otMinutes} minute(s) overtime from {$standardEnd->format('h:i A')} to {$otEnd->format('h:i A')}.",
+                    ];
+                    $record['remarks'][] = 'Overtime';
+                    $totalAUT += $otMinutes;
+                }
+            }
         }
-        
+
+        // Leave Card Check
         if (isset($record['date'])) {
             $dateStr = $record['date'];
             $formats = ['m-Y', 'Y-m-d'];
@@ -235,7 +247,7 @@ class TimeLogService extends Controller
                         break;
                     }
                 } catch (\Exception $e) {
-                    // ignore, try next
+                    // try next format
                 }
             }
 
@@ -250,6 +262,8 @@ class TimeLogService extends Controller
 
                     if ($hasAutWoPay) {
                         $record['total_aut'] = $totalAUT;
+                    } else {
+                        $record['total_aut'] = 0;
                     }
                 }
             }

@@ -76,8 +76,9 @@
                 <div class="row">
                     <div class="col-12 col-lg-6 mb-4">
                         <div class="mx-5">
-                            <div class="logo">
+                            <div class="logo d-flex gap-3">
                                 <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
+                                <img src="{{asset('/img/logo.png')}}" alt="logo">
                             </div>
                             <div class="logo-phrase">
                                 <p>Transform IT: Unify your data silos</p>
@@ -204,7 +205,7 @@
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2025. All rights reserved Novulutions Inc.
+                    &copy; 2025. Powered by Novulutions Inc.
                 </p>
             </div>
         </div>

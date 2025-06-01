@@ -222,13 +222,13 @@ class Clock extends Component
             $clockRecords = EmployeeTimelogs::where('employee_id', $this->bsd_no)
                 ->where('timestamp', 'LIKE', "{$date}%");
             
-            $firstLog = $clockRecords->first()->logdatetime ?? null;
+            $firstLog = $clockRecords->first()->timestamp ?? null;
             $expectedOut = null;
             
             if ($firstLog) {
                 if ($entry > 1) {
                     // Convert firstLog to Carbon instance
-                    $firstLogTime = Carbon::createFromFormat('Y-m-d H:i', $firstLog);  
+                    $firstLogTime = Carbon::createFromFormat('Y-m-d H:i:s', $firstLog);  
             
                     // Default expectedOut to firstLog + 9 hours
                     $expectedOut = $firstLogTime->copy()->addHours(9);

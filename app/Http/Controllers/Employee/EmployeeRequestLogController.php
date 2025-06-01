@@ -28,7 +28,7 @@ class EmployeeRequestLogController extends Controller
             'action' => 'create',
             'title' => 'Apply Request Timelogs',
             'header' => 'Apply Request Timelogs',
-            'sub' => 'By proceeding, you\'ll be able to apply for a leave.'
+            'sub' => 'By proceeding, you\'ll be able to apply for requesting a timelog.'
         ]);
 
     }

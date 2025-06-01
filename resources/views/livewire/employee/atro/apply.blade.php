@@ -47,15 +47,14 @@
                         <div class="col-12 col-md-12 mb-3" wire:ignore>
                             <label for="relative-emp" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
                             <select class="form-select multi-select" multiple wire:model="fields.employees">
-                                <option value=""> - CHOOSE - </option>
                                 @foreach($OtherEmployees as $employee)
                                     <option value="{{ $employee->employee_no }}">
                                         ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
                                     </option>
                                 @endforeach
                             </select>                                
-                            <div class="error-field">
-                                @error('fields.employees') <span class="text-danger">{{ $message }}</span> @enderror
+                            <div class="error-field select2-error">
+                                
                             </div>
                         </div>
                         <div class="col-12 col-md-12 mb-3">
@@ -89,13 +88,21 @@
     <script>
         $(function() {
             $('.multi-select').select2();
-            $('.multi-select').on('select2:select', function (e) {
+
+            $('.multi-select').on('change', function (e) {
                 const data = $('.multi-select').select2('val');
-                @this.dispatch('onChange', [data]);
+                @this.dispatch('onChange', [data ?? null]);
             });
+
 
             Livewire.on('reloadSelect2', () => {
                 $('.multi-select').select2();
+            });
+
+            console.log($('.multi-select').select2('val'));
+
+            Livewire.on('select2Err', (error) => {
+                $('.select2-error').html('<span class="text-danger">'+error+'</span>');
             });
 
         });
