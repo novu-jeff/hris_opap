@@ -93,10 +93,6 @@
           }
         }
 
-        .navbar-brand img {
-          width: 120px;
-        }
-
         .profile-img {
             width: 40px; 
             height: 40px; 
@@ -139,9 +135,13 @@
         align-items: center;
       }
 
-      .logo img {
-        width: 120px;
-        height: 120px;
+      .logo {
+        img:nth-child(1) {
+          width: 120px;
+        }
+        img:nth-child(2) {
+          width: 140px;
+        }
       }
 
       .logo-phrase {

@@ -29,5 +29,4 @@ class EmployeeTimelogs extends Model
     {
         return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'bsd_no');
     }
-
 }

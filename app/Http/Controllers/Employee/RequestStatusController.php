@@ -16,7 +16,7 @@ class RequestStatusController extends Controller
         return view('employee.request-status', [
             'action' => 'index',
             'title' => 'ESS | Request Status',
-            'header' => 'Request Status | Talk HR',
+            'header' => 'Contact Us | Talk HR',
             'sub' => 'Request any status or message any concerns.'
         ]);
     }

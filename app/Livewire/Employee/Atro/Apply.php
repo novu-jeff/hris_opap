@@ -63,7 +63,6 @@ class Apply extends Component
             ];
 
         }
-
     }
 
     public function onChange($value) {
@@ -82,20 +81,29 @@ class Apply extends Component
         return;
     }
 
-    protected function rules() {
+    protected function rules()
+    {
         return [
-            'fields.relative-employee' => 'nullable|array',
+            'fields.employees' => [
+                function ($attribute, $value, $fail) {
+                    if (empty($this->fields['employees'])) {
+                        $this->dispatch('select2Err', 'Employee(s) cannot be empty.');
+                    } else {
+                        $this->dispatch('select2Err', '');
+                    }
+                }
+            ],
             'fields.date' => [
                 'required',
                 'date',
                 function ($attribute, $value, $fail) {
-                    if(is_null($this->record_id)) {
-                        $employeeNo = $this->employee_no; 
-                    
+                    if (is_null($this->record_id)) {
+                        $employeeNo = $this->employee_no;
+
                         $exists = EmployeeAtro::where('employee_no', $employeeNo)
                             ->where('date', $value)
                             ->exists();
-    
+
                         if ($exists) {
                             $fail('An overtime application has already been submitted for this date.');
                         }

@@ -115,8 +115,8 @@
                                 </div>
                                 <div class="send-btns mt-4">
                                     <div class="attach">
-                                        <div class="button-wrapper">
-                                            <span class="label text-uppercase fw-bold">Upload attachments</span>
+                                        <div class="button-wrapper btn btn-primary text-white px-4 py-2 rounded-2">
+                                            <span class="label text-uppercase fw-bold text-white" style="cursor: pointer">Upload attachments</span>
                                             <input type="file" wire:model.live="attachments" multiple id="upload" class="upload-box" placeholder="Upload File" aria-label="Upload File">
                                         </div>
                                         <div>

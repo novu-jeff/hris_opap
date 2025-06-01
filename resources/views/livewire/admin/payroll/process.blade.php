@@ -115,8 +115,8 @@
                                 <td colspan="2">{{$record['w_tax']}}</td>
                                 <td colspan="2">{{$record['uca']}}</td>
                                 <td colspan="2">{{$record['allowance']}}</td>
-                                <td>{{$record['total_aut']}}</td>
-                                <td>{{$record['total_aut']}}</td>
+                                <td>{{$record['aut']}}</td>
+                                <td>{{$record['aut']}}</td>
                                 <td>{{$record['total_deductions']}}</td>
                                 <td>{{$record['net_amount']}}</td>
                                 <td colspan="2">{{$record['dbp']}}</td>

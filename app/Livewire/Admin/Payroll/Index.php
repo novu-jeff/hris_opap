@@ -47,6 +47,7 @@ class Index extends Component
         try {
 
             $payroll = Payroll::create([
+                'type' => $this->type,
                 'payroll_date' => $this->payroll_date,
                 'cut_off_period' => $this->cut_off_period,
                 'employment_type' => $this->employment_type,
@@ -78,6 +79,9 @@ class Index extends Component
         $records = Payroll::where('type', $this->type)
             ->when($this->status, function($query) {
                 return $query->where('status', $this->status);
+            })
+            ->when($this->employment_type, function($query) {
+                return $query->where('employment_type', $this->employment_type);
             })
             ->paginate($this->entries);
 

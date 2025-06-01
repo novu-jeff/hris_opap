@@ -92,7 +92,6 @@ class PayrollService extends Controller {
                 $dbp = collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0;
                 $unlad_kawani = collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0;
 
-
                 $total_deduction = 
                     (float) $hmdf + 
                     (float) $philhealth + 

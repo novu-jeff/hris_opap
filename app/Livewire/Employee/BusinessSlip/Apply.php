@@ -151,7 +151,7 @@ class Apply extends Component
                     $redirect = route('ess.obs');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
-                    $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'position', 'department', 'branch');
+                    $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'section', 'position', 'department', 'branch');
 
                     return;
 

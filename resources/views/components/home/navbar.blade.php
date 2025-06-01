@@ -2,6 +2,7 @@
     <div class="container d-flex justify-content-lg-center justify-content-xl-between px-4">
         <a class="navbar-brand text-uppercase" href="{{ url('/') }}">
             <img src="{{asset('img/client-logo.png')}}" alt="logo">
+            <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
         </a>
         <div class="d-flex align-items-center gap-5 pt-3">
             <ul class="navbar-nav">

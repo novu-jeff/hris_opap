@@ -15,9 +15,16 @@
                 <a href="{{route('payroll.index', ['type' => 'salary'])}}" class="nav-link {{$type == 'salary' ? 'active' : ''}}" role="tab" aria-selected="true">Salary</a>
                 <a href="{{route('payroll.index', ['type' => 'mid_year'])}}" class="nav-link {{$type == 'mid_year' ? 'active' : ''}}" role="tab" aria-selected="true">Mid Year </a>
                 <a href="{{route('payroll.index', ['type' => '13th_month'])}}" class="nav-link {{$type == '13th_month' ? 'active' : ''}}" role="tab" aria-selected="true">13th Month</a>
-                <a href="{{route('payroll.index', ['type' => 'cto'])}}" class="nav-link {{$type == 'cto' ? 'active' : ''}}" role="tab" aria-selected="true">CTO</a>
+                {{-- <a href="{{route('payroll.index', ['type' => 'cto'])}}" class="nav-link {{$type == 'cto' ? 'active' : ''}}" role="tab" aria-selected="true">CTO</a> --}}
             </li>
-          </ul>
+        </ul>
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item d-flex text-uppercase fw-bold" role="presentation">
+                @foreach($employmentTypes as $employmentType)
+                    <a href="{{route('payroll.index', ['type' => $type, 'employment_type' => $employmentType->id])}}" class="nav-link {{$employmentType->id == $employment_type ? 'active' : ''}}" role="tab" aria-selected="true">{{$employmentType->name}}</a>
+                @endforeach
+            </li>
+        </ul>
         <div class="d-md-flex justify-content-end gap-3">
             <div class="dropdown">
                 <button class="btn btn-primary text-uppercase px-5 py-3 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -33,7 +40,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.payroll.index', ['type' => $type])
+        @livewire('admin.payroll.index', ['type' => $type, 'employment_type' => $employment_type])
     </div>
 </div>
 @endsection
