@@ -169,7 +169,7 @@ class Index extends Component
             foreach ($sheetsData as $index => $sheet) {
                 $sheetName = $sheetNames[$index];
 
-                $sheet = array_slice($sheet, 1); // Remove headers
+                $sheet = array_slice($sheet, 1); 
                 $sheet = array_filter($sheet, fn($row) =>
                     isset($row[0]) && !empty($row[0]) &&
                     !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
@@ -199,6 +199,7 @@ class Index extends Component
             $this->loadRecords();
 
         } catch (\Exception $e) {
+            
             logger()->error('Error uploading file: ' . $e->getMessage());
 
             $this->dispatch('alert', [
