@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
+use App\Jobs\EmployeeUploadJob;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
@@ -11,6 +12,7 @@ use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployementTypes;
 use App\Models\ShiftSchedule;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +28,6 @@ class Index extends Component
 
     use WithFileUploads;
     use WithPagination;
-
     
     public $employee_no;
     public $isParsing;
@@ -130,39 +131,32 @@ class Index extends Component
 
     }
 
-    public function upload_file() {
-
+    public function upload_file()
+    {
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
         }
 
-        $this->isUploading = 'true';
-    
-        DB::beginTransaction();
-    
+        $this->isUploading = true;
+
         try {
-            // Correct file path using the Storage facade
             $relativePath = str_replace(asset('storage/'), '', $this->upload_preview);
             $absolutePath = storage_path('app/public/' . $relativePath);
-    
-            // Check if the file exists in the storage
+
             if (!Storage::exists('public/' . $relativePath)) {
                 throw new \Exception('File does not exist in storage.');
             }
-    
-            // Load the Excel file and get sheet names
+
             $spreadsheet = IOFactory::load($absolutePath);
-            $sheetNames = $spreadsheet->getSheetNames(); // Get sheet names
-    
-            // Load the Excel file to an array
+            $sheetNames = $spreadsheet->getSheetNames();
             $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
-    
+
             $this->validateUploaded($spreadsheet, $sheetNames);
 
             $schedules = [
@@ -170,154 +164,43 @@ class Index extends Component
                 'schedule' => $this->schedule_id
             ];
 
-            $results = [];
+            $jobs = [];
 
             foreach ($sheetsData as $index => $sheet) {
-                // Remove the first row as it contains labels
-                $sheet = array_slice($sheet, 1);
-            
-                // Filter out empty rows
-                $sheet = array_filter($sheet, function ($row) {
-                    return isset($row[0]) && !empty($row[0]) && 
-                           !empty(array_filter($row, fn($value) => $value !== null && $value !== ''));
-                });
-            
-                // Reset array keys
-                $sheet = array_values($sheet);
-            
-                // Get sheet name for processing logic
                 $sheetName = $sheetNames[$index];
-            
-                $service = new EmployeeUploadService;
-            
-                // Process each sheet based on its name
-                $result = match ($sheetName) {
-                    'Employee Information' => $service->uploadEmployeeInformation($sheet, $schedules),
-                    'Family Background' => $service->uploadFamilyBackground($sheet),
-                    'Children' => $service->uploadChildren($sheet),
-                    'Education' => $service->uploadEducation($sheet),
-                    'Employment History' => $service->uploadEmploymentHistory($sheet),
-                    'Civil Service' => $service->uploadCivilService($sheet),
-                    'Trainings' => $service->uploadTrainings($sheet),
-                    'Other Works' => $service->uploadOtherWorks($sheet),
-                    'Skills' => $service->uploadSkills($sheet),
-                    default => null
-                };
-            
-                // After processing, check if the sheet is "Employee Information"
-                if ($sheetName === 'Employee Information') {
-                    // Check if 'employee_information' exists in the result and store relevant data
-                    if (isset($result['employee_information'])) {
-                        $results['Employee Information'] = [
-                            'inserted' => $result['employee_information']['inserted'],
-                            'updated' => $result['employee_information']['updated']
-                        ];
-                        // Remove 'employee_information' from the result
-                        unset($result['employee_information']);
-                    }
-            
-                    // Separate the Employee Personal data from the result
-                    if (isset($result['employee_personal'])) {
-                        $results['Employee Personal'] = [
-                            'inserted' => $result['employee_personal']['inserted'],
-                            'updated' => $result['employee_personal']['updated']
-                        ];
-                        // Remove 'employee_personal' from the result
-                        unset($result['employee_personal']);
-                    }
-                } else {
-                    // For other sheets, store them normally
-                    $results[$sheetName] = $result;
+
+                $sheet = array_slice($sheet, 1); // Remove headers
+                $sheet = array_filter($sheet, fn($row) =>
+                    isset($row[0]) && !empty($row[0]) &&
+                    !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
+                );
+                $sheet = array_values($sheet);
+
+                $chunks = array_chunk($sheet, 100);
+                foreach ($chunks as $chunk) {
+                    $jobs[] = new EmployeeUploadJob($chunk, $sheetName, $schedules);
                 }
             }
-            
-            // Define a list of sheet names to exclude from the result message
-            $excludeSheets = ['Options']; // Add any other sheet names to exclude here
-            
-            // Iterate through each section in the results
-            foreach ($results as $section => $data) {
-                // Skip sections listed in $excludeSheets
-                if (in_array($section, $excludeSheets)) {
-                    continue;
-                }
 
-                $insertedCount = isset($data['inserted']['total']) ? $data['inserted']['total'] : 0;
-                $updatedCount = isset($data['updated']['total']) ? $data['updated']['total'] : 0;
-            
-                // Start the message for each section
-                $message = "$section was added (" . (isset($data['inserted']['total']) ? $data['inserted']['total'] : 0) . ") records or updated (" . (isset($data['updated']['total']) ? $data['updated']['total'] : 0) . ") records";
-            
-                // Check if 'inserted' is an array and has 'data'
-                if (isset($data['inserted']) && is_array($data['inserted']) && isset($data['inserted']['data']) && is_array($data['inserted']['data']) && !empty($data['inserted']['data'])) {
-                    $insertedData = array_map(function ($item) {
-                        $employeeNo = $item['employee_no'] ?? null;
-                
-                        if ($employeeNo) {
-                            $employee = EmployeePersonal::where('employee_no', $employeeNo)->first();
-                            $name = $employee ? $employee->firstname . ' ' . $employee->lastname : 'No name';
-                        } else {
-                            $name = 'No employee number';
-                        }
-                
-                        return [
-                            'employee_no' => $employeeNo,
-                            'name' => $name,
-                            'message' => "Employee  {$employeeNo} - {$name}"
-                        ];
-                    }, $data['inserted']['data']);
-                } else {
-                    $insertedData = []; // No records updated
-                }                
-            
-                // Check if 'updated' is an array and has 'data'
-                if (isset($data['updated']) && is_array($data['updated']) && isset($data['updated']['data']) && is_array($data['updated']['data']) && !empty($data['updated']['data'])) {
-                    $updatedData = array_map(function ($item) {
-                        // Check if 'employee_no' and 'name' exist before trying to access them
-                        $employeeNo = $item['employee_no'] ?? 'No employee number';
-                        $name = $item['name'] ?? 'No name';
-                        return [
-                            'employee_no' => $employeeNo,
-                            'name' => $name,
-                            'message' => "Employee # {$employeeNo} - {$name}",
-                        ];
-                    }, $data['updated']['data']);
-                } else {
-                    $updatedData = []; // No records updated
-                }
-            
-                // Store the data in the resultMessage array for later rendering
-                $resultMessage[] = [
-                    'section' => $section,
-                    'insertedList' => $insertedData,
-                    'updatedList' => $updatedData,
-                    'insertedCount' => $insertedCount, 
-                    'updatedCount' => $updatedCount,  
-                ];
-            
-                $this->resultMessage = $resultMessage;
-            }            
-                  
-            DB::commit();
-    
+            Bus::batch($jobs)->dispatch();
+
             $this->dispatch('hideModal', [
                 'modal' => 'upload_employee'
             ]);
 
-            $this->dispatch('showModal', [
-                'modal' => 'alert_employee'
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!',
+                'showAlert' => true,
+                'message' => 'Upload is being processed in the background.',
             ]);
 
             $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
-
             $this->loadRecords();
 
         } catch (\Exception $e) {
-            
-            DB::rollBack();
-    
             logger()->error('Error uploading file: ' . $e->getMessage());
-    
-            // Dispatch error message to frontend
+
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Oops!',
@@ -326,10 +209,10 @@ class Index extends Component
                 'message' => 'Error: ' . $e->getMessage(),
             ]);
         } finally {
-            // Ensure `isUploading` is set to false
             $this->isUploading = false;
         }
     }
+
 
     public function validateUploaded($spreadsheet, $sheetNames) {
 
