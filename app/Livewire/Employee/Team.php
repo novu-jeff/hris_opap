@@ -26,7 +26,6 @@ class Team extends Component
         }
 
         $records = EmployeeInformation::with('section.department', 'section.branch', 'positions', 'personal', 'account')
-            ->where('employee_no', $user->employee_no)
             ->get();
 
         $groupedRecords = [

@@ -246,7 +246,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('company_name')
                 ->nullable();
-            $table->float('monthly_salary')
+            $table->string('monthly_salary')
                 ->nullable();
             $table->string('employment_status')
                 ->nullable();

@@ -21,7 +21,7 @@ class EmployeeTimelogs extends Model
         'status1',
         'isWeb',
         'captured_image',
-        'capture_location',
+        'captured_location',
         'accomplishment',
     ];
 

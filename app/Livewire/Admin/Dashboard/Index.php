@@ -56,6 +56,7 @@ class Index extends Component
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
 
+        
         $obsCounts = EmployeeBusinessSlip::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
@@ -82,7 +83,7 @@ class Index extends Component
                 'placement' => $recruitmentCounts['placement'] ?? 0,
                 'onboarding' => $recruitmentCounts['onboarding'] ?? 0,
                 'hired' => $recruitmentCounts['hired'] ?? 0,
-                'rejected' => $recruitmentCounts['rejected'] ?? 0
+                'rejected' => $recruitmentCounts['disapproved'] ?? 0
             ],
             'employee' => $employeeCounts,
             'clockinout' => [
@@ -92,18 +93,18 @@ class Index extends Component
             ],
             'leave' => [
                 'pending' => $leaveCounts['pending'] ?? 0,
-                'granted' => $leaveCounts['granted'] ?? 0,
-                'rejected' => $leaveCounts['rejected'] ?? 0,
+                'granted' => $leaveCounts['approved'] ?? 0,
+                'rejected' => $leaveCounts['disapproved'] ?? 0,
             ],
             'obs' => [
                 'pending' => $obsCounts['pending'] ?? 0,
-                'granted' => $obsCounts['granted'] ?? 0,
-                'rejected' => $obsCounts['rejected'] ?? 0,
+                'granted' => $obsCounts['approved'] ?? 0,
+                'rejected' => $obsCounts['disapproved'] ?? 0,
             ],
             'atro' => [
                 'pending' => $atroCounts['pending'] ?? 0,
-                'granted' => $atroCounts['granted'] ?? 0,
-                'rejected' => $atroCounts['rejected'] ?? 0,
+                'granted' => $atroCounts['approved'] ?? 0,
+                'rejected' => $atroCounts['disapproved'] ?? 0,
             ],
             'earnings' => $earnings,
             'deductions' => $deductions,
