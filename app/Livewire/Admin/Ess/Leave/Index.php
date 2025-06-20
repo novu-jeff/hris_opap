@@ -135,8 +135,7 @@ class Index extends Component
                     ->where('year', Carbon::now()->year)
                     ->orderBy('year', 'asc') 
                     ->get()
-                    ->last();
-                    
+                    ->last();                    
 
                 if($record->leave_id == 1 || $record->leave_id == 2) {
                     $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? '' : 0;

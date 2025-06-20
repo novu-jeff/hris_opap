@@ -83,6 +83,7 @@ class LeaveCardService extends Controller
                     $leaveCard[$leaveCode . '_aut_wo_pay'] = isset($leaveCard[$leaveCode . '_aut_wo_pay']) && is_numeric($leaveCard[$leaveCode . '_aut_wo_pay']) 
                         ? $leaveCard[$leaveCode . '_aut_wo_pay'] + ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? 0)
                         : ($matchingMonth[$leaveCode . '_aut_wo_pay'] ?? '');
+
                 } else {
                     // if mfl
                     $leaveCard['vl_aut_w_pay'] = isset($leaveCard['vl_aut_w_pay']) && is_numeric($leaveCard['vl_aut_w_pay']) 
@@ -128,7 +129,6 @@ class LeaveCardService extends Controller
         }, $latestLeaveCard);
 
         $combined = $this->combine($mappedLeaveCards, $latestLeaveCard);
-
         $newData = $this->compute($combined);
 
         foreach($newData as $info) {

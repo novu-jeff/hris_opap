@@ -100,7 +100,7 @@
                                     <hr>
                                     <h1>{{$stats['leave']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.leave', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.leave', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                                     <hr>
                                     <h1>{{$stats['obs']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.obs', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.obs', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +162,7 @@
                                     <hr>
                                     <h1>{{$stats['atro']['granted']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.atro', ['status' => 'approve'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.atro', ['status' => 'granted'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
@@ -170,7 +170,7 @@
                                     <hr>
                                     <h1>{{$stats['atro']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.atro', ['status' => 'denied'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.atro', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>
