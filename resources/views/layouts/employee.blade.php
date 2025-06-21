@@ -62,7 +62,8 @@
         </div>
 
         @livewire('employee.new-employee')
-
+        @livewire('employee.account-status')
+        
         @include('components.employee.navbar')
         <main>
             <div class="container">

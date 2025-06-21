@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             AdminAccountSeeder::class,
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
-            EmployeeTestUserSeeder::class,
+            // EmployeeTestUserSeeder::class,
             HolidaySeeder::class,
             FAQSeeder::class,
             RequirementSeeder::class,

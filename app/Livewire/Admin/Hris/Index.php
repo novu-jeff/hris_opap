@@ -48,7 +48,7 @@ class Index extends Component
 
     public bool $lazy = true;
 
-    protected $listeners = ['remove', 'unlock', 'loading'];
+    protected $listeners = ['remove', 'unlock', 'restore', 'loading', 'loadRecords'];
     
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
@@ -213,7 +213,6 @@ class Index extends Component
             $this->isUploading = false;
         }
     }
-
 
     public function validateUploaded($spreadsheet, $sheetNames) {
 
@@ -388,17 +387,86 @@ class Index extends Component
         }
     }
 
+    public function restore(bool $isNotify = true, ? string $employee_no = null) {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!', 
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that this archived account will be restored. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'restore';
+
+            $this->selected_id = $employee_no;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeInformation::where('employee_no', $this->selected_id)
+                ->first();
+            
+            if($record) {
+                
+                $record->isDeleted = false;
+                $record->save();
+
+                $this->loadRecords();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!', 
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been restored.' 
+                ]);
+
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!', 
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists' 
+                ]);
+            }
+        }
+    }
+
+    public function changeEmployeeNo($employee_no) {
+        $this->dispatch('showModal', [
+            'modal' => 'change_employee_no', 
+        ]);
+
+        $this->dispatch('setEmployeeNo', employee_no: $employee_no);
+
+    }
+
     public function render()
     {
-        $query = EmployeeInformation::with('account', 'personal')
-            ->where('isDeleted', false);
+        $query = EmployeeInformation::with('account', 'personal');
 
         // Filter by selected employment type
         if ($this->selectedType !== null) {
             if ($this->selectedType === 'unassigned') {
-                $query->whereNull('employment_type_id');
+                $query->whereNull('employment_type_id')
+                    ->where('isDeleted', false);
+            } else if($this->selectedType === 'archived') {
+                $query->where('isDeleted', true);
             } else {
-                $query->where('employment_type_id', $this->selectedType);
+                $query->where('employment_type_id', $this->selectedType)
+                    ->where('isDeleted', false);
             }
         }
 

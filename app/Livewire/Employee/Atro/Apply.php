@@ -74,6 +74,7 @@ class Apply extends Component
     private function getOtherEmployees() {
         $employees = EmployeeInformation::with('personal')
             ->where('employee_no', '!=', $this->employee_no)
+            ->where('isDeleted', false)
             ->get();
 
         $this->OtherEmployees = $employees;
