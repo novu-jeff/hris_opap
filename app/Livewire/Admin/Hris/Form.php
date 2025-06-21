@@ -30,6 +30,7 @@ class Form extends Component
 
     use WithFileUploads;
 
+    public bool $isUpdating = false;
     public string $employee_no;
     public object $sections;
     public object $positions;
@@ -460,10 +461,6 @@ class Form extends Component
 
     protected function rules(?string $employee_no = null) {
         return [
-            'records.employee_information.employee_no' => [
-                'required',
-                Rule::unique('employee_information', 'employee_no')->ignore($employee_no, 'employee_no')
-            ],
             'records.employee_information.biometrics_id' => [
                 'required',
                 Rule::unique('employee_information', 'bsd_no')->ignore($employee_no, 'employee_no')

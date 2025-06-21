@@ -113,25 +113,25 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
-        $record = EmployeeInformation::where('employee_no', $employee_no)->first();
+        $record = EmployeeInformation::where('employee_no', $employee_no)
+            ->first();
 
         $monthly_rate = $this->handleSalary($data);
 
         if ($record) {
             $record->fill([
-            'section_id' => $data['section_id'] ? $data['section_id'] : null,
-            'position_id' => $data['position_id'],
-            'job_completion' => $data['job_completion'],
-            'bsd_no' => $data['biometrics_id'],
-            'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
-            'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
-            'employee_no' => $data['employee_no'],
-            'date_resignation' => $data['date_resignation'] ?? null,
-            'employment_type_id' => $data['type'],
-            'status' => $data['status'],
-            'salary_method' => $data['salary_method'],
-            'monthly_rate' => $monthly_rate,
-            'payroll_account_number' => $data['payroll_account_number'],
+                'section_id' => $data['section_id'] ? $data['section_id'] : null,
+                'position_id' => $data['position_id'],
+                'job_completion' => $data['job_completion'],
+                'bsd_no' => $data['biometrics_id'],
+                'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
+                'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
+                'date_resignation' => $data['date_resignation'] ?? null,
+                'employment_type_id' => $data['type'],
+                'status' => $data['status'],
+                'salary_method' => $data['salary_method'],
+                'monthly_rate' => $monthly_rate,
+                'payroll_account_number' => $data['payroll_account_number'],
             ]);
 
             return $record->save();
@@ -177,6 +177,7 @@ class HRISProcessingService extends Controller
     }
 
     public function employee_personal(string $employee_no, array $data, bool $isFirstTime = false)  {
+        
         $path = 'documents/' . $employee_no;
 
         $birth_certificate = $this->uploadFile($employee_no, 'birth_certificate', $path,  $data['birth_certificate'] ?? null);

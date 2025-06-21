@@ -162,23 +162,31 @@
 
     <div>
         <div class="row mb-5">
-            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
                 <li class="nav-item d-flex gap-3 my-3" role="presentation">
                     <a href="{{ route('hris.index') }}"
                     class="nav-link text-uppercase fw-bold {{ is_null($selectedType) ? 'active' : '' }}">
                         All
                     </a>
-
+                </li>
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
                     @foreach($employmentTypes as $employmentType)
                         <a href="{{ route('hris.index', ['employment_type' => $employmentType->id]) }}"
                         class="nav-link text-uppercase fw-bold {{ $selectedType == $employmentType->id ? 'active' : '' }}">
                             {{ $employmentType->name }}
                         </a>
                     @endforeach
-
+                </li>
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
                     <a href="{{ route('hris.index', ['employment_type' => 'unassigned']) }}"
                     class="nav-link text-uppercase fw-bold {{ $selectedType === 'unassigned' ? 'active' : '' }}">
                         Unassigned
+                    </a>
+                </li>
+                <li class="nav-item ms-auto d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('hris.index', ['employment_type' => 'archived']) }}"
+                    class="nav-link text-uppercase fw-bold {{ $selectedType === 'archived' ? 'active' : '' }}">
+                        Archived
                     </a>
                 </li>
             </ul>
@@ -226,23 +234,39 @@
                             <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
                             <td wire:ignore.self>
                                 <div class="d-flex gap-2">
-                                    <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                        <i class="fa-solid fa-download"></i>
-                                    </a>
-                                    <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                        <i class="fa-regular fa-folder-open"></i>
-                                    </a>
-                                    <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info">
-                                        <i class="fa-solid fa-business-time"></i>
-                                    </a>
-                                    @if($item->account->isLocked)
-                                        <button wire:click="unlock('true', '{{$item->employee_no}}')" class="btn btn-info">
-                                            <i class="fa-solid fa-lock-open"></i>
+                                    @if($selectedType == 'archived')
+                                        <button wire:click="restore('true', '{{$item->employee_no}}')" class="btn btn-info"
+                                            title="Restore Archived Employee">
+                                            <i class="fa-solid fa-retweet"></i>
+                                        </button>
+                                    @else
+                                        <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary"
+                                            title="Download PDS">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary"
+                                            title="View Employee Records">
+                                            <i class="fa-regular fa-folder-open"></i>
+                                        </a>
+                                        <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info"
+                                            title="View DTR">
+                                            <i class="fa-solid fa-business-time"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" wire:click="changeEmployeeNo('{{ $item->employee_no }}')" class="btn btn-info"
+                                            title="Change Employee No.">
+                                            <i class="fa-solid fa-person-walking-arrow-loop-left"></i>
+                                        </a>
+                                        @if($item->account->isLocked)
+                                            <button wire:click="unlock('true', '{{$item->employee_no}}')" class="btn btn-info"
+                                                title="Unlock Employee Account">
+                                                <i class="fa-solid fa-lock-open"></i>
+                                            </button>
+                                        @endif
+                                        <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger"
+                                            title="Remove Employee">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                     @endif
-                                    <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -258,4 +282,7 @@
             </div>
         </div>     
     </div>
+
+    @livewire('admin.hris.change-employee-no')
+
 </div>

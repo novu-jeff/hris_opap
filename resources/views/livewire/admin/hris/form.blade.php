@@ -18,7 +18,7 @@
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="employee_no">Employee No. <span class="text-danger">*</span></label>
-                        <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control">
+                        <input type="text" wire:model="records.employee_information.employee_no" id="records.employee_information.employee_no" class="form-control restricted" readonly>
                         <div class="error-field">
                             @error('records.employee_information.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
