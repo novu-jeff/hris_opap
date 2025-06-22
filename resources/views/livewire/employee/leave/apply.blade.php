@@ -124,9 +124,10 @@
 
 <script>
 $(function () {
-    const scheduledDates = @json($scheduledDates); // includes { date, name, type, status }
-    const isEdit = @json($isEdit); // true or false
-    const presetSelectedDates = @json($selectedDates ?? []); // [{ date: "YYYY-MM-DD" }, ...]
+    const scheduledDates = @json($scheduledDates);
+    const isEdit = @json($isEdit);
+    const presetSelectedDates = @json($selectedDates ?? []);
+    const currentYear = parseInt('{{$currentYear}}');
 
     setTimeout(() => {
         const calendarEl = document.getElementById('calendar-container');
@@ -182,14 +183,13 @@ $(function () {
             const mmdd = formatToMMDD(date);
 
             const future = date > today;
+            const yearLimit = date.getFullYear() <= currentYear;
             const blocked = isBlocked(ymd, mmdd);
 
-            if (!future) return false;
+            if (!future || !yearLimit) return false;
 
-            // In edit mode: allow all non-blocked future dates (override if selected)
             if (isEdit) return true;
 
-            // Not edit: allow only future available dates
             return !blocked;
         }
 
@@ -213,7 +213,20 @@ $(function () {
                 const ymd = formatToYMD(date);
                 const mmdd = formatToMMDD(date);
 
-                if (date <= today) continue;
+                // Unavailable if before today or after currentYear
+                if (date <= today || date.getFullYear() > currentYear) {
+                    if (date.getFullYear() > currentYear) {
+                        events.push({
+                            title: 'Unavailable',
+                            start: ymd,
+                            backgroundColor: '#777',
+                            borderColor: '#777',
+                            textColor: '#fff',
+                            classNames: ['fc-sticky', 'fc-event-title'],
+                        });
+                    }
+                    continue;
+                }
 
                 const holiday = scheduledDates.find(e => e.type === 'holiday' && e.date === mmdd);
                 const leave = scheduledDates.find(e => e.type === 'leave' && e.date === ymd);
@@ -266,6 +279,5 @@ $(function () {
         $(calendarEl).data('calendar-initialized', true);
     }, 300);
 });
-
 </script>
 
