@@ -45,6 +45,7 @@ class Apply extends Component
     public $remaining_credits;
     public bool $isDurationDisabled = false;
     public $scheduledDates;
+    public $currentYear;
 
     protected $listeners = ['setSelectedDates', 'save'];
 
@@ -59,6 +60,7 @@ class Apply extends Component
         $employee_no = Auth::user()->employee_no;
         $employee_id = Auth::user()->id;
 
+        $this->currentYear = Carbon::now()->format('Y');
         $this->employee_no = $employee_no;
         $this->employee_id = $employee_id;
 
