@@ -29,6 +29,7 @@ class Apply extends Component
     public $leaveTypes;
     public $isMoreThanOne = null;
     public $selectedDates;
+    public $isEdit = false;
 
     public $notification;
     public $accepts_autwopay;
@@ -63,7 +64,7 @@ class Apply extends Component
 
         if(!is_null($this->record_id)) {
 
-            $records = EmployeeLeave::where('id', $this->record_id)
+            $records = EmployeeLeave::with('dates')->where('id', $this->record_id)
                 ->where('employee_no', $employee_no)
                 ->first();
 
@@ -73,15 +74,14 @@ class Apply extends Component
             }
 
             $this->type = $records->leave_id;
+            $dates = $records->dates;
 
-            if(is_null($records->to)) {
-                $this->duration = 1;
-            } else {
-                $this->duration = 2;
-            }
+            $this->selectedDates = $dates;
+            $this->isEdit = true;
+            $daysCovered = count($dates) ?? 0;
 
             $this->selectDuration();
-            $this->handleLeaveCredits($this->duration);
+            $this->handleLeaveCredits($daysCovered);
 
             $this->from = $records->from;
             $this->to = $records->to;
@@ -136,8 +136,6 @@ class Apply extends Component
         return $myCalendar->toArray();
 
     }
-
-
 
     public function selectDuration() {
 
@@ -273,7 +271,6 @@ class Apply extends Component
             'study_other_purpose.required' => 'Please specify the other purpose of your study leave.',
         ];
     }
-
 
     public function save(bool $isNotify = true) {
 
