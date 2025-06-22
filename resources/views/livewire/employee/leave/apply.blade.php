@@ -125,72 +125,80 @@
 <script>
 $(function () {
     const scheduledDates = @json($scheduledDates); // includes { date, name, type, status }
+    const isEdit = @json($isEdit); // true or false
+    const presetSelectedDates = @json($selectedDates ?? []); // [{ date: "YYYY-MM-DD" }, ...]
 
     setTimeout(() => {
         const calendarEl = document.getElementById('calendar-container');
         if (!calendarEl || $(calendarEl).data('calendar-initialized')) return;
 
-        let selectedDates = [];
         const today = new Date();
+        let selectedDates = isEdit ? presetSelectedDates.map(d => d.date) : [];
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             selectable: true,
             weekends: false,
-
             headerToolbar: {
                 center: 'title',
             },
-
-            dateClick: function (info) {
-                const dateStr = formatToYMD(info.date);
-                if (isAvailableDate(info.date)) {
-                    handleDateToggle(dateStr);
+            dateClick(info) {
+                const ymd = formatToYMD(info.date);
+                if (isToggleable(ymd)) {
+                    toggleDate(ymd);
                 }
             },
-
-            eventClick: function (info) {
+            eventClick(info) {
                 info.jsEvent.preventDefault();
-                const dateStr = formatToYMD(info.event.start);
-                if (isAvailableDate(info.event.start)) {
-                    handleDateToggle(dateStr);
+                const ymd = formatToYMD(info.event.start);
+                if (isToggleable(ymd)) {
+                    toggleDate(ymd);
                 }
             },
-
-            datesSet: function () {
+            datesSet() {
                 renderEvents();
             }
         });
-
-        function formatToMMDD(date) {
-            const d = new Date(date);
-            return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
 
         function formatToYMD(date) {
             const d = new Date(date);
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        function isAvailableDate(date) {
-            const ymd = formatToYMD(date);
-            const mmdd = formatToMMDD(date);
-            const isFuture = new Date(ymd) > today;
+        function formatToMMDD(date) {
+            const d = new Date(date);
+            return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
 
-            const isBlocked = scheduledDates.some(item =>
+        function isBlocked(ymd, mmdd) {
+            return scheduledDates.some(item =>
                 (item.type === 'holiday' && item.date === mmdd) ||
                 (item.type === 'leave' && item.date === ymd)
             );
-
-            return isFuture && !isBlocked;
         }
 
-        function handleDateToggle(dateStr) {
-            const index = selectedDates.indexOf(dateStr);
+        function isToggleable(ymd) {
+            const date = new Date(ymd);
+            const mmdd = formatToMMDD(date);
+
+            const future = date > today;
+            const blocked = isBlocked(ymd, mmdd);
+
+            if (!future) return false;
+
+            // In edit mode: allow all non-blocked future dates (override if selected)
+            if (isEdit) return true;
+
+            // Not edit: allow only future available dates
+            return !blocked;
+        }
+
+        function toggleDate(ymd) {
+            const index = selectedDates.indexOf(ymd);
             if (index !== -1) {
-                selectedDates.splice(index, 1);
+                selectedDates.splice(index, 1); // unselect
             } else {
-                selectedDates.push(dateStr);
+                selectedDates.push(ymd); // select
             }
             renderEvents();
         }
@@ -201,46 +209,50 @@ $(function () {
             const events = [];
 
             for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-                const thisDate = new Date(d);
-                const ymd = formatToYMD(thisDate);
-                const mmdd = formatToMMDD(thisDate);
+                const date = new Date(d);
+                const ymd = formatToYMD(date);
+                const mmdd = formatToMMDD(date);
 
-                if (thisDate > today) {
-                    const holiday = scheduledDates.find(item => item.type === 'holiday' && item.date === mmdd);
-                    const leave = scheduledDates.find(item => item.type === 'leave' && item.date === ymd);
+                if (date <= today) continue;
 
-                    if (holiday) {
-                        events.push({
-                            title: holiday.name,
-                            start: ymd,
-                            backgroundColor: '#8A0303',
-                            borderColor: '#8A0303',
-                            textColor: '#fff',
-                            classNames: ['fc-sticky', 'fc-event-title'],
-                        });
-                    } else if (leave) {
-                        let bgColor = '#8A0303'; // default for approved/other
-                        if (leave.status === 'pending') bgColor = '#e67e22';
+                const holiday = scheduledDates.find(e => e.type === 'holiday' && e.date === mmdd);
+                const leave = scheduledDates.find(e => e.type === 'leave' && e.date === ymd);
+                const isSelected = selectedDates.includes(ymd);
+                const isBlockedDate = isBlocked(ymd, mmdd);
+                const isPreset = presetSelectedDates.some(d => d.date === ymd);
 
-                        events.push({
-                            title: leave.name,
-                            start: ymd,
-                            backgroundColor: bgColor,
-                            borderColor: bgColor,
-                            textColor: '#fff',
-                            classNames: ['fc-sticky', 'fc-event-title'],
-                        });
-                    } else {
-                        const isSelected = selectedDates.includes(ymd);
-                        events.push({
-                            title: isSelected ? 'Selected' : 'Available',
-                            start: ymd,
-                            backgroundColor: isSelected ? '#225F8B' : '#175850',
-                            borderColor: isSelected ? '#225F8B' : '#175850',
-                            textColor: '#fff',
-                            classNames: ['fc-sticky', 'fc-event-title'],
-                        });
-                    }
+                if (holiday) {
+                    events.push({
+                        title: holiday.name,
+                        start: ymd,
+                        backgroundColor: '#8A0303',
+                        borderColor: '#8A0303',
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
+                } else if (leave && !(isEdit && isPreset)) {
+                    const color = leave.status === 'pending' ? '#e67e22' : '#8A0303';
+                    events.push({
+                        title: leave.name,
+                        start: ymd,
+                        backgroundColor: color,
+                        borderColor: color,
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
+                } else {
+                    const isAvailable = !isBlockedDate || (isEdit && isPreset);
+                    const isClickable = isToggleable(ymd);
+                    const bg = isSelected ? '#225F8B' : '#175850';
+
+                    events.push({
+                        title: isSelected ? 'Selected' : 'Available',
+                        start: ymd,
+                        backgroundColor: bg,
+                        borderColor: bg,
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
                 }
             }
 
@@ -253,7 +265,6 @@ $(function () {
         calendar.render();
         $(calendarEl).data('calendar-initialized', true);
     }, 300);
-
 });
 
 </script>
