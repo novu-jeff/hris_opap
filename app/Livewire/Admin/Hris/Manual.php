@@ -871,79 +871,79 @@ class Manual extends Component
 
         $product = config('app.product');
 
-        if ($product == 'government') {
-            if ($data['employee_information']['type'] == 1) {
-                foreach ($leaveDefaultCredits as $leave) {
+        // if ($product == 'government') {
+        //     if ($data['employee_information']['type'] == 1) {
+        //         foreach ($leaveDefaultCredits as $leave) {
 
-                    $credits = 0;
+        //             $credits = 0;
                     
-                    $existingLeave = $model::where('employee_no', $employee_no)
-                        ->where('leave_type_id', $leave->id)
-                        ->first();
+        //             $existingLeave = $model::where('employee_no', $employee_no)
+        //                 ->where('leave_type_id', $leave->id)
+        //                 ->first();
                         
-                    if($existingLeave && $existingLeave->credits != 0) {
-                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $existingLeave->credits;
-                        }
+        //             if($existingLeave && $existingLeave->credits != 0) {
+        //                 if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+        //                     $credits = $existingLeave->credits;
+        //                 }
 
-                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
-                            $credits = $existingLeave->credits;
-                        }
+        //                 elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+        //                     $credits = $existingLeave->credits;
+        //                 }
 
-                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
-                            $credits = 0;
-                        }
+        //                 elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+        //                     $credits = 0;
+        //                 }
 
-                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
-                            $credits = $existingLeave->credits;
-                        }
-                    } else {
-                        if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
-                            $credits = $leave->credits;
-                        }
+        //                 elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+        //                     $credits = $existingLeave->credits;
+        //                 }
+        //             } else {
+        //                 if ($leave->code == 'ML' && $data['employee_personal']['sex'] == 'female') {
+        //                     $credits = $leave->credits;
+        //                 }
 
-                        elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
-                            $credits = $leave->credits;
-                        }
+        //                 elseif ($leave->code == 'PL' && $data['employee_personal']['sex'] == 'male') {
+        //                     $credits = $leave->credits;
+        //                 }
 
-                        elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
-                            $credits = 0;
-                        }
+        //                 elseif ($leave->code == 'SOLO' || $leave->code == 'SPL') {
+        //                     $credits = 0;
+        //                 }
 
-                        elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
-                            $credits = $leave->credits;
-                        }
-                    }
+        //                 elseif ($leave->code !== 'PL' && $leave->code !== 'ML') {
+        //                     $credits = $leave->credits;
+        //                 }
+        //             }
 
                     
                 
-                    // Update or create the record with the appropriate credits
-                    $model::updateOrCreate(
-                        [
-                            'employee_no' => $employee_no,
-                            'leave_type_id' => $leave->id,
-                        ],
-                        [
-                            'credits' => $credits,
-                        ]
-                    );
-                }
+        //             // Update or create the record with the appropriate credits
+        //             $model::updateOrCreate(
+        //                 [
+        //                     'employee_no' => $employee_no,
+        //                     'leave_type_id' => $leave->id,
+        //                 ],
+        //                 [
+        //                     'credits' => $credits,
+        //                 ]
+        //             );
+        //         }
                 
                 
-            } else {
-                foreach ($leaveDefaultCredits as $leave) {
-                    $model::updateOrCreate(
-                        [
-                            'employee_no' => $employee_no,
-                            'leave_type_id' => $leave->id,
-                        ],
-                        [
-                            'credits' => 0,
-                        ]
-                    );
-                }
-            }
-        }
+        //     } else {
+        //         foreach ($leaveDefaultCredits as $leave) {
+        //             $model::updateOrCreate(
+        //                 [
+        //                     'employee_no' => $employee_no,
+        //                     'leave_type_id' => $leave->id,
+        //                 ],
+        //                 [
+        //                     'credits' => 0,
+        //                 ]
+        //             );
+        //         }
+        //     }
+        // }
 
     }
 

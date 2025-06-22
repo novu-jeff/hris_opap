@@ -77,11 +77,12 @@ class EmployeeTestUserSeeder extends Seeder
         
         foreach ($testEmployees as $employee) {
             EmployeeInformation::updateOrCreate(
-                ['employee_no' => $employee['employee_no']], // Unique field for updating or creating
+                ['employee_no' => $employee['employee_no']], 
                 [
                     'employee_no' => $employee['employee_no'],
                     'bsd_no' => $employee['bsd_no'],
                     'date_hired' => $employee['date_hired'],
+                    'employment_type_id' => 1,
                 ]
             );
         

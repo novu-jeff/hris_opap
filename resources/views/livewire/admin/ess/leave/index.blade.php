@@ -11,73 +11,77 @@
                     <div class="row">
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_no">Employee No.</label>
-                            <input type="text" id="employee_no" class="form-control restricted" value="{{ isset($view_records->employee) ? ($view_records->employee->employee_no) : '' }}" readonly>
+                            <input type="text" id="employee_no" class="form-control restricted"
+                                value="{{ $view_records->employee->employee_no ?? '' }}" readonly>
                         </div>
+
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records->employee) ? $view_records->employee->personal->firstname . ' ' . $view_records->employee->personal->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted"
+                                value="{{ $view_records->employee->personal->firstname ?? '' }} {{ $view_records->employee->personal->lastname ?? '' }}" readonly>
                         </div>
-                        <div class="col-12 col-md-12'}} mb-4">
+
+                        <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="date_applied">Date Applied</label>
-                            <input type="text" id="date_applied" class="form-control restricted" value="{{ isset($view_records->created_at) ? format_date($view_records->created_at, 'day_date_time_string')  : '' }}" readonly>
+                            <input type="text" id="date_applied" class="form-control restricted"
+                                value="{{ format_date($view_records->created_at ?? '', 'day_date_time_string') }}" readonly>
                         </div>
-                        <div class="col-12 mb-4">
-                            <hr>
-                        </div>
+
+                        <div class="col-12 mb-4"><hr></div>
+
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="type">Leave Type</label>
-                            <input type="text" id="type" class="form-control restricted" value="{{$view_records->leave_type->name ?? ''}}" readonly>
+                            <input type="text" id="type" class="form-control restricted"
+                                value="{{ $view_records->leave_type->name ?? '' }}" readonly>
                         </div>
+
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="duration">Duration</label>
-                            <input type="text" id="duration" class="form-control restricted" value="{{ isset($view_records) && $view_records->to === null ? 'One Day' : 'Two or More Days' }}" readonly>
+                            <input type="text" id="duration" class="form-control restricted"
+                                value="{{ count($view_records->dates ?? []) }} {{ count($view_records->dates ?? []) === 1 ? 'Day' : 'Days' }}" readonly>
                         </div>
-                        <div class="col-12 {{isset($view_records->to) ? 'col-md-6' : 'col-md-12'}} mb-4">
-                            <label class="mb-2" for="from">{{isset($view_records->to) ? 'From' : 'Leave Date'}}</label>
-                            <input type="text" id="from" class="form-control restricted" value="{{format_date($view_records->from ?? '', 'day_date_string')}}" readonly>
+
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="leave_dates">
+                                Leave Date{{ count($view_records->dates ?? []) > 1 ? 's' : '' }}
+                            </label>
+                            <ul>
+                                @foreach($view_records->dates ?? [] as $date)
+                                    <li>
+                                        {{ format_date($date->date ?? '', 'day_date_string') }}
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
-                        @if(isset($view_records->to))
-                            <div class="col-12 col-md-6 mb-4">
-                                <label class="mb-2" for="to">To</label>
-                                <input type="text" id="to" class="form-control restricted" value="{{format_date($view_records->to ?? '', 'day_date_string')}}" readonly>
-                            </div>
-                        @endif
-                        @if($view_records && $view_records->leave_type->id == 1) 
-                            <div class="col-12 col-md-12 mb-4">
+
+                        @if(($view_records->leave_type->id ?? null) == 1)
+                            <div class="col-12 mb-4">
                                 <label class="mb-2" for="location">Location</label>
-                                <input type="text" id="location" class="form-control restricted" 
-                                    value="{{ isset($view_records) ? ($view_records->location_specific . ', ' . ($view_records->location == 'ph' ? 'Philippines' : 'Abroad')) : '' }}" 
+                                <input type="text" id="location" class="form-control restricted"
+                                    value="{{ ($view_records->location_specific ?? '') . ', ' . (($view_records->location ?? '') == 'ph' ? 'Philippines' : 'Abroad') }}"
                                     readonly>
                             </div>
-                        @elseif($view_records && $view_records->leave_type->id == 2)
-
+                        @elseif(($view_records->leave_type->id ?? null) == 2)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="patient_type">Patient Type</label>
-                                <input type="text" id="patient_type" class="form-control restricted" value="{{ isset($view_records) ? $view_records->confinement : '' }}" readonly>
+                                <input type="text" id="patient_type" class="form-control restricted"
+                                    value="{{ $view_records->confinement ?? '' }}" readonly>
                             </div>
 
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="illness">Illness</label>
-                                <input type="text" id="illness" class="form-control restricted" value="{{ isset($view_records) ? $view_records->illness : '' }}" readonly>
+                                <input type="text" id="illness" class="form-control restricted"
+                                    value="{{ $view_records->illness ?? '' }}" readonly>
                             </div>
-                        
-                        @elseif($view_records && $view_records->leave_type->id == 8)
-
-                            @if($view_records && $view_records->purpose == 'others')
-
-                                <div class="col-12 col-md-12 mb-4">
-                                    <label class="mb-2" for="purpose">Purpose</label>
-                                    <input type="text" id="purpose" class="form-control restricted" value="{{ isset($view_records) ? $view_records->study_other_purpose : '' }}" readonly>
-                                </div>
-                            @else
-                                <div class="col-12 col-md-12 mb-4">
-                                    <label class="mb-2" for="purpose">Purpose</label>
-                                    <input type="text" id="purpose" class="form-control restricted" value="{{ isset($view_records) ? $view_records->purpose : '' }}" readonly>
-                                </div>
-                            @endif
-                        
+                        @elseif(($view_records->leave_type->id ?? null) == 8)
+                            <div class="col-12 mb-4">
+                                <label class="mb-2" for="purpose">Purpose</label>
+                                <input type="text" id="purpose" class="form-control restricted"
+                                    value="{{ ($view_records->study ?? '') === 'others' ? ($view_records->study_other_purpose ?? '') : ($view_records->study ?? '') }}" readonly>
+                            </div>
                         @endif
                     </div>
+
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
@@ -131,8 +135,8 @@
                             <thead>
                                 <tr>
                                     <th>Employee No</th>
-                                    <th>Leave Type</th>
                                     <th>Employee Name</th>
+                                    <th>Leave Type</th>
                                     <th>Days Covered</th>
                                     <th>Date Applied</th>
                                     <th style="max-width: 200px;">Action</th>
@@ -144,7 +148,7 @@
                                         <td>{{$record->employee_no}}</td>
                                         <td>{{$record->employee->personal->firstname . ' ' . $record->employee->personal->lastname}}</td>
                                         <td>{{$record->leave_type->name}}</td>
-                                        <td>{{is_null($record->to) ? 'One Day' : 'Two or More Days'}}</td>
+                                        <td>{{ count($record->dates) }} {{ count($record->dates) === 1 ? 'Day' : 'Days' }}</td>
                                         <td>{{format_date($record->created_at, 'date_string')}}</td>
                                         <td>
                                             <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
