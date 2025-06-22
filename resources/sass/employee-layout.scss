@@ -459,3 +459,34 @@ table {
 #calendar-container {
     font-size: 1rem;
 }
+
+.calendar-legend {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.calendar-legend li {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+}
+
+.available     { background-color: #175850; }
+.selected      { background-color: #225f8b; }
+.pending       { background-color: #e67e22; }
+.approved      { background-color: #6dbfb8; }
+.holiday       { background-color: #8A0303; }
+.unavailable   { background-color: #777; }

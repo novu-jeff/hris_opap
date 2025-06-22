@@ -4,6 +4,14 @@
             <div class="card shadow p-4">
                 <div class="card-header bg-transparent border-0">
                     <p class="text-muted mb-0 text-uppercase fst-italic">All <span class="text-danger">*</span> is required</p>
+                    <ul class="calendar-legend mt-5 text-uppercase fw-bold">
+                        <li><span class="legend-color available"></span>Available</li>
+                        <li><span class="legend-color selected"></span>Selected</li>
+                        <li><span class="legend-color pending"></span>Pending</li>
+                        <li><span class="legend-color approved"></span>Approved</li>
+                        <li><span class="legend-color holiday"></span>Holiday</li>
+                        <li><span class="legend-color unavailable"></span>Unavailable</li>
+                    </ul>
                 </div>
                 <hr class="mx-3">
                 <div class="card-body">
@@ -244,7 +252,7 @@ $(function () {
                         classNames: ['fc-sticky', 'fc-event-title'],
                     });
                 } else if (leave && !(isEdit && isPreset)) {
-                    const color = leave.status === 'pending' ? '#e67e22' : '#8A0303';
+                    const color = leave.status === 'pending' ? '#e67e22' : '#6dbfb8';
                     events.push({
                         title: leave.name,
                         start: ymd,
@@ -256,7 +264,7 @@ $(function () {
                 } else {
                     const isAvailable = !isBlockedDate || (isEdit && isPreset);
                     const isClickable = isToggleable(ymd);
-                    const bg = isSelected ? '#225F8B' : '#175850';
+                    const bg = isSelected ? '#225f8b' : '#175850';
 
                     events.push({
                         title: isSelected ? 'Selected' : 'Available',
