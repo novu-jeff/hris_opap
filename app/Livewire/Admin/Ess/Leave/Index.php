@@ -193,7 +193,7 @@ class Index extends Component
             // Update the EmployeeLeave record's status
             $record->update([
                 'action_by_id' => Auth::user()->id,
-                'status' => 'pending'
+                'status' => 'approved'
             ]);
 
             $this->dispatch('alert', [
