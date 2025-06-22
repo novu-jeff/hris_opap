@@ -36,7 +36,7 @@
                             </td>
                             <div class="overlay">Click To Expand</div>
                         </tr>
-                    
+
                         @foreach($data['items'] as $key => $item)
                             <tr class="year-content" wire:ignore.self data-year="{{ $year }}" style="display: none;">
                                 <td>{{ $item['period'] }}</td>

@@ -46,46 +46,47 @@
                                 <td style="vertical-align: top; padding-top: 22px;">{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                 @if($this->id == 1 || $this->id == 2)
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        <input 
-                                            type="number" 
-                                            wire:key="vl-credit-{{$record->employee_no}}" 
-                                            wire:model="vl_credits.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                        <input
+                                            type="number"
+                                            wire:key="vl-credit-{{$record->employee_no}}"
+                                            wire:model="vl_credits.{{$record->employee_no}}"
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}"
                                             {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
                                         <div class="error-field">
-                                            @error("vl_credits.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
+                                            @error("vl_credits.{$record->employee_no}")
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
                                         <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_vl_credits[$record->employee_no]}}</span></label>
                                     </td>
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        <input 
-                                            type="number" 
-                                            wire:key="sl-credit-{{$record->employee_no}}" 
-                                            wire:model="sl_credits.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                        <input
+                                            type="number"
+                                            wire:key="sl-credit-{{$record->employee_no}}"
+                                            wire:model="sl_credits.{{$record->employee_no}}"
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}"
                                             {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
                                         <div class="error-field">
-                                            @error("sl_credits.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
+                                            @error("sl_credits.{$record->employee_no}")
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
                                         <label class="mt-2 mb-2">Total: <span style="font-weight: 600; color:red">{{$total_sl_credits[$record->employee_no]}}</span></label>
                                     </td>
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        <input 
-                                            type="month" 
-                                            wire:key="as_of-{{$record->employee_no}}" 
-                                            wire:model="as_of.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                        <input
+                                            type="month"
+                                            wire:key="as_of-{{$record->employee_no}}"
+                                            wire:model="as_of.{{$record->employee_no}}"
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}"
+                                            max="{{ $currentMonth }}"
                                             {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
                                         <div class="error-field">
-                                            @error("as_of.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
+                                            @error("as_of.{$record->employee_no}")
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                    </td>      
+                                    </td>
                                     <td style="vertical-align: top; padding-top: 12px;">
                                         <div style="white-space: normal !important;" class="py-2">
                                             @if($has_leave_card[$record->employee_no])
@@ -98,9 +99,9 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <button 
-                                                    wire:click="save('{{ $record->employee_no }}')" 
-                                                    wire:key="save-{{ $record->employee_no }}" 
+                                                <button
+                                                    wire:click="save('{{ $record->employee_no }}')"
+                                                    wire:key="save-{{ $record->employee_no }}"
                                                     class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
                                                     <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
                                                         Save
@@ -117,45 +118,46 @@
                                                     </span>
                                                 </a>
                                             @endif
-                                            <button type="button" data-bs-toggle="modal" wire:click="select_employee('{{$record->employee_no}}')" data-bs-target="#importModal" 
+                                            <button type="button" data-bs-toggle="modal" wire:click="select_employee('{{$record->employee_no}}')" data-bs-target="#importModal"
                                                 class="mt-2 btn btn-sm btn-dark px-3 py-2 w-100 text-uppercase fw-bold">
                                                 <span>
                                                     Import
                                                 </span>
                                             </button>
                                         </div>
-                                    </td>       
+                                    </td>
                                 @else
                                     <td>
-                                        <input 
-                                            type="number" 
-                                            wire:key="credit-{{$record->employee_no}}" 
-                                            wire:model="credits.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                        <input
+                                            type="number"
+                                            wire:key="credit-{{$record->employee_no}}"
+                                            wire:model="credits.{{$record->employee_no}}"
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}"
                                             {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
                                         <div class="error-field">
-                                            @error("credits.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
+                                            @error("credits.{$record->employee_no}")
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
                                     <td style="vertical-align: top; padding-top: 12px;">
-                                        <input 
-                                            type="month" 
-                                            wire:key="as_of-{{$record->employee_no}}" 
-                                            wire:model="as_of.{{$record->employee_no}}" 
-                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
+                                        <input
+                                            type="month"
+                                            wire:key="as_of-{{$record->employee_no}}"
+                                            wire:model="as_of.{{$record->employee_no}}"
+                                            class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}"
+                                            max="{{ $currentMonth }}"
                                             {{ $has_leave_card[$record->employee_no] === true ? 'readonly' : '' }}>
                                         <div class="error-field">
-                                            @error("as_of.{$record->employee_no}") 
-                                                <span class="text-danger">{{ $message }}</span> 
+                                            @error("as_of.{$record->employee_no}")
+                                                <span class="text-danger">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
                                     <td>
-                                        <button 
-                                            wire:click="save('{{ $record->employee_no }}')" 
-                                            wire:key="save-{{ $record->employee_no }}" 
+                                        <button
+                                            wire:click="save('{{ $record->employee_no }}')"
+                                            wire:key="save-{{ $record->employee_no }}"
                                             class="btn btn-sm btn-primary px-3 py-2 w-100 text-uppercase fw-bold">
                                             <span wire:loading.remove wire:target="save-{{ $record->employee_no }}">
                                                 Save
@@ -163,8 +165,8 @@
                                             <span wire:loading wire:target="save-{{ $record->employee_no }}">
                                                 Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
                                             </span>
-                                        </button>   
-                                        
+                                        </button>
+
                                     </td>
                                 @endif
                             </tr>
@@ -183,7 +185,7 @@
     </div>
 
     <div class="modal fade" id="importModal" wire:ignore.self data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog "> 
+        <div class="modal-dialog ">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-uppercase fw-bold" id="importModalLabel">Import Leave Credits</h5>
@@ -206,7 +208,7 @@
                 @if($importFile)
                     <div class="modal-footer">
                         <div class="d-flex justify-content-end">
-                            <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
+                            <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold"
                                     wire:click="upload_file"
                                     wire:loading.attr="disabled">
                                 <span wire:loading.remove>Upload File</span>

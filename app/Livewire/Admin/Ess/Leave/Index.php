@@ -17,7 +17,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
- 
+
     use WithPagination;
 
     public $status;
@@ -36,7 +36,7 @@ class Index extends Component
         $this->loadRecords($id);
         if(!is_null($this->view_records)) {
             return $this->dispatch('showModal', [
-                'modal' => 'showModal', 
+                'modal' => 'showModal',
             ]);
         }
     }
@@ -74,7 +74,7 @@ class Index extends Component
                 'id' => $this->selected_id,
                 'showAlert' => true,
                 'status' => 'success',
-                'title' => 'Success', 
+                'title' => 'Success',
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been disapproved'
             ]);
@@ -103,19 +103,19 @@ class Index extends Component
             $record = EmployeeLeave::with('dates', 'employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
-                
+
             if(is_null($record)) {
                 return redirect()->route('ess.leave');
             }
-        
+
             $daysCovered = count($record->dates) ?? 0;
-        
+
             $record->daysCovered = $daysCovered;
 
             // Update leave credits model
             $leaveCreditsModel = LeaveCredits::class;
             $leaveTypeModel = LeaveType::find($record->leave_id);
-        
+
             // if no credits left
 
             if($record->leave_id == 1 || $record->leave_id == 2 || $record->leave_id == 3) {
@@ -126,9 +126,9 @@ class Index extends Component
 
                 $leaveTotalCredits = EmployeeLeaveCard::where('employee_no', $record->employee_no)
                     ->where('year', Carbon::now()->year)
-                    ->orderBy('year', 'asc') 
+                    ->orderBy('year', 'asc')
                     ->get()
-                    ->last();                    
+                    ->last();
 
                 if($record->leave_id == 1 || $record->leave_id == 2) {
                     $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->{$leaveTypes . '_bal'} ?? '' : 0;
@@ -142,7 +142,7 @@ class Index extends Component
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'error',
-                        'title' => 'Oops', 
+                        'title' => 'Oops',
                         'message' => 'Unfortunately, this employee\'s leave balance is not yet set.'
                     ]);
                 }
@@ -151,14 +151,14 @@ class Index extends Component
                     if($leaveTotalCredits == 0 || $leaveEquiv > $leaveTotalCredits) {
                         $this->accepts_autwopay = true;
                         return $this->dispatch('showConfirmation', [
-                            'title' => 'Please be Informed', 
+                            'title' => 'Please be Informed',
                             'message' => '
                                 Unfortunately, this employee\'s leave credits are insufficient. He/she is requesting '.$daysCovered.' day(s) of leave, but only have '.$leaveTotalCredits.' remaining. This may still proceed, but please note that this will be considered as Absence Without Pay (AUT w/o pay).
                             ',
                             'action' => 'approved'
                         ]);
                     }
-                } 
+                }
 
             } else {
 
@@ -170,47 +170,47 @@ class Index extends Component
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'error',
-                        'title' => 'Oops', 
+                        'title' => 'Oops',
                         'message' => 'Unfortunately, this employee have no credits left for <b>' . $leaveTypeModel->name . '</b>.'
                     ]);
                 }
-                
+
                 if($daysCovered > $leaveCredits->credits) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
                         'status' => 'error',
-                        'title' => 'Oops', 
+                        'title' => 'Oops',
                         'message' => 'Unfortunately, this employee have insufficient leave credits. Applying for '.$daysCovered.' day(s), but only have ' . $leaveCredits->credits . ' remaining leave credits.'
                     ]);
                 }
             }
-        
+
             $leaveCardService = new LeaveCardService;
             $leaveCardService->init($record->employee_no, 'leave_approval', $record);
-    
+
             unset($record->daysCovered);
 
             // Update the EmployeeLeave record's status
             $record->update([
                 'action_by_id' => Auth::user()->id,
-                'status' => 'approved'
+                'status' => 'pending'
             ]);
-        
+
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
                 'status' => 'success',
-                'title' => 'Success', 
+                'title' => 'Success',
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been approved'
             ]);
-        
+
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
             $user?->notify(new Notifications('success', 'Your leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
-        
+
             return;
         }
-        
+
     }
 
     public function remove(bool $isNotify = true, ? int $id = null) {
@@ -231,9 +231,9 @@ class Index extends Component
         }  else {
 
             $record = EmployeeLeave::find($this->selected_id);
-                
+
             if($record) {
-                
+
                 $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
                 $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
 
@@ -243,27 +243,27 @@ class Index extends Component
 
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
+                    'title' => 'Success!',
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' has deleted successfully.' 
+                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' has deleted successfully.'
                 ]);
-            
+
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
+                    'title' => 'Oops!',
                     'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'message' => 'Error: ID does not exists'
                 ]);
             }
         }
     }
- 
+
     public function render()
     {
-       
+
         if($this->status == 'granted') {
             $status = 'approved';
         } else {
@@ -276,7 +276,7 @@ class Index extends Component
 
         if ($this->search) {
 
-            $this->resetPage(); 
+            $this->resetPage();
 
             $records = $model->where(function ($query) {
                 $query->where('employee_no', 'like', '%' . $this->search . '%')

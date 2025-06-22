@@ -28,7 +28,7 @@ class Index extends Component
 
     use WithFileUploads;
     use WithPagination;
-    
+
     public $employee_no;
     public $isParsing;
     public $isUploading = false;
@@ -49,7 +49,7 @@ class Index extends Component
     public bool $lazy = true;
 
     protected $listeners = ['remove', 'unlock', 'restore', 'loading', 'loadRecords'];
-    
+
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';
@@ -84,7 +84,7 @@ class Index extends Component
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -94,7 +94,7 @@ class Index extends Component
         if ($this->file) {
 
             $this->upload_preview;
-            
+
             $file = $this->file;
 
             if ($file instanceof \Illuminate\Http\UploadedFile) {
@@ -105,7 +105,7 @@ class Index extends Component
 
                         $files = Storage::files('public/temp/files');
 
-                        Storage::delete($files); 
+                        Storage::delete($files);
 
                         $fileName = uniqid() . '.' . $extension;
 
@@ -169,7 +169,7 @@ class Index extends Component
             foreach ($sheetsData as $index => $sheet) {
                 $sheetName = $sheetNames[$index];
 
-                $sheet = array_slice($sheet, 1); 
+                $sheet = array_slice($sheet, 1);
                 $sheet = array_filter($sheet, fn($row) =>
                     isset($row[0]) && !empty($row[0]) &&
                     !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
@@ -199,7 +199,7 @@ class Index extends Component
             $this->loadRecords();
 
         } catch (\Exception $e) {
-            
+
             logger()->error('Error uploading file: ' . $e->getMessage());
 
             $this->dispatch('alert', [
@@ -228,36 +228,36 @@ class Index extends Component
             'skills' => ['employee no.', 'skill / hobbies name', 'recognition', 'organization'],
             'options' => ['job categories', 'bool', 'civil status', 'sex', 'departments']
         ];
-    
+
         foreach ($sheetNames as $sheetName) {
-    
-            $sheetNameLower = strtolower($sheetName);  
-    
+
+            $sheetNameLower = strtolower($sheetName);
+
             if (array_key_exists($sheetNameLower, $expectedSheets)) {
                 $sheetData = $spreadsheet->getSheetByName($sheetName)->toArray();
-                
+
                 // Remove null values from each row without removing the entire row
                 $sheetData = array_map(function($row) {
                     return array_filter($row, function($value) {
                         return $value !== null;  // Keep only non-null values
                     });
                 }, $sheetData);
-            
+
                 // Check if the sheet data has rows and extract the first row for header
                 if (empty($sheetData)) {
                     throw new \Exception("Sheet '{$sheetName}' is empty.");
                 }
-            
+
                 $header = $sheetData[0];
-            
+
                 // Trim spaces and convert the header values to lowercase for comparison
                 $headerLower = array_map(function($item) {
                     return strtolower(trim($item)); // Remove leading/trailing spaces and convert to lowercase
                 }, $header);
-            
+
                 // Ensure the expected header also has trimmed values
                 $expectedHeader = array_map('strtolower', array_map('trim', $expectedSheets[$sheetNameLower]));
-            
+
                 if ($headerLower !== $expectedHeader) {
                     Log::error("Invalid header in sheet '{$sheetName}'. Expected: " . implode(', ', $expectedHeader) . ". Found: " . implode(', ', $headerLower));
                     throw new \Exception("Uploaded file contains invalid format");
@@ -266,18 +266,18 @@ class Index extends Component
                 Log::error("Unexpected sheet '{$sheetName}' found in the file.");
                 throw new \Exception("Uploaded file contains invalid format");
             }
-            
+
         }
-    
+
         return true;
     }
-    
+
     public function remove(bool $isNotify = true, ? string $employee_no = null) {
 
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -300,9 +300,9 @@ class Index extends Component
         }  else {
 
             $record = EmployeeInformation::where('employee_no', $this->selected_id)->first();
-                
+
             if($record) {
-                
+
                 $record->isDeleted = true;
                 $record->save();
 
@@ -312,19 +312,19 @@ class Index extends Component
 
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
+                    'title' => 'Success!',
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' was deleted successfully.' 
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' was deleted successfully.'
                 ]);
 
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
+                    'title' => 'Oops!',
                     'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'message' => 'Error: ID does not exists'
                 ]);
             }
         }
@@ -335,7 +335,7 @@ class Index extends Component
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -358,9 +358,9 @@ class Index extends Component
         }  else {
 
             $record = EmployeeAccount::where('employee_no', $this->selected_id)->first();
-            
+
             if($record) {
-                
+
                 $record->isLocked = false;
                 $record->login_attempts = 0;
                 $record->save();
@@ -369,19 +369,19 @@ class Index extends Component
 
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
+                    'title' => 'Success!',
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been unlocked.' 
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been unlocked.'
                 ]);
 
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
+                    'title' => 'Oops!',
                     'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'message' => 'Error: ID does not exists'
                 ]);
             }
         }
@@ -392,7 +392,7 @@ class Index extends Component
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -416,9 +416,9 @@ class Index extends Component
 
             $record = EmployeeInformation::where('employee_no', $this->selected_id)
                 ->first();
-            
+
             if($record) {
-                
+
                 $record->isDeleted = false;
                 $record->save();
 
@@ -426,19 +426,19 @@ class Index extends Component
 
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
+                    'title' => 'Success!',
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been restored.' 
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been restored.'
                 ]);
 
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
+                    'title' => 'Oops!',
                     'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'message' => 'Error: ID does not exists'
                 ]);
             }
         }
@@ -446,7 +446,7 @@ class Index extends Component
 
     public function changeEmployeeNo($employee_no) {
         $this->dispatch('showModal', [
-            'modal' => 'change_employee_no', 
+            'modal' => 'change_employee_no',
         ]);
 
         $this->dispatch('setEmployeeNo', employee_no: $employee_no);
