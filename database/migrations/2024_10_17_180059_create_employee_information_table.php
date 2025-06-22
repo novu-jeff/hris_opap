@@ -364,10 +364,6 @@ return new class extends Migration
                 ->nullable();
             $table->string('commutation')
                 ->nullable();
-            $table->string('from')
-                ->nullable();
-            $table->string('to')
-                ->nullable();
             $table->enum('status', [
                     'approved',
                     'disapproved',

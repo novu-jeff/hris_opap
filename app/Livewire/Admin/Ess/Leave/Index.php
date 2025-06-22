@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Ess\Leave;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveDates;
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
@@ -41,7 +42,7 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $this->view_records = EmployeeLeave::with('employment', 'employee', 'leave_type')
+        $this->view_records = EmployeeLeave::with('dates', 'employment', 'employee', 'leave_type')
             ->where('id', $id)
             ->first();
     }
@@ -99,7 +100,7 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeLeave::with('employment')->where('id', $this->selected_id)
+            $record = EmployeeLeave::with('dates', 'employment')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
                 
@@ -107,16 +108,8 @@ class Index extends Component
                 return redirect()->route('ess.leave');
             }
         
-            $from = Carbon::parse($record->from);
-            $to = Carbon::parse($record->to);
+            $daysCovered = count($record->dates) ?? 0;
         
-            // Calculate days covered
-            if ($record->to) {
-                $daysCovered = $from->diffInDays($to) + 1; 
-            } else {
-                $daysCovered = 1; 
-            }
-                    
             $record->daysCovered = $daysCovered;
 
             // Update leave credits model

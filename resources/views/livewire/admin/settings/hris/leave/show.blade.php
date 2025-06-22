@@ -47,7 +47,7 @@
                                 @if($this->id == 1 || $this->id == 2)
                                     <td style="vertical-align: top; padding-top: 12px;">
                                         <input 
-                                            type="text" 
+                                            type="number" 
                                             wire:key="vl-credit-{{$record->employee_no}}" 
                                             wire:model="vl_credits.{{$record->employee_no}}" 
                                             class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 
@@ -61,7 +61,7 @@
                                     </td>
                                     <td style="vertical-align: top; padding-top: 12px;">
                                         <input 
-                                            type="text" 
+                                            type="number" 
                                             wire:key="sl-credit-{{$record->employee_no}}" 
                                             wire:model="sl_credits.{{$record->employee_no}}" 
                                             class="form-control {{ $has_leave_card[$record->employee_no] === true ? 'restricted' : '' }}" 

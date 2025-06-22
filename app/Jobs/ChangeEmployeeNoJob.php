@@ -45,6 +45,7 @@ class ChangeEmployeeNoJob implements ShouldQueue
                 \App\Models\EmployeeSkillsHobbies::class,
                 \App\Models\LeaveCredits::class,
                 \App\Models\EmployeeLeave::class,
+                \App\Models\EmployeeLeaveDates::class,
                 \App\Models\EmployeeBusinessSlip::class,
                 \App\Models\EmployeeAtro::class,
                 \App\Models\EmployeeAtroRelative::class,

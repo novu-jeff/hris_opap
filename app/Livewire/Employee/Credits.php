@@ -29,11 +29,11 @@ class Credits extends Component
                 if($credits->leave_type_id == 1) {
                     $leaveType = 'Vacation Leave';
                     $leaveCode = 'VL';
-                    $credits = $latest->vl_bal;
+                    $credits = $latest->vl_bal ?? 0;
                 } else {
                     $leaveType = 'Sick Leave';
                     $leaveCode = 'SL';
-                    $credits = $latest->sl_bal;
+                    $credits = $latest->sl_bal ?? 0;
                 }
 
                 $remaingCredits[] = [

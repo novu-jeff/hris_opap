@@ -8,14 +8,14 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row">
-                        @if(!is_null($this->type)) 
+                        @if(!is_null($this->type))
                             <div class="col-12 mb-3">
                                 <div class="d-flex justify-content-end">
                                     <h6 class="text-uppercase fw-bold">Remaining Leave Credits: {{$this->remaining_credits}}</h6>
                                 </div>
                             </div>
                         @endif
-                        <div class="col-12 col-md-6 mb-4">
+                        <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
                             <select wire:model.live="type" wire:change="handleLeaveCredits" id="type" class="form-select">
                                 <option value=""> - CHOOSE - </option>
@@ -27,35 +27,14 @@
                                 @error('type') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-12 col-md-6 mb-4">
-                            <label class="mb-2" for="duration">Duration <span class="text-danger">*</span></label>
-                            <select wire:change="selectDuration" wire:model="duration" id="duration" class="form-select" {{$isDurationDisabled ? 'disabled' : ''}}>
-                                <option value=""> - CHOOSE - </option>
-                                <option value="1"> One Day </option>
-                                <option value="2"> Two or More Days </option>
-                            </select>
+
+                        <div class="col-12 col-md-12 mb-4">
+                            <div id="calendar-container" wire:ignore></div>
                             <div class="error-field">
-                                @error('duration') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('selectedDates') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        @if(!is_null($isMoreThanOne))
-                            <div class="col-12 {{$isMoreThanOne ? 'col-md-6' : 'col-md-12'}} mb-4">
-                                <label class="mb-2" for="from">{{!$isMoreThanOne ? 'Leave Date' : 'From'}} <span class="text-danger">*</span></label>
-                                <input type="date" wire:model="from" id="from" class="form-control">
-                                <div class="error-field">
-                                    @error('from') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            @if($isMoreThanOne)
-                                <div class="col-12 col-md-6 mb-4">
-                                    <label class="mb-2" for="to">To <span class="text-danger">*</span></label>
-                                    <input type="date" wire:model="to" id="to" class="form-control">
-                                    <div class="error-field">
-                                        @error('to') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
+
                         @if($type == 1)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="location">Location <span class="text-danger">*</span></label>
@@ -75,7 +54,7 @@
                                     @error('location_specific') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                        
+
                         @elseif($type == 2)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="confinement">Patient Type <span class="text-danger">*</span></label>
@@ -142,3 +121,140 @@
         </div>
     </div>
 </form>
+
+<script>
+$(function () {
+    const scheduledDates = @json($scheduledDates); // includes { date, name, type, status }
+
+    setTimeout(() => {
+        const calendarEl = document.getElementById('calendar-container');
+        if (!calendarEl || $(calendarEl).data('calendar-initialized')) return;
+
+        let selectedDates = [];
+        const today = new Date();
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            selectable: true,
+            weekends: false,
+
+            headerToolbar: {
+                center: 'title',
+            },
+
+            dateClick: function (info) {
+                const dateStr = formatToYMD(info.date);
+                if (isAvailableDate(info.date)) {
+                    handleDateToggle(dateStr);
+                }
+            },
+
+            eventClick: function (info) {
+                info.jsEvent.preventDefault();
+                const dateStr = formatToYMD(info.event.start);
+                if (isAvailableDate(info.event.start)) {
+                    handleDateToggle(dateStr);
+                }
+            },
+
+            datesSet: function () {
+                renderEvents();
+            }
+        });
+
+        function formatToMMDD(date) {
+            const d = new Date(date);
+            return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function formatToYMD(date) {
+            const d = new Date(date);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function isAvailableDate(date) {
+            const ymd = formatToYMD(date);
+            const mmdd = formatToMMDD(date);
+            const isFuture = new Date(ymd) > today;
+
+            const isBlocked = scheduledDates.some(item =>
+                (item.type === 'holiday' && item.date === mmdd) ||
+                (item.type === 'leave' && item.date === ymd)
+            );
+
+            return isFuture && !isBlocked;
+        }
+
+        function handleDateToggle(dateStr) {
+            const index = selectedDates.indexOf(dateStr);
+            if (index !== -1) {
+                selectedDates.splice(index, 1);
+            } else {
+                selectedDates.push(dateStr);
+            }
+            renderEvents();
+        }
+
+        function renderEvents() {
+            const start = calendar.view.activeStart;
+            const end = calendar.view.activeEnd;
+            const events = [];
+
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+                const thisDate = new Date(d);
+                const ymd = formatToYMD(thisDate);
+                const mmdd = formatToMMDD(thisDate);
+
+                if (thisDate > today) {
+                    const holiday = scheduledDates.find(item => item.type === 'holiday' && item.date === mmdd);
+                    const leave = scheduledDates.find(item => item.type === 'leave' && item.date === ymd);
+
+                    if (holiday) {
+                        events.push({
+                            title: holiday.name,
+                            start: ymd,
+                            backgroundColor: '#8A0303',
+                            borderColor: '#8A0303',
+                            textColor: '#fff',
+                            classNames: ['fc-sticky', 'fc-event-title'],
+                        });
+                    } else if (leave) {
+                        let bgColor = '#8A0303'; // default for approved/other
+                        if (leave.status === 'pending') bgColor = '#e67e22';
+
+                        events.push({
+                            title: leave.name,
+                            start: ymd,
+                            backgroundColor: bgColor,
+                            borderColor: bgColor,
+                            textColor: '#fff',
+                            classNames: ['fc-sticky', 'fc-event-title'],
+                        });
+                    } else {
+                        const isSelected = selectedDates.includes(ymd);
+                        events.push({
+                            title: isSelected ? 'Selected' : 'Available',
+                            start: ymd,
+                            backgroundColor: isSelected ? '#225F8B' : '#175850',
+                            borderColor: isSelected ? '#225F8B' : '#175850',
+                            textColor: '#fff',
+                            classNames: ['fc-sticky', 'fc-event-title'],
+                        });
+                    }
+                }
+            }
+
+            calendar.removeAllEvents();
+            calendar.addEventSource(events);
+
+            Livewire.dispatch('setSelectedDates', [selectedDates]);
+        }
+
+        calendar.render();
+        $(calendarEl).data('calendar-initialized', true);
+    }, 300);
+
+});
+
+</script>
+

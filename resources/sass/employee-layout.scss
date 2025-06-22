@@ -26,7 +26,7 @@ body {
 }
 
 table {
-    width: 100%; 
+    width: 100%;
     table-layout: auto;
     th, td {
       text-transform: uppercase;
@@ -36,14 +36,14 @@ table {
     }
     td {
       font-size: 13px;
-  
+
       img {
         width: 100%;
         height: 100px;
         object-fit: cover !important;
         object-position: center !important;
       }
-  
+
     }
   }
 
@@ -86,24 +86,24 @@ table {
       border-radius: 50%;
       z-index: 999;
     }
-    
-    
-    
-    
+
+
+
+
   }
 
   .dashboard {
 
     .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 2fr)); 
-        gap: 30px; 
+        grid-template-columns: repeat(auto-fill, minmax(350px, 2fr));
+        gap: 30px;
     }
-    
+
     .item {
         text-align: center;
-        background-color: #f2f2f2; 
-        padding: 12px 12px 20px 12px; 
+        background-color: #f2f2f2;
+        padding: 12px 12px 20px 12px;
         border-radius: 8px;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     }
@@ -114,12 +114,12 @@ table {
       text-transform: uppercase;
       font-weight: 600;
     }
-    
+
     .item img {
         max-width: 100%;
         height: 200px;
         object-fit: scale-down;
-        margin-bottom: 10px; 
+        margin-bottom: 10px;
     }
   }
 
@@ -135,7 +135,7 @@ table {
       height: 300px;
       border-top-left-radius: 30px;
       border-top-right-radius: 30px;
-      
+
       img {
         width: 100%;
         height: 100%;
@@ -152,7 +152,7 @@ table {
     height: 500px;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
-    
+
     img {
       width: 100%;
       height: 100%;
@@ -165,7 +165,7 @@ table {
   h5 {
     text-transform: uppercase;
     font-weight: 600;
-  }   
+  }
 
   p {
     font-size: 16px;
@@ -215,7 +215,7 @@ table {
       display: flex;
       align-items: center;
         cursor: pointer;
-      
+
       i {
         font-size: 50px;
       }
@@ -239,7 +239,7 @@ table {
     background-size: contain;
     background-repeat: no-repeat;
 
-    
+
     .overlay {
       font-size: 18px;
       text-transform: uppercase;
@@ -289,9 +289,9 @@ table {
     z-index: 99;
   }
 
-  #map { 
-    width: 120px; 
-    height: 100px; 
+  #map {
+    width: 120px;
+    height: 100px;
     border-radius: 20px !important;
   }
 
@@ -402,4 +402,60 @@ table {
 
   }
 
+}
+
+ #calendar-container {
+    width: 100%;
+    height: 600px;
+    margin: 0 auto;
+}
+
+
+.fc-header-toolbar {
+    font-size: 1.25rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 25px;
+    font-weight: bold;
+    text-decoration: none;
+    text-transform: uppercase !important;
+    cursor: pointer;
+}
+
+.fc-available-title {
+  font-size: 15px !important;
+  text-transform: uppercase !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin: 0 10px 0 10px !important;
+  cursor: pointer;
+}
+
+.fc-event-title {
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  padding: 5px 0 5px 0 !important;
+  cursor: pointer;
+}
+
+.fc .fc-button {
+    text-decoration: none !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+    font-size: 15px !important;
+}
+
+.fc .fc-daygrid-day-number {
+    font-size: 15px !important;
+    text-decoration: none !important;
+}
+
+#calendar-container {
+    font-size: 1rem;
 }

@@ -169,14 +169,14 @@
                         All
                     </a>
                 </li>
-                <li class="nav-item d-flex gap-3 my-3" role="presentation">
-                    @foreach($employmentTypes as $employmentType)
+                @foreach($employmentTypes as $employmentType)
+                    <li class="nav-item d-flex gap-3 my-3" role="presentation">
                         <a href="{{ route('hris.index', ['employment_type' => $employmentType->id]) }}"
                         class="nav-link text-uppercase fw-bold {{ $selectedType == $employmentType->id ? 'active' : '' }}">
                             {{ $employmentType->name }}
                         </a>
-                    @endforeach
-                </li>
+                    </li>
+                @endforeach
                 <li class="nav-item d-flex gap-3 my-3" role="presentation">
                     <a href="{{ route('hris.index', ['employment_type' => 'unassigned']) }}"
                     class="nav-link text-uppercase fw-bold {{ $selectedType === 'unassigned' ? 'active' : '' }}">
