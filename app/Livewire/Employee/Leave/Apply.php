@@ -205,7 +205,8 @@ class Apply extends Component
 
         $rules = [
             'type' => 'required|exists:leave_types,id',
-            'commutation' => 'required|in:yes,no'
+            'commutation' => 'required|in:yes,no',
+            'selectedDates' => 'required|array|min:1'
         ];
 
 
@@ -214,13 +215,11 @@ class Apply extends Component
             case 1: // Location required for type 1
                 $rules['location'] = 'required|in:ph,abroad';
                 $rules['location_specific'] = 'required';
-                $rules['selectedDates'] = ['required', 'array', 'min:1'];
                 break;
 
             case 2: // Confinement and illness required for type 2
                 $rules['confinement'] = 'required';
                 $rules['illness'] = 'required';
-                $rules['selectedDates'] = ['required', 'array', 'min:1'];
                 break;
 
             case 3: // Mandatory/forced leave - minimum 5 selected dates
