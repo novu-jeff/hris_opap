@@ -3,7 +3,7 @@
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
             <img src="{{ asset('/img/' . config('app.app_client_logo')) }}" alt="{{ config('app.app_client_logo') }} logo">
 
-            @if (config('app.product') == 'government')
+            @if (config('app.product') === 'government')
                 <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
             @endif
         </a>

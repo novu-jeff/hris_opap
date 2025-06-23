@@ -87,7 +87,7 @@
                                 <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
                             </div>
                             <div class="logo-phrase">
-                                <p>Transform IT: Unify your data silos</p>
+                                <p>{{ config('app.app_description') }}</p>
                             </div>
                             <hr class="mt-3 mb-2">
                             <div class="socials">

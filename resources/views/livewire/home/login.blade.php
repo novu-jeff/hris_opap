@@ -3,7 +3,8 @@
         <div class="card-header bg-transparent py-2 border-0">
             <div class="d-lg-flex justify-content-between align-items-center">  
                 <div class="logo">
-                    <img src="{{asset('img/logo.png')}}" alt="logo">
+                                                    <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
+
                 </div>
                 <ul class="nav nav-pills" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
