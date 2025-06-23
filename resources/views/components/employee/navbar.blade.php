@@ -5,8 +5,11 @@
 <nav class="navbar py-3">
     <div class="container d-flex justify-content-lg-center justify-content-xl-between px-4">
         <a class="navbar-brand text-uppercase" href="{{ route('employee.dashboard') }}">
-            <img src="{{asset('img/client-logo.png')}}" alt="logo">
-            <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
+            <img src="{{ asset('/img/' . config('app.app_client_logo')) }}" alt="{{ config('app.app_client_logo') }} logo">
+
+            @if (config('app.product') === 'government')
+                <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
+            @endif
         </a>
         <div class="menu d-flex align-items-center gap-5">
             @if (Auth::guard('employee')->user())

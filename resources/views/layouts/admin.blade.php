@@ -54,7 +54,7 @@
                     </div>
                     <p class="text-uppercase fw-bold mb-0">Powered by Novulutions Inc.</p>
                     <hr class="my-2" style="width: 600px;">
-                    <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">Transform IT: Unify your data silos</p>
+                    <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">{{ config('app.app_description') }}</p>
                 </div>
             </div>
         </div>
