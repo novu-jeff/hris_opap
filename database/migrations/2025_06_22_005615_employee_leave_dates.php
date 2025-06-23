@@ -19,6 +19,7 @@ return new class extends Migration
                 ->onDelete('set null');
             $table->string('employee_no');
             $table->string('date');
+            $table->timestamps();
         });
     }
 

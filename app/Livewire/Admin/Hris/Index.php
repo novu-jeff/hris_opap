@@ -176,7 +176,7 @@ class Index extends Component
                 );
                 $sheet = array_values($sheet);
 
-                $chunks = array_chunk($sheet, 100);
+                $chunks = array_chunk($sheet, 200);
                 foreach ($chunks as $chunk) {
                     $jobs[] = new EmployeeUploadJob($chunk, $sheetName, $schedules);
                 }
