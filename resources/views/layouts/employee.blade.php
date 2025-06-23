@@ -211,7 +211,7 @@
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2025. Powered by Novulutions Inc.
+                    &copy; 2025. Powered by {{ str_replace('.png', '', config('app.app_provider')) }}
                 </p>
             </div>
         </div>
