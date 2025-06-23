@@ -81,8 +81,10 @@
                     <div class="col-12 col-lg-6 mb-4">
                         <div class="mx-5">
                             <div class="logo d-flex gap-3">
-                                <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
-                                <img src="{{asset('/img/logo.png')}}" alt="logo">
+                                
+                                {{-- <img src="{{asset('/img/novu-blue.png')}}" alt="logo"> --}}
+                                <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
+                                <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
                             </div>
                             <div class="logo-phrase">
                                 <p>Transform IT: Unify your data silos</p>
