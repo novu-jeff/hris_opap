@@ -51,7 +51,7 @@ class EmployeeUploadJob implements ShouldQueue
                 'trace' => $e->getTraceAsString()
             ]);
             // Optionally, you can also mark this job as failed without retry:
-            // $this->fail($e);
+            $this->fail($e);
         }
     }
 }
