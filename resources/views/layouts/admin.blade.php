@@ -49,10 +49,10 @@
             <div class="container d-flex justify-content-center">
                 <div class="text-center">
                     <div class="logo">
-                        <img src="{{asset('/img/novu-blue-logo.png')}}" alt="logo">
-                        <img src="{{asset('/img/logo.png')}}" alt="logo">
+                        <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
+                        <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
                     </div>
-                    <p class="text-uppercase fw-bold mb-0">Powered by Novulutions Inc.</p>
+                    <p class="text-uppercase fw-bold mb-0">Powered by {{ str_replace('.png', '', config('app.app_provider')) }}</p>
                     <hr class="my-2" style="width: 600px;">
                     <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">{{ config('app.app_description') }}</p>
                 </div>
