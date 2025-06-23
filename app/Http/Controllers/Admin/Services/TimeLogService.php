@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Services;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveDates;
 use App\Models\EmployeeTimelogs;
 use App\Models\Holiday;
 use Carbon\Carbon;
@@ -46,7 +47,7 @@ class TimeLogService extends Controller
 
         $logs = $this->formatDayDTR($logs, $monthYear);
         $summary = $this->getSummary($logs);
-        
+
         return [
             'logs' => $logs,
             'summary' => $summary
@@ -54,32 +55,32 @@ class TimeLogService extends Controller
     }
 
     private function processLogs($logs, $monthYear, $isDTR = false) {
-        
+
         $grouped = [];
-    
+
         foreach ($logs as $log) {
             $date = Carbon::parse($log->timestamp)->toDateString();
             $employeeId = $log->employee_id;
-    
+
             $grouped[$date][$employeeId]['timestamps'][] = Carbon::parse($log->timestamp);
             $grouped[$date][$employeeId]['employee'] = $log->employee;
         }
 
         $final = [];
-    
+
         foreach ($grouped as $date => $employees) {
             foreach ($employees as $employeeId => $data) {
                 $timestamps = collect($data['timestamps'])
                     ->map(fn($ts) => Carbon::parse($ts))
                     ->sort()
                     ->values();
-    
+
                 $employee = $data['employee'];
                 $record = $this->initializeRecord($employeeId, $employee, $monthYear);
-                
+
                 $this->assignTimestamps($record, $timestamps);
                 $this->calculateAUTO($record);
-    
+
                 if ($isDTR) {
                     $final[$date] = $record;
                 } else {
@@ -90,7 +91,7 @@ class TimeLogService extends Controller
 
         return $final;
     }
-    
+
     private function initializeRecord($employeeId, $employee, $monthYear) {
         return [
             'employee_no' => $employee->employee_no ?? '',
@@ -137,7 +138,7 @@ class TimeLogService extends Controller
                     $record['clock_out'] = $ts->format('h:i A');
                 }
             }
-        }        
+        }
     }
 
     private function calculateAUTO(&$record)
@@ -286,69 +287,58 @@ class TimeLogService extends Controller
         } catch (\Exception $e) {
             abort(400, 'Invalid month-year format. Use MM-YYYY.');
         }
-    
+
         $today = Carbon::today();
         $formattedLogs = [];
-    
+
         $employeeNos = collect($logs)->pluck('employee_no')->unique()->filter()->values();
-    
-        $startDateFormatted = $startDate->format('Y-m-d');
-        $endDateFormatted = $endDate->format('Y-m-d');
-    
-        $allLeaves = EmployeeLeave::whereIn('employee_no', $employeeNos)
-            ->where(function ($query) use ($startDateFormatted, $endDateFormatted) {
-                $query->where(function ($q) use ($startDateFormatted, $endDateFormatted) {
-                    $q->whereDate('from', '<=', $endDateFormatted)
-                      ->where(function ($q2) use ($startDateFormatted) {
-                          $q2->whereDate('to', '>=', $startDateFormatted)
-                              ->orWhereNull('to');
-                      });
-                });
-            })
-            ->get();
-    
+
+        // Fetch all leaves from EmployeeLeaveDates model
+        $allLeaves = EmployeeLeaveDates::whereIn('employee_no', $employeeNos)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get()
+            ->groupBy(function ($leave) {
+                return $leave->employee_no . '|' . $leave->date;
+            });
+
         for ($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
             $dateString = $date->toDateString();
             $isWeekend = $date->isSaturday() || $date->isSunday();
             $isFuture = $date->gt($today);
             $remarks = [];
-    
+
             // 1. Holiday
             $holiday = Holiday::where('date', $date->format('m-d'))->first();
             if ($holiday) {
                 $remarks[] = $holiday->type === 'regular' ? 'Legal Hol' : 'Special Hol';
             }
-    
+
             // 2. Leave
-            foreach ($allLeaves as $leave) {
-                $origFrom = Carbon::parse($leave->from);
-                $from = $origFrom->copy()->subDay();
-                $to = $leave->to ? Carbon::parse($leave->to) : $from->copy()->addDay();
-    
-                if ($date->between($from, $to)) {
+            foreach ($employeeNos as $employeeNo) {
+                $leaveKey = $employeeNo . '|' . $dateString;
+                if (isset($allLeaves[$leaveKey])) {
                     $remarks[] = 'Leave';
                     break;
                 }
             }
-    
+
             // 3. Weekend
             if ($isWeekend) {
                 $remarks[] = 'Rest Day';
             }
-    
+
             // 4. Absent
             if (!isset($logs[$dateString]) && !$isFuture && !in_array('Leave', $remarks) && !$isWeekend) {
                 $remarks[] = 'Absent';
             }
 
-    
             // Prioritize remarks
             $priorityRemarks = ['Leave', 'Legal Hol', 'Special Hol'];
             $intersect = array_intersect($remarks, $priorityRemarks);
             if (!empty($intersect)) {
                 $remarks = array_values($intersect);
             }
-    
+
             if (isset($logs[$dateString])) {
                 $formattedLogs[$dateString] = $logs[$dateString];
 
@@ -383,10 +373,11 @@ class TimeLogService extends Controller
                 ];
             }
         }
-    
+
         return $formattedLogs;
     }
-    
+
+
     private function getSummary($logs)
     {
         $summary = [
@@ -404,21 +395,21 @@ class TimeLogService extends Controller
             'legal_hol' => 0,
             'special_hol' => 0,
         ];
-    
+
         foreach ($logs as $date => $log) {
             $remarks = $log['remarks'] ?? [];
-    
+
             if (is_array($remarks)) {
                 foreach ($remarks as $remark) {
                     switch ($remark) {
                         case 'Absent':
                             $summary['absences']++;
                             break;
-    
+
                         case 'Overtime':
                             $summary['overtime'] += $log['aut']['overtime']['minutes'] ?? 0;
                             break;
-    
+
                         case 'Late':
                             if (isset($log['aut']['tardiness']['minutes'])) {
                                 $lateMinutes = $log['aut']['tardiness']['minutes'];
@@ -426,7 +417,7 @@ class TimeLogService extends Controller
                                 $summary['tardiness'] += $lateMinutes;
                             }
                             break;
-    
+
                         case 'Undertime':
                             if (isset($log['aut']['undertime']['minutes'])) {
                                 $undertimeMinutes = $log['aut']['undertime']['minutes'];
@@ -434,29 +425,29 @@ class TimeLogService extends Controller
                                 $summary['undertime'] += $undertimeMinutes;
                             }
                             break;
-    
+
                         case 'Rest Day':
                             $summary['rest_days']++;
                             break;
-    
+
                         case 'Legal Hol':
                             $summary['legal_hol']++;
                             break;
-    
+
                         case 'Special Hol':
                             $summary['special_hol']++;
                             break;
-    
+
                         case 'Leave':
                             $summary['leaves']++;
                             break;
                     }
                 }
             }
-    
+
             // Determine if the log has clock-in and clock-out
             $hasLog = !empty($log['clock_in']) && !empty($log['clock_out']);
-    
+
             // If day is not Absent or Leave, OR it has time logs — count as worked
             $hasAbsentOrLeave = array_intersect($remarks, ['Absent', 'Leave']);
             if (empty($hasAbsentOrLeave)) {
@@ -468,26 +459,26 @@ class TimeLogService extends Controller
                     $summary['worked_days']++;
                 }
             }
-    
+
             // Add less_aut values
             if (isset($log['aut']['tardiness']['minutes'])) {
                 $summary['less_aut'] += $log['aut']['tardiness']['minutes'];
             }
-    
+
             if (isset($log['aut']['undertime']['minutes'])) {
                 $summary['less_aut'] += $log['aut']['undertime']['minutes'];
             }
         }
-    
+
         // Format numeric values to 2 decimal places
         $toMins = ['leaves', 'overtime', 'undertime', 'less_aut', 'tardiness'];
         foreach ($toMins as $key) {
             $summary[$key] = number_format((float)$summary[$key], 2, '.', '');
         }
-    
+
         return $summary;
     }
-    
+
     public function getDTRByRange(string $biometrics_id, string $monthYear, $range) {
 
         $dtr = $this->getDTR($biometrics_id, $monthYear);
@@ -505,24 +496,24 @@ class TimeLogService extends Controller
         $totalOvertime = 0;
         $totalAUT = 0;
         $totalWorkedDays = 0;
-        
+
         foreach ($filteredLogs as $date => $log) {
             // Count worked days
             if (!empty($log['clock_in']) && !empty($log['clock_out'])) {
                 $totalWorkedDays++;
             }
-        
+
             // Compute AUT and Overtime if present
             if (isset($log['aut']) && is_array($log['aut'])) {
                 $tardiness = $log['aut']['tardiness']['minutes'] ?? 0;
                 $undertime = $log['aut']['undertime']['minutes'] ?? 0;
                 $overtime = $log['aut']['overtime']['minutes'] ?? 0;
-        
+
                 $totalOvertime += $overtime;
                 $totalAUT += ($tardiness + $undertime);
             }
         }
-        
+
 
         $summary = [
             'worked_days' => $totalWorkedDays ?? 0,
@@ -533,5 +524,5 @@ class TimeLogService extends Controller
         return $summary;
 
     }
-    
+
 }

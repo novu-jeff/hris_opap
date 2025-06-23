@@ -52,7 +52,7 @@ class Show extends Component
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
 
-            $hasLeaveCard = $this->leaveCardService->leaveCard($employee_no);   
+            $hasLeaveCard = $this->leaveCardService->leaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;
 
             $this->logs = [
@@ -83,7 +83,7 @@ class Show extends Component
 
     public function changeMonth($action, $value = null)
     {
-        
+
         if($action == 'control') {
             $currentDate = $this->dtrDate;
             $currentDate = $currentDate->addMonths($value);

@@ -41,14 +41,14 @@ class Index extends Component
         }
 
         if ($this->search) {
-            
+
             $this->resetPage();
 
             $query->where(function ($q) {
                 $q->where('employee_no', 'like', '%' . $this->search . '%')
                 ->orWhereHas('personal', function ($subQuery) {
                     $subQuery->whereRaw(
-                        "CONCAT(firstname, ' ', lastname) LIKE ?", 
+                        "CONCAT(firstname, ' ', lastname) LIKE ?",
                         ['%' . $this->search . '%']
                     );
                 });
