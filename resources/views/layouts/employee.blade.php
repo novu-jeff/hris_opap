@@ -80,14 +80,12 @@
                 <div class="row">
                     <div class="col-12 col-lg-6 mb-4">
                         <div class="mx-5">
-                            <div class="logo d-flex gap-3">
-                                
-                                {{-- <img src="{{asset('/img/novu-blue.png')}}" alt="logo"> --}}
-                                <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
-                                <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
+                            <div class="logo">
+                                <img src="{{ asset('/img/' . $provider['client_logo'])}}">
+                                <img src="{{ asset('/img/' . $provider['logo'])}}">
                             </div>
-                            <div class="logo-phrase">
-                                <p>{{ config('app.app_description') }}</p>
+                            <div class="logo-phrase mt-3">
+                                <p>{{ $provider['tagline'] }}</p>
                             </div>
                             <hr class="mt-3 mb-2">
                             <div class="socials">
@@ -211,7 +209,7 @@
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2025. Powered by {{ str_replace('.png', '', config('app.app_provider')) }}
+                    &copy; 2025. Powered by {{$provider['company']}}
                 </p>
             </div>
         </div>

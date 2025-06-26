@@ -1,8 +1,7 @@
 <nav class="navbar navbar-dark text-dark bg-light shadow-sm">
     <div class="container px-4">
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-            <img src="{{ asset('/img/' . config('app.app_client_logo')) }}" alt="{{ config('app.app_client_logo') }} logo">
-
+            <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
             @if (config('app.product') === 'government')
                 <img src="{{asset('img/bagong-pilipinas.png')}}" alt="" srcset="">
             @endif

@@ -218,8 +218,18 @@ class Index extends Component
 
     public function validateUploaded($spreadsheet, $sheetNames) {
 
+        $product = env('APP_PRODUCT');
+
+        if($product == 'government') {
+            $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email'];
+            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units'];
+        } else {
+            $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email', 'company', 'department'];
+            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
+        }
+
         $expectedSheets = [
-            'employee information' => ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email'],
+            'employee information' => $emp_info_req,
             'family background' => ['employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename', 'spouse suffix', 'spouse occupation', 'spouse business name', 'spouse business address', 'spouse contact no', 'father surname', 'father firstname', 'father middlename', 'father suffix', 'mother surname', 'mother firstname', 'mother middlename'],
             'children' => ['employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'],
             'education' => ['employee no.', 'level', 'school name', 'course', 'from year', 'to year'],
@@ -228,7 +238,7 @@ class Index extends Component
             'trainings' => ['employee no.', 'type', 'name', 'date from', 'date to', 'consumed hours', 'sponsored by'],
             'other works' => ['employee no.', 'organization', 'address', 'date from', 'date to', 'consumed hours', 'position'],
             'skills' => ['employee no.', 'skill / hobbies name', 'recognition', 'organization'],
-            'options' => ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units']
+            'options' => $opt_req
         ];
 
         foreach ($sheetNames as $sheetName) {

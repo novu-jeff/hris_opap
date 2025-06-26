@@ -46,13 +46,10 @@ class TimelogUploadProcess implements ShouldQueue
                 [
                     'origin' => $item['origin'] ?? null,
                     'bsd_no' => $item['bsdno'] ?? null,
-                    'isindtr' => $item['isindtr'] ?? null,
                     'logdatetime' => !empty($item['logdatetime']) 
                         ? Carbon::createFromFormat('d/m/Y H:i:s', $item['logdatetime'])->format('d/m/Y H:i') 
                         : null,
-                    'nfcdeviceid' => $item['nfcdeviceid'] ?? null,
                     'type' => $item['type'] ?? null,
-                    'ismanual' => $item['ismanual'] ?? null,
                     'captured_image' => $item['captured_image'] ?? null,
                     'captured_location' => $item['captured_location'] ?? null,
                 ]

@@ -36,6 +36,7 @@ class Upload extends Component
     public function updatedFile() {
 
         if ($this->file) {
+            
             $this->upload_preview;
             $file = $this->file;
 
@@ -190,11 +191,8 @@ class Upload extends Component
         $requiredHeaders = [
             'biometricdtrid',
             'bsdno',
-            'isindtr',
             'logdatetime',
-            'nfcdeviceid',
             'type',
-            'ismanual',
         ];
 
         $missingHeaders = array_diff($requiredHeaders, $headers);

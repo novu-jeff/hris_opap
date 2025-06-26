@@ -7,8 +7,8 @@
         @can('read timelogs')
             <li><a class="dropdown-item" href="{{route('timekeeping.index')}}">View Time Logs</a></li>
         @endcan
-        <!-- @can('write timelogs')
+        @can('write timelogs')
             <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
-        @endcan -->
+        @endcan
     </ul>
 </li>

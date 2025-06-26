@@ -558,12 +558,10 @@
   border-top: 1px solid #e7e7e7;
   box-shadow: 0 -4px 10px rgba(1, 196, 245, 0.1);
 
-  img:nth-child(1) {
-    width: 85px;
-  }
-
-  img:nth-child(2) {
-    width: 95px;
+  img {
+     height: 100px;
+      object-fit: cover;
+      width: auto;
   }
 
 }

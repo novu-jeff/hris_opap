@@ -25,9 +25,9 @@ class CompanyInformationSeeder extends Seeder
             ];
         } else if ($product == 'private') {
             $information = [
-                'name' => 'Novulutions Inc.', 
-                'address' => 'EcoTower, 32nd St. Cor, 9th Ave, Taguig, Metro Manila, Philippines',
-                'contact' => '',
+                'name' => 'Filoil Inc.', 
+                'address' => 'San Juan City, 1500 Metro Manila, Philippines',
+                'contact' => '63284777644',
                 'type_id' => 5
             ];
         }

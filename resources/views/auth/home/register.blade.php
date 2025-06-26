@@ -8,7 +8,7 @@
             <div class="left-side">
                 <div class="container mb-5">
                     <div class="logo">
-                       <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
+                        <img src="{{ asset('/img/' . $provider['client_logo'])}}">
                     </div>
                     <div class="description mt-5 mx-5">
                         <h3>Create Account</h3>

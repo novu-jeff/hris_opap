@@ -10,7 +10,7 @@
                 </li>
             </ul>                  
             <div class="note my-3">
-                By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
+                By creating an account or signing in, you agree to {{$provider['company']}} HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
             </div>                
         </div>
         <hr class="my-2">
