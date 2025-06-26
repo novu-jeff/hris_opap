@@ -53,10 +53,10 @@
                     <div class="col-12 col-lg-4 mb-4">
                         <div class="mx-5">
                             <div class="logo">
-                                <img src="{{asset('/img/novu-blue.png')}}" alt="logo">
+                                <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
                             </div>
                             <div class="logo-phrase">
-                                <p>Transform IT: Unify your data silos</p>
+                                <p>{{ config('app.app_description') }}</p>
                             </div>
                             <hr class="mt-3 mb-2">
                             <div class="socials">
