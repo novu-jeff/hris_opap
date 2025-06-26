@@ -53,31 +53,31 @@
                     <div class="col-12 col-lg-4 mb-4">
                         <div class="mx-5">
                             <div class="logo">
-                                <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
+                                <img src="{{ asset('/img/' . $provider['logo'])}}">
                             </div>
                             <div class="logo-phrase">
-                                <p>{{ config('app.app_description') }}</p>
+                                <p>{{ $provider['tagline'] }}</p>
                             </div>
                             <hr class="mt-3 mb-2">
                             <div class="socials">
                                 <ul class="list-inline">
                                     <li class="list-inline-item">
-                                        <a target="_blank" href="https://novulutions.com/">
+                                        <a target="_blank" href="{{$provider['socials']['website']}}">
                                             <i class="fa-solid fa-earth-asia"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a target="_blank" href="https://www.facebook.com/novulutionsinc">
+                                        <a target="_blank" href="{{$provider['socials']['facebook']}}">
                                             <i class="fa-brands fa-facebook"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a target="_blank" href="https://www.linkedin.com/company/novulutions-inc/">
+                                        <a target="_blank" href="{{$provider['socials']['linked_in']}}">
                                             <i class="fa-brands fa-linkedin"></i>
                                         </a>
                                     </li>
                                     <li class="list-inline-item">
-                                        <a target="_blank" href="https://www.youtube.com/@NovulutionsInc">
+                                        <a target="_blank" href="{{$provider['socials']['youtube']}}">
                                             <i class="fa-brands fa-youtube"></i>
                                         </a>
                                     </li>
@@ -111,47 +111,41 @@
                                 </ul>
                             </div>
                             <div class="mb-5">
-                                <h5 class="text-muted">Services</h5>
-                                <ul class="list-unstyled">
-                                    <li class="list-unstyled-item">
-                                        Novulutions-Nebulon Node
-                                    </li>
-                                    <li class="list-unstyled-item">
-                                        Novulutions Cloud Platform
-                                    </li>
-                                    <li class="list-unstyled-item">
-                                        Corporate Digital Nervous System
-                                    </li>
-                                    <li class="list-unstyled-item">
-                                        SambaNova Systems
-                                    </li>
-                                    <li class="list-unstyled-item">
-                                        Scality
-                                    </li>                                    
-                                </ul>
-                            </div>
-                            <div class="mb-5">
                                 <h5 class="text-muted">Products</h5>
                                 <ul class="list-unstyled">
-                                    <li class="list-unstyled-item">
-                                        Human Resources Information System
-                                    </li>
-                                    <li class="list-unstyled-item">
-                                        N-Gas
-                                    </li>    
-                                    <li class="list-unstyled-item">
-                                        N-Boss
-                                    </li>                            
+                                    @forelse($provider['products'] as $products) 
+                                        <li class="list-unstyled-item">
+                                            {{$products}}
+                                        </li>
+                                    @empty
+                                        <li class="list-unstyled-item">
+                                            No products found
+                                        </li>
+                                    @endforelse                   
+                                </ul>
+                            </div>
+                             <div class="mb-5">
+                                <h5 class="text-muted">Services</h5>
+                                <ul class="list-unstyled">
+                                    @forelse($provider['services'] as $services) 
+                                        <li class="list-unstyled-item">
+                                            {{$services}}
+                                        </li>
+                                    @empty
+                                        <li class="list-unstyled-item">
+                                            No services found
+                                        </li>
+                                    @endforelse
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
                 <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2025. All rights reserved Novulutions Inc.
+                    &copy; 2025. All rights reserved {{$provider['company']}}
                 </p>
             </div>
-        </div class="footer">
+        </div>
     </div>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

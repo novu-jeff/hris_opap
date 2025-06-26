@@ -37,14 +37,6 @@ class DatabaseSeeder extends Seeder
             InterviewSeeder::class,
         ]);
 
-        if($product == 'private') {
-            $this->call([
-                AnnouncementSeeder::class,
-                ApplicantTestUserSeeder::class,
-                EmployeeTestUserSeeder::class,
-            ]);
-        }
-
         
         if($product == 'government') {
             $this->call([

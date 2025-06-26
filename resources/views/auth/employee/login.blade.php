@@ -14,8 +14,7 @@
                             <div class="card-header bg-transparent py-2 border-0">
                                 <div class="d-lg-flex justify-content-between align-items-center">  
                                     <div class="logo">
-                                                                        <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
-
+                                        <img src="{{ asset('/img/' . $provider['client_logo'])}}">
                                     </div>
                                     <ul class="nav nav-pills" id="pills-tab" role="tablist">
                                         <li class="nav-item" role="presentation">
@@ -24,10 +23,10 @@
                                     </ul>   
                                 </div>                 
                                 <div class="note mt-4 mb-3">
-                                    By logging in, you can access and monitor your salary, attendance, and other employment-related information.
+                                    By signing in, you agree to the {{$provider['company']}} HRIS Terms of Service and acknowledge our Cookie and Privacy Policies. This system is designed to help you securely access and manage your employment records, including personal details, job information, payroll, and other HR services through employee self-service features, in accordance with company policies and applicable regulations.
                                 </div>                
                             </div>
-                            <hr class="my-2">
+                            <hr class="my-2 mx-3">
                             <div class="card-body">
                                 <div class="row">
                                     @if (session()->has('error'))

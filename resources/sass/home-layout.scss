@@ -136,11 +136,10 @@
       }
 
       .logo {
-        img:nth-child(1) {
-          width: 120px;
-        }
-        img:nth-child(2) {
-          width: 140px;
+        img {
+          height: 100px;
+            object-fit: cover;
+            width: auto;
         }
       }
 

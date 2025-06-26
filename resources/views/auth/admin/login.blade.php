@@ -13,18 +13,17 @@
                         <div class="card shadow p-3">
                             <div class="card-header bg-transparent py-2 border-0">
                                 <div class="d-flex justify-content-between align-items-center">    
-                                    <div class="logo">
-                                                                        <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
-
+                                    <div class="mb-3 logo">
+                                        <img src="{{ asset('/img/' . $provider['client_logo'])}}">
                                     </div>
-                                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
+                                    <ul class="mb-3 nav nav-pills" id="pills-tab" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button type="button" class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Admin Login</button>
                                         </li>
                                     </ul> 
                                 </div>                 
                                 <div class="note mt-4 mb-3">
-                                    By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
+                                    By signing in, you agree to the {{$provider['company']}} HRIS Terms of Service and acknowledge our Cookie and Privacy Policies. This platform is intended for administrators to securely manage employee records, oversee job and payroll data, and perform other HR-related functions in line with company policies and applicable regulations.
                                 </div>                
                             </div>
                             <hr class="my-2">

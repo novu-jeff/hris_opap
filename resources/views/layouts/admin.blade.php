@@ -49,12 +49,12 @@
             <div class="container d-flex justify-content-center">
                 <div class="text-center">
                     <div class="logo">
-                        <img src="{{ asset('/img/' . config('app.app_provider')) }}" alt="{{ config('app.app_provider') }} logo">
-                        <img src="{{ asset('/img/' . config('app.app_logo')) }}" alt="{{ config('app.app_logo') }} logo">
+                        <img src="{{ asset('/img/' . $provider['client_logo'])}}">
+                        <img src="{{ asset('/img/' . $provider['logo'])}}">
                     </div>
-                    <p class="text-uppercase fw-bold mb-0">Powered by {{ str_replace('.png', '', config('app.app_provider')) }}</p>
+                    <p class="text-uppercase fw-bold mb-0 mt-3">Powered by {{ $provider['company'] }}</p>
                     <hr class="my-2" style="width: 600px;">
-                    <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">{{ config('app.app_description') }}</p>
+                    <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">{{ $provider['tagline'] }}</p>
                 </div>
             </div>
         </div>

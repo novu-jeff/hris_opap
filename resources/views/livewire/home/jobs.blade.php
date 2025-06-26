@@ -127,7 +127,7 @@
                                                 <h4 class="fw-bold">Oops! No jobs were found.</h4>
                                                 <p class="mb-0 fs-5">Unfortunately, we couldn't retrieve any data this time. We’re sorry for the inconvenience caused.</p>
                                                 <p class="mb-0 fs-5">
-                                                    If the issue persists, kindly contact our administrator at <a href="mailto:{{env('ADMINISTRATOR_EMAIL')}}">{{env('ADMINISTRATOR_EMAIL')}}</a>.
+                                                    If the issue persists, kindly contact our administrator at <a href="mailto:{{$provider['email']}}">{{$provider['email']}}</a>.
                                                     Thank you for letting us know, and we’ll work on resolving the issue as quickly as possible.
                                                 </p>
                                             @else
