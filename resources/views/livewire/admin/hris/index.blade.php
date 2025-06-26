@@ -144,7 +144,7 @@
                                 <div class="alert alert-danger d-flex justify-content-center gap-3 align-items-center" role="alert">
                                     <i class="fa-solid fa-triangle-exclamation fs-5"></i>
                                     <div class="text-uppercase fw-bold">
-                                        Please do not close the modal or reload the page to prevent errors during the upload process.
+                                        Please do not close the modal or refresh the page to prevent errors during the upload process.
                                     </div>
                                 </div>  
                             </div> 

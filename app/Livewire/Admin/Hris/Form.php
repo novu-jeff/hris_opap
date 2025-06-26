@@ -176,8 +176,6 @@ class Form extends Component
     }
 
     protected function formatEmployeeInformation($data) {
-
-
         return [
             'id' => $data->id,
             'employee_id' => format_id($data->id, 6),

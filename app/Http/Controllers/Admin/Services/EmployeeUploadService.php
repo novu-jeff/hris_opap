@@ -17,6 +17,7 @@ use App\Models\EmployeeSkillsHobbies;
 use App\Models\EmployeeTrainings;
 use App\Models\EmployementTypes;
 use App\Models\Positions;
+use App\Models\Sections;
 
 class EmployeeUploadService extends Controller
 {
@@ -57,15 +58,9 @@ class EmployeeUploadService extends Controller
     
             // Handle Position
     
-            if (!empty($employeeData[17])) {
-                $position = Positions::firstOrCreate(
-                    ['name' => $employeeData[17]],
-                    ['code' => $employeeData[17]]
-                );
-            }
-    
-            // Handle Job Category (optional)
-            $jobCategory = EmployementTypes::where('name', $employeeData[19])->first();
+            $position = Positions::where('name', 'like', '%' . $employeeData[17] . '%')->first();
+            $section = Sections::where('name', 'like', '%' . $employeeData[18] . '%')->first();
+            $employment = EmployementTypes::where('name', 'like', '%' . $employeeData[19] . '%')->first();
     
             // Create or Update Employee Information
             $employeeInfo = EmployeeInformation::updateOrCreate(
@@ -75,9 +70,9 @@ class EmployeeUploadService extends Controller
                     'schedule_id' => $schedules['schedule'] ?? null, 
                     'bsd_no' => $employeeData[1],
                     'date_hired' => $this->transformDate($employeeData[16]),
-                    'department_id' => null,
+                    'section_id' => $section->id ?? null,
                     'position_id' => $position->id ?? null,
-                    'employment_type_category' => $jobCategory?->id ?? null,
+                    'employment_type_id' => $employment->id ?? null,
                     'bank_account_no' => $employeeData[15],
                 ]
             );
@@ -112,8 +107,8 @@ class EmployeeUploadService extends Controller
                     'age' => is_numeric($employeeData[9]) ? $employeeData[9] : null,
                     'gsis_no' => $employeeData[10],
                     'pagibig_no' => $employeeData[11],
-                    'philhealth_no' => $employeeData[12],
-                    'sss_no' => $employeeData[13],
+                    'sss_no' => $employeeData[12],
+                    'philhealth_no' => $employeeData[13],
                     'tin_no' => $employeeData[14],
                 ]
             );
@@ -134,7 +129,7 @@ class EmployeeUploadService extends Controller
             }
     
             // For new accounts
-            $this->createAccount($employeeData[0], $employeeData[3], $employeeData[2], $employeeData[20],);
+            $this->createAccount($employeeData[0], $employeeData[3], $employeeData[2], $employeeData[21],);
         }
     
         return $result;

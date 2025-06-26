@@ -26,12 +26,12 @@
                 @include('components.admin.sub-navbar-links.timelogs')
 
                 <!-- Payroll -->
-                <!-- <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link" href="{{route('payroll.index')}}">
                         <i class="fa-solid fa-dollar-sign"></i>
                         Payroll
                     </a>
-                </li> -->
+                </li>
 
                 <!-- Employee Self Service -->
                 @include('components.admin.sub-navbar-links.employee-self-service')

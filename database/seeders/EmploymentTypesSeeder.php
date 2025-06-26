@@ -13,7 +13,7 @@ class EmploymentTypesSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            ['name' => 'Regular Contractual', 'code' => 'RC'], 
+            ['name' => 'Contractual', 'code' => 'RC'], 
             ['name' => 'Contract of Service', 'code' => 'COS'],
             ['name' => 'Job Order', 'code' => 'JO'],
         ];

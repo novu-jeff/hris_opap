@@ -13,19 +13,21 @@ class PositionSeeder extends Seeder
     public function run(): void
     {
 
-        $positions = [
-            ['code' => 'SWE', 'name' => 'Software Engineer'],
-            ['code' => 'PM', 'name' => 'Project Manager'],
-            ['code' => 'DA', 'name' => 'Data Analyst'],
-            ['code' => 'SYSADM', 'name' => 'System Administrator'],
-            ['code' => 'UIUX', 'name' => 'UI/UX Designer'],
-        ];
+        $filePath = public_path('templates/defaults/positions.csv');
 
-        foreach ($positions as $position) {
-            Positions::updateOrCreate(
-                ['code' => $position['code'], 'name' => $position['name']], 
-                $position
-            );
+        $csv = array_map('str_getcsv', file($filePath));
+        $header = array_map('trim', array_shift($csv));
+
+        foreach ($csv as $row) {
+            $data = array_combine($header, $row);
+
+            Positions::create([
+                'code'         => $data['Code'] ?? null,
+                'name'      => $data['Position'] ?? null,
+                'salary_grade'  => $data['Salary Grade'] ?? null,
+                'type'          => $data['Type'] ?? null,
+                'w_tax'      => $data['W/Tax'] ?? null,
+            ]);
         }
     }
 }

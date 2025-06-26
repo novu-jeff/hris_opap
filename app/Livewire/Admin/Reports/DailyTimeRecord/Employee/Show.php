@@ -52,7 +52,7 @@ class Show extends Component
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
 
-            $hasLeaveCard = $this->leaveCardService->leaveCard($employee_no);
+            $hasLeaveCard = $this->leaveCardService->getLeaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;
 
             $this->logs = [
