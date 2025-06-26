@@ -13,12 +13,15 @@ class Payroll extends Model
 
     protected $table = 'payroll';
     protected $fillable = [
+        'batch_id',
         'type',
         'payroll_date',
         'cut_off_period',
         'employment_type',
         'saved_payroll',
-        'status'
+        'status',
+        'isUploadedGSIS',
+        'isUploadedHDMF'
     ];
 
     public function deductions() {
@@ -27,6 +30,10 @@ class Payroll extends Model
 
     public function earnings() {
         return $this->hasOne(PayrollEarnings::class, 'payroll_id', 'id');
+    }
+
+    public function items() {
+        return $this->hasMany(PayrollItems::class, 'payroll_id', 'id');
     }
 
 }

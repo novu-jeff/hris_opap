@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('payroll', function (Blueprint $table) {
             $table->id();
+            $table->uuid('batch_id')->nullable();
             $table->string('type');
             $table->string('payroll_date');
             $table->string('cut_off_period');
@@ -21,6 +22,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('status')
                 ->default('pending');
+            $table->boolean('isUploadedGSIS')
+                ->default(false);
+            $table->boolean('isUploadedHDMF')
+                ->default(false);
             $table->timestamps();
         });
 

@@ -79,14 +79,6 @@ class OtherDeductionsSeeder extends Seeder
                 'source' => 'entry',
                 'eligible' => 1,
             ],
-            [
-                'code' => 'ALLOWANCE',
-                'name' => 'ALLOWANCE',
-                'frequency' => 'monthly',
-                'month_frequency' => null,
-                'source' => 'entry',
-                'eligible' => 1,
-            ],
         ];
 
         foreach ($other_deductions as $deductions) {

@@ -12,19 +12,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('notification:clear')
-            ->everyMinute();
-        $schedule->command('update:password')
-            ->everyMinute();
-        $schedule->command('reset:leaves')
-            ->everyMinute();
-        $schedule->command('reset:leaves')
-            ->everyMinute();
-        $schedule->command('generate:leave-card')
-            ->cron('0 0 31 12 *');
-        $schedule->command('compute-aut')
-            ->everyFiveMinutes()
-            ->withoutOverlapping();    
+        // $schedule->command('notification:clear')
+        //     ->everyMinute();
+        // $schedule->command('update:password')
+        //     ->everyMinute();
+        // $schedule->command('reset:leaves')
+        //     ->everyMinute();
+        // $schedule->command('generate:leave-card')
+        //     ->cron('0 0 31 12 *');
+        // $schedule->command('compute-aut')
+        //     ->everyFiveMinutes()
+        //     ->withoutOverlapping();    
     }
 
     /**

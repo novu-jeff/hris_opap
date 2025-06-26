@@ -1,5 +1,5 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Payroll for '
+    'title' => 'HRIS | Payroll for ' . $payroll_date
 ])
 
 @section('content')

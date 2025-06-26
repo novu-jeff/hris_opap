@@ -45,7 +45,6 @@ class LeaveCardService extends Controller
             $leaveType = LeaveType::find($data->leave_id);
             $leaveCode = strtolower($leaveType->code ?? '');
 
-            // Get all leave dates from EmployeeLeaveDates
             $leaveDates = EmployeeLeaveDates::where('employee_leave_id', $data->id)->pluck('date')->map(fn ($d) => Carbon::parse($d));
 
             if ($leaveDates->isEmpty()) return;
@@ -403,10 +402,18 @@ class LeaveCardService extends Controller
         }
     }
 
-
-    public function leaveCard($employee_no) {
-
+    public function getLeaveCard($employee_no, $filterMonthYear = null)
+    {
         $records = EmployeeLeaveCard::where('employee_no', $employee_no)->get();
+
+        if ($filterMonthYear) {
+            [$filterYear, $filterMonth] = explode('-', $filterMonthYear);
+
+            $records = $records->filter(function ($record) use ($filterYear, $filterMonth) {
+                $recordMonthNum = DateTime::createFromFormat('F', $record->period)->format('m');
+                return $record->year == $filterYear && $recordMonthNum == $filterMonth;
+            });
+        }
 
         $sortedRecords = collect($records)
             ->groupBy('year')
@@ -441,5 +448,6 @@ class LeaveCardService extends Controller
 
         return $sortedRecords;
     }
+
 
 }

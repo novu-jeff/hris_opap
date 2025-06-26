@@ -7,6 +7,13 @@ import {
     reinitializeDataTable
 } from "./helpers";
 
+Livewire.on('redirect_to', (event) => {
+    const { url, delay } = event[0];
+    setTimeout(() => {
+        window.location.href = url;
+    }, delay ?? 3000);
+});
+
 Livewire.on('notice', (event) =>  {
     const notice = JSON.parse(JSON.stringify(event))[0];
     Swal.fire({

@@ -31,7 +31,6 @@ class DatabaseSeeder extends Seeder
             AdminAccountSeeder::class,
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
-            EmployeeTestUserSeeder::class,
             HolidaySeeder::class,
             FAQSeeder::class,
             RequirementSeeder::class,
@@ -43,7 +42,6 @@ class DatabaseSeeder extends Seeder
                 AnnouncementSeeder::class,
                 ApplicantTestUserSeeder::class,
                 EmployeeTestUserSeeder::class,
-                // PositionSeeder::class,
             ]);
         }
 
@@ -57,6 +55,9 @@ class DatabaseSeeder extends Seeder
                 OtherDeductionsSeeder::class,
                 TimeEquivalentSeeder::class,
                 JobPostSeeder::class,
+                PositionSeeder::class,
+                TrancheSeeder::class,
+                EmployeeTestUserSeeder::class,
             ]);
         }
     }

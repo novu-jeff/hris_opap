@@ -253,7 +253,7 @@ class TimeLogService extends Controller
             }
 
             if ($month && $year) {
-                $leaveCard = (new LeaveCardService())->leaveCard($record['employee_no']);
+                $leaveCard = (new LeaveCardService())->getLeaveCard($record['employee_no']);
                 $leaveItems = $leaveCard[$year]['items'] ?? null;
 
                 if ($leaveItems) {
@@ -499,7 +499,7 @@ class TimeLogService extends Controller
 
         foreach ($filteredLogs as $date => $log) {
             // Count worked days
-            if (!empty($log['clock_in']) && !empty($log['clock_out'])) {
+            if (!empty($log['clock_in'])) {
                 $totalWorkedDays++;
             }
 

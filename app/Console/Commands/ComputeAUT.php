@@ -28,7 +28,7 @@ class ComputeAUT extends Command
 
     public function handle()
     {
-        $now = Carbon::now();
+        $now = Carbon::createFromDate(2025, 5, 1);
         $monthFormatted = strtoupper($now->format('F'));
         $yearFormatted = $now->format('Y');
         $monthYear = $now->format('m-Y');
@@ -62,7 +62,7 @@ class ComputeAUT extends Command
                         $aut = $logs['summary']['less_aut'] ?? 0;
                         $converted = $aut * 0.002;
 
-                        $leaveCard = $this->leaveCardService->leaveCard($employee_no);
+                        $leaveCard = $this->leaveCardService->getLeaveCard($employee_no);
                         $items = collect($leaveCard[$yearFormatted]['items'] ?? []);
 
                         $currentItem = $items->firstWhere('period', $monthFormatted);

@@ -57,7 +57,7 @@ class ViewCard extends Component
 
         $leaveCardService = new LeaveCardService;
 
-        $sortedRecords = $leaveCardService->leaveCard($this->employee_no);
+        $sortedRecords = $leaveCardService->getLeaveCard($this->employee_no);
 
         $this->records = $sortedRecords;
 
