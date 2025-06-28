@@ -18,11 +18,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     'product' => env('APP_PRODUCT'),
+    'external_time_logs' => env('APP_TIMELOGS_EXTERNAL'),
 
-    'app_logo' => env('APP_LOGO', 'logo.png'),
-    'app_provider' => env('APP_PROVIDER', 'Laravel'),
-    'app_description' => env('APP_DESCRIPTION', 'Laravel Application'),
-    'app_client_logo' => env('APP_CLIENT_LOGO', 'logo.png'),
 
     /*
     |--------------------------------------------------------------------------

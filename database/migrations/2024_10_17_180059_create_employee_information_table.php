@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('employee_information', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')
-                ->nullable();
             $table->string('employee_no')
                 ->nullable();
             $table->string('bsd_no')
@@ -28,6 +26,8 @@ return new class extends Migration
             $table->string('job_completion')
                 ->nullable()
                 ->constrained('positions');
+            $table->string('company_name')
+                ->nullable();
             $table->string('date_hired')
                 ->nullable();
             $table->foreignId('shift_id')
@@ -151,7 +151,6 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('blood_type')
                 ->nullable();
-
             $table->string('gsis_no')
                 ->nullable(); 
             $table->string('pagibig_no')

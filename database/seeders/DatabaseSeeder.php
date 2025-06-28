@@ -18,25 +18,33 @@ class DatabaseSeeder extends Seeder
         $product = config('app.product');
 
         $this->call([
-            EmploymentTypesSeeder::class,
-            ViolationSeeder::class,
-            SkillListSeeder::class,   
-            LeaveTypesSeeder::class,
+
             CompanyBusinessTypeSeeder::class,
-            ShiftScheduleSeeder::class,
-            EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
             PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
+
+            RequirementSeeder::class,
+            InterviewSeeder::class,
+            FAQSeeder::class,
+            SkillListSeeder::class,   
+
+            EmploymentTypesSeeder::class,
+
+            ViolationSeeder::class,
+            LeaveTypesSeeder::class,
+            ShiftScheduleSeeder::class,
+            EmployeeScheduleSeeder::class,
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
             HolidaySeeder::class,
-            FAQSeeder::class,
-            RequirementSeeder::class,
-            InterviewSeeder::class,
+            
         ]);
 
+        if(!$isExternalTimelogs) {
+
+        }
         
         if($product == 'government') {
             $this->call([
@@ -52,5 +60,6 @@ class DatabaseSeeder extends Seeder
                 EmployeeTestUserSeeder::class,
             ]);
         }
+
     }
 }

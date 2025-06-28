@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
 use App\Models\EmployementTypes;
-use App\Models\GSISBilling;
+use App\Models\SocialSecurityBilling;
 use App\Models\Payroll;
 use App\Models\PayrollItems;
 use Carbon\Carbon;

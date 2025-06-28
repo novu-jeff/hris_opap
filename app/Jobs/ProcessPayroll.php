@@ -2,8 +2,6 @@
 
 namespace App\Jobs;
 
-namespace App\Jobs;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,6 +12,7 @@ use App\Http\Controllers\Admin\Services\LeaveCardService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Bus\Batchable;
+use Throwable;
 
 class ProcessPayroll implements ShouldQueue
 {
@@ -38,9 +37,9 @@ class ProcessPayroll implements ShouldQueue
 
         foreach ($this->employees as $employee) {
             $employee_no = $employee->employee_no;
-            $employee_name = $employee->firstname . ' ' . $employee->lastname;
+            $employee_name = trim($employee->firstname . ' ' . $employee->lastname);
             $employee_position = $employee->position_name;
-            $employee_salary = round($employee->monthly_rate, 2);
+            $employee_salary = round(floatval($employee->monthly_rate), 2);
             $employee_biometrics = $employee->bsd_no;
 
             $monthYear = Carbon::parse($this->payroll->payroll_date)->format('m-Y');
@@ -51,27 +50,49 @@ class ProcessPayroll implements ShouldQueue
             $deductions = $other_service->deductions($employee_no);
 
             $current_date = Carbon::parse($this->payroll->payroll_date)->format('m/Y');
-            $gsis_billing = DB::table('gsis_billing as gb')
-                ->join('gsis_billing_items as gi', 'gb.id', '=', 'gi.gsis_billing_id')
+            $social_security = DB::table('social_security as gb')
+                ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
                 ->where('gb.billing_month', $current_date)
                 ->where('gi.crn_no', $employee->gsis_no)
                 ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
-                ->first();
+                ->first() ?? (object) [];
 
             $aut = 0;
-            $pera = round(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0, 2);
-            $gross = $employee_salary + $pera;
-            $rlip = round($employee_salary * 0.09, 2);
-            $philhealth = round($employee_salary * 0.05 / 2, 2);
+            $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
+            $gross = round($employee_salary + $pera, 2);
+            $rlip = round(floatval($employee_salary * 0.09), 2);
+            $philhealth = round(floatval($employee_salary * 0.05 / 2), 2);
+
+            // Collecting deduction values
+            $hdmf = round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2);
+            $mp2 = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2);
+            $mplstlms = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2);
+            $cir = round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2);
+            $w_tax = round(floatval($employee->w_tax ?? 0), 2);
+            $uca = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2);
+            $dbp = round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2);
+            $kawani = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2);
+
+            $consoloan = round(floatval($social_security->consoloan ?? 0), 2);
+            $emergency_loan = round(floatval($social_security->emrgy_loan ?? 0), 2);
+            $plreg = round(floatval($social_security->plreg ?? 0), 2);
+            $mpl = round(floatval($social_security->mpl ?? 0), 2);
+            $cpl = round(floatval($social_security->cpl ?? 0), 2);
 
             $total_deduction = round(
-                $rlip + round(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0, 2) +
-                $philhealth + ($gsis_billing->consoloan ?? 0) + ($gsis_billing->emrgy_loan ?? 0) +
-                ($gsis_billing->plreg ?? 0) + ($gsis_billing->mpl ?? 0) + ($gsis_billing->cpl ?? 0) +
-                round(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0, 2) +
-                round(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0, 2) +
-                round(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0, 2) +
-                round($employee->w_tax ?? 0, 2) + $aut
+                floatval($rlip) +
+                $hdmf +
+                floatval($philhealth) +
+                $consoloan +
+                $emergency_loan +
+                $plreg +
+                $mpl +
+                $cpl +
+                $mp2 +
+                $mplstlms +
+                $cir +
+                $w_tax +
+                floatval($aut)
             );
 
             $net = round($gross - $total_deduction, 2);
@@ -87,23 +108,23 @@ class ProcessPayroll implements ShouldQueue
                 'pera' => $pera,
                 'gross_amount_earned' => $gross,
                 'rlip' => $rlip,
-                'hdmf' => round(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0, 2),
+                'hdmf' => $hdmf,
                 'philhealth' => $philhealth,
-                'consoloan' => round($gsis_billing->consoloan ?? 0, 2),
-                'emergency_loan' => round($gsis_billing->emrgy_loan ?? 0, 2),
-                'plreg' => round($gsis_billing->plreg ?? 0, 2),
-                'mpl' => round($gsis_billing->mpl ?? 0, 2),
-                'cpl' => round($gsis_billing->cpl ?? 0, 2),
-                'mp2' => round(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0, 2),
-                'mplstlms' => round(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0, 2),
-                'cir375_cir449' => round(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0, 2),
-                'w_tax' => round($employee->w_tax ?? 0, 2),
-                'uca' => round(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0, 2),
-                'aut' => $aut,
+                'consoloan' => $consoloan,
+                'emergency_loan' => $emergency_loan,
+                'plreg' => $plreg,
+                'mpl' => $mpl,
+                'cpl' => $cpl,
+                'mp2' => $mp2,
+                'mplstlms' => $mplstlms,
+                'cir375_cir449' => $cir,
+                'w_tax' => $w_tax,
+                'uca' => $uca,
+                'aut' => floatval($aut),
                 'total_deductions' => $total_deduction,
                 'net_amount' => $net,
-                'dbp' => round(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0, 2),
-                'kawani' => round(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0, 2),
+                'dbp' => $dbp,
+                'kawani' => $kawani,
                 'lbp_payroll_account' => $net,
                 'salary' => $half,
             ];
@@ -113,6 +134,6 @@ class ProcessPayroll implements ShouldQueue
     }
 
     public function failed(Throwable $exception) {
-        // send notification;
+        \Log::info('Error: ' . $exception->getMessage());
     }
 }

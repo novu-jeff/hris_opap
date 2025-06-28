@@ -10,7 +10,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -32,32 +31,55 @@ class TimelogUploadProcess implements ShouldQueue
      * Execute the job.
      */
     public function handle(): void
-    {    
-
+    {
         if ($this->batch()->cancelled()) {
-            Log::info('canceled');
-
+            Log::info('Job batch was cancelled.');
             return;
         }
 
+        $records = [];
+
         foreach ($this->data as $item) {
-            EmployeeTimelogs::updateOrCreate(
-                ['biometricdtrid' => $item['biometricdtrid']], 
-                [
-                    'origin' => $item['origin'] ?? null,
-                    'bsd_no' => $item['bsdno'] ?? null,
-                    'logdatetime' => !empty($item['logdatetime']) 
-                        ? Carbon::createFromFormat('d/m/Y H:i:s', $item['logdatetime'])->format('d/m/Y H:i') 
-                        : null,
-                    'type' => $item['type'] ?? null,
-                    'captured_image' => $item['captured_image'] ?? null,
-                    'captured_location' => $item['captured_location'] ?? null,
-                ]
-            );
+            $timestamp = null;
+
+            if (!empty($item['logdatetime'])) {
+                $formats = ['d/m/Y H:i:s', 'd/m/Y H:i'];
+
+                foreach ($formats as $format) {
+                    try {
+                        $timestamp = Carbon::createFromFormat($format, $item['logdatetime'])->format('Y-m-d H:i:s');
+                        break;
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+
+                if (!$timestamp) {
+                    continue;
+                }
+            }
+
+            $records[] = [
+                'sn' => 'RUU5242500021',
+                'table' => 'ATTLOG',
+                'stamp' => '9999',
+                'employee_id' => $item['bsdno'] ?? null,
+                'timestamp' => $timestamp,
+                'status1' => $item['type'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+        }
+
+        if (!empty($records)) {
+            EmployeeTimelogs::insert($records);
         }
     }
 
-    public function failed(Throwable $exception) {
-        // send notification;
+
+    public function failed(Throwable $exception)
+    {
+        Log::error('TimelogUploadProcess failed: ' . $exception->getMessage());
     }
 }

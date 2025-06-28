@@ -79,7 +79,6 @@ class Index extends Component
                 'message' => 'Application has been disapproved'
             ]);
 
-
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
             $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>DISAPPROVED</strong>.', route('employee.leave'), 'employee'));
         }

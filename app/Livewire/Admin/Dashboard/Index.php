@@ -10,7 +10,7 @@ use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeave;
 use App\Models\EmployementTypes;
-use App\Models\GSISBilling;
+use App\Models\SocialSecurityBilling;
 use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
@@ -68,7 +68,7 @@ class Index extends Component
         $earnings = OtherEarnings::all();
         $deductions = OtherDeductions::all();
 
-        $gsis_billing = GSISBilling::with('items')
+        $social_security = SocialSecurityBilling::with('items')
             ->orderBy('billing_month', 'desc')
             ->first();
 
@@ -108,7 +108,7 @@ class Index extends Component
             ],
             'earnings' => $earnings,
             'deductions' => $deductions,
-            'gsis_billing' => $gsis_billing ? $gsis_billing->toArray() : [],
+            'social_security' => $social_security ? $social_security->toArray() : [],
         ];
         
         $this->getTrails();

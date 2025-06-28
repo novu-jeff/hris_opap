@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GSISBillingItems extends Model
+class SocialSecurityBillingItems extends Model
 {
     use HasFactory;
 
-    protected $table = 'gsis_billing_items';
+    protected $table = 'social_security_items';
     protected $fillable = [
-        'gsis_billing_id',
+        'social_security_id',
         'bp_no',
         'crn_no',
         'effectivity_date',
@@ -48,8 +48,8 @@ class GSISBillingItems extends Model
 
     public $timestamps = false;
 
-    public function gsis() {
-        return $this->hasOne(GSISBilling::class, 'id', 'gsis_billing_id');
+    public function social_security() {
+        return $this->hasOne(SocialSecurityBilling::class, 'id', 'social_security_id');
     }
     
 }

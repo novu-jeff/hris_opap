@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Jobs\TimelogUploadProcess;
+use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Bus\Batch;
+use Throwable;
+use Carbon\Carbon;
 
 class Upload extends Component
 {
@@ -20,61 +24,80 @@ class Upload extends Component
 
     public $file;
     public $upload_preview;
-    public object $records;
     public $tempPath;
     public $batchInfo;
+    public $monthYear;
     public bool $isParsing, $isUploading = false;
     public $isLoading = false;
     public $batch_id;
+    public $actionBy;
 
     protected $listeners = ['cancelUpload'];
 
     public function mount() {
-        $this->loadingUpload();
+        $this->actionBy = Auth::user();
     }
 
-    public function updatedFile() {
-
+    public function updatedFile()
+    {
         if ($this->file) {
-            
-            $this->upload_preview;
             $file = $this->file;
 
             if ($file instanceof \Illuminate\Http\UploadedFile && $file->getClientOriginalExtension() === 'csv') {
-                
                 try {
-                    // Delete existing files in the temp directory
                     Storage::delete(Storage::allFiles('public/temp/files'));
-                
-                    // Generate unique file name
+
                     $fileName = uniqid() . '.csv';
-                
-                    // Store file
                     $filePath = $file->storeAs('public/temp/files', $fileName);
-                
-                    // Generate preview URL
                     $this->upload_preview = asset('storage/temp/files/' . $fileName);
-                
-                    // Read and parse CSV data
+
                     $data = array_map('str_getcsv', explode("\n", file_get_contents(storage_path("app/$filePath"))));
-                
                     $header = $data[0];
-                    $header = preg_replace('/^\xEF\xBB\xBF/', '', $header); // Remove BOM from the first column
+                    $header = preg_replace('/^\xEF\xBB\xBF/', '', $header);
 
                     $this->checkIfValidFormat($header);
 
-                    // Chunk data into 1000 rows per file
                     $chunks = array_chunk($data, 1000);
-                
-                    // Create temp directory if it doesn't exist
+
                     $tempPath = resource_path('temp/' . time());
                     if (!file_exists($tempPath)) {
                         mkdir($tempPath, 0777, true);
                     }
 
                     $this->tempPath = $tempPath;
-                
-                    // Store each chunk as a separate file
+
+                    $logDateTimeIndex = array_search('logdatetime', array_map('strtolower', $header));
+                    $monthYears = [];
+
+                    foreach ($data as $rowIndex => $row) {
+                        if ($rowIndex === 0) continue;
+
+                        if (isset($row[$logDateTimeIndex])) {
+                            $dateStr = trim($row[$logDateTimeIndex]);
+
+                            try {
+                                $carbon = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $dateStr);
+                                $month = $carbon->format('M');
+                                $year = $carbon->format('Y');
+                                $monthYears[] = ['month' => $month, 'year' => $year];
+                            } catch (\Exception $e) {
+                                \Log::info('error: ' . $e->getMessage());
+                            }
+                        }
+                    }
+
+                    $monthYears = array_unique(array_map(fn($item) => $item['month'] . ' ' . $item['year'], $monthYears));
+                    sort($monthYears);
+
+                    $yearsOnly = array_unique(array_map(fn($str) => explode(' ', $str)[1], $monthYears));
+
+                    if (count($yearsOnly) === 1) {
+                        $monthsOnly = array_map(fn($str) => explode(' ', $str)[0], $monthYears);
+                        $this->monthYear = implode(', ', $monthsOnly) . ' ' . $yearsOnly[0];
+                    } else {
+                        $this->monthYear = implode(', ', $monthYears);
+                    }
+
                     foreach ($chunks as $index => $chunkData) {
                         $chunkFileName = "/tmp_{$index}.csv";
                         $chunkFilePath = $tempPath . $chunkFileName;
@@ -83,24 +106,19 @@ class Upload extends Component
 
                         file_put_contents($chunkFilePath, $csvContent);
                     }
-                
+
                     $this->isParsing = false;
-                
                 } catch (\Exception $e) {
-
-                    $this->addError('file', 'There was an error saving the file to temporary storage : ' . $e->getMessage());
+                    $this->addError('file', 'There was an error saving the file to temporary storage: ' . $e->getMessage());
                     $this->isParsing = false;
-
                 }
             } else {
                 $this->addError('file', 'The file must be in CSV format.');
             }
-
             $this->file = null;
         } else {
             $this->isParsing = true;
         }
-
     }
 
     public function upload_file() {
@@ -125,23 +143,21 @@ class Upload extends Component
             ]);
         }
 
-        
         try {
 
-            // CODE HERE
             $path = $this->tempPath;
             $files = glob($path . '/*.csv');
 
-            $jobs = []; // Collect jobs first
+            $jobs = []; 
 
             foreach ($files as $key => $file) {
                 $data = array_map('str_getcsv', file($file));
 
                 $header = $data[0]; 
-                array_shift($data); // Remove header
+                array_shift($data); 
 
                 if (!empty($data)) {
-                    array_shift($data); // Remove first data row
+                    array_shift($data); 
                 }
 
                 $formattedData = [];
@@ -152,26 +168,47 @@ class Upload extends Component
                     $formattedData[] = $formattedRow;
                 }
 
-                $jobs[] = new TimelogUploadProcess($formattedData); // Collect job
+                $jobs[] = new TimelogUploadProcess($formattedData); 
 
                 unlink($file);
             }
 
-            // Dispatch batch with jobs
             if (!empty($jobs)) {
+
                 $batch = Bus::batch($jobs)
+                    ->withOption('actionBy', [
+                        'id' => $this->actionBy->id,
+                        'name' => $this->actionBy->name
+                    ])
+                    ->name('Timekeeping Upload For ' . $this->monthYear)
+                    ->catch(function (Batch $batch, Throwable $e) {
+                        $this->actionBy?->notify(new Notifications(
+                            'error',
+                            'An error occurred during uploading timelogs.',
+                            route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
+                    ->then(function (Batch $batch) { 
+                        $this->actionBy?->notify(new Notifications(
+                            'success',
+                            'The uploading of timelogs has been finished.',
+                                route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
                     ->finally(function () {
                         Artisan::call('compute-aut'); 
                     })
                     ->dispatch();
-
-                session(['batch_import' => [
-                    'id' => $batch->id,
-                    'user' => Auth::user()->id, 
-                ]]);
-
-                $this->loadingUpload();
             }
+
+            $this->dispatch('alert', [
+                'status' => 'info',
+                'title' => 'Please be informed',
+                'showAlert' => true,
+                'message' => 'The uploading of timelogs has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
+            ]);
             
         } catch (\Exception $e) {
             $this->dispatch('alert', [
@@ -189,7 +226,6 @@ class Upload extends Component
     private function checkIfValidFormat($headers) {
 
         $requiredHeaders = [
-            'biometricdtrid',
             'bsdno',
             'logdatetime',
             'type',
@@ -200,50 +236,6 @@ class Upload extends Component
         if (!empty($missingHeaders)) {
             throw new \Exception('Invalid csv file for timelogs upload!');
         }
-    }
-
-    public function loadingUpload() {
-
-        // Retrieve the 'batch_import' session data
-        
-        $batchImport = session('batch_import');
-    
-        if ($batchImport && isset($batchImport['id']) && isset($batchImport['user']) == Auth::user()->id) {
-            
-            // Access the batch ID and dispatch with the batch ID
-            
-            $batch_id = $batchImport['id'];
-
-            $this->dispatch('isUploadingLogs', $batch_id);
-        }
-    }    
-
-    public function cancelUpload($batchId) {
-
-        $batch = Bus::findBatch($batchId);
-
-        session()->forget('batch_import');
-        
-        if ($batch) {
-
-            $batch->cancel();
-    
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'success',
-                'title' => 'Yey!', 
-                'message' => 'Uploading Cancelled',
-                'redirect' => route('timekeeping.upload')
-            ]);
-        } 
-    
-        return $this->dispatch('alert', [
-            'showAlert' => true,
-            'status' => 'error',
-            'title' => 'Oops!', 
-            'message' => 'Unable to cancel upload',
-            'redirect' => route('timekeeping.upload')
-        ]);
     }
 
     public function render() {

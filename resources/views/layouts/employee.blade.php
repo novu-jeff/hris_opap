@@ -3,13 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{{$provider['favicon']}}/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{$provider['favicon']}}/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{$provider['favicon']}}/favicon-16x16.png">
+    <link rel="manifest" href="{{$provider['favicon']}}/site.webmanifest">
 
     <title>{{ $title }}</title>
 
-    <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link rel="stylesheet" href="//cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">

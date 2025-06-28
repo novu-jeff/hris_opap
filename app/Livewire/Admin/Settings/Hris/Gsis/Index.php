@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Gsis;
 
-use App\Imports\GSISBillingImports;
-use App\Models\GSISBilling;
-use App\Models\GSISBillingItems;
+use App\Imports\SocialSecurityBillingImports;
+use App\Models\SocialSecurityBilling;
+use App\Models\SocialSecurityBillingItems;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -111,7 +111,7 @@ class Index extends Component
             }
         
             // Load the Excel file to an array
-            $sheetsData = Excel::toArray(new GSISBillingImports, $absolutePath);
+            $sheetsData = Excel::toArray(new SocialSecurityBillingImports, $absolutePath);
         
             $sheet = $sheetsData[0];
 
@@ -145,7 +145,7 @@ class Index extends Component
             $billingMonth = Carbon::createFromFormat('m/Y', $sheet[2][1])->format('m/Y');
 
             // Find or create the GSIS billing record
-            $gsisBilling = GSISBilling::updateOrCreate(
+            $SocialSecurityBilling = SocialSecurityBilling::updateOrCreate(
                 ['billing_month' => $billingMonth], // condition to check existing record
                 [ // data to update or insert
                     'remitting_agency' => $expectedNotNullable['remitting_agency'],
@@ -156,7 +156,7 @@ class Index extends Component
             );
 
             // Determine success message
-            $message = 'GSIS Billing for month ' . $billingMonth . ' was ' . ($gsisBilling->wasRecentlyCreated ? 'added' : 'updated') . ' successfully.';
+            $message = 'GSIS Billing for month ' . $billingMonth . ' was ' . ($SocialSecurityBilling->wasRecentlyCreated ? 'added' : 'updated') . ' successfully.';
 
             // Process items starting from the 6th row (index 5) 
             foreach (array_slice($sheet, 5) as $row) {
@@ -165,7 +165,7 @@ class Index extends Component
 
                 // Prepare the data for the billing item
                 $data = [
-                    'gsis_billing_id' => $gsisBilling->id,
+                    'social_security_id' => $SocialSecurityBilling->id,
                     'bp_no' => $bpNo,
                     'crn_no' => $crnNo,
                     'effectivity_date' => $row[9] ?? null,
@@ -201,8 +201,8 @@ class Index extends Component
                 ];
 
                 // Check if the item exists and update or create
-                GSISBillingItems::updateOrCreate(
-                    ['gsis_billing_id' => $gsisBilling->id, 'bp_no' => $bpNo, 'crn_no' => $crnNo],
+                SocialSecurityBillingItems::updateOrCreate(
+                    ['social_security_id' => $SocialSecurityBilling->id, 'bp_no' => $bpNo, 'crn_no' => $crnNo],
                     $data
                 );
 
@@ -238,7 +238,7 @@ class Index extends Component
 
     public function show(int $id) {
 
-        $records = GSISBilling::with('items')->where('id', $id)->first();
+        $records = SocialSecurityBilling::with('items')->where('id', $id)->first();
 
         if(!$records) {
             return redirect()->route('gsis.index');
@@ -275,7 +275,7 @@ class Index extends Component
 
         }  else {
 
-            $record = GSISBilling::find($this->selected_id);
+            $record = SocialSecurityBilling::find($this->selected_id);
                 
             if($record) {
                 
@@ -304,7 +304,7 @@ class Index extends Component
     {
 
 
-        $model = GSISBilling::with('items');
+        $model = SocialSecurityBilling::with('items');
 
         if ($this->search) {
 

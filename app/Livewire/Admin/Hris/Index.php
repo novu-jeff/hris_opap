@@ -4,7 +4,6 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
-use App\Jobs\EmployeeUploadJob;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
@@ -17,11 +16,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Bus\Batch;
+use App\Notifications\Notifications;
+use App\Jobs\EmployeeUpload;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 class Index extends Component
 {
@@ -45,6 +49,7 @@ class Index extends Component
     public $schedule_id;
     public $employmentTypes;
     public $selectedType;
+    public $actionBy;
 
     public bool $lazy = true;
 
@@ -63,6 +68,7 @@ class Index extends Component
     }
 
     public function loadRecords() {
+        $this->actionBy = Auth::user();
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
         $this->roles = EmployementTypes::all();
@@ -155,9 +161,8 @@ class Index extends Component
 
             $spreadsheet = IOFactory::load($absolutePath);
             $sheetNames = $spreadsheet->getSheetNames();
-            $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
 
-            // dd($sheetsData[0]);
+            $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
 
             $this->validateUploaded($spreadsheet, $sheetNames);
 
@@ -178,23 +183,47 @@ class Index extends Component
                 );
                 $sheet = array_values($sheet);
 
-                $chunks = array_chunk($sheet, 200);
+                $chunks = array_chunk($sheet, 1000);
+
                 foreach ($chunks as $chunk) {
-                    $jobs[] = new EmployeeUploadJob($chunk, $sheetName, $schedules);
+                    $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
                 }
             }
+            
+            Bus::batch($jobs)
+                ->withOption('actionBy', [
+                    'id' => $this->actionBy->id,
+                    'name' => $this->actionBy->name
+                ])
+                ->name('Employee Uploading')
+                ->catch(function (Batch $batch, Throwable $e) {
+                    $this->actionBy?->notify(new Notifications(
+                        'error',
+                        'An error occurred during the uploading of employee informations.',
+                        route('system.jobs', ['id' => $batch->id]),
+                        'admin'
+                    ));
+                })
+                ->then(function (Batch $batch) { 
+                    $this->actionBy?->notify(new Notifications(
+                        'success',
+                        'The uploading of employee informations has been successful.',
+                        route('system.jobs', ['id' => $batch->id]),
+                        'admin'
+                    ));
+                })
+                ->dispatch();
 
-            Bus::batch($jobs)->dispatch();
 
             $this->dispatch('hideModal', [
                 'modal' => 'upload_employee'
             ]);
 
             $this->dispatch('alert', [
-                'status' => 'success',
-                'title' => 'Success!',
+                'status' => 'info',
+                'title' => 'Please be informed',
                 'showAlert' => true,
-                'message' => 'Upload is being processed in the background.',
+                'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
             ]);
 
             $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
@@ -221,23 +250,61 @@ class Index extends Component
         $product = env('APP_PRODUCT');
 
         if($product == 'government') {
-            $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email'];
+            $emp_info_req = [
+                'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
+                'address', 'email', 'sex', 'civil status', 'birthday', 'age',
+                'gsis id', 'pagibig id', 'philhealth id', 'tin id', 'bank account no.',
+                'date hired', 'job category', 'position', 'unit', 'monthly salary'
+            ];
             $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units'];
         } else {
+            $emp_info_req = [
+                'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
+                'address', 'email', 'sex', 'civil status', 'birthday', 'age',
+                'pagibig id', 'sss id', 'philhealth id', 'tin id', 'bank account no.',
+                'company', 'date hired', 'job category', 'position', 'department',
+                'monthly salary'
+            ];
             $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email', 'company', 'department'];
             $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
         }
 
         $expectedSheets = [
             'employee information' => $emp_info_req,
-            'family background' => ['employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename', 'spouse suffix', 'spouse occupation', 'spouse business name', 'spouse business address', 'spouse contact no', 'father surname', 'father firstname', 'father middlename', 'father suffix', 'mother surname', 'mother firstname', 'mother middlename'],
-            'children' => ['employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'],
-            'education' => ['employee no.', 'level', 'school name', 'course', 'from year', 'to year'],
-            'employment history' => ['employee no.', 'position', 'department', 'company name', 'monthly salary', 'employment status', 'is government?', 'from year', 'to year'],
-            'civil service' => ['employee no.', 'certification', 'rating', 'date exam', 'place exam', 'license no', 'date validity'],
-            'trainings' => ['employee no.', 'type', 'name', 'date from', 'date to', 'consumed hours', 'sponsored by'],
-            'other works' => ['employee no.', 'organization', 'address', 'date from', 'date to', 'consumed hours', 'position'],
-            'skills' => ['employee no.', 'skill / hobbies name', 'recognition', 'organization'],
+            'family background' => [
+                'employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename',
+                'spouse suffix', 'spouse occupation', 'spouse business name',
+                'spouse business address', 'spouse contact no.', "father's surname",
+                "father's firstname", "father's middlename", "father's suffix",
+                "mother's surname", "mother's firstname", "mother's middlename"
+            ],
+            'children' => [
+                'employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'
+            ],
+            'education' => [
+                'employee no.', 'level', 'school name', 'course', 'from year', 'to year'
+            ],
+            'employment history' => [
+                'employee no.', 'position', 'department', 'company name', 
+                'monthly salary', 'employment status', 'is government?', 
+                'from year', 'to year'
+            ],
+            'civil service' => [
+                'employee no.', 'certification', 'rating', 'date exam', 'place exam', 
+                'license no', 'date validity'
+            ],
+            'trainings' => [
+                'employee no.', 'type', 'name', 'date from', 'date to', 
+                'consumed hours', 'sponsored by'
+            ],
+            'other works' => [
+                'employee no.', 'organization', 'address', 'date from', 
+                'date to', 'consumed hours', 'position'
+            ],
+            'skills' => [
+                'employee no.', 'skill / hobbies name', 
+                'recognition', 'organization'
+            ],
             'options' => $opt_req
         ];
 
@@ -248,38 +315,37 @@ class Index extends Component
             if (array_key_exists($sheetNameLower, $expectedSheets)) {
                 $sheetData = $spreadsheet->getSheetByName($sheetName)->toArray();
 
-                // Remove null values from each row without removing the entire row
-                $sheetData = array_map(function($row) {
-                    return array_filter($row, function($value) {
-                        return $value !== null;  // Keep only non-null values
+                $sheetData = array_map(function ($row) {
+                    return array_filter($row, function ($value) {
+                        return $value !== null;  
                     });
                 }, $sheetData);
 
-                // Check if the sheet data has rows and extract the first row for header
                 if (empty($sheetData)) {
                     throw new \Exception("Sheet '{$sheetName}' is empty.");
                 }
 
                 $header = $sheetData[0];
 
-                // Trim spaces and convert the header values to lowercase for comparison
-                $headerLower = array_map(function($item) {
-                    return strtolower(trim($item)); // Remove leading/trailing spaces and convert to lowercase
+                $headerLower = array_map(function ($item) {
+                    return strtolower(trim($item));
                 }, $header);
 
-                // Ensure the expected header also has trimmed values
                 $expectedHeader = array_map('strtolower', array_map('trim', $expectedSheets[$sheetNameLower]));
 
-                if ($headerLower !== $expectedHeader) {
-                    Log::error("Invalid header in sheet '{$sheetName}'. Expected: " . implode(', ', $expectedHeader) . ". Found: " . implode(', ', $headerLower));
-                    throw new \Exception("Uploaded file contains invalid format");
+                $missingHeaders = array_diff($expectedHeader, $headerLower);
+
+                if (!empty($missingHeaders)) {
+                    $missingList = implode(', ', $missingHeaders);
+                    Log::error("Sheet '{$sheetName}' is missing required headers: {$missingList}");
+                    throw new \Exception("Missing column(s): {$missingList} at sheet {$sheetName}");
                 }
             } else {
                 Log::error("Unexpected sheet '{$sheetName}' found in the file.");
                 throw new \Exception("Uploaded file contains invalid format");
             }
-
         }
+
 
         return true;
     }
@@ -469,7 +535,6 @@ class Index extends Component
     {
         $query = EmployeeInformation::with('account', 'personal');
 
-        // Filter by selected employment type
         if ($this->selectedType !== null) {
             if ($this->selectedType === 'unassigned') {
                 $query->whereNull('employment_type_id')
@@ -482,7 +547,6 @@ class Index extends Component
             }
         }
 
-        // Search by employee number or full name
         if (!empty($this->search)) {
             $this->resetPage();
 

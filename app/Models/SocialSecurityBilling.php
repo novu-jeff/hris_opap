@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GSISBilling extends Model
+class SocialSecurityBilling extends Model
 {
     use HasFactory;
 
-    protected $table = 'gsis_billing';
+    protected $table = 'social_security';
     protected $fillable = [
         'remitting_agency',
         'office_code',
@@ -18,7 +18,7 @@ class GSISBilling extends Model
     ];
 
     public function items() {
-        return $this->hasMany(GSISBillingItems::class, 'gsis_billing_id');
+        return $this->hasMany(SocialSecurityBillingItems::class, 'social_security_id');
     }
 
 }
