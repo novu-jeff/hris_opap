@@ -41,10 +41,6 @@ class DatabaseSeeder extends Seeder
             HolidaySeeder::class,
             
         ]);
-
-        if(!$isExternalTimelogs) {
-
-        }
         
         if($product == 'government') {
             $this->call([

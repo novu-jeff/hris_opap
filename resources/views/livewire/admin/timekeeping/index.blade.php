@@ -74,8 +74,18 @@
                         <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">
                             {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
                         </td>
-                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">
-                            <button wire:click="findLogs({{ $item['bsd_no'] ?? '' }})" class="btn btn-primary px-3 text-uppercase fw-medium">View</button>
+                        <td style="color: {{ $highlightColor }}; background-color: {{ $highlightBG }}">
+                            <button 
+                                wire:click="findLogs({{ $item['bsd_no'] ?? '' }})" 
+                                class="btn btn-primary px-3 text-uppercase fw-medium"
+                            >
+                                <span wire:loading.remove wire:target="findLogs({{ $item['bsd_no'] ?? '' }})">
+                                    {{ $viewLogBsdNo === $item['bsd_no'] ? 'Close' : 'Open' }}
+                                </span>
+                                <span wire:loading wire:target="findLogs({{ $item['bsd_no'] ?? '' }})">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
                         </td>
                     </tr>
             
@@ -101,7 +111,7 @@
                                     <div class="row p-4">
                                         <div class="col-12 col-md-5 mb-3">
                                             <strong>Employee Information:</strong>
-                                            <ul class="my-3">
+                                            <ul class="list-unstyled my-3">
                                                 <li>Employee No: <strong><u>{{ $view_log['employee']->employee_no ?? 'N/A' }}</u></strong></li>
                                                 <li>Employee Name: <strong><u>{{ $view_log['employee']->personal->firstname ?? 'N/A' }} {{ $view_log['employee']->personal->lastname ?? 'N/A' }}</u></strong></li>
                                                 <li>Biometrics ID: <strong><u>{{ $view_log['bsd_no'] ?? 'N/A' }}</u></strong></li>

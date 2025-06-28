@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Timekeeping;
 
 use App\Http\Controllers\Admin\Services\TimeLogService;
-use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Component;
@@ -27,7 +26,10 @@ class Index extends Component
     public $search = '';
     protected $paginationTheme = 'bootstrap';
 
-    public function mount() {
+    public $logs = [];
+
+    public function mount()
+    {
         $this->loadRecords();
     }
 
@@ -42,17 +44,23 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function loadRecords() {
-        $currentDate = Carbon::createFromDate($this->year, $this->month, $this->day);
+    public function updatedDay() { $this->loadRecords(); }
+    public function updatedMonth() { $this->loadRecords(); }
+    public function updatedYear() { $this->loadRecords(); }
 
+    public function loadRecords()
+    {
+        $currentDate = Carbon::createFromDate($this->year, $this->month, $this->day);
         $previousDate = $currentDate->copy()->subDay();
         $nextDate = $currentDate->copy()->addDay();
+
+        $this->logs = $this->getLogs();
 
         $this->records = [
             'current' => [
                 'day' => $this->day,
-                'month' => Carbon::createFromFormat('m', $this->month)->format('F'),
-                'year' => Carbon::createFromFormat('Y', $this->year)->format('Y'),
+                'month' => $currentDate->format('F'),
+                'year' => $currentDate->format('Y'),
                 'day_of_week' => $currentDate->format('l'),
             ],
             'previous' => [
@@ -71,47 +79,50 @@ class Index extends Component
         ];
     }
 
-    public function findLogs(int $id) {
+    public function findLogs(int $id)
+    {
         if ($this->viewLogBsdNo === $id) {
             $this->viewLogBsdNo = null;
             $this->view_log = null;
         } else {
-            $data = $this->getLogs()[$id] ?? [];
             $this->viewLogBsdNo = $id;
-            $this->view_log = $data;
+            $this->view_log = $this->logs[$id] ?? [];
         }
     }
 
     private function getLogs(?int $bsd_no = null)
     {
         $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
-
         $logService = new TimeLogService;
-
         $logs = $logService->getLogs($timestamp, $bsd_no);
 
-        return $logs ? $logs[$timestamp] : [];
-
+        return $logs[$timestamp] ?? [];
     }
 
     public function render()
     {
-        $data = collect($this->getLogs()); 
-    
+        $filtered = collect($this->logs);
+
+        if (!empty($this->search)) {
+            $filtered = $filtered->filter(function ($log, $key) {
+                return str_contains(strtolower($key), strtolower($this->search));
+            });
+        }
+
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = $this->entries;
-        $pagedData = $data->slice(($currentPage - 1) * $perPage, $perPage)->values();
-    
+        $pagedData = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
         $paginatedLogs = new LengthAwarePaginator(
             $pagedData,
-            $data->count(),
+            $filtered->count(),
             $perPage,
             $currentPage,
             ['path' => request()->url(), 'query' => request()->query()]
         );
-    
+
         return view('livewire.admin.timekeeping.index', [
-            'timelogs' => $paginatedLogs
+            'timelogs' => $paginatedLogs,
         ]);
     }
 }

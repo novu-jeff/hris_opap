@@ -59,6 +59,10 @@ class TimelogUploadProcess implements ShouldQueue
                 }
             }
 
+
+        $external = config('app.external_timelogs');
+
+        if ($external) {
             $records[] = [
                 'sn' => 'RUU5242500021',
                 'table' => 'ATTLOG',
@@ -69,6 +73,17 @@ class TimelogUploadProcess implements ShouldQueue
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+        } else {
+            $records[] = [
+                'employee_id' => $item['bsdno'] ?? null,
+                'timestamp' => $timestamp,
+                'status' => $item['type'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+
 
         }
 

@@ -6,9 +6,9 @@ return [
     'blitzdev' => [
         'favicon' => '/img/favicon/blitzdev',
         'company' => 'BlitzDev IT Consultancy',
-        'logo' => 'bl.png',
+        'logo' => 'blitzdev.png',
         'tagline' => 'Manage HR tasks with BlitzDev',
-        'client_logo' => 'client-logo.png',
+        'client_logo' => 'symphony.png',
         'email' => 'contact@blitzdev.com.ph',
         'socials' => [
             'website' => '',
