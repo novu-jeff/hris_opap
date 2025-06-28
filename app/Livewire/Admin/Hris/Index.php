@@ -266,7 +266,6 @@ class Index extends Component
                 'company', 'date hired', 'job category', 'position', 'department',
                 'monthly salary'
             ];
-            $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email', 'company', 'department'];
             $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
         }
 
