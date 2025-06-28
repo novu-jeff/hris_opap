@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('code')
                 ->nullable();
             $table->string('name');
-            $table->string('type');
+            $table->string('type')
+                ->nullable();
             $table->string('salary_grade')
                 ->nullable();
             $table->string('salary')

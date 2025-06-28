@@ -10,7 +10,7 @@
                     </a>
                 </li>
 
-                <!-- recruitment -->
+                <!-- Recruitment -->
                 @include('components.admin.sub-navbar-links.recruitment')
 
                 <!-- HRIS -->
