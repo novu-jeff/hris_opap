@@ -18,8 +18,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     'product' => env('APP_PRODUCT'),
-    'external_time_logs' => env('APP_TIMELOGS_EXTERNAL'),
-
+    'external_timelogs' => env('TIMELOGS_EXTERNAL'),
+    'allow_upload_timelogs' => env('ALLOW_UPLOAD_TIMELOGS'),
 
     /*
     |--------------------------------------------------------------------------

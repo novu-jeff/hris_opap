@@ -9,21 +9,39 @@ class EmployeeTimelogs extends Model
 {
     use HasFactory;
 
-    protected $connection = 'mysql2'; 
-    protected $table = 'attendances';
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
 
-    protected $fillable = [
-        'sn',
-        'table',
-        'stamp',
-        'employee_id',
-        'timestamp',
-        'status1',
-        'isWeb',
-        'captured_image',
-        'captured_location',
-        'accomplishment',
-    ];
+        $external = config('app.external_timelogs');
+
+        $this->setConnection($external ? 'mysql2' : 'mysql');
+
+        $this->setTable($external ? 'attendances' : 'timelogs');
+
+        $this->fillable = $external
+            ? [
+                'sn',
+                'table',
+                'stamp',
+                'employee_id',
+                'timestamp',
+                'status1',
+                'isWeb',
+                'captured_image',
+                'captured_location',
+                'accomplishment',
+            ]
+            : [
+                'employee_id',
+                'timestamp',
+                'status',
+                'isWeb',
+                'captured_image',
+                'captured_location',
+                'accomplishment',
+            ];
+    }
 
     public function employee()
     {

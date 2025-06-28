@@ -32,23 +32,19 @@ class Correction extends Component
     }
 
     public function loadRecords() {
-        // Default to the current day, month, and year
+
         $currentDate = Carbon::createFromDate($this->year, $this->month, $this->day);
 
-
-        // Calculate the previous date
         $previousDate = $currentDate->copy()->subDay();
         $previousDay = $previousDate->day;
         $previousMonth = $previousDate->month;
         $previousYear = $previousDate->year;
 
-        // Calculate the next date
         $nextDate = $currentDate->copy()->addDay();
         $nextDay = $nextDate->day;
         $nextMonth = $nextDate->month;
         $nextYear = $nextDate->year;
 
-        // Populate the records array
         $this->records = [
             'current' => [
                 'day' => $this->day,
@@ -114,14 +110,11 @@ class Correction extends Component
                 'logs' => $processedLogs
             ];
         })->filter(function ($item) {
-            return count($item['logs']) !== 4; // Exclude logs with exactly 4 entries
+            return count($item['logs']) !== 4; 
         })->values();
         
     }
-    
-    /**
-     * Process logs to merge IN/OUT timestamps.
-     */
+
     private function processLogs($logs)
     {
         return $logs->mapToGroups(function ($log) {
@@ -136,11 +129,11 @@ class Correction extends Component
             ];
         })->map(function ($entries, $hour) {
             if ($hour == 12 || $hour == 13) {
-                return $entries->values()->toArray(); // Keep unique times
+                return $entries->values()->toArray();
             } elseif ($hour < 12) {
-                return [$entries->sortBy('time')->first()]; // Earliest log for AM
+                return [$entries->sortBy('time')->first()];
             } else {
-                return [$entries->sortByDesc('time')->first()]; // Latest log for PM
+                return [$entries->sortByDesc('time')->first()]; 
             }
         })->collapse()->values()->all();
     }
@@ -149,7 +142,6 @@ class Correction extends Component
 
         $data = $this->getLogs();
 
-        // Manual pagination for collections
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = $this->entries;
         $pagedData = $data->slice(($currentPage - 1) * $perPage, $perPage)->values();

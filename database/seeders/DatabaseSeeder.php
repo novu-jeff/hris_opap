@@ -30,8 +30,6 @@ class DatabaseSeeder extends Seeder
             FAQSeeder::class,
             SkillListSeeder::class,   
 
-            EmploymentTypesSeeder::class,
-
             ViolationSeeder::class,
             LeaveTypesSeeder::class,
             ShiftScheduleSeeder::class,
@@ -41,13 +39,10 @@ class DatabaseSeeder extends Seeder
             HolidaySeeder::class,
             
         ]);
-
-        if(!$isExternalTimelogs) {
-
-        }
         
         if($product == 'government') {
             $this->call([
+                EmploymentTypesSeeder::class,
                 BranchSeeder::class,
                 DepartmentSeeder::class,
                 SectionSeeder::class,

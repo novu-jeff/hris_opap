@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Bus\Batch;
-use Throwable;
 use Carbon\Carbon;
 
 class Upload extends Component
@@ -57,7 +56,7 @@ class Upload extends Component
 
                     $this->checkIfValidFormat($header);
 
-                    $chunks = array_chunk($data, 1000);
+                    $chunks = array_chunk($data, 500);
 
                     $tempPath = resource_path('temp/' . time());
                     if (!file_exists($tempPath)) {
@@ -181,7 +180,8 @@ class Upload extends Component
                         'name' => $this->actionBy->name
                     ])
                     ->name('Timekeeping Upload For ' . $this->monthYear)
-                    ->catch(function (Batch $batch, Throwable $e) {
+                    ->catch(function (Batch $batch, \Throwable $e) {
+                        \Log::error('Error: ' . $e->getMessage());
                         $this->actionBy?->notify(new Notifications(
                             'error',
                             'An error occurred during uploading timelogs.',

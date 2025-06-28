@@ -183,7 +183,7 @@ class Index extends Component
                 );
                 $sheet = array_values($sheet);
 
-                $chunks = array_chunk($sheet, 1000);
+                $chunks = array_chunk($sheet, 100);
 
                 foreach ($chunks as $chunk) {
                     $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
@@ -196,7 +196,8 @@ class Index extends Component
                     'name' => $this->actionBy->name
                 ])
                 ->name('Employee Uploading')
-                ->catch(function (Batch $batch, Throwable $e) {
+                ->catch(function (Batch $batch, \Throwable $e) {
+                    \Log::error('Error: ' . $e->getMessage());
                     $this->actionBy?->notify(new Notifications(
                         'error',
                         'An error occurred during the uploading of employee informations.',
@@ -265,7 +266,6 @@ class Index extends Component
                 'company', 'date hired', 'job category', 'position', 'department',
                 'monthly salary'
             ];
-            $emp_info_req = ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'unit', 'job category', 'monthly salary', 'email', 'company', 'department'];
             $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
         }
 
