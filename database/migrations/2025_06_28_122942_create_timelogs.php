@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
 
-        $isExternalTimelogs = config('app.external_time_logs');
+        $isExternalTimelogs = config('app.external_timelogs');
 
         if ($isExternalTimelogs !== false && $isExternalTimelogs !== 'false') {
             return;
@@ -37,7 +37,7 @@ return new class extends Migration
     public function down(): void
     {
 
-        $isExternalTimelogs = config('app.external_time_logs');
+        $isExternalTimelogs = config('app.external_timelogs');
 
         if ($isExternalTimelogs !== false && $isExternalTimelogs !== 'false') {
             return;

@@ -63,15 +63,12 @@ class Clock extends Component
         
         $shift = EmployeeInformation::select('shift_id')->where('employee_no', $this->user_id)->first();
     
-        // Check if shift_id is null
         if (is_null($shift) || is_null($shift->shift_id)) {
             return null;
         }
     
-        // Find the shift schedule record
         $record = ShiftSchedule::find($shift->shift_id);
     
-        // Check if the record is null
         if (is_null($record)) {
             return null;
         }
@@ -124,7 +121,6 @@ class Clock extends Component
 
         if($entry < 4) {
 
-            // $time = Carbon::now();
             $time = $this->manipulate_timestamp;
 
             $entry = $entry + 1;
@@ -175,7 +171,6 @@ class Clock extends Component
 
     }
 
-    # handle processing
     public function processLog($entry, $time) {
 
         $time = Carbon::parse($time);
@@ -466,14 +461,14 @@ class Clock extends Component
     }
    
     # hanlde inserting log to db
-    public function insertLog($entry, $time, $isForcedClockout = false) {
-
+    public function insertLog($entry, $time, $isForcedClockout = false)
+    {
         $date = Carbon::now()->format('Y-m-d');
-        $time = Carbon::parse($time)->format('H:i');
-
-        $timestamp = $date . ' ' . $time;
+        $formattedTime = Carbon::parse($time)->format('H:i');
+        $timestamp = $date . ' ' . $formattedTime;
 
         $location = $this->getLocation();
+        $isExternalTimelogs = config('app.external_timelogs');
 
         $type = [
             '1' => 0,
@@ -482,30 +477,37 @@ class Clock extends Component
             '4' => 1,
         ];
 
-        EmployeeTimelogs::create([
-            'sn' => 'RUU5242500021',
-            'table' => 'ATTLOG',
-            'stamp' => '9999',
+        $data = [
             'employee_id' => $this->bsd_no,
             'timestamp' => $timestamp,
-            'status1' => $type[$entry],
             'isWeb' => 1,
             'captured_location' => $location,
             'accomplishment' => $this->accomplishment ?? null,
-            'isForcedOut' => $isForcedClockout ? true : false
-        ]);   
+            'isForcedOut' => ($entry == '4' && $isForcedClockout) ? true : false,
+        ];
+
+        if ($isExternalTimelogs) {
+            $data = array_merge($data, [
+                'sn' => 'RUU5242500021',
+                'table' => 'ATTLOG',
+                'stamp' => '9999',
+                'status1' => $type[$entry],
+            ]);
+        } else {
+            $data['status'] = $type[$entry];
+        }
+
+        EmployeeTimelogs::create($data);
 
         $this->dispatch('alert', [
             'status' => 'success',
-            'title' => 'Recorded!', 
+            'title' => 'Recorded!',
             'showAlert' => true,
         ]);
 
         $this->toggleStatus();
-
-        return;
-
     }
+
 
     # handle the capturing of image
     public function grabImage($image, $time, $hasClearImage) {
@@ -587,7 +589,6 @@ class Clock extends Component
         $this->triggerClock(false);
     }
 
-    
     private function getLogs()
     {
         $month = now()->month;
@@ -671,8 +672,6 @@ class Clock extends Component
     
         return $groupedData;
     }
-    
-    
 
     public function showLogs() {
 

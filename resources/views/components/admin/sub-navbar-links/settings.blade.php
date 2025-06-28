@@ -141,5 +141,6 @@
                 </ul>
             </li>
         @endcanany
+        <li><a class="dropdown-item" href="{{route('system.jobs')}}">System Jobs</a></li>
     </ul>
 </li>

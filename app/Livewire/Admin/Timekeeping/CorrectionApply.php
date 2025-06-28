@@ -97,15 +97,12 @@ class CorrectionApply extends Component
         
         $shift = EmployeeInformation::select('shift_id')->where('bsd_no', $this->bsd_no)->first();
     
-        // Check if shift_id is null
         if (is_null($shift) || is_null($shift->shift_id)) {
             return null;
         }
     
-        // Find the shift schedule record
         $record = ShiftSchedule::find($shift->shift_id);
     
-        // Check if the record is null
         if (is_null($record)) {
             return null;
         }
@@ -144,7 +141,6 @@ class CorrectionApply extends Component
         
         $firstLog = Carbon::parse($logs[0]);
 
-        // for late
         if ($firstLog->greaterThan($latestIn)) {
                 
             $lateMins = $firstLog->diffInMinutes($latestIn);
@@ -154,7 +150,6 @@ class CorrectionApply extends Component
             ];
         }
 
-        // for undertime
         $firstLog = Carbon::parse($logs[0]);
         $secondLog = Carbon::parse($logs[1]);
 
@@ -170,12 +165,12 @@ class CorrectionApply extends Component
 
         if ($outLog->lessThan($expectedOut) || $outLog->equalTo($expectedOut)) {
             $undertimeMinutes = $expectedOut->diffInMinutes($outLog);
-            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes; // Accumulate undertime
+            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes;
         }
         
         if (!$secondLog->between($breakTimeStart, $breakTimeEnd)) {
             $undertimeMinutes = $breakTimeStart->diffInMinutes($secondLog);
-            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes; // Accumulate undertime
+            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes;
         }
         
 
@@ -183,12 +178,12 @@ class CorrectionApply extends Component
 
     }
 
-    public function save(bool $isNotify = true) {
-
+    public function save(bool $isNotify = true)
+    {
         if (Gate::denies('write correction-timelogs')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -201,90 +196,95 @@ class CorrectionApply extends Component
             $this->dispatch('showConfirmation', [
                 'title' => 'Are you sure to continue?',
                 'message' => 'The action cannot be undone or reverted!',
-                'action' => 'save'
+                'action' => 'save',
             ]);
-        } else {
+            return;
+        }
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            try {
+        try {
+            $dateOnly = Carbon::create($this->date)->format('Y-m-d');
+            $external = config('app.external_timelogs');
 
-                $timestamp = Carbon::create($this->date)->format('Y-m-d');
+            $logs = [
+                $this->clockin,
+                $this->breakout,
+                $this->breakin,
+                $this->clockout
+            ];
 
-                $logs = [
-                    $this->clockin,
-                    $this->breakout,
-                    $this->breakin,
-                    $this->clockout
-                ];
+            $aut = $this->computeAut($logs);
 
-                $aut = $this->computeAut($logs);
+            $logTimes = [
+                'clockin'  => ['time' => $this->clockin, 'type' => 0],
+                'breakout' => ['time' => $this->breakout, 'type' => 1],
+                'breakin'  => ['time' => $this->breakin, 'type' => 0],
+                'clockout' => ['time' => $this->clockout, 'type' => 1],
+            ];
 
-                $logTimes = [
-                    'clockin'  => ['time' => $this->clockin, 'type' => 0], // IN
-                    'breakout' => ['time' => $this->breakout, 'type' => 1], // OUT
-                    'breakin'  => ['time' => $this->breakin, 'type' => 0], // IN
-                    'clockout' => ['time' => $this->clockout, 'type' => 1], // OUT
-                ];
-                
-                // Delete existing records for the same timestamp
-                EmployeeTimelogs::where('employee_id', $this->bsd_no)
-                    ->where('timestamp', 'LIKE', "{$timestamp}%")
-                    ->delete();
+            // Delete old records for the date
+            EmployeeTimelogs::where('employee_id', $this->bsd_no)
+                ->where('timestamp', 'LIKE', "{$dateOnly}%")
+                ->delete();
 
+            // Re-insert updated time logs
+            foreach ($logTimes as $log) {
+                if (!empty($log['time'])) {
+                    $timestampFull = "{$this->date} {$log['time']}:00";
 
-                // Re-insert the new records
-                foreach ($logTimes as $key => $log) {
-                    if (!empty($log['time'])) {
-                        // Ensure date is in YYYY-MM-DD format and time is HH:MM
-                        $timestamp = "{$this->date} {$log['time']}:00"; // appending seconds
-                
-                        EmployeeTimelogs::create([
+                    $data = [
+                        'employee_id' => $this->bsd_no,
+                        'timestamp' => $timestampFull,
+                        'status1' => $log['type'],
+                    ];
+
+                    if ($external) {
+                        $data = array_merge($data, [
                             'sn' => 'RUU5242500021',
                             'table' => 'ATTLOG',
                             'stamp' => '9999',
-                            'employee_id' => $this->bsd_no,
-                            'timestamp' => $timestamp, // Now in valid format
-                            'status1' => $log['type'],
                         ]);
+                    } else {
+                        $data['status'] = $log['type'];
                     }
+
+                    EmployeeTimelogs::create($data);
                 }
-                
-
-                EmployeeAUT::updateOrCreate(
-                    [
-                        'date' => $timestamp,
-                        'bsd_no' => $this->bsd_no,
-                    ],
-                    [
-                        'lates' => $aut['late'] ?? 0,
-                        'undertime' => $aut['undertime'] ?? 0,
-                        'absences' => $aut['absences'] ?? 0,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ]
-                );
-
-                DB::commit();
-
-                $this->dispatch('alert', [
-                    'status' => 'success',
-                    'title' => 'Success!', 
-                    'showAlert' => true,
-                    'message' => 'Correction has been applied to BSD # ' . $this->bsd_no
-                ]);
-
-            } catch (\Exception $e) {
-
-                DB::rollBack();
-
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops',
-                    'message' => 'Error: ' . $e->getMessage()
-                ]);
             }
+
+            // Save AUT record
+            EmployeeAUT::updateOrCreate(
+                [
+                    'date' => $dateOnly,
+                    'bsd_no' => $this->bsd_no,
+                ],
+                [
+                    'lates' => $aut['late'] ?? 0,
+                    'undertime' => $aut['undertime'] ?? 0,
+                    'absences' => $aut['absences'] ?? 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            DB::commit();
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!',
+                'showAlert' => true,
+                'message' => 'Correction has been applied to BSD # ' . $this->bsd_no,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops',
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
         }
     }
 
