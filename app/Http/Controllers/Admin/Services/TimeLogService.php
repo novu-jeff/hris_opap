@@ -271,8 +271,6 @@ class TimeLogService extends Controller
         }
     }
 
-
-
     private function parseTime(?string $time)
     {
         return $time ? Carbon::createFromFormat('h:i A', $time) : null;
@@ -293,7 +291,6 @@ class TimeLogService extends Controller
 
         $employeeNos = collect($logs)->pluck('employee_no')->unique()->filter()->values();
 
-        // Fetch all leaves from EmployeeLeaveDates model
         $allLeaves = EmployeeLeaveDates::whereIn('employee_no', $employeeNos)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get()

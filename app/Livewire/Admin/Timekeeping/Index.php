@@ -21,6 +21,7 @@ class Index extends Component
     public $records;
     public $view_log;
     public $viewLogBsdNo;
+    public bool $isBsdEmpIdentical;
 
     public $entries = 10;
     public $search = '';
@@ -50,6 +51,8 @@ class Index extends Component
 
     public function loadRecords()
     {
+        $this->isBsdEmpIdentical = config('app.bsd_emp_identical') ? true : false;
+
         $currentDate = Carbon::createFromDate($this->year, $this->month, $this->day);
         $previousDate = $currentDate->copy()->subDay();
         $nextDate = $currentDate->copy()->addDay();
@@ -79,7 +82,7 @@ class Index extends Component
         ];
     }
 
-    public function findLogs(int $id)
+    public function findLogs(string $id)
     {
         if ($this->viewLogBsdNo === $id) {
             $this->viewLogBsdNo = null;
