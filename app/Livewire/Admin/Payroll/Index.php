@@ -7,9 +7,14 @@ use Illuminate\Support\Facades\Bus;
 use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\EmployementTypes;
 use App\Models\Payroll;
+use App\Notifications\Notifications;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Jobs\ProcessPayroll;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Bus\Batch;
+use Throwable;
+use Carbon\Carbon;
 
 class Index extends Component
 {
@@ -28,6 +33,7 @@ class Index extends Component
     public string $cut_off_period;
     public string $employment_type_id;
     public array $employeesChecked;
+    public string $activeTab;
     public bool $isToCreate = false;
 
     public string $payroll_id;
@@ -35,11 +41,13 @@ class Index extends Component
     public string|null $batchId = null;
     public bool $isBatchProcessing = false;
     public string $batchStatusMessage = 'Please Wait...';
+    public $actionBy;
 
     protected $listeners = ['createPayroll', 'dispatchPayrollJobs', 'cancelPayroll', 'removePayroll'];
 
     public function mount()
     {
+        $this->actionBy = Auth::user();
         $this->employmentTypes = EmployementTypes::all();
     }
 
@@ -60,10 +68,15 @@ class Index extends Component
     {
         $this->reset([
             'employeesChecked',
-            'isToCreate'
+            'isToCreate',
+            'activeTab'
         ]);
 
         $this->resetValidation();
+    }
+
+    public function setActiveTab($value) {
+        $this->activeTab = $value;
     }
 
     public function createPayroll()
@@ -77,6 +90,7 @@ class Index extends Component
                 }
 
                 $payrollService = new PayrollService();
+
                 $this->employeesChecked = $payrollService->getEmployeesPreview($this->employment_type_id);
 
                 if (empty($this->employeesChecked)) {
@@ -121,7 +135,6 @@ class Index extends Component
                 'employeesChecked',
                 'isToCreate'
             ]);
-
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->dispatch('alert', [
@@ -176,9 +189,7 @@ class Index extends Component
         $payrollService = new PayrollService();
         $employees = $payrollService->getEmployees($employmentType);
 
-        $employees = collect()->times(1, fn () => $employees)->flatten(1)->values();
-
-        $chunks = array_chunk($employees->toArray(), 10);
+        $chunks = array_chunk($employees->toArray(), 1000);
 
         $jobs = [];
 
@@ -186,8 +197,30 @@ class Index extends Component
             $jobs[] = new ProcessPayroll(collect($chunk), $payroll);
         }
 
+        $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
+
         $batch = Bus::batch($jobs)
-            ->name('Payroll Batch - ' . $payroll->id)
+            ->withOption('actionBy', [
+                'id' => $this->actionBy->id,
+                'name' => $this->actionBy->name
+            ])
+            ->name('Payroll For ' . $payroll_date)
+            ->catch(function (Batch $batch, Throwable $e) {
+                $this->actionBy?->notify(new Notifications(
+                    'error',
+                    'An error occurred during processing the payroll.',
+                    route('system.jobs', ['id' => $batch->id]),
+                    'admin'
+                ));
+            })
+            ->then(function (Batch $batch) { 
+                $this->actionBy?->notify(new Notifications(
+                    'success',
+                    'The processing of payroll has been finished.',
+                        route('system.jobs', ['id' => $batch->id]),
+                    'admin'
+                ));
+            })
             ->dispatch();
 
         $payroll->update(['batch_id' => $batch->id]);

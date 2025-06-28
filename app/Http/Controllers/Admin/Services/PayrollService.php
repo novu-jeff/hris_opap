@@ -8,7 +8,7 @@ use App\Models\EmployeeLeave;
 use App\Models\EmployeeTimelogs;
 use App\Models\EmployementTypes;
 use App\Models\Payroll;
-use App\Models\GSISBilling;
+use App\Models\SocialSecurityBilling;
 use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +26,7 @@ class PayrollService extends Controller {
             ->select(
                 'ei.id as employee_id',
                 'ei.employee_no',
-                'ei.employment_type_id',
+                'ei.employment_type_id as employment_type_id',
                 'ei.monthly_rate',
                 'ei.bsd_no',
                 'ei.position_id',
@@ -41,38 +41,42 @@ class PayrollService extends Controller {
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
-            ->where('ei.employment_type_id', $employment_type)
             ->get();
 
         foreach ($results as $row) {
             $reasons = [];
 
+            if(empty($row->employment_type_id)) {
+                $reasons[] = 'no employment type';
+            }
+
             if (empty($row->bsd_no)) {
-                $reasons[] = 'no bsd';
+                $reasons[] = 'no BSD number';
             }
 
             if (empty($row->position_id)) {
-                $reasons[] = 'no position';
+                $reasons[] = 'no position assigned';
+            }
+
+            if (is_null($row->monthly_rate) || $row->monthly_rate == 0 || $row->monthly_rate === '') {
+                $reasons[] = 'no salary rate';
             }
 
             $employeeData = [
                 'employee_no' => $row->employee_no,
-                'name'   => $row->firstname . ' ' . $row->lastname,
-                'status' => count($reasons) > 0 ? 'ineligible' : 'eligible',
-                'reason' => count($reasons) > 0 ? $reasons : null,
+                'name'   => trim(($row->firstname ?? '') . ' ' . ($row->lastname ?? '')),
+                'status' => $reasons ? 'ineligible' : 'eligible',
+                'reason' => $reasons ?: null,
             ];
 
-            if ($employeeData['status'] === 'eligible') {
-                $employees['eligible'][] = $employeeData;
-            } else {
-                $employees['ineligible'][] = $employeeData;
-            }
+            $employees[$employeeData['status']][] = $employeeData;
         }
 
         return $employees;
     }
 
-    public function getEmployees($employment_type) {
+    public function getEmployees($employment_type)
+    {
         $query = DB::table('employee_information as ei')
             ->select(
                 'ei.id as employee_id',
@@ -93,11 +97,11 @@ class PayrollService extends Controller {
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
             ->where('ei.employment_type_id', $employment_type)
             ->whereNotNull('ei.position_id')
-            ->whereNotNull('ei.bsd_no');
+            ->whereNotNull('ei.bsd_no')
+            ->whereNotNull('ei.monthly_rate')
+            ->where('ei.monthly_rate', '!=', 0);
 
-        $employees = $query->get();
-
-        return $employees;
+        return $query->get();
     }
 
     public function getPayroll($payroll_id)

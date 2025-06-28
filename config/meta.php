@@ -4,6 +4,7 @@ $provider = env('APP_PROVIDER');
 
 return [
     'blitzdev' => [
+        'favicon' => '/img/favicon/blitzdev',
         'company' => 'BlitzDev IT Consultancy',
         'logo' => 'bl.png',
         'tagline' => 'Manage HR tasks with BlitzDev',
@@ -31,6 +32,7 @@ return [
         ]
     ],
     'novulutions' => [
+        'favicon' => '/img/favicon/novulutions',
         'company' => 'Novulutions Inc.',
         'logo' => 'novulutions.png',
         'tagline' => 'Transform It: Unifiy Your Data Silos',

@@ -82,7 +82,7 @@
         </div>
     </div>
     <div wire:ignore.self class="modal fade" data-bs-backdrop="static" id="newSalaryPayroll" tabindex="-1" aria-labelledby="newSalaryPayrollLabel" aria-hidden="true">
-        <div class="modal-dialog {{ $isToCreate ? 'modal-lg' : '' }}">
+        <div class="modal-dialog {{ $isToCreate ? 'modal-lg' : '' }} {{ $activeTab == 'ineligible' ? 'modal-xl' : ''  }}">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-uppercase fw-medium" id="newSalaryPayrollLabel">New Payroll</h5>
@@ -129,23 +129,22 @@
                             <h5 class="mt-3 mb-4 text-uppercase fw-bold">Below are the eligible and ineligible for payroll processing</h5>
                             <ul class="nav nav-pills mb-3" id="employeeTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link text-uppercase fw-bold active" id="eligible-tab" data-bs-toggle="tab" data-bs-target="#eligible" type="button" role="tab" aria-controls="eligible" aria-selected="true">
+                                    <button wire:ignore.self wire:click="setActiveTab('eligible')" class="nav-link text-uppercase fw-bold active" id="eligible-tab" data-bs-toggle="tab" data-bs-target="#eligible" type="button" role="tab" aria-controls="eligible" aria-selected="true">
                                         Eligible
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link text-uppercase fw-bold" id="ineligible-tab" data-bs-toggle="tab" data-bs-target="#ineligible" type="button" role="tab" aria-controls="ineligible" aria-selected="false">
+                                    <button wire:ignore.self wire:click="setActiveTab('ineligible')" class="nav-link text-uppercase fw-bold" id="ineligible-tab" data-bs-toggle="tab" data-bs-target="#ineligible" type="button" role="tab" aria-controls="ineligible" aria-selected="false">
                                         Ineligible
                                     </button>
                                 </li>
                             </ul>
 
                             <div class="tab-content" id="employeeTabsContent">
-                                {{-- Eligible Tab --}}
-                                <div class="tab-pane fade show active" id="eligible" role="tabpanel" aria-labelledby="eligible-tab">
-                                    <div style="max-height: 300px; overflow-y: auto;">
-                                        <table class="table table-striped table-bordered w-100 mt-4">
-                                            <thead>
+                                <div wire:ignore.self class="tab-pane fade show active" id="eligible" role="tabpanel" aria-labelledby="eligible-tab">
+                                    <div class="table-responsive mt-4" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-striped table-bordered w-100 m-0">
+                                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
                                                 <tr>
                                                     <th>Employee No</th>
                                                     <th>Name</th>
@@ -159,19 +158,17 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                                        <td colspan="2" class="text-center fw-bold py-3">No data was found</td>
                                                     </tr> 
                                                 @endforelse
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-
-                                {{-- Ineligible Tab --}}
-                                <div class="tab-pane fade" id="ineligible" role="tabpanel" aria-labelledby="ineligible-tab">
-                                    <div style="max-height: 300px; overflow-y: auto;">
-                                        <table class="table table-striped table-bordered w-100 mt-4">
-                                            <thead class="table-light">
+                                <div wire:ignore.self class="tab-pane fade" id="ineligible" role="tabpanel" aria-labelledby="ineligible-tab">
+                                    <div class="table-responsive mt-4" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-striped table-bordered w-100 m-0">
+                                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
                                                 <tr>
                                                     <th>Employee No</th>
                                                     <th>Name</th>
@@ -183,11 +180,15 @@
                                                     <tr>
                                                         <td>{{ $employee['employee_no'] ?? 'N/A' }}</td>
                                                         <td>{{ $employee['name'] }}</td>
-                                                        <td>{{ is_array($employee['reason']) ? implode(', ', $employee['reason']) : $employee['reason'] }}</td>
+                                                        <td>
+                                                            <div class="text-danger">
+                                                                {{ is_array($employee['reason']) ? implode(', ', $employee['reason']) : $employee['reason'] }}
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
+                                                        <td colspan="3" class="text-center fw-bold py-3">No data was found</td>
                                                     </tr> 
                                                 @endforelse
                                             </tbody>

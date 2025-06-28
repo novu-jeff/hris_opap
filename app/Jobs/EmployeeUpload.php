@@ -12,7 +12,7 @@ use Illuminate\Bus\Batchable;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class EmployeeUploadJob implements ShouldQueue
+class EmployeeUpload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
 
@@ -33,7 +33,7 @@ class EmployeeUploadJob implements ShouldQueue
 
         try {
             match ($this->sheetName) {
-                'Employee Information' => $service->uploadEmployeeInformation($this->chunk, $this->schedules),
+                'EMPLOYEE INFORMATION' => $service->uploadEmployeeInformation($this->chunk, $this->schedules),
                 'Family Background' => $service->uploadFamilyBackground($this->chunk),
                 'Children' => $service->uploadChildren($this->chunk),
                 'Education' => $service->uploadEducation($this->chunk),
@@ -50,7 +50,6 @@ class EmployeeUploadJob implements ShouldQueue
                 'chunk' => $this->chunk,
                 'trace' => $e->getTraceAsString()
             ]);
-            $this->fail($e);
         }
     }
 }

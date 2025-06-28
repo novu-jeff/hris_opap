@@ -320,7 +320,7 @@ class Profile extends Component
                     $this->activeAccordion = $this->findAccordionKey($field, $mapping['accordions']);
                 }
 
-                return; // Break after finding the first match
+                return; 
             }
         }
     }

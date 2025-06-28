@@ -48,7 +48,7 @@ class EmployeePersonal extends Model
     public $timestamps = false;
     
     public function gsis_item() {
-        return $this->hasOne(GSISBillingItems::class, 'bp_no', 'gsis_no');
+        return $this->hasOne(SocialSecurityBillingItems::class, 'bp_no', 'gsis_no');
     }
 
     public function account() {

@@ -255,21 +255,21 @@
                     <div class="col-12 mb-3">
                         <div class="card">
                             <div class="card-header bg-primary text-white px-4 d-flex justify-content-between">
-                                @if(!empty($stats['gsis_billing']['billing_month']))
+                                @if(!empty($stats['social_security']['billing_month']))
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        LATEST GSIS BILLING 
+                                        LATEST {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} BILLING 
                                     </h5>
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        ({{ $stats['gsis_billing']['billing_month'] }})
+                                        ({{ $stats['social_security']['billing_month'] }})
                                     </h5>
                                 @else
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        LATEST GSIS BILLING
+                                        LATEST {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} BILLING
                                     </h5>
                                 @endif
                             </div>
                             <div class="card-body">
-                                @if(!empty($stats['gsis_billing']['items']) && count($stats['gsis_billing']['items']) > 0)
+                                @if(!empty($stats['social_security']['items']) && count($stats['social_security']['items']) > 0)
                                     <table class="table text-uppercase fw-bold w-100 data-tables">
                                         <thead class="table-light">
                                             <tr>
@@ -279,7 +279,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($stats['gsis_billing']['items'] as $billing)
+                                            @foreach($stats['social_security']['items'] as $billing)
                                                 <tr>
                                                     <td>{{ $billing['bp_no'] ?? 'N/A' }}</td>
                                                     <td>{{ $billing['crn_no'] ?? 'N/A' }}</td> 

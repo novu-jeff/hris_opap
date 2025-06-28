@@ -78,6 +78,7 @@ use App\Http\Controllers\TestController;
 use App\Livewire\Employee\DailyTimeRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use App\Http\Controllers\SystemJobsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -146,6 +147,9 @@ Route::middleware(['applicant'])->group(function() {
 Route::prefix('admin')->group(function() {
 
     Route::redirect('/', 'admin/login', 302);
+
+    Route::get('system/jobs', [SystemJobsController::class, 'index'])
+        ->name('system.jobs');
 
     Route::get('login', [AdminLoginController::class, 'index'])
         ->name('admin.index');

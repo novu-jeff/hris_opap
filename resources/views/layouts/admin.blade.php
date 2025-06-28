@@ -23,7 +23,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.1/daterangepicker.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.4.0/dist/handsontable.min.css">
     
+    <link rel="apple-touch-icon" sizes="180x180" href="{{$provider['favicon']}}/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{$provider['favicon']}}/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{$provider['favicon']}}/favicon-16x16.png">
+    <link rel="manifest" href="{{$provider['favicon']}}/site.webmanifest">
+
     <title>{{$title}}</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{{$provider['favicon']}}/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{$provider['favicon']}}/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{$provider['favicon']}}/favicon-16x16.png">
+    <link rel="manifest" href="{{$provider['favicon']}}/site.webmanifest">
 
     @yield('style')
 
