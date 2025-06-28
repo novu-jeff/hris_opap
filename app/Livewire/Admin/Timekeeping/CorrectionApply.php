@@ -50,7 +50,7 @@ class CorrectionApply extends Component
         
     }
 
-    private function getLogs(? int $bsd_no = null, string $date) {
+    private function getLogs(? string $bsd_no = null, string $date) {
 
         $timestamp = Carbon::create($date)->format('Y-m-d');
         

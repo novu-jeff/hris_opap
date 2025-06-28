@@ -20,7 +20,7 @@ return new class extends Migration
 
         Schema::create('timelogs', function (Blueprint $table) {
             $table->id(); 
-            $table->unsignedInteger('employee_id');
+            $table->string('employee_id');
             $table->dateTime('timestamp');
             $table->boolean('status')->nullable();
             $table->boolean('isWeb')->nullable();

@@ -55,7 +55,9 @@
             <thead>
                 <tr>
                     <th>Employee No</th>
-                    <th>BSD No.</th>
+                    @if(!$isBsdEmpIdentical)
+                        <th>BSD No.</th>
+                    @endif
                     <th>Employee Name</th>
                     <th>Actions</th> 
                 </tr>
@@ -70,19 +72,21 @@
             
                     <tr class="fw-bold" style="background-color: {{ $highlightBG }}; color: {{ $highlightColor }}">
                         <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">{{ $item['employee']->employee_no ?? '' }}</td>
-                        <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">{{ $item['bsd_no'] ?? '' }}</td>
+                        @if(!$isBsdEmpIdentical)
+                            <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">{{ $item['bsd_no'] ?? '' }}</td>
+                        @endif
                         <td style="color:{{ $highlightColor }};background-color: {{ $highlightBG }}">
                             {{ optional(optional($item['employee'])->personal)->firstname . ' ' . optional(optional($item['employee'])->personal)->lastname ?? '' }}
                         </td>
                         <td style="color: {{ $highlightColor }}; background-color: {{ $highlightBG }}">
                             <button 
-                                wire:click="findLogs({{ $item['bsd_no'] ?? '' }})" 
+                                wire:click="findLogs('{{ $item['bsd_no'] ?? '' }}')" 
                                 class="btn btn-primary px-3 text-uppercase fw-medium"
                             >
-                                <span wire:loading.remove wire:target="findLogs({{ $item['bsd_no'] ?? '' }})">
+                                <span wire:loading.remove wire:target="findLogs('{{ $item['bsd_no'] ?? '' }}')">
                                     {{ $viewLogBsdNo === $item['bsd_no'] ? 'Close' : 'Open' }}
                                 </span>
-                                <span wire:loading wire:target="findLogs({{ $item['bsd_no'] ?? '' }})">
+                                <span wire:loading wire:target="findLogs('{{ $item['bsd_no'] ?? '' }}')">
                                     <i class="fa-solid fa-spinner fa-spin"></i>
                                 </span>
                             </button>

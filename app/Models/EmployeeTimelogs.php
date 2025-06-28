@@ -45,6 +45,14 @@ class EmployeeTimelogs extends Model
 
     public function employee()
     {
-        return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'bsd_no');
+
+        $bsd_emp_identical = config('app.bsd_emp_identical');
+
+        if(!$bsd_emp_identical) {
+            return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'bsd_no');
+        } 
+
+        return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'employee_no');
+
     }
 }

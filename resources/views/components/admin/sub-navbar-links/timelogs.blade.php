@@ -7,7 +7,7 @@
         @can('read timelogs')
             <li><a class="dropdown-item" href="{{route('timekeeping.index')}}">View Time Logs</a></li>
         @endcan
-        @if(config('allow_upload_timelogs'))
+        @if(config('app.allow_upload_timelogs'))
             @can('write timelogs')
                 <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
             @endcan
