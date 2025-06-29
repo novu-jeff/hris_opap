@@ -108,7 +108,42 @@
                             @error('records.employee_information.type') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    @if(in_array($records['employee_information']['type'], ['1', '2']))
+                    @if($isGovernment)
+                        @if(in_array($records['employee_information']['type'], ['1', '2']))
+                            <div class="col-md-4 mb-3">
+                                <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
+                                <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
+                                    <option value=""> - CHOOSE - </option>
+                                    @foreach ($positions as $position)
+                                        <option value="{{$position->id}}">{{$position->name}}</option>
+                                    @endforeach
+                                </select>
+                                <div class="error-field">
+                                    @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
+                                <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
+                                    <option value=""> - CHOOSE - </option>
+                                    @for($i = 1; $i <= 8; $i++)
+                                        <option value="{{$i}}"> Step {{$i}}</option>
+                                    @endfor
+                                </select>
+                                <div class="error-field">
+                                    @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>      
+                        @elseif($records['employee_information']['type'] == 3)    
+                            <div class="col-md-4 mb-3">
+                                <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
+                                <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
+                                <div class="error-field">
+                                    @error('records.employee_information.job_completion') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>     
+                        @endif
+                    @else
                         <div class="col-md-4 mb-3">
                             <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
                             <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
@@ -121,26 +156,6 @@
                                 @error('records.employee_information.position_id') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="mb-2" for="step_id">Tranche Step <span class="text-danger">*</span></label>
-                            <select wire:change="handleSalary" wire:model.live="records.employee_information.step_id" id="records.employee_information.step_id" class="form-select">
-                                <option value=""> - CHOOSE - </option>
-                                @for($i = 1; $i <= 8; $i++)
-                                    <option value="{{$i}}"> Step {{$i}}</option>
-                                @endfor
-                            </select>
-                            <div class="error-field">
-                                @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>      
-                    @elseif($records['employee_information']['type'] == 3)    
-                        <div class="col-md-4 mb-3">
-                            <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
-                            <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
-                            <div class="error-field">
-                                @error('records.employee_information.job_completion') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>     
                     @endif
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="shift_schedule">Shift Schedule</label>
@@ -183,13 +198,23 @@
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                    @if($isGovernment)
+                        <div class="col-md-3 mb-3">
+                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
+                        <div class="error-field">
+                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        </div>
+                    @else
                     <div class="col-md-3 mb-3">
-                        <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                        <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
-                       <div class="error-field">
-                            @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
-                       </div>
-                    </div>
+                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
+                        <div class="error-field">
+                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        </div>
+                    @endif
                     <div class="col-md-4 mb-3">
                         <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
                         <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">

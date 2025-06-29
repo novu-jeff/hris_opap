@@ -12,11 +12,18 @@ class EmploymentTypesSeeder extends Seeder
      */
     public function run(): void
     {
-        $data = [
-            ['name' => 'Contractual', 'code' => 'RC'], 
-            ['name' => 'Contract of Service', 'code' => 'COS'],
-            ['name' => 'Job Order', 'code' => 'JO'],
-        ];
+
+        $product = config('app.product');
+
+        if($product == 'government') {
+            $data = [
+                ['name' => 'Contractual', 'code' => 'RC'], 
+                ['name' => 'Contract of Service', 'code' => 'COS'],
+                ['name' => 'Job Order', 'code' => 'JO'],
+            ];
+        } else {
+            $data = [];
+        }
 
         foreach ($data as $item) {
             EmployementTypes::updateOrCreate(

@@ -25,6 +25,7 @@ class TimeLogService extends Controller
 
     public function getDTR(string $biometrics_id, string $monthYear)
     {
+
         if (empty($biometrics_id)) {
             abort(400, 'Invalid Biometrics Id format. Use MM-YYYY.');
         }

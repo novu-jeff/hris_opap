@@ -26,22 +26,28 @@ class RunInit extends Command
 
     protected function setDefaultHDMF() {
 
-        DB::table('employee_deduction')->truncate();
+        $product = config('app.product');
 
-        $employees = DB::table('employee_information')
-            ->select(DB::raw('employee_no'))
-            ->pluck('employee_no');
+        if($product == 'government') {
 
-        foreach($employees as $employee) {
-            DB::table('employee_deduction')->insert([
-                'employee_no'=> $employee,
-                'deduction_id' => 5,
-                'amount' => 200,
-                'as_of' => Carbon::now()->format('Y-m-d')
-            ]);
+            DB::table('employee_deduction')->truncate();
+
+            $employees = DB::table('employee_information')
+                ->select(DB::raw('employee_no'))
+                ->pluck('employee_no');
+
+            foreach($employees as $employee) {
+                DB::table('employee_deduction')->insert([
+                    'employee_no'=> $employee,
+                    'deduction_id' => 5,
+                    'amount' => 200,
+                    'as_of' => Carbon::now()->format('Y-m-d')
+                ]);
+            }
+
         }
 
-        $this->info("✅ HDMF deductions set to default");
+        $this->info("HDMF deductions set to default");
 
     }
 

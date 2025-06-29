@@ -47,6 +47,7 @@ class Form extends Component
     public bool $isMarried = false;
     public bool $hasBirthCert = false;
     public bool $hasMarriageCert = false;
+    public bool $isGovernment = false;
 
     public function mount() {
         $this->loadRecords();
@@ -134,45 +135,56 @@ class Form extends Component
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
-        if($eligible != 3) {
-            
-            if(!empty($eligible)) {
-                $this->positions = Positions::where('type', $eligible)->get();
-            }
-    
-            if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
-    
-                $salaryGrade = Positions::where('id', $position_id)
-                    ->value('salary_grade') ?? '';
-    
-                $stepColumn = "step_" . ($step_id ?? '');
-    
-                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
-                        $query->where('salary_grade', $salaryGrade)
-                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
-                    }])
-                    ->where('eligible', $eligible)
-                    ->first();
+        $product = config('app.product');
+
+        if($product == 'government') {
+            $this->isGovernment = true;
+            if($eligible != 3) {
                 
-                $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
-                    ? $activeTranche->items->first()->$stepColumn 
-                    : 0;
-            
-    
-                if ($activeTranche) {
-                    $this->records['employee_information']['monthly_rate'] = $salary;
+                if(!empty($eligible)) {
+                    $this->positions = Positions::where('type', $eligible)->get();
+                }
+        
+                if (!empty($eligible) && !empty($position_id) && !empty($step_id)) {
+        
+                    $salaryGrade = Positions::where('id', $position_id)
+                        ->value('salary_grade') ?? '';
+        
+                    $stepColumn = "step_" . ($step_id ?? '');
+        
+                    $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
+                            $query->where('salary_grade', $salaryGrade)
+                                ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                        }])
+                        ->where('eligible', $eligible)
+                        ->first();
+                    
+                    $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                        ? $activeTranche->items->first()->$stepColumn 
+                        : 0;
+                
+        
+                    if ($activeTranche) {
+                        $this->records['employee_information']['monthly_rate'] = $salary;
+                    }
+                } else {
+                    $this->records['employee_information']['monthly_rate'] = 0;
                 }
             } else {
-                $this->records['employee_information']['monthly_rate'] = 0;
+                $salary = EmployeeInformation::where('employee_no', $this->employee_no)->first();
+                if($salary) {
+                    $this->records['employee_information']['monthly_rate'] = $salary->monthly_rate;
+                } else {
+                    $this->records['employee_information']['monthly_rate'] = 0;
+                }
             }
         } else {
-            $salary = EmployeeInformation::where('employee_no', $this->employee_no)->first();
-            if($salary) {
-                $this->records['employee_information']['monthly_rate'] = $salary->monthly_rate;
-            } else {
-                $this->records['employee_information']['monthly_rate'] = 0;
-            }
+
+            $this->positions = Positions::all();
+            $this->isGovernment = false;
+
         }
+
     }
 
     protected function formatEmployeeInformation($data) {

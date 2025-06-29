@@ -247,12 +247,14 @@
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </div>
                     <div class="dtr-header ms-5 d-flex justify-content-center gap-4">
+                        @if($product == 'government')
                         <div>
-                            <img src="{{ asset('img/opapru-logo.png') }}" alt="Logo">
+                            <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
                         </div>
+                        @endif
                         <div>
                             <h1>DAILY TIME RECORD</h1>
-                            <h1>Office of the Presidential Adviser on the Peace Process</h1>
+                            <h1>{{$company}}</h1>
                             <h1>For the month of <div class="underline" style="min-width: auto !important; padding: 0 15px 0 15px !important; text-transform: uppercase">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </div>(FY)</h1>
                         </div>
                     </div>
@@ -417,7 +419,12 @@
                                             <small> </small>
                                         @endif
                                         {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
-                                            <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $logs['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($key)->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
+                                        <a href="{{ route('timekeeping.correction-apply', [
+                                            'bsd_no' => $bsd_emp_identical ? $employee_no : ($logs['employee_account']['bsd_no'] ?? null),
+                                            'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
+                                        ]) }}" class="btn btn-sm btn-danger btn-correction">
+                                            Correction
+                                        </a>
                                         {{-- @endif    --}}
                                     </td>                      
                                 </tr>
@@ -473,7 +480,7 @@
                         </div>
                         <div>
                             <h1>DAILY TIME RECORD</h1>
-                            <h1>Office of the Presidential Adviser on the Peace Process</h1>
+                            <h1>{{$company}}</h1>
                             <h1>For the month of <div class="underline" style="min-width: auto !important; padding: 0 15px 0 15px !important; text-transform: uppercase">{{ \Carbon\Carbon::parse($dtrDate)->format('F Y') }} </div>(FY)</h1>
                         </div>
                     </div>
@@ -638,7 +645,12 @@
                                             <small> </small>
                                         @endif
                                         {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
-                                            <a href="{{route('timekeeping.correction-apply', ['bsd_no' => $logs['employee_account']['bsd_no'], 'date' => \Carbon\Carbon::parse($key)->format('Y-m-d')])}}" class="btn btn-sm btn-danger btn-correction">Correction</a>  
+                                            <a href="{{ route('timekeeping.correction-apply', [
+                                                'bsd_no' => $bsd_emp_identical ? $employee_no : ($logs['employee_account']['bsd_no'] ?? null),
+                                                'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
+                                            ]) }}" class="btn btn-sm btn-danger btn-correction">
+                                                Correction
+                                            </a>
                                         {{-- @endif    --}}
                                     </td>                      
                                 </tr>

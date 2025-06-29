@@ -18,11 +18,13 @@ class ProcessPayroll implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected $bsd_emp_identical;
     protected $employees;
     protected $payroll;
 
     public function __construct($employees, $payroll)
     {
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $this->employees = $employees;
         $this->payroll = $payroll;
     }
@@ -32,7 +34,7 @@ class ProcessPayroll implements ShouldQueue
         $other_service = new OtherServices;
         $dtr_service = new TimeLogService;
         $leaveCard_service = new LeaveCardService;
-
+        
         $data = [];
 
         foreach ($this->employees as $employee) {
@@ -40,7 +42,7 @@ class ProcessPayroll implements ShouldQueue
             $employee_name = trim($employee->firstname . ' ' . $employee->lastname);
             $employee_position = $employee->position_name;
             $employee_salary = round(floatval($employee->monthly_rate), 2);
-            $employee_biometrics = $employee->bsd_no;
+            $employee_biometrics = !$this->bsd_emp_identical ? $employee->bsd_no : $employee->employee_no;
 
             $monthYear = Carbon::parse($this->payroll->payroll_date)->format('m-Y');
             $cut_off_period = $this->payroll->cut_off_period;
@@ -63,7 +65,6 @@ class ProcessPayroll implements ShouldQueue
             $rlip = round(floatval($employee_salary * 0.09), 2);
             $philhealth = round(floatval($employee_salary * 0.05 / 2), 2);
 
-            // Collecting deduction values
             $hdmf = round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2);
             $mp2 = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2);
             $mplstlms = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2);

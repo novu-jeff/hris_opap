@@ -12,15 +12,22 @@ class BranchSeeder extends Seeder
      */
     public function run(): void
     {
-        $branches = [
-            ['code' => 'HO', 'name' => 'Head Office'],
-            ['code' => 'FO', 'name' => 'Field Office'],
-        ];
 
-        foreach ($branches as $branch) {
+        $product = config('app.product');
+
+        if($product == 'government') {
+            $data = [
+                ['code' => 'HO', 'name' => 'Head Office'],
+                ['code' => 'FO', 'name' => 'Field Office'],
+            ];
+        } else {
+            $data = [];
+        }
+
+        foreach ($data as $data) {
             Branches::updateOrCreate(
-                ['name' => $branch['name'], 'code' => $branch['code']], 
-                $branch
+                ['name' => $data['name'], 'code' => $data['code']], 
+                $data
             );
         }
     }
