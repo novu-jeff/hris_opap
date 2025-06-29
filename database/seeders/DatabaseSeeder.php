@@ -37,22 +37,24 @@ class DatabaseSeeder extends Seeder
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
             HolidaySeeder::class,
-            
+        
+            EmploymentTypesSeeder::class,
+            BranchSeeder::class,
+            DepartmentSeeder::class,
+            SectionSeeder::class,
+            OtherEarningsSeeder::class,
+            OtherDeductionsSeeder::class,
+            JobPostSeeder::class,
+            PositionSeeder::class,
+            EmployeeTestUserSeeder::class,
+
         ]);
         
+
         if($product == 'government') {
             $this->call([
-                EmploymentTypesSeeder::class,
-                BranchSeeder::class,
-                DepartmentSeeder::class,
-                SectionSeeder::class,
-                OtherEarningsSeeder::class,
-                OtherDeductionsSeeder::class,
-                TimeEquivalentSeeder::class,
-                JobPostSeeder::class,
-                PositionSeeder::class,
                 TrancheSeeder::class,
-                EmployeeTestUserSeeder::class,
+                TimeEquivalentSeeder::class,
             ]);
         }
 

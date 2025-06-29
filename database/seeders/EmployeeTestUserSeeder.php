@@ -15,14 +15,15 @@ class EmployeeTestUserSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $product = config('app.product');
+        
         $testEmployees = [
             [
                 'employee_no' => 'EMP-TEST-01',
                 'bsd_no' => '959',
                 'shift_id' => 1,
                 'schedule_id' => 1,
-                'section_id' => 1,
-                'position_id' => 1,
                 'company_name' => '',
                 'email_id' => 'employee.test01@hris.com',
                 'email' => 'employee01@gmail.com',
@@ -49,8 +50,6 @@ class EmployeeTestUserSeeder extends Seeder
                 'bsd_no' => '100',
                 'shift_id' => 1,
                 'schedule_id' => 1,
-                'section_id' => 2,
-                'position_id' => 1,
                 'company_name' => '',
                 'email_id' => 'employee.test02@hris.com',
                 'email' => 'employee02@gmail.com',
@@ -75,17 +74,24 @@ class EmployeeTestUserSeeder extends Seeder
         ];
         
         foreach ($testEmployees as $employee) {
+
+            if($product == 'government') {
+                $section_id = rand(1,3);
+                $position_id = 1;
+                $employment_type_id = 1;
+            }
+
             EmployeeInformation::updateOrCreate(
                 ['employee_no' => $employee['employee_no']], 
                 [
                     'employee_no' => $employee['employee_no'],
                     'bsd_no' => $employee['bsd_no'],
                     'date_hired' => $employee['date_hired'],
-                    'employment_type_id' => 1,
+                    'employment_type_id' => $employment_type_id ?? null,
                     'shift_id' => $employee['shift_id'],
                     'schedule_id' => $employee['schedule_id'],
-                    'section_id' => $employee['section_id'],
-                    'position_id' => $employee['position_id'],
+                    'section_id' => $section_id ?? null,
+                    'position_id' => $position_id ?? null,
                     'monthly_rate' => $employee['monthly_rate']
                 ]
             );

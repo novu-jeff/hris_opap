@@ -22,11 +22,16 @@ return new class extends Migration
             $table->id(); 
             $table->string('employee_id');
             $table->dateTime('timestamp');
-            $table->boolean('status')->nullable();
-            $table->boolean('isWeb')->nullable();
-            $table->string('captured_image')->nullable();
-            $table->string('captured_location')->nullable();
-            $table->string('accomplishment')->nullable();
+            $table->boolean('status')
+                ->nullable();
+            $table->boolean('isWeb')
+                ->nullable();
+            $table->string('captured_image')
+                ->nullable();
+            $table->string('captured_location')
+                ->nullable();
+            $table->string('accomplishment')
+                ->nullable();
             $table->timestamps(); 
         });
     }

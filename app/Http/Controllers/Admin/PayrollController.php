@@ -18,35 +18,68 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        $defaultActions = 'salary';
-        $defaultEmploymentType = 'contractual'; 
+        $product = config('app.product');
 
-        $options = [
-            'contractual' => [
-                'name' => 'contractual',
-                'sub' => [
-                    'salary' => 'Salary',
-                    'mid_year' => 'Mid Year Bonus',
-                    'year_end' => 'Year End Bonus',
-                    'rata' => 'RATA',
-                    'eme' => 'EME',
-                    'ot_pay' => 'OT Pay'
+        $defaultActions = 'salary';
+        $defaultEmploymentType = $product == 'government' ? 'contractual' : 'raf'; 
+
+
+        if($product == 'government') {
+            $options = [
+                'contractual' => [
+                    'name' => 'contractual',
+                    'sub' => [
+                        'salary' => 'Salary',
+                        'mid_year' => 'Mid Year Bonus',
+                        'year_end' => 'Year End Bonus',
+                        'rata' => 'RATA',
+                        'eme' => 'EME',
+                        'ot_pay' => 'OT Pay'
+                    ]
+                ],
+                'cos' => [
+                    'name' => 'contract of service',
+                    'sub' => [
+                        'salary' => 'Salary',
+                        'ot_pay' => 'OT Pay'
+                    ]
+                ],
+                'jo' => [
+                    'name' => 'Job Order',
+                    'sub' => [
+                        'salary' => 'Salary'
+                    ]
                 ]
-            ],
-            'cos' => [
-                'name' => 'contract of service',
-                'sub' => [
-                    'salary' => 'Salary',
-                    'ot_pay' => 'OT Pay'
+            ];
+        } else {
+            $options = [
+                'raf' => [
+                    'name' => 'rank and file',
+                    'sub' => [
+                        'salary' => 'Salary',
+                        'mid_year' => 'Mid Year Bonus',
+                        'year_end' => 'Year End Bonus',
+                    ]
+                ],
+                'mngr' => [
+                    'name' => 'manage',
+                    'sub' => [
+                        'salary' => 'Salary',
+                        'mid_year' => 'Mid Year Bonus',
+                        'year_end' => 'Year End Bonus',
+                    ]
+                ],
+                'sprvsr' => [
+                    'name' => 'Supervisor',
+                    'sub' => [
+                        'salary' => 'Salary',
+                        'mid_year' => 'Mid Year Bonus',
+                        'year_end' => 'Year End Bonus',
+                    ]
                 ]
-            ],
-            'jo' => [
-                'name' => 'Job Order',
-                'sub' => [
-                    'salary' => 'Salary'
-                ]
-            ]
-        ];
+            ];
+        }
+
 
         $employmentTypeInput = $request->input('employment_type', $defaultEmploymentType);
         $typeInput = strtolower($request->input('type', $defaultActions));

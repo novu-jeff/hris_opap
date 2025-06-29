@@ -199,34 +199,45 @@ class Index extends Component
 
         $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
 
-        $batch = Bus::batch($jobs)
-            ->withOption('actionBy', [
-                'id' => $this->actionBy->id,
-                'name' => $this->actionBy->name
-            ])
-            ->name('Payroll For ' . $payroll_date)
-            ->catch(function (Batch $batch, Throwable $e) {
-                $this->actionBy?->notify(new Notifications(
-                    'error',
-                    'An error occurred during processing the payroll.',
-                    route('system.jobs', ['id' => $batch->id]),
-                    'admin'
-                ));
-            })
-            ->then(function (Batch $batch) { 
-                $this->actionBy?->notify(new Notifications(
-                    'success',
-                    'The processing of payroll has been finished.',
+        if(!empty($jobs)) {
+            $batch = Bus::batch($jobs)
+                ->withOption('actionBy', [
+                    'id' => $this->actionBy->id,
+                    'name' => $this->actionBy->name
+                ])
+                ->name('Payroll For ' . $payroll_date)
+                ->catch(function (Batch $batch, Throwable $e) {
+                    $this->actionBy?->notify(new Notifications(
+                        'error',
+                        'An error occurred during processing the payroll.',
                         route('system.jobs', ['id' => $batch->id]),
-                    'admin'
-                ));
-            })
-            ->dispatch();
+                        'admin'
+                    ));
+                })
+                ->then(function (Batch $batch) { 
+                    $this->actionBy?->notify(new Notifications(
+                        'success',
+                        'The processing of payroll has been finished.',
+                            route('system.jobs', ['id' => $batch->id]),
+                        'admin'
+                    ));
+                })
+                ->dispatch();
 
-        $payroll->update(['batch_id' => $batch->id]);
+            $payroll->update(['batch_id' => $batch->id]);
 
-        $this->batchId = $batch->id;
-        $this->isBatchProcessing = true;
+            $this->batchId = $batch->id;
+            $this->isBatchProcessing = true;
+        } else {
+
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops',
+                'message' => 'No jobs were processed'
+            ]);
+
+        }
     }
 
     public function checkBatchStatus()

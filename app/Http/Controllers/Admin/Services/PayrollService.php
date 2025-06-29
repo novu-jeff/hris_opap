@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\DB;
 
 class PayrollService extends Controller {
 
+
+    public string $product;
+
+    public function __construct() {
+        $product = config('app.product');
+        $this->product = $product;
+    }
+
     public function getEmployeesPreview($employment_type)
     {
         $employees = [
@@ -39,23 +47,28 @@ class PayrollService extends Controller {
                 's.name as section_name'
             )
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
+            ->where('employment_type_id', $employment_type)
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
             ->get();
 
+        
         foreach ($results as $row) {
+            
             $reasons = [];
 
             if(empty($row->employment_type_id)) {
                 $reasons[] = 'no employment type';
             }
 
-            if (empty($row->bsd_no)) {
-                $reasons[] = 'no BSD number';
-            }
+            if($this->product == 'government') {
+                if (empty($row->bsd_no)) {
+                    $reasons[] = 'no BSD number';
+                }
 
-            if (empty($row->position_id)) {
-                $reasons[] = 'no position assigned';
+                if (empty($row->position_id)) {
+                    $reasons[] = 'no position assigned';
+                }
             }
 
             if (is_null($row->monthly_rate) || $row->monthly_rate == 0 || $row->monthly_rate === '') {
@@ -77,6 +90,7 @@ class PayrollService extends Controller {
 
     public function getEmployees($employment_type)
     {
+        
         $query = DB::table('employee_information as ei')
             ->select(
                 'ei.id as employee_id',
@@ -96,10 +110,13 @@ class PayrollService extends Controller {
             ->join('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
             ->where('ei.employment_type_id', $employment_type)
-            ->whereNotNull('ei.position_id')
-            ->whereNotNull('ei.bsd_no')
             ->whereNotNull('ei.monthly_rate')
-            ->where('ei.monthly_rate', '!=', 0);
+            ->where('ei.monthly_rate', '!=', 0)
+            ->when($this->product === 'government', function ($query) {
+                return $query
+                    ->whereNotNull('ei.position_id')
+                    ->whereNotNull('ei.bsd_no');
+            });
 
         return $query->get();
     }

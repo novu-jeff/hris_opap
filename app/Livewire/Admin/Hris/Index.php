@@ -190,45 +190,55 @@ class Index extends Component
                 }
             }
             
-            Bus::batch($jobs)
-                ->withOption('actionBy', [
-                    'id' => $this->actionBy->id,
-                    'name' => $this->actionBy->name
-                ])
-                ->name('Employee Uploading')
-                ->catch(function (Batch $batch, \Throwable $e) {
-                    \Log::error('Error: ' . $e->getMessage());
-                    $this->actionBy?->notify(new Notifications(
-                        'error',
-                        'An error occurred during the uploading of employee informations.',
-                        route('system.jobs', ['id' => $batch->id]),
-                        'admin'
-                    ));
-                })
-                ->then(function (Batch $batch) { 
-                    $this->actionBy?->notify(new Notifications(
-                        'success',
-                        'The uploading of employee informations has been successful.',
-                        route('system.jobs', ['id' => $batch->id]),
-                        'admin'
-                    ));
-                })
-                ->dispatch();
+            if(!empty($jobs)) {
+                Bus::batch($jobs)
+                    ->withOption('actionBy', [
+                        'id' => $this->actionBy->id,
+                        'name' => $this->actionBy->name
+                    ])
+                    ->name('Employee Uploading')
+                    ->catch(function (Batch $batch, \Throwable $e) {
+                        \Log::error('Error: ' . $e->getMessage());
+                        $this->actionBy?->notify(new Notifications(
+                            'error',
+                            'An error occurred during the uploading of employee informations.',
+                            route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
+                    ->then(function (Batch $batch) { 
+                        $this->actionBy?->notify(new Notifications(
+                            'success',
+                            'The uploading of employee informations has been successful.',
+                            route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
+                    ->dispatch();
 
 
-            $this->dispatch('hideModal', [
-                'modal' => 'upload_employee'
-            ]);
+                $this->dispatch('hideModal', [
+                    'modal' => 'upload_employee'
+                ]);
 
-            $this->dispatch('alert', [
-                'status' => 'info',
-                'title' => 'Please be informed',
-                'showAlert' => true,
-                'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
-            ]);
+                $this->dispatch('alert', [
+                    'status' => 'info',
+                    'title' => 'Please be informed',
+                    'showAlert' => true,
+                    'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
+                ]);
 
-            $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
-            $this->loadRecords();
+                $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
+                $this->loadRecords();
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'No jobs were processed'
+                ]);
+
+            }
 
         } catch (\Exception $e) {
 

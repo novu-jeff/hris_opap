@@ -28,6 +28,7 @@ class ComputeAUT extends Command
 
     public function handle()
     {
+        $bsd_emp_identical = config('app.bsd_emp_identical');
         $now = Carbon::createFromDate(2025, 5, 1);
         $monthFormatted = strtoupper($now->format('F'));
         $yearFormatted = $now->format('Y');
@@ -55,7 +56,7 @@ class ComputeAUT extends Command
 
                 foreach ($employees as $employee) {
                     try {
-                        $bio_id = $employee->bsd_no;
+                        $bio_id = !$bsd_emp_identical ? $employee->bsd_no : $employee->employee_no;
                         $employee_no = $employee->employee_no;
 
                         $logs = $this->timelogService->getDTR($bio_id, $monthYear);
@@ -102,7 +103,6 @@ class ComputeAUT extends Command
                         $currentDb->particulars = $existingParticulars;
                         $currentDb->save();
 
-                        // Update future leave balances
                         $runningBalance = $currentDb->vl_bal ?? 0;
                         $remainingItems = $items->filter(function ($item) use ($months, $currentIndex) {
                             $index = array_search(strtoupper($item['period']), $months);
@@ -124,7 +124,6 @@ class ComputeAUT extends Command
                     }
                 }
 
-                // Log progress with batch number
                 Log::info("AUT computed {$batchNumber} batch(es) at " . now());
             });
     }

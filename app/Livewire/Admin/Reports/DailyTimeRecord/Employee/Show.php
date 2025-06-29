@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Reports\DailyTimeRecord\Employee;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
+use App\Models\CompanyInformation;
 use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -16,12 +17,15 @@ class Show extends Component
 {
     public $records;
     public $logs = null;
+    public $company;
+    public $product;
     public $dtrDate;
     public $officialTime;
     public $monthDate;
     public $employee_no;
     public $errors;
     public $hasLeaveCard;
+    public $bsd_emp_identical;
 
     protected $timeLogService;
     protected $leaveCardService;
@@ -35,11 +39,15 @@ class Show extends Component
     public function mount($employee_no, $month, $year)
     {
 
+        $this->product = config('app.product');
+        $this->company = CompanyInformation::first()->name ?? 'No Comapany Name';
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
+
         $this->initializeService();
 
         try {
 
-            Artisan::call('compute-aut');
+            // Artisan::call('compute-aut');
 
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
@@ -47,14 +55,13 @@ class Show extends Component
             $this->employee_no = $employee_no;
 
             $data = $this->getEmployeeInfo($employee_no);
-            $bio_id = $data->bsd_no;
+            $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
 
             $hasLeaveCard = $this->leaveCardService->getLeaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;
-
             $this->logs = [
                 'employee_account' => [
                     'bsd_no' => $data->bsd_no,
@@ -66,6 +73,7 @@ class Show extends Component
                 ],
                 'dtr' => $logs
             ];
+
 
         } catch (\Exception $e) {
             $this->errors = array_merge($this->errors ?? [], explode("\n", trim($e->getMessage())));

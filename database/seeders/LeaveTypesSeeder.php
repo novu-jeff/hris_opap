@@ -13,21 +13,30 @@ class LeaveTypesSeeder extends Seeder
      */
     public function run(): void
     {
-        $leave_types = [
-            ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 15, 'isCummulative' => true],
-            ['code' => 'SL', 'name' => 'Sick Leave', 'credits' => 15, 'isCummulative' => true],
-            ['code' => 'MFL', 'name' => 'Mandatory/Forced Leave', 'credits' => 0, 'isCummulative' => false],
-            ['code' => 'ML', 'name' => 'Maternity Leave', 'credits' => 105, 'isCummulative' => false],
-            ['code' => 'PL', 'name' => 'Paternity Leave', 'credits' => 7, 'isCummulative' => false],
-            ['code' => 'SPL', 'name' => 'Special Privilege Leave', 'credits' => 3, 'isCummulative' => false],
-            ['code' => 'SOLO', 'name' => 'Solo Parent Leave', 'credits' => 7, 'isCummulative' => false],
-            ['code' => 'STL', 'name' => 'Study Leave', 'credits' => 0, 'isCummulative' => false],
-            ['code' => 'VAWC', 'name' => '10-Day VAWC Leave', 'credits' => 10, 'isCummulative' => false],
-            ['code' => 'RP', 'name' => 'Rehabilitation Privilege', 'credits' => 180, 'isCummulative' => false],
-            ['code' => 'SLBW', 'name' => 'Special Leave Benefits for Women', 'credits' => 60, 'isCummulative' => false],
-            ['code' => 'SEL', 'name' => 'Special Emergency (Calamity) Leave', 'credits' => 5, 'isCummulative' => false],
-            ['code' => 'AL', 'name' => 'Adoption Leave', 'credits' => 7, 'isCummulative' => false]
-        ];
+        $product = config('app.product');
+
+        if($product == 'government') {
+            $leave_types = [
+                ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 15, 'isCummulative' => true],
+                ['code' => 'SL', 'name' => 'Sick Leave', 'credits' => 15, 'isCummulative' => true],
+                ['code' => 'MFL', 'name' => 'Mandatory/Forced Leave', 'credits' => 0, 'isCummulative' => false],
+                ['code' => 'ML', 'name' => 'Maternity Leave', 'credits' => 105, 'isCummulative' => false],
+                ['code' => 'PL', 'name' => 'Paternity Leave', 'credits' => 7, 'isCummulative' => false],
+                ['code' => 'SPL', 'name' => 'Special Privilege Leave', 'credits' => 3, 'isCummulative' => false],
+                ['code' => 'SOLO', 'name' => 'Solo Parent Leave', 'credits' => 7, 'isCummulative' => false],
+                ['code' => 'STL', 'name' => 'Study Leave', 'credits' => 0, 'isCummulative' => false],
+                ['code' => 'VAWC', 'name' => '10-Day VAWC Leave', 'credits' => 10, 'isCummulative' => false],
+                ['code' => 'RP', 'name' => 'Rehabilitation Privilege', 'credits' => 180, 'isCummulative' => false],
+                ['code' => 'SLBW', 'name' => 'Special Leave Benefits for Women', 'credits' => 60, 'isCummulative' => false],
+                ['code' => 'SEL', 'name' => 'Special Emergency (Calamity) Leave', 'credits' => 5, 'isCummulative' => false],
+                ['code' => 'AL', 'name' => 'Adoption Leave', 'credits' => 7, 'isCummulative' => false]
+            ];
+        } else {
+            $leave_types = [
+                ['code' => 'VL', 'name' => 'Vacation Leave', 'credits' => 15, 'isCummulative' => true],
+                ['code' => 'SL', 'name' => 'Sick Leave', 'credits' => 15, 'isCummulative' => true],
+            ];
+        }
 
         foreach ($leave_types as $leave_type) {
             LeaveType::updateOrCreate(
@@ -35,5 +44,6 @@ class LeaveTypesSeeder extends Seeder
                 $leave_type
             );
         }
+
     }
 }
