@@ -36,7 +36,8 @@ class PermissionSeeder extends Seeder
                 'faqs'
             ],
             'reports' => [
-                'dtr'
+                'dtr',
+                'bir-2316'
             ],
             'settings' => [
                 'company-information',
