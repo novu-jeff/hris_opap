@@ -82,11 +82,13 @@ class ContributionsService
 
         foreach ($table as [$min, $max, $msc, $employee, $employer]) {
             if ($monthlySalary >= $min && $monthlySalary <= $max) {
+                $ec = $msc >= 15000 ? 30.00 : 10.00;
                 return [
                     'total' => round($employee + $employer, 2),
                     'employee_share' => round($employee, 2),
                     'employer_share' => round($employer, 2),
                     'msc' => $msc,
+                    'ec' => $ec,
                 ];
             }
         }

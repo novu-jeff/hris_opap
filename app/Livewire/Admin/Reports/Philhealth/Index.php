@@ -14,10 +14,15 @@ class Index extends Component
     public $selected_id;
     protected $listeners = ['remove']; 
     protected $paginationTheme = 'bootstrap';
-    public $entries = 10;
+    public $entries = 9999999;
     public $search = '';
     public $year;
     protected $contributionsService;
+
+    public $total_employee_share = 0;
+    public $total_employer_share = 0;
+    public $total_contribution = 0;
+    public $employee_count = 0;
 
     public function mount()
     {
@@ -53,9 +58,14 @@ class Index extends Component
                 $record->total = $contribution['total'];
                 $record->employee_share = $contribution['employee_share'];
                 $record->employer_share = $contribution['employer_share'];
+
+                $this->total_employee_share += $record->employee_share;
+                $this->total_employer_share += $record->employer_share;
+                $this->total_contribution += $record->total;
             }
         });
 
+        $this->employee_count = $records->count();
 
         return view('livewire.admin.reports.philhealth.index', [
             'records' => $records
