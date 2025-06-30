@@ -1,5 +1,6 @@
 <div>
-    <div class="d-flex justify-content-end align-items-center">
+
+   <div class="d-flex justify-content-end align-items-center">
         <button class="btn btn-primary px-5 py-3">
             <i class="fa-solid fa-print me-2"></i> PRINT
         </button>
@@ -13,6 +14,7 @@
                     <th>Employees</th>
                     <th>Employee (EE) Share</th>
                     <th>Employer (ER) Share</th>
+                    <th>EC (ER Only)</th>
                     <th>Total Contributions</th>
                 </tr>
             </thead>
@@ -21,11 +23,13 @@
                     <td>{{ $employee_count }}</td>
                     <td>₱ {{ number_format($total_employee_share, 2) }}</td>
                     <td>₱ {{ number_format($total_employer_share, 2) }}</td>
+                    <td>₱ {{ number_format($total_ec, 2) }}</td>
                     <td class="fw-bold bg-success bg-opacity-25">₱ {{ number_format($total_contribution, 2) }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
+
     {{-- <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex gap-2 align-items-center">
             <div class="text-end d-flex justify-content-b align-items-center gap-2">
@@ -56,38 +60,36 @@
             </div>
         </div>
     </div> --}}
-   
+
     <div class="table-responsive">
         <table class="table table-striped table-bordered w-100">
             <thead>
                 <tr>
                     <th class="text-start bg-primary bg-opacity-25">No.</th>
-                    <th class="text-start bg-primary bg-opacity-25">PIN</th>
-                    <th class="text-start bg-primary bg-opacity-25">Lastname</th>
-                    <th class="text-start bg-primary bg-opacity-25">Suffix</th>
-                    <th class="text-start bg-primary bg-opacity-25">Firstname</th>
-                    <th class="text-start bg-primary bg-opacity-25">Middlename</th>
-                    <th class="text-start bg-primary bg-opacity-25">Birthday</th>
-                    <th class="text-start bg-primary bg-opacity-25">PhilHealth Total</th>
-                    <th class="text-start bg-primary bg-opacity-25">ER Share</th>
-                    <th class="text-start bg-primary bg-opacity-25">EE Share</th>
+                    <th class="text-start bg-primary bg-opacity-25">SS No.</th>
+                    <th class="text-start bg-primary bg-opacity-25">Name</th>
+                    <th class="text-start bg-primary bg-opacity-25">ER</th>
+                    <th class="text-start bg-primary bg-opacity-25">EE</th>
+                    <th class="text-start bg-primary bg-opacity-25">Total</th>
+                    <th class="text-start bg-primary bg-opacity-25">EC</th>
                     <th class="text-start bg-primary bg-opacity-25">Monthly Salary</th>
+                    <th class="text-start bg-primary bg-opacity-25">Status</th>
                 </tr>
             </thead>                
             <tbody>
                 @forelse($records as $record)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $record->personal->philhealth_no }}</td>
-                        <td>{{ $record->personal->lastname }}</td>
-                        <td>{{ $record->personal->suffix ?? 'N/A' }}</td>
-                        <td>{{ $record->personal->firstname }}</td>
-                        <td>{{ $record->personal->middlename }}</td>
-                        <td>{{ $record->personal->birthday }}</td>
-                        <td>₱{{ $record->total }}</td>
-                        <td>₱{{ $record->employee_share }}</td>
-                        <td>₱{{ $record->employer_share }}</td>
-                        <td>₱ {{ number_format($record->monthly_rate, 2) }}</td>
+                        <td class="text-start">{{ $record->personal->sss_no }}</td>
+                        <td class="text-start">
+                            {{ trim("{$record->personal->suffix} {$record->personal->firstname} {$record->personal->middlename} {$record->personal->lastname}") }}
+                        </td>
+                        <td class="text-start">₱ {{ $record->employee_share }}</td>
+                        <td class="text-start">₱ {{ $record->employer_share }}</td>
+                        <td class="text-start">₱ {{ $record->total }}</td>
+                        <td class="text-start">₱ {{ $record->ec }}</td>
+                        <td class="text-start">₱ {{ number_format($record->monthly_rate, 2) }}</td>
+                        <td class="text-start">{{ $record->status }}</td>
                     </tr>
                 @empty
                     <tr>

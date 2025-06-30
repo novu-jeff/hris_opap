@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
+use App\Http\Controllers\Admin\Reports\SSS\SSSController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\SchedulerController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -283,6 +284,9 @@ Route::prefix('admin')->group(function() {
                 
             Route::get('philhealth', [PhilhealthController::class, 'index'])
                 ->name('reports.philhealth');
+
+            Route::get('sss', [SSSController::class, 'index'])
+                ->name('reports.sss');
         });
         
         Route::prefix('settings')->group( function() {
