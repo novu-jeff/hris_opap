@@ -23,13 +23,12 @@ class Index extends Component
     public $total_employee_share = 0;
     public $total_employer_share = 0;
     public $total_contribution = 0;
-    public $total_ec = 0;
     public $employee_count = 0;
 
     public function mount()
     {
         $this->year = now()->year;
-        $this->sections = Sections::orderBy('name')->get(); // <-- Load all sections for dropdown
+        $this->sections = Sections::orderBy('name')->get();
     }
 
     public function render()
