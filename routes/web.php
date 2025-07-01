@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
+use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
@@ -287,6 +288,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('sss', [SSSController::class, 'index'])
                 ->name('reports.sss');
+
+            Route::get('pagibig', [PagibigController::class, 'index'])
+                ->name('reports.pagibig');
         });
         
         Route::prefix('settings')->group( function() {

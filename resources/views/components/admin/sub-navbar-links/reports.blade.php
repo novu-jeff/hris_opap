@@ -15,7 +15,7 @@
             <li><a href="{{ route('reports.bir') }}" class="dropdown-item">BIR</a></li>
             <li><a href="{{ route('reports.philhealth') }}" class="dropdown-item">PhilHeath</a></li>
             <li><a href="{{ route('reports.sss') }}" class="dropdown-item">SSS</a></li>
-            <li><a href="" class="dropdown-item">Pagibig</a></li>
+            <li><a href="{{ route('reports.pagibig') }}" class="dropdown-item">Pagibig</a></li>
         {{-- @endcan --}}
         {{-- <li><a href="#" class="dropdown-item">Official Business Slip</a></li>
         <li><a href="#" class="dropdown-item">Application for Leave</a></li>
