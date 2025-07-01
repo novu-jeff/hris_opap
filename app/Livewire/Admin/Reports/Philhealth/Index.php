@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Reports\Philhealth;
 
 use App\Models\EmployeeInformation;
+use App\Models\Sections;
 use App\Services\ContributionsService;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,12 +12,15 @@ class Index extends Component
 {
     use WithPagination;
 
-    public $selected_id;
-    protected $listeners = ['remove']; 
     protected $paginationTheme = 'bootstrap';
+
     public $entries = 9999999;
     public $search = '';
     public $year;
+
+    public $sections;
+    public $selectedSection = '';
+
     protected $contributionsService;
 
     public $total_employee_share = 0;
@@ -27,6 +31,7 @@ class Index extends Component
     public function mount()
     {
         $this->year = now()->year;
+        $this->sections = Sections::orderBy('name')->get();
     }
 
     public function render()
@@ -45,6 +50,19 @@ class Index extends Component
                     });
             });
         }
+
+        if (!empty($this->selectedSection)) {
+            $model->whereHas('section', function ($q) {
+                $q->where('id', $this->selectedSection);
+            });
+        }
+
+        $paginated = $model->paginate($this->entries);
+
+        // Reset global totals
+        $this->total_employee_share = 0;
+        $this->total_employer_share = 0;
+        $this->total_contribution = 0;
 
         $records = tap($model->paginate($this->entries))->each(function ($record) use ($contributionsService) {
             $record->total = 0;
@@ -67,8 +85,25 @@ class Index extends Component
 
         $this->employee_count = $records->count();
 
+         // Group by section with subtotals
+        $groupedRecords = collect();
+
+        $records->getCollection()
+            ->groupBy(fn($record) => $record->section->name ?? 'NO DEPARTMENT')
+            ->each(function ($group, $sectionName) use (&$groupedRecords) {
+                $groupedRecords->push([
+                    'section' => $sectionName,
+                    'records' => $group,
+                    'subtotal_employee_share' => $group->sum('employee_share'),
+                    'subtotal_employer_share' => $group->sum('employer_share'),
+                    'subtotal_total' => $group->sum('total'),
+                ]);
+            });
+
         return view('livewire.admin.reports.philhealth.index', [
-            'records' => $records
+            'groupedRecords' => $groupedRecords,
+            'paginator' => $records,
+            'sections' => $this->sections,
         ]);
     }
 

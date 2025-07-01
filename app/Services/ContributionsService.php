@@ -117,12 +117,11 @@ class ContributionsService
 
     function computeSalary($rate): float 
     {
-      
-        if($rate != null || $rate != 0 || $rate <= 1000) {
-            $computedMonthly = round($rate * 22, 2);
-            return $computedMonthly;
+        if ($rate !== null && $rate <= 1000) {
+            return round($rate * 22, 2);
         }
 
-       return $rate ?? 0;
+        return $rate ?? 0;
     }
+
 }
