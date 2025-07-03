@@ -375,7 +375,6 @@ class TimeLogService extends Controller
         return $formattedLogs;
     }
 
-
     private function getSummary($logs)
     {
         $summary = [
@@ -477,50 +476,68 @@ class TimeLogService extends Controller
         return $summary;
     }
 
-    public function getDTRByRange(string $biometrics_id, string $monthYear, $range) {
+    public function getDTRByRange(string $biometrics_id, string $range): array
+    {
+        if (empty($biometrics_id)) {
+            abort(400, 'Biometrics ID is required.');
+        }
 
-        $dtr = $this->getDTR($biometrics_id, $monthYear);
+        try {
+            [$start, $end] = explode(' to ', $range);
+            $startDate = Carbon::parse($start)->startOfDay();
+            $endDate = Carbon::parse($end)->endOfDay();
+        } catch (\Exception $e) {
+            abort(400, 'Invalid date range format. Use "YYYY-MM-DD to YYYY-MM-DD".');
+        }
 
-        $logs = $dtr['logs'];
+        // Get logs only within range
+        $rawLogs = EmployeeTimelogs::where('employee_id', $biometrics_id)
+            ->whereBetween('timestamp', [$startDate, $endDate])
+            ->orderBy('timestamp')
+            ->get();
 
-        [$start, $end] = explode(' to ', $range);
-        $startDate = Carbon::parse($start)->format('Y-m-d');
-        $endDate = Carbon::parse($end)->format('Y-m-d');
+        // Process and format logs
+        $processedLogs = $this->processLogs($rawLogs, $startDate->format('m-Y'), true);
+        $formattedLogs = $this->formatDayDTR($processedLogs, $startDate->format('m-Y'));
 
-        $filteredLogs = collect($logs)->filter(function ($value, $key) use ($startDate, $endDate) {
-            return $key >= $startDate && $key <= $endDate;
+        // Filter logs again for safety
+        $filteredLogs = collect($formattedLogs)->filter(function ($value, $key) use ($startDate, $endDate) {
+            return $key >= $startDate->toDateString() && $key <= $endDate->toDateString();
         });
 
+        // Initialize counters
+        $totalWorkedDays = 0;
         $totalOvertime = 0;
         $totalAUT = 0;
-        $totalWorkedDays = 0;
 
-        foreach ($filteredLogs as $date => $log) {
-            // Count worked days
+        foreach ($filteredLogs as $log) {
             if (!empty($log['clock_in'])) {
                 $totalWorkedDays++;
             }
 
-            // Compute AUT and Overtime if present
             if (isset($log['aut']) && is_array($log['aut'])) {
                 $tardiness = $log['aut']['tardiness']['minutes'] ?? 0;
                 $undertime = $log['aut']['undertime']['minutes'] ?? 0;
                 $overtime = $log['aut']['overtime']['minutes'] ?? 0;
 
                 $totalOvertime += $overtime;
-                $totalAUT += ($tardiness + $undertime);
+                $totalAUT += $tardiness + $undertime;
             }
         }
 
+        // Compute total days in the range (inclusive)
+        $totalDays = $startDate->diffInDays($endDate) + 1;
 
-        $summary = [
-            'worked_days' => $totalWorkedDays ?? 0,
-            'overtime' => $totalOvertime ?? 0,
-            'aut' => $totalAUT ?? 0
+        return [
+            'logs' => $filteredLogs,
+            'summary' => [
+                'total_days' => $totalDays,
+                'worked_days' => $totalWorkedDays,
+                'overtime' => $totalOvertime,
+                'aut' => $totalAUT,
+            ],
         ];
-
-        return $summary;
-
     }
+
 
 }

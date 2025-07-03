@@ -69,6 +69,7 @@ class Dashboard extends Component
     }
 
     public function checkAllowed() {
+        
         $product = config('app.product');
 
         if($product == 'government') {
@@ -76,7 +77,9 @@ class Dashboard extends Component
                 return $this->isForRCOnly = false;
             }
             return $this->isForRCOnly = true;
-        }
+        } 
+
+        return $this->isForRCOnly = false;
     }
 
     private function getCompanyInformation() {

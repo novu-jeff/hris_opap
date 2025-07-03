@@ -419,12 +419,12 @@
                                             <small> </small>
                                         @endif
                                         {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
-                                        <a href="{{ route('timekeeping.correction-apply', [
-                                            'bsd_no' => $bsd_emp_identical ? $employee_no : ($logs['employee_account']['bsd_no'] ?? null),
-                                            'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
-                                        ]) }}" class="btn btn-sm btn-danger btn-correction">
-                                            Correction
-                                        </a>
+                                            <a href="{{ route('timekeeping.correction-apply', [
+                                                'bsd_no' => $bsd_emp_identical ? $employee_no : ($logs['employee_account']['bsd_no'] ?? null),
+                                                'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
+                                            ]) }}" class="btn btn-sm btn-danger btn-correction">
+                                                Correction
+                                            </a>
                                         {{-- @endif    --}}
                                     </td>                      
                                 </tr>
@@ -475,9 +475,11 @@
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </div>
                     <div class="dtr-header ms-5 d-flex justify-content-center gap-4">
-                        <div>
-                            <img src="{{ asset('img/opapru-logo.png') }}" alt="Logo">
-                        </div>
+                        @if($product == 'government')
+                            <div>
+                                <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
+                            </div>
+                        @endif
                         <div>
                             <h1>DAILY TIME RECORD</h1>
                             <h1>{{$company}}</h1>

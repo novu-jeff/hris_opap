@@ -226,7 +226,7 @@ Route::prefix('admin')->group(function() {
             Route::get('/', [PayrollController::class, 'index'])
                 ->name('payroll.index');
 
-            Route::get('process/{payroll_id}', [PayrollController::class, 'process'])
+            Route::get('process/{type}/{payroll_id}', [PayrollController::class, 'process'])
                 ->name('payroll.process');
 
         });

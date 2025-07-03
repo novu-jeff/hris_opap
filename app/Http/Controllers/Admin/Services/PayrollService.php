@@ -2,39 +2,42 @@
 
 namespace App\Http\Controllers\Admin\Services;
 
+use App\Http\Controllers\Admin\Services\Payroll\BonusService;
+use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
+use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
+use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeInformation;
-use App\Models\EmployeeLeave;
-use App\Models\EmployeeTimelogs;
-use App\Models\EmployementTypes;
-use App\Models\Payroll;
-use App\Models\SocialSecurityBilling;
-use App\Models\Holiday;
+use App\Models\BonusItemsPayroll;
+use App\Models\BonusPayroll;
+use App\Models\ClothingAllowanceItemsPayroll;
+use App\Models\ClothingAllowancePayroll;
+use App\Models\OTItemsPayroll;
+use App\Models\OTPayroll;
+use App\Models\SalaryItemsPayroll;
+use App\Models\SalaryPayroll;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PayrollService extends Controller {
 
-
-    public string $product;
+    protected $bsd_emp_identical;
+    protected string $product;
 
     public function __construct() {
-        $product = config('app.product');
-        $this->product = $product;
+        $this->product = config('app.product');
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
     }
 
-    public function getEmployeesPreview($employment_type)
+    public function getEmployees($employment_type, $type = null)
     {
-        $employees = [
-            'eligible' => [],
-            'ineligible' => [],
-        ];
+        $currentYear = now()->year;
 
         $results = DB::table('employee_information as ei')
             ->select(
                 'ei.id as employee_id',
                 'ei.employee_no',
-                'ei.employment_type_id as employment_type_id',
+                'ei.employment_type_id',
+                'ei.date_hired',
                 'ei.monthly_rate',
                 'ei.bsd_no',
                 'ei.position_id',
@@ -47,21 +50,22 @@ class PayrollService extends Controller {
                 's.name as section_name'
             )
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
-            ->where('employment_type_id', $employment_type)
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
+            ->where('ei.employment_type_id', $employment_type)
             ->get();
 
-        
+        $employees = [
+            'eligible' => [],
+            'ineligible' => [],
+        ];
+
         foreach ($results as $row) {
-            
             $reasons = [];
 
-            if(empty($row->employment_type_id)) {
-                $reasons[] = 'no employment type';
-            }
+            $dateHired = $row->date_hired ? Carbon::parse($row->date_hired) : null;
 
-            if($this->product == 'government') {
+            if ($this->product === 'government') {
                 if (empty($row->bsd_no)) {
                     $reasons[] = 'no BSD number';
                 }
@@ -69,18 +73,46 @@ class PayrollService extends Controller {
                 if (empty($row->position_id)) {
                     $reasons[] = 'no position assigned';
                 }
+
+                if ($type === 'mid_year') {
+                    $may15 = Carbon::create($currentYear, 5, 15);
+                    $july1Prev = Carbon::create($currentYear - 1, 7, 1);
+
+                    if (!$dateHired || $dateHired->gt($may15)) {
+                        $reasons[] = 'not in service as of May 15';
+                    }
+
+                    if (!$dateHired || $dateHired->gt($july1Prev)) {
+                        if ($dateHired->diffInMonths($may15) < 4) {
+                            $reasons[] = 'less than 4 months of service from July 1 to May 15';
+                        }
+                    }
+                }
+
+                if ($type === 'year_end') {
+                    $oct31 = Carbon::create($currentYear, 10, 31);
+                    $jan1 = Carbon::create($currentYear, 1, 1);
+
+                    if (!$dateHired || $dateHired->gt($oct31)) {
+                        $reasons[] = 'not in service as of October 31';
+                    }
+
+                    if (!$dateHired || $dateHired->gt($jan1)) {
+                        if ($dateHired->diffInMonths($oct31) < 4) {
+                            $reasons[] = 'less than 4 months of service from January 1 to October 31';
+                        }
+                    }
+                }
             }
 
-            if (is_null($row->monthly_rate) || $row->monthly_rate == 0 || $row->monthly_rate === '') {
+            if (empty($row->monthly_rate) || floatval($row->monthly_rate) === 0.0) {
                 $reasons[] = 'no salary rate';
             }
 
-            $employeeData = [
-                'employee_no' => $row->employee_no,
-                'name'   => trim(($row->firstname ?? '') . ' ' . ($row->lastname ?? '')),
-                'status' => $reasons ? 'ineligible' : 'eligible',
-                'reason' => $reasons ?: null,
-            ];
+            $employeeData = (array) $row;
+            $employeeData['name'] = trim(($row->firstname ?? '') . ' ' . ($row->lastname ?? ''));
+            $employeeData['status'] = $reasons ? 'ineligible' : 'eligible';
+            $employeeData['reason'] = $reasons ?: null;
 
             $employees[$employeeData['status']][] = $employeeData;
         }
@@ -88,102 +120,116 @@ class PayrollService extends Controller {
         return $employees;
     }
 
-    public function getEmployees($employment_type)
-    {
-        
-        $query = DB::table('employee_information as ei')
-            ->select(
-                'ei.id as employee_id',
-                'ei.employee_no',
-                'ei.employment_type_id',
-                'ei.monthly_rate',
-                'ei.bsd_no',
-                'p.firstname',
-                'p.lastname',
-                'p.gsis_no',
-                'po.name as position_name',
-                'po.salary_grade',
-                'po.w_tax',
-                's.name as section_name'
-            )
-            ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
-            ->join('positions as po', 'ei.position_id', '=', 'po.id')
-            ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
-            ->where('ei.employment_type_id', $employment_type)
-            ->whereNotNull('ei.monthly_rate')
-            ->where('ei.monthly_rate', '!=', 0)
-            ->when($this->product === 'government', function ($query) {
-                return $query
-                    ->whereNotNull('ei.position_id')
-                    ->whereNotNull('ei.bsd_no');
-            });
+    public function getProcess(string $type) {
 
-        return $query->get();
+        $map = [
+            'salary' => [
+                'service' => SalaryService::class,
+                'models' => [
+                    'parent' => SalaryPayroll::class,
+                    'child' => SalaryItemsPayroll::class,
+                ]
+            ],
+            'clothing_allowance' => [
+                'service' => ClothingAllowanceService::class,
+                'models' => [
+                    'parent' => ClothingAllowancePayroll::class,
+                    'child' => ClothingAllowanceItemsPayroll::class,
+                ]
+            ],
+            'mid_year' => [
+                'service' => BonusService::class,
+                'models' => [
+                    'parent' => BonusPayroll::class,
+                    'child' => BonusItemsPayroll::class,
+                ]
+            ],
+            'year_end' => [
+                'service' => BonusService::class,
+                'models' => [
+                    'parent' => BonusPayroll::class,
+                    'child' => BonusItemsPayroll::class,
+                ]
+            ],
+            'ot_pay' => [
+                'service' => OverTimeService::class,
+                'models' => [
+                    'parent' => OTPayroll::class,
+                    'child' => OTItemsPayroll::class,
+                ]
+            ]
+
+        ];
+
+        return $map[$type] ?? null;
+
     }
 
-    public function getPayroll($payroll_id)
+    public function computeWithholdingTax(float $taxableIncome): float
     {
-        $payroll = Payroll::with('items.information.section')->findOrFail($payroll_id);
+        if ($taxableIncome <= 20833) {
+            return 0;
+        } elseif ($taxableIncome <= 33333) {
+            return ($taxableIncome - 20833) * 0.20;
+        } elseif ($taxableIncome <= 66667) {
+            return 2500 + ($taxableIncome - 33333) * 0.25;
+        } elseif ($taxableIncome <= 166667) {
+            return 10833.33 + ($taxableIncome - 66667) * 0.30;
+        } elseif ($taxableIncome <= 666667) {
+            return 40833.33 + ($taxableIncome - 166667) * 0.32;
+        } else {
+            return 200833.33 + ($taxableIncome - 666667) * 0.35;
+        }
+    }
 
-        $payroll->formatted_payroll_date = Carbon::parse($payroll->payroll_date)->format('F d, Y');
+    public function computeBonusTax(float $bonus, float $cashGift = 0): float
+    {
+        $total = $bonus + $cashGift;
+        $exemptLimit = 90000; 
 
-        [$startPeriod, $endPeriod] = explode(' to ', $payroll->cut_off_period);
-        $payroll->formatted_cutoff_period = sprintf(
-            '%s - %s',
-            Carbon::parse(trim($startPeriod))->format('M d, Y'),
-            Carbon::parse(trim($endPeriod))->format('M d, Y')
-        );
-
-        $employmentType = EmployementTypes::find($payroll->employment_type);
-        $payroll->formatted_employment_type = $employmentType->name ?? '';
-
-        $payroll->no_employees = $payroll->items->count();
-
-        $netAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->net_amount));
-        $salaryAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->salary));
-
-        $payroll->overall_net_amount = round($netAmount, 2);
-        $payroll->overall_salary_amount = round($salaryAmount, 2);
-
-        $grouped = [];
-
-        foreach ($payroll->items as $item) {
-            $section = $item->information->section ?? null;
-
-            if (!$section) continue;
-
-            $sectionId = $section->id;
-            $sectionName = $section->name;
-
-            if (!isset($grouped[$sectionId])) {
-                $grouped[$sectionId] = [
-                    'section_id' => $sectionId,
-                    'section_name' => $sectionName,
-                    'employees' => [],
-                ];
-            }
-
-            $grouped[$sectionId]['employees'][] = $item->toArray() ?? [];
+        if ($total <= $exemptLimit) {
+            return 0;
         }
 
-        $items = array_values($grouped);
+        $taxable = $total - $exemptLimit;
+        $rate = 0.20;
+
+        return round($taxable * $rate, 2);
+    }
+
+    public function computeOvertimePay(float $basic_salary, int $workedDays, string $time_in_minutes): array
+    {
+        
+        if ($workedDays <= 0) {
+            return [
+                'overtime_hours' => 0,
+                'hourly_rate' => 0,
+                'ot_rate' => 0,
+                'gross_ot_pay' => 0,
+                'tax' => 0,
+                'net_ot_pay' => 0,
+            ];
+        }
+
+        $decimalHours = floatval($time_in_minutes) / 60;
+        $dailyRate = $basic_salary / $workedDays;
+        $hourlyRate = $dailyRate / 8;
+        $otRate = $hourlyRate * 1.25;
+        $grossOtPay = $decimalHours * $otRate;
+        $tax = $this->computeWithholdingTax($grossOtPay);
+        $netOtPay = round($grossOtPay - $tax, 2);
 
         return [
-            'payroll' => $payroll->toArray() ?? [],
-            'payroll_items' => $items,
-            'batch_id' => $payroll->batch_id ?? null,
+            'overtime_hours' => round($decimalHours, 2),
+            'hourly_rate' => round($hourlyRate, 2),
+            'ot_rate' => round($otRate, 2),
+            'gross_ot_pay' => round($grossOtPay, 2),
+            'tax' => round($tax, 2),
+            'net_ot_pay' => $netOtPay,
         ];
     }
 
-    private function convertMinsToMoney($salary, $workedDays, $aut)
-    {
-        \Log::info('aut', [
-            'salary' => $salary,
-            'workedDays' => $workedDays,
-            'aut' => $aut
-        ]);
-        if ($workedDays <= 0) return 0;
-        return ($salary / $workedDays / 8 / 60) * $aut;
-    }
+
+
 
 }

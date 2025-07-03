@@ -4,6 +4,7 @@ namespace App\Livewire\Employee;
 
 use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
+use App\Models\CompanyInformation;
 use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +16,14 @@ class DailyTimeRecord extends Component
 {
     public $records;
     public $logs = null;
+    public $company;
+    public $product;
     public $dtrDate;
     public $officialTime;
     public $monthDate;
     public $employee_no;
     public $errors;
+    public $bsd_emp_identical;
 
     protected $timeLogService;
 
@@ -31,8 +35,11 @@ class DailyTimeRecord extends Component
     public function mount($month, $year)
     {
         
-        $this->initializeService();
+        $this->product = config('app.product');
+        $this->company = CompanyInformation::first()->name ?? 'No Comapany Name';
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
 
+        $this->initializeService();
 
         try {
 
@@ -44,7 +51,7 @@ class DailyTimeRecord extends Component
             $this->employee_no = $employee_no;
 
             $data = $this->getEmployeeInfo($employee_no);
-            $bio_id = $data->bsd_no;
+            $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
