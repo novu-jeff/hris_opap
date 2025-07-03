@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class SalaryItemsPayroll extends Model
+{
+    use HasFactory;
+
+    protected $table = 'payroll_salary_items';
+
+    protected $fillable = [];
+
+    public function getFillable()
+    {
+        $product = config('app.product');
+
+        if ($product === 'government') {
+            return [
+                'payroll_id',
+                'employee_no',
+                'name',
+                'position',
+                'basic_salary',
+                'pera',
+                'gross_amount_earned',
+                'rlip',
+                'hdmf',
+                'philhealth',
+                'consoloan',
+                'emergency_loan',
+                'plreg',
+                'mpl',
+                'cpl',
+                'mp2',
+                'mplstlms',
+                'cir375_cir449',
+                'w_tax',
+                'uca',
+                'aut',
+                'total_deductions',
+                'net_amount',
+                'dbp',
+                'kawani',
+                'lbp_payroll_account',
+                'salary',
+            ];
+        }
+
+        return [
+            'payroll_id',
+            'employee_no',
+            'name',
+            'position',
+            'basic_salary',
+            'overtime_pay',
+            'holiday_pay',
+            'allowances',
+            'gross_amount_earned',
+            'sss',
+            'pagibig',
+            'philhealth',
+            'w_tax',
+            'other_loans',
+            'total_deductions',
+            'net_amount',
+            'bank_account',
+            'bank_name',
+            'salary',
+        ];
+    }
+
+    public function information() {
+        return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
+    }
+
+}

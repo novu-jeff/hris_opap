@@ -2,15 +2,19 @@
 
 namespace App\Livewire\Admin\Payroll;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Bus;
+use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
+use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
+use App\Http\Controllers\Admin\Services\Payroll\BonusService;
+use App\Http\Controllers\Admin\Services\Payroll\OTService;
 use App\Http\Controllers\Admin\Services\PayrollService;
+use Illuminate\Support\Facades\Bus;
 use App\Models\EmployementTypes;
-use App\Models\Payroll;
+use App\Models\SalaryPayroll;
 use App\Notifications\Notifications;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Jobs\ProcessPayroll;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Bus\Batch;
 use Throwable;
@@ -26,12 +30,17 @@ class Index extends Component
     public $status = '';
     public $employmentTypes;
 
+    public $dynamicFormFields;
+    public $selectedForPayroll;
+
     public string $type;
     public string $employment_type;
+    public string $selectedType;
 
-    public string $payroll_date;
-    public string $cut_off_period;
-    public string $employment_type_id;
+    public $payroll_date;
+    public $cut_off_period;
+    public $ot_period;
+    public $employment_type_id;
     public array $employeesChecked;
     public string $activeTab;
     public bool $isToCreate = false;
@@ -47,21 +56,277 @@ class Index extends Component
 
     public function mount()
     {
+        $this->selectedType = $this->type;
         $this->actionBy = Auth::user();
         $this->employmentTypes = EmployementTypes::all();
+        $this->loadDynamicFields();
+    }
+
+    public function selectPayroll(string $type) {
+        $this->selectedType = $type;
+        $this->loadDynamicFields();
+        $this->dispatch('showModal', [
+            'modal' => 'newPayroll'
+        ]);
+        $this->dispatch('initDateRange');
+    }
+
+    public function loadDynamicFields()
+    {
+        $options = $this->dynamicFields();
+
+        $subTypes = $options[$this->employment_type]['sub'] ?? [];
+
+        $this->dynamicFormFields = [
+            'types' => collect($subTypes)->mapWithKeys(fn($item, $key) => [$key => $item['name']])->toArray(),
+            'items' => $subTypes[$this->selectedType] ?? [],
+        ];
+
+        if (isset($subTypes[$this->selectedType]['fields']['payroll_date']['value'])) {
+            $this->payroll_date = $subTypes[$this->selectedType]['fields']['payroll_date']['value'];
+        }
+    }
+
+
+    public function dynamicFields() {
+        
+        $product = config('app.product');
+
+        if($product == 'government') {
+            return [
+                'contractual' => [
+                    'name' => 'contractual',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'page' => 'salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                        'clothing_allowance' => [
+                            'name' => 'Clothing Allowance',
+                            'page' => 'clothing_allowance',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'monthyear',
+                                    'value' => '',
+                                    'rules' =>  'required|date',
+                                ],
+                            ]
+                        ],
+                        'mid_year' => [
+                            'name' => 'Mid Year Bonus',
+                            'page' => 'mid_year',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                        'year_end' => [
+                            'name' => 'Year End Bonus',
+                            'page' => 'year_end',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' =>  '',
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(11)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                        'ot_pay' => [
+                            'name' => 'Overtime Pay',
+                            'page' => 'ot_pay',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'ot_period' => [
+                                    'label' => 'Overtime Period',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                            ]
+                        ]
+                    ]
+                ],
+                'contract of service' => [
+                    'name' => 'contract of service',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contract of Service',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                        'ot_pay' => [
+                            'name' => 'Overtime Pay',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contract of Service',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'ot_period' => [
+                                    'label' => 'OT Period (range)',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                            ]
+                        ]
+                    ]
+                ],
+                'job order' => [
+                    'name' => 'Job Order',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Job Order',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                    ]
+                ],
+            ];
+        }
+
     }
 
     protected function rules()
     {
-        return [
-            'payroll_date' => 'required|date|unique:payroll,payroll_date',
-            'cut_off_period' => [
-                'required',
-                'unique:payroll,cut_off_period',
-                'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
-            ],
-            'employment_type_id' => 'required|exists:employment_types,id'
-        ];
+        $options = $this->dynamicFields();
+
+        $fields = $options[$this->employment_type]['sub'][$this->selectedType]['fields'] ?? [];
+
+        $rules = [];
+
+        foreach ($fields as $fieldKey => $fieldConfig) {
+            if (isset($fieldConfig['rules'])) {
+                $rules[$fieldKey] = $fieldConfig['rules'];
+            }
+        }
+
+        return $rules;
     }
 
     public function go_back()
@@ -81,131 +346,119 @@ class Index extends Component
 
     public function createPayroll()
     {
-        $this->validate();
+        $type = $this->type;
+        $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
+        $payrollService = app(PayrollService::class);
 
-        try {
-            if (!$this->isToCreate) {
-                if (empty($this->employment_type_id)) {
-                    throw new \Exception("Employment type is required to fetch employees.");
-                }
-
-                $payrollService = new PayrollService();
-
-                $this->employeesChecked = $payrollService->getEmployeesPreview($this->employment_type_id);
-
-                if (empty($this->employeesChecked)) {
-                    throw new \Exception("No employees found for the selected employment type.");
-                }
-
-                $this->isToCreate = true;
-                return;
+        if (!$this->isToCreate) {
+            if (empty($employmentTypeId)) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'Employment type is required to fetch employees.'
+                ]); 
             }
+            
+            $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
 
-            if (Payroll::where([
-                'payroll_date' => $this->payroll_date,
-                'cut_off_period' => $this->cut_off_period,
-                'employment_type' => $this->employment_type_id,
-            ])->exists()) {
-                throw new \Exception("Payroll for this period and employment type already exists.");
-            }
+            $this->isToCreate = true;
 
-            $payroll = Payroll::create([
-                'type' => $this->type,
-                'payroll_date' => $this->payroll_date,
-                'cut_off_period' => $this->cut_off_period,
-                'employment_type' => $this->employment_type_id,
-                'status' => 'pending'
-            ]);
-
-            $this->payroll_id = $payroll->id;
-
-            $this->dispatch('hideModal', [
-                'modal' => 'newSalaryPayroll'
-            ]);
-
-            $this->dispatch('start-job-dispatch', [
-                'payroll_id' => $payroll->id,
-                'employment_type' => $payroll->employment_type,
-            ]);
-
-            $this->reset([
-                'cut_off_period',
-                'payroll_date',
-                'employment_type_id',
-                'employeesChecked',
-                'isToCreate'
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Validation Failed',
-                'message' => 'Please check all required fields.'
-            ]);
-        } catch (\Exception $e) {
-            $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!',
-                'message' => 'Error: ' . $e->getMessage()
-            ]);
+            return;
         }
-    }
 
-    public function cancelPayroll(bool $isNotify = true)
-    {
-        
-        if($isNotify) {
-            $title = 'Are you sure to cancel the current process?';
-            $message = 'Please be informed that by proceeding, the entire process finished will be undone and removed';
-            $action = 'cancelPayroll';
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action,
-            ]);
-        } else {
-            $this->deletePayroll($this->payroll_id);
-        }        
-    }
+        if (empty($this->employeesChecked['eligible'])) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops',
+                'message' => 'No employees found for the selected employment type.'
+            ]); 
+        }
 
-    public function regeneratePayroll($payroll_id) {
+        $map = [
+            'salary' => [
+                'payroll_date'    => $this->payroll_date,
+                'cut_off_period'  => $this->cut_off_period,
+                'employment_type' => $employmentTypeId,
+            ],
+            'clothing_allowance' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+            ],
+            'mid_year' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+                'type'            => 'mid_year',
+            ],
+            'year_end' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+                'type'            => 'year_end',
+            ],
+            'ot_pay' => [
+                'ot_period'       => $this->ot_period,
+                'employment_type' => $employmentTypeId,
+            ],
+        ];
 
-        $payroll = Payroll::findOrFail($payroll_id);
-        $this->payroll_id = $payroll_id;
+        $process = $payrollService->getProcess($type);
+        $data = $map[$type];
+        $service = app($process['service']);
+        $rules = $service->rules($data);
+
+
+        $validator = Validator::make($data, $rules);
+
+        if ($validator->fails()) {
+            Log::info($validator->errors());
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        $payroll = $service->createPayroll($data);
 
         $this->dispatch('start-job-dispatch', [
-            'payroll_id' => $payroll->id,
+            'payroll_id'      => $payroll->id,
             'employment_type' => $payroll->employment_type,
+            'type'            => $type,
         ]);
 
+        $this->dispatch('hideModal', ['modal' => 'newPayroll']);
     }
 
-    public function dispatchPayrollJobs($payroll_id, $employmentType)
+    
+    public function cancel_payroll(bool $isNotify = true)
     {
-        $payroll = Payroll::findOrFail($payroll_id);
+        $this->dispatch('cancelPayroll');
+        $this->reset([
+            'isBatchProcessing',
+            'batchStatusMessage',
+            'batchProgress',
+        ]);
+    }
 
-        $payrollService = new PayrollService();
-        $employees = $payrollService->getEmployees($employmentType);
+    public function dispatchPayrollJobs(string $payroll_id, string $employmentType, string $type)
+    {
 
-        $chunks = array_chunk($employees->toArray(), 1000);
+        $service = app(PayrollService::class);
+        $process = $service->getProcess($type);
+        $serviceInstance = app($process['service']);
 
-        $jobs = [];
+        $process = $serviceInstance->generateChunks($payroll_id, $employmentType, $type);
+        
+        $status = $process['status'];
 
-        foreach ($chunks as $chunk) {
-            $jobs[] = new ProcessPayroll(collect($chunk), $payroll);
-        }
+        if($status == 'success') {
+            $name = $process['name'];
+            $jobs = $process['jobs'];
+            $payroll = $process['payroll'];
 
-        $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
-
-        if(!empty($jobs)) {
             $batch = Bus::batch($jobs)
                 ->withOption('actionBy', [
                     'id' => $this->actionBy->id,
                     'name' => $this->actionBy->name
                 ])
-                ->name('Payroll For ' . $payroll_date)
+                ->name($name)
                 ->catch(function (Batch $batch, Throwable $e) {
                     $this->actionBy?->notify(new Notifications(
                         'error',
@@ -223,29 +476,31 @@ class Index extends Component
                     ));
                 })
                 ->dispatch();
-
+            
             $payroll->update(['batch_id' => $batch->id]);
-
             $this->batchId = $batch->id;
             $this->isBatchProcessing = true;
-        } else {
 
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops',
-                'message' => 'No jobs were processed'
-            ]);
-
+            return;
         }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Oops',
+            'message' => 'No jobs were processed'
+        ]); 
     }
 
     public function checkBatchStatus()
     {
         if (!$this->batchId) return;
 
+        $service = app(PayrollService::class);
+
         $batch = Bus::findBatch($this->batchId);
 
+        
         if ($batch) {
 
             $this->batchProgress = $batch->progress();
@@ -259,34 +514,17 @@ class Index extends Component
             };
 
             if ($batch->finished()) {
+                $model = $service->getProcess($this->type)['models']['parent'];
                 $this->dispatch('redirect_to', [
-                    'url' => route('payroll.process', ['payroll_id' => Payroll::where('batch_id', $this->batchId)->value('id')]),
+                    'url' => route('payroll.process', ['type' => $this->type, 'payroll_id' => $model::where('batch_id', $this->batchId)->value('id')]),
                     'delay' => 3000
                 ]);
             }
         }
     }
 
-    public function removePayroll(bool $isNotify, int $payroll_id = null)
-    {
-        if($isNotify) {
-            $title = 'Are you sure to remove this payroll?';
-            $message = 'Please be informed that by proceeding, all data that is connected to this payroll process will be permanently deleted.';
-            $action = 'removePayroll';
-
-            $this->payroll_id = $payroll_id;
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action,
-            ]);
-        } else {
-            $this->deletePayroll($this->payroll_id);
-        }
-    }
-
     public function deletePayroll($payroll_id) {
-        $payroll = Payroll::find($this->payroll_id);
+        $payroll = SalaryPayroll::find($payroll_id);
 
         if ($payroll) {
             $batchId = $payroll->batch_id;
@@ -306,28 +544,9 @@ class Index extends Component
 
         return;
     }
-
+    
     public function render()
     {
-        $mapping = [
-            'contractual' => 'contractual',
-            'cos' => 'contract of service',
-            'jo' => 'job order'
-        ];
-
-        $employmentType = null;
-
-        if ($this->employment_type && isset($mapping[$this->employment_type])) {
-            $employmentType = EmployementTypes::where('name', $mapping[$this->employment_type])->first();
-        }
-
-        $records = Payroll::where('type', $this->type)
-            ->when($this->status, fn($q) => $q->where('status', $this->status))
-            ->when($employmentType, fn($q) => $q->where('employment_type', $employmentType->id))
-            ->paginate($this->entries);
-
-        return view('livewire.admin.payroll.index', [
-            'records' => $records
-        ]);
+        return view('livewire.admin.payroll.index');
     }
 }
