@@ -55,10 +55,10 @@
                 @if($isForRCOnly)
                     <div class="col-12 col-md-6 col-xl-4 mb-4">
                         <a href="{{ route('employee.leave') }}" class="nav-link">
-                        <div class="item">
-                            <img src="{{ asset('/img/leave.png') }}" class="w-100">
-                            <p>Leave Application</p>
-                        </div>
+                            <div class="item">
+                                <img src="{{ asset('/img/leave.png') }}" class="w-100">
+                                <p>Leave Application</p>
+                            </div>
                         </a>
                     </div>
                 @endif
