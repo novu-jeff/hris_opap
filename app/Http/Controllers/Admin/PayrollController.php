@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeInformation;
-use App\Models\EmployementTypes;
+use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class PayrollController extends Controller
@@ -21,35 +19,33 @@ class PayrollController extends Controller
         $product = config('app.product');
 
         $defaultActions = 'salary';
-        $defaultEmploymentType = $product == 'government' ? 'contractual' : 'raf'; 
+        $defaultEmploymentType = $product === 'government' ? 'contractual' : 'raf';
 
-
-        if($product == 'government') {
+        if ($product === 'government') {
             $options = [
                 'contractual' => [
                     'name' => 'contractual',
                     'sub' => [
                         'salary' => 'Salary',
+                        'clothing_allowance' => 'Clothing Allowance',
                         'mid_year' => 'Mid Year Bonus',
                         'year_end' => 'Year End Bonus',
-                        'rata' => 'RATA',
-                        'eme' => 'EME',
-                        'ot_pay' => 'OT Pay'
-                    ]
+                        'ot_pay' => 'Overtime Pay',
+                    ],
                 ],
-                'cos' => [
+                'contract of service' => [
                     'name' => 'contract of service',
                     'sub' => [
                         'salary' => 'Salary',
-                        'ot_pay' => 'OT Pay'
-                    ]
+                        'ot_pay' => 'Overtime Pay',
+                    ],
                 ],
-                'jo' => [
+                'job order' => [
                     'name' => 'Job Order',
                     'sub' => [
-                        'salary' => 'Salary'
-                    ]
-                ]
+                        'salary' => 'Salary',
+                    ],
+                ],
             ];
         } else {
             $options = [
@@ -59,7 +55,7 @@ class PayrollController extends Controller
                         'salary' => 'Salary',
                         'mid_year' => 'Mid Year Bonus',
                         'year_end' => 'Year End Bonus',
-                    ]
+                    ],
                 ],
                 'mngr' => [
                     'name' => 'manage',
@@ -67,7 +63,7 @@ class PayrollController extends Controller
                         'salary' => 'Salary',
                         'mid_year' => 'Mid Year Bonus',
                         'year_end' => 'Year End Bonus',
-                    ]
+                    ],
                 ],
                 'sprvsr' => [
                     'name' => 'Supervisor',
@@ -75,29 +71,31 @@ class PayrollController extends Controller
                         'salary' => 'Salary',
                         'mid_year' => 'Mid Year Bonus',
                         'year_end' => 'Year End Bonus',
-                    ]
-                ]
+                    ],
+                ],
             ];
         }
 
-
-        $employmentTypeInput = $request->input('employment_type', $defaultEmploymentType);
+        $employmentTypeInput = strtolower($request->input('employment_type', $defaultEmploymentType));
         $typeInput = strtolower($request->input('type', $defaultActions));
 
         if (!array_key_exists($employmentTypeInput, $options)) {
             return redirect()->route('payroll.index', [
-                'type' => $defaultActions,
                 'employment_type' => $defaultEmploymentType,
+                'type' => $defaultActions,
             ]);
         }
 
-        if (!array_key_exists($typeInput, $options[$employmentTypeInput]['sub'])) {
+        $validSubTypes = array_keys($options[$employmentTypeInput]['sub']);
+
+        if (!in_array($typeInput, $validSubTypes)) {
+            $firstType = $validSubTypes[0] ?? $defaultActions;
+
             return redirect()->route('payroll.index', [
-                'type' => $defaultActions,
-                'employment_type' => $defaultEmploymentType,
+                'employment_type' => $employmentTypeInput,
+                'type' => $firstType,
             ]);
         }
-
 
         return view('admin.payroll.index', [
             'type' => $typeInput,
@@ -108,17 +106,20 @@ class PayrollController extends Controller
     }
 
 
-    public function process(int $id) {
+    public function process(string $type, int $id) {
 
-        $payroll = Payroll::find($id);
+        $service = app(PayrollService::class);
+        $model = $service->getProcess($type)['models']['parent'];
+
+        $payroll = $model::find($id);
         
         if(!$payroll) {
             return redirect()->route('payroll.index');
         }
 
-        $payroll_date = Carbon::parse($payroll->payroll_date)->format('F d, Y');
+        $payroll_date = Carbon::parse(time: $payroll->payroll_date)->format('F d, Y');
 
-        return view('admin.payroll.process', compact('id', 'payroll_date'));
+        return view('admin.payroll.process', compact('id', 'payroll_date', 'type'));
     }
 
 }

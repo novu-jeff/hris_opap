@@ -35,26 +35,9 @@
                 </li>
             </ul>
         @endif
-
-
-        <div class="d-md-flex justify-content-end gap-3">
-            <div class="dropdown">
-                <button class="btn btn-primary text-uppercase px-5 py-3 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Generate Payroll
-                </button>
-                <ul class="dropdown-menu dropdown-menu-lg-start mt-2 text-uppercase">
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newSalaryPayroll">Salary</a></li>
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newOtherPayroll">Mid Year</a></li>
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newOtherPayroll">Year End</a></li>
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newOtherPayroll">RATA</a></li>
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newOtherPayroll">EME</a></li>
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#newOtherPayroll">CTO</a></li>
-                </ul>
-            </div>              
-        </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.payroll.index', ['employment_type' => $employment_type, 'type' => $actions])
+        @livewire('admin.payroll.index', ['employment_type' => $employment_type, 'type' => $type])
     </div>
 </div>
 <style>
