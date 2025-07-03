@@ -19,7 +19,11 @@ use App\Http\Controllers\Admin\ESSFAQController;
 use App\Http\Controllers\Admin\ESSRequestTimeLogController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
+use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
+use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
+use App\Http\Controllers\Admin\Reports\SSS\SSSController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\SchedulerController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -271,6 +275,22 @@ Route::prefix('admin')->group(function() {
         Route::prefix('reports')->group( function() {
             Route::get('daily-time-record', [DailyTimeRecordController::class, 'index'])->name('reports.dtr');
             Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+
+            Route::get('bir/index', [BIRController::class, 'index'])
+                ->name('reports.bir');
+            Route::get('bir/form-2316/{id}', [BIRController::class, 'form2316'])
+                ->name('reports.form-2316');
+            Route::get('bir/form-1601', [BIRController::class, 'form1601'])
+                ->name('reports.form-1601');
+                
+            Route::get('philhealth', [PhilhealthController::class, 'index'])
+                ->name('reports.philhealth');
+
+            Route::get('sss', [SSSController::class, 'index'])
+                ->name('reports.sss');
+
+            Route::get('pagibig', [PagibigController::class, 'index'])
+                ->name('reports.pagibig');
         });
         
         Route::prefix('settings')->group( function() {
