@@ -93,11 +93,11 @@
                                     </a>
                                 </td>
                                 <td>{{ $record['position'] }}</td>
-                                <td>{{ $record['basic_salary'] }}</td>
-                                <td>{{ $record['duration'] }}</td>
-                                <td>{{ $record['amount'] }}</td>
-                                <td>{{ $record['tax'] }}</td>
-                                <td>{{ $record['net_amount'] }}</td>
+                                <td>{{ number_format($record['basic_salary'], 2) }}</td>
+                                <td>{{ formatTime($record['duration']) }}</td>
+                                <td>{{ number_format($record['amount'], 2) }}</td>
+                                <td>{{ number_format($record['tax'], 2) }}</td>
+                                <td>{{ number_format($record['net_amount'], 2) }}</td>
                             </tr>
                         @endforeach
                     @empty

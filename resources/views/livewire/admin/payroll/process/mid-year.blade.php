@@ -51,72 +51,71 @@
     </div>
     <hr class="pt-3">
 
-    @if($product == 'government')
-        <div class="table-responsive pb-3">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Status</th>
-                        <th rowspan="2">No.</th>
-                        <th rowspan="2" class="text-center">Name</th>
-                        <th rowspan="2" class="text-center">Position</th>
-                        <th rowspan="2" class="text-center">{{$records['payroll']['type']}}</th>
-                        <th rowspan="2" class="text-center">Tax</th>
-                        <th rowspan="2" class="text-center">Net Amount</th>
-                    </tr>
-                </thead>
+    <div class="table-responsive pb-3">
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th rowspan="2">No.</th>
+                    <th rowspan="2" class="text-center">Name</th>
+                    <th rowspan="2" class="text-center">Position</th>
+                    <th rowspan="2" class="text-center">{{$records['payroll']['type']}}</th>
+                    <th rowspan="2" class="text-center">Tax</th>
+                    <th rowspan="2" class="text-center">Net Amount</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
-                        <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
-                            <td colspan="100%">
-                                <div class="d-flex justify-content-between w-100 px-5">
-                                    <span class="text-center flex-grow-1">{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+            <tbody>
+                @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
+                    <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
+                        <td colspan="100%">
+                            <div class="d-flex justify-content-between w-100 px-5">
+                                <span class="text-center flex-grow-1">{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @foreach($sectionGroup['employees'] as $employeeIndex => $record)
+                        <tr>
+                                <td>
+                                <div class="marked-changed">
+                                    @if(in_array($record['id'], $updatedItems))
+                                        <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
+                                    @else
+                                        <i class="fa-solid fa-check ready" title="No changes made"></i>
+                                    @endif
                                 </div>
                             </td>
-                        </tr>
-
-                        @foreach($sectionGroup['employees'] as $employeeIndex => $record)
-                            <tr>
-                                 <td>
-                                    <div class="marked-changed">
-                                        @if(in_array($record['id'], $updatedItems))
-                                            <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
-                                        @else
-                                            <i class="fa-solid fa-check ready" title="No changes made"></i>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    #{{ $employeeIndex + 1 }}
-                                </td>
-                                <td>
-                                    <a href="{{ route('hris.show', ['employee_no' => $record['employee_no']]) }}"
-                                    class="text-dark" target="_blank">
-                                        {{ $record['name'] }}
-                                    </a>
-                                </td>
-                                <td>{{ $record['position'] }}</td>
-                                <td>
-                                    <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                        wire:model="bonus.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                        class="form-control" style="width: 120px;">
-                                </td>
-                                <td>{{ number_format($record['tax'], 2) }}</td>
-                                <td>{{ number_format($record['net_amount'], 2) }}</td>
-                            </tr>
-                        @endforeach
-                    @empty
-                        <tr>
-                            <td colspan="12" class="py-3 text-uppercase fw-bold text-muted">
-                                No data found
+                            <td>
+                                #{{ $employeeIndex + 1 }}
                             </td>
+                            <td>
+                                <a href="{{ route('hris.show', ['employee_no' => $record['employee_no']]) }}"
+                                class="text-dark" target="_blank">
+                                    {{ $record['name'] }}
+                                </a>
+                            </td>
+                            <td>{{ $record['position'] }}</td>
+                            <td>
+                                <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                    wire:model="bonus.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                    class="form-control" style="width: 120px;">
+                            </td>
+                            <td>{{ number_format($record['tax'], 2) }}</td>
+                            <td>{{ number_format($record['net_amount'], 2) }}</td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    @endif
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="12" class="py-3 text-uppercase fw-bold text-muted">
+                            No data found
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
 
     @if($hasChanges)
         <div class="d-flex justify-content-end mt-5">

@@ -25,7 +25,7 @@ class Clock extends Component
     public $accomplishment;
     public $isForcedClockout = false;
     public $manipulate_timestamp = '07:00';
-
+    public $bsd_emp_identical;
     public $status;
 
     protected $listeners = ['triggerClock', 'triggerClockOut', 'grabImage', 'saveAccomplishment'];
@@ -36,6 +36,7 @@ class Clock extends Component
 
     public function loadRecords() {
 
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $user_id = Auth::user()->employee_no;
         $bsd_no = EmployeeInformation::where('employee_no', $user_id)
             ->first()
@@ -82,7 +83,10 @@ class Clock extends Component
 
         $date = Carbon::now()->format('Y-m-d');
 
-        $model = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+    
+        $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
+
+        $model = EmployeeTimelogs::where('employee_id', $employee_id)
             ->where('timestamp', 'LIKE', "{$date}%");
         $clockRecords = $model->get();
         
@@ -214,7 +218,9 @@ class Clock extends Component
             $date = Carbon::now()->format('Y-m-d');
             $time = Carbon::now()->format('H:i');
             
-            $clockRecords = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+            $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
+
+            $clockRecords = EmployeeTimelogs::where('employee_id', $employee_id)
                 ->where('timestamp', 'LIKE', "{$date}%");
             
             $firstLog = $clockRecords->first()->timestamp ?? null;
@@ -477,8 +483,10 @@ class Clock extends Component
             '4' => 1,
         ];
 
+        $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
+
         $data = [
-            'employee_id' => $this->bsd_no,
+            'employee_id' => $employee_id,
             'timestamp' => $timestamp,
             'isWeb' => 1,
             'captured_location' => $location,
@@ -536,8 +544,10 @@ class Clock extends Component
         Storage::disk('public')->put('timelogs/' . $imageName, base64_decode($image));
 
         # store image name
+        
+        $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
 
-        EmployeeTimelogs::where('employee_id', $this->bsd_no)
+        EmployeeTimelogs::where('employee_id', $employee_id)
             ->where('timestamp', $timestamp)
             ->update([
                 'captured_image' => $imageName,
@@ -593,9 +603,11 @@ class Clock extends Component
     {
         $month = now()->month;
         $year = now()->year;
+
+        $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
     
         $records = EmployeeTimelogs::with('employee.personal')
-            ->where('employee_id', $this->bsd_no)
+            ->where('employee_id', $employee_id)
             ->whereMonth('timestamp', $month)
             ->whereYear('timestamp', $year)
             ->get();
@@ -714,7 +726,9 @@ class Clock extends Component
 
         $date = Carbon::now()->format('Y-m-d');
 
-        $model = EmployeeTimelogs::where('employee_id', $this->bsd_no)
+        $employee_id = !$this->bsd_emp_identical ? $this->bsd_no : $this->user_id;
+
+        $model = EmployeeTimelogs::where('employee_id', $employee_id)
             ->where('timestamp', 'LIKE', "{$date}%");
     
         $clockRecords = $model->get();

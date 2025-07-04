@@ -50,6 +50,7 @@ class Index extends Component
     public $employmentTypes;
     public $selectedType;
     public $actionBy;
+    public $isTransferingEmp;
 
     public bool $lazy = true;
 
@@ -73,6 +74,16 @@ class Index extends Component
         $this->schedules = EmployeeSchedule::all();
         $this->roles = EmployementTypes::all();
         $this->employmentTypes = EmployementTypes::all();
+
+        if(session('dispatch') == 'isTransfering') {
+            $this->dispatch('alert', [
+                'status' => 'info',
+                'title' => 'Please be informed', 
+                'showAlert' => true,
+                'message' => 'This employee account is currently undergoing data migration to the newly assigned employee number. The process will be completed shortly. Thank you for your patience and understanding.',
+            ]);
+        }
+
     }
 
     public function close_upload_employee() {

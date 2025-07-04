@@ -75,6 +75,8 @@ return new class extends Migration
                 ->nullable();
             $table->boolean('isDeleted')
                 ->default(false);
+            $table->boolean('isTransferingEmp')
+                ->default(false);
             $table->timestamps();
         });
 

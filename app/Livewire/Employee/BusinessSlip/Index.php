@@ -3,7 +3,6 @@
 namespace App\Livewire\Employee\BusinessSlip;
 
 use App\Models\EmployeeBusinessSlip;
-use App\Models\EmployeeLeave;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

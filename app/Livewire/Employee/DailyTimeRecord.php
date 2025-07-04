@@ -51,14 +51,16 @@ class DailyTimeRecord extends Component
             $this->employee_no = $employee_no;
 
             $data = $this->getEmployeeInfo($employee_no);
-            $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
+
+            $bsd_emp_identical = config('app.bsd_emp_identical');
+            $bio_id = $bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
 
             $this->logs = [
                 'employee_account' => [
-                    'bsd_no' => $data->bsd_no,
+                    'bsd_no' => $data->bio_id,
                     'firstname' => $data->personal->firstname,
                     'middlename' => $data->personal->middlename,
                     'lastname' => $data->personal->lastname,

@@ -55,6 +55,7 @@ class PayrollService extends Controller {
             ->where('ei.employment_type_id', $employment_type)
             ->get();
 
+
         $employees = [
             'eligible' => [],
             'ineligible' => [],
@@ -228,8 +229,4 @@ class PayrollService extends Controller {
             'net_ot_pay' => $netOtPay,
         ];
     }
-
-
-
-
 }

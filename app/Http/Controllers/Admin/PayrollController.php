@@ -19,7 +19,7 @@ class PayrollController extends Controller
         $product = config('app.product');
 
         $defaultActions = 'salary';
-        $defaultEmploymentType = $product === 'government' ? 'contractual' : 'raf';
+        $defaultEmploymentType = $product === 'government' ? 'contractual' : 'rank and file';
 
         if ($product === 'government') {
             $options = [
@@ -49,7 +49,7 @@ class PayrollController extends Controller
             ];
         } else {
             $options = [
-                'raf' => [
+                'rank and file' => [
                     'name' => 'rank and file',
                     'sub' => [
                         'salary' => 'Salary',
@@ -57,15 +57,15 @@ class PayrollController extends Controller
                         'year_end' => 'Year End Bonus',
                     ],
                 ],
-                'mngr' => [
-                    'name' => 'manage',
+                'manager' => [
+                    'name' => 'manager',
                     'sub' => [
                         'salary' => 'Salary',
                         'mid_year' => 'Mid Year Bonus',
                         'year_end' => 'Year End Bonus',
                     ],
                 ],
-                'sprvsr' => [
+                'supervisor' => [
                     'name' => 'Supervisor',
                     'sub' => [
                         'salary' => 'Salary',

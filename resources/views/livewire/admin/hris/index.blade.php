@@ -226,12 +226,34 @@
                     @forelse($employees as $key => $item)
                         <tr data-id="{{$item->employee_no}}">
                             <td class="text-center">
-                                <img style="width: 50px; height: 50px;"
-                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($item->personal->firstname . ' ' . $item->personal->lastname) }}">              
+                                @php
+                                    $fullname = optional($item->personal)->firstname && optional($item->personal)->lastname
+                                        ? $item->personal->firstname . ' ' . $item->personal->lastname
+                                        : null;
+                                @endphp
+
+                                @if(!$item->isTransferingEmp)
+                                    <img style="width: 50px; height: 50px;"
+                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname) }}">
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
                             </td>
                             <td>{{$item->employee_no}}</td>
-                            <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
-                            <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
+                            <td>
+                                @if(!$item->isTransferingEmp)
+                                    {{ $fullname }}
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if(!$item->isTransferingEmp)
+                                    {{format_date($item->date_hired, 'day_date_string')}}
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
+                            </td>
                             <td wire:ignore.self>
                                 <div class="d-flex gap-2">
                                     @if($selectedType == 'archived')
@@ -256,8 +278,8 @@
                                             title="Change Employee No.">
                                             <i class="fa-solid fa-person-walking-arrow-loop-left"></i>
                                         </a>
-                                        @if($item->account->isLocked)
-                                            <button wire:click="unlock('true', '{{$item->employee_no}}')" class="btn btn-info"
+                                        @if(optional($item->account)->isLocked)
+                                            <button wire:click="unlock('true', '{{ $item->employee_no }}')" class="btn btn-info"
                                                 title="Unlock Employee Account">
                                                 <i class="fa-solid fa-lock-open"></i>
                                             </button>

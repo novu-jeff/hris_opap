@@ -47,7 +47,7 @@ class Show extends Component
 
         try {
 
-            // Artisan::call('compute-aut');
+            Artisan::call('compute-aut');
 
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
@@ -64,7 +64,7 @@ class Show extends Component
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;
             $this->logs = [
                 'employee_account' => [
-                    'bsd_no' => $data->bsd_no,
+                    'bsd_no' => $bio_id,
                     'firstname' => $data->personal->firstname,
                     'middlename' => $data->personal->middlename,
                     'lastname' => $data->personal->lastname,

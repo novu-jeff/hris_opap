@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
+        view()->share('product', config('app.product'));
         view()->share('provider', config('meta')[env('APP_PROVIDER')]);
 
         

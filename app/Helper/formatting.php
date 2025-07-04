@@ -263,3 +263,21 @@ if (!function_exists('format_extension')) {
         }
     }
 }
+
+if (!function_exists('formatTime')) {
+    function formatTime(int $mins): string {
+        $hours = intdiv($mins, 60);
+        $minutes = $mins % 60;
+
+        $parts = [];
+        if ($hours > 0) {
+            $parts[] = $hours . ' hr' . ($hours > 1 ? 's' : '');
+        }
+        if ($minutes > 0 || $hours === 0) {
+            $parts[] = $minutes . ' min' . ($minutes > 1 ? 's' : '');
+        }
+
+        return implode('  and ', $parts);
+    }
+
+}
