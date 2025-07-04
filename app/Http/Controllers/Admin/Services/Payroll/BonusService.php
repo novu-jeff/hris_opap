@@ -56,7 +56,7 @@ class BonusService extends Controller {
         $payroll->total_net_amount = round($net_amount, 2);
 
 
-        $payroll->type = ucwords(str_replace('_', ' ', $payroll->bonus_type) . ' Bonus Payroll');
+        $payroll->type = ucwords(str_replace('_', ' ', $payroll->bonus_type) . ' Bonus');
         
         $grouped = [];
 
@@ -206,6 +206,35 @@ class BonusService extends Controller {
             return $data;
 
         } else {
+
+            $data = [];
+
+            foreach ($employees as $employee) {
+
+                $employee_no = $employee['employee_no'];
+                $employee_name = trim($employee['firstname'] . ' ' . $employee['lastname']);
+                $employee_position = $employee['position_name'];
+                $employee_salary = round(floatval($employee['monthly_rate']), 2);
+                
+                $bonus = $employee_salary;
+                $tax = $this->payrollService->computeBonusTax($bonus);
+                $net = $bonus - $tax;
+
+                $data[] = [
+                    'payroll_id' => $payroll->id,
+                    'employee_no' => $employee_no,
+                    'employment_type' => $employee['employment_type_id'],
+                    'name' => $employee_name,
+                    'position' => $employee_position,
+                    'basic_salary' => $employee_salary,
+                    'bonus' => $employee_salary,
+                    'cash_gift' => 0,
+                    'tax' => $tax,
+                    'net_amount' => $net 
+                ];
+            }
+
+            return $data;
 
         }
 

@@ -54,8 +54,8 @@ class YearEnd extends Component
             return redirect()->route('payroll.index');
         }
 
+        $this->isApproved = $records['payroll']['status'];
         $this->records = $records;
-
         $this->batchId = $records['batch_id'];
 
     }

@@ -56,6 +56,7 @@ class SalaryItemsPayroll extends Model
             'position',
             'basic_salary',
             'overtime_pay',
+            'aut',
             'holiday_pay',
             'allowances',
             'gross_amount_earned',
@@ -74,6 +75,10 @@ class SalaryItemsPayroll extends Model
 
     public function information() {
         return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
+    }
+
+    public function payroll() {
+        return $this->hasOne(SalaryPayroll::class, 'id', 'payroll_id');
     }
 
 }

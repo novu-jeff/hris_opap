@@ -1,17 +1,8 @@
 <div>
     <div class="d-md-flex justify-content-end gap-3">
-        <div class="dropdown">
-            <button class="btn btn-primary text-uppercase px-5 py-3 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Generate Payroll
-            </button>
-            <ul class="dropdown-menu dropdown-menu-lg-start mt-2 text-uppercase">
-                @forelse($dynamicFormFields['types'] as $typesIndex => $types)
-                    <li><a class="dropdown-item fw-bold text-muted" style="font-size: 13px" href="javascript:void(0)" data-bs-toggle="modal" wire:click="selectPayroll('{{$typesIndex}}')">{{$types}}</a></li>
-                @empty
-                    <li class="text-muted">No actions can be done</li>
-                @endforelse
-            </ul>
-        </div>              
+         <button wire:click="selectPayroll('{{$type}}')" class="btn btn-primary text-uppercase px-5 py-3 fw-medium" type="button">
+            Generate Payroll
+        </button>          
     </div>
     <div class="card border-0 mt-3">
         <div class="card-body p-0">

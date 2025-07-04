@@ -198,7 +198,7 @@ class Upload extends Component
                         ));
                     })
                     ->finally(function () {
-                        // Artisan::call('compute-aut'); 
+                        Artisan::call('compute-aut'); 
                     })
                     ->dispatch();
             }

@@ -124,4 +124,30 @@ class ContributionsService
         return $rate ?? 0;
     }
 
+    public static function computeWithholdingTax(float $taxableIncome): float
+    {
+        switch (true) {
+            case $taxableIncome <= 20833:
+                return 0;
+
+            case $taxableIncome > 20833 && $taxableIncome <= 33332:
+                return ($taxableIncome - 20833) * 0.20;
+
+            case $taxableIncome > 33332 && $taxableIncome <= 66666:
+                return 2500 + ($taxableIncome - 33333) * 0.25;
+
+            case $taxableIncome > 66666 && $taxableIncome <= 166666:
+                return 10833.33 + ($taxableIncome - 66667) * 0.30;
+
+            case $taxableIncome > 166666 && $taxableIncome <= 666666:
+                return 40833.33 + ($taxableIncome - 166667) * 0.32;
+
+            case $taxableIncome > 666666:
+                return 200833.33 + ($taxableIncome - 666667) * 0.35;
+
+            default:
+                return 0;
+        }
+    }
+
 }

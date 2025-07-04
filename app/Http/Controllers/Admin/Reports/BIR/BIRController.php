@@ -8,6 +8,7 @@ use App\Models\EmployeeInformation;
 use App\Services\ContributionsService;
 use App\Services\Employee1601Service;
 use App\Services\Employee2316Service;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Http\Request;
 
 class BIRController extends Controller
@@ -58,7 +59,9 @@ class BIRController extends Controller
             'salary' => $employee->monthly_rate,
         ]);
 
-        return view('admin.reports.bir.form-2316', compact('result'));
+        
+        return $this->saveForm2316(data: $result);
+
     }
 
     public function form1601(Request $request) {
@@ -70,8 +73,6 @@ class BIRController extends Controller
 
         $month = $request->query('month');
         $year = $request->query('year');
-
-        dd($month, $year);
 
         $total_salary = 0;
         $total_pagibig = 0;
@@ -113,4 +114,80 @@ class BIRController extends Controller
 
         return view('admin.reports.bir.form-1601', compact('part2', 'part1'));
     }
+
+    public function saveForm2316($data)
+    {
+        $template = public_path('templates/forms/BIR/BIR 2316.xlsx');
+
+        if (!file_exists($template)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Template file does not exist!'
+            ], 404);
+        }
+
+        try {
+            $spreadsheet = IOFactory::load($template);
+            
+            $sheet = $spreadsheet->getActiveSheet();
+            $cellMappings = [
+                ['G11:L12', 'G11', $data['1'] ?? ''],
+                ['AA11:AD12', 'AA11', $data['2']['from'] ?? ''],
+                ['AJ11:AM12', 'AJ11', $data['2']['to'] ?? ''],
+                ['D14:S15', 'D14', $data['3'] ?? ''],
+                ['A17:P18', 'A17', $data['4'] ?? ''],
+                ['R17:T18', 'R17', $data['4'] ?? ''],
+                ['A20:P21', 'A20', $data['5'] ?? ''],
+                ['R20:T21', 'R20', $data['6A'] ?? ''], 
+                ['A24:P25', 'A24', $data['6B'] ?? ''],
+                ['R24:T25', 'R24', $data['6C'] ?? ''],
+                ['B27:S28', 'B27', $data['6D'] ?? ''],
+                ['B30:C31', 'B30', $data['7'] ?? ''],
+                ['K30:T31', 'K30', $data['8'] ?? ''],
+                ['N32:S34', 'N32', $data['9'] ?? ''],
+                ['N35:S37', 'N35', $data['10'] ?? ''],
+                ['B44:S45', 'B44', $data['13'] ?? ''],
+                ['B47:P48', 'B47', $data['14'] ?? ''],
+                ['R47:T48', 'R47', $data['14A'] ?? ''],
+                ['B55:S56', 'B55', $data['17'] ?? ''],
+                ['B58:P59', 'B58', $data['18'] ?? ''],
+                ['R58:T59', 'R58', $data['18A'] ?? ''],
+                ['N61:S62', 'N61', $data['19'] ?? ''],
+                ['N63:S64', 'N63', $data['20'] ?? ''],
+                ['N65:S66', 'N65', $data['21'] ?? ''],
+                ['N67:S68', 'N67', $data['22'] ?? ''],
+                ['N69:S70', 'N69', $data['23'] ?? ''],
+                ['N71:S72', 'N71', $data['24'] ?? ''],
+                ['N73:S74', 'N73', $data['25A'] ?? ''],
+                ['N75:S76', 'N75', $data['25B'] ?? ''],
+                ['N77:S78', 'N77', $data['26'] ?? ''],
+                ['N79:S79', 'N79', $data['27'] ?? ''],
+                ['N80:S80', 'N80', $data['28'] ?? ''],
+            ];
+
+            foreach ($cellMappings as [$mergeRange, $cell, $value]) {
+                $sheet->mergeCells($mergeRange);
+                $sheet->setCellValue($cell, $value);
+            }
+
+            $filename = strtolower(str_replace(' ', '_', $data['4'] . '-bir-2316-' . now()->format('Ymd_His')));
+            
+            return response()->streamDownload(function () use ($spreadsheet) {
+                $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+                $writer->save('php://output');
+            }, $filename . '.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '.xlsx"',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to generate the form: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
 }

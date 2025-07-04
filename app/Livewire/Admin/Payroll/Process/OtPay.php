@@ -3,10 +3,8 @@
 namespace App\Livewire\Admin\Payroll\Process;
 
 use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
+use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\OTPayroll;
-use App\Models\Payroll;
-use App\Models\PayrollItems;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class OtPay extends Component
@@ -22,6 +20,8 @@ class OtPay extends Component
     public bool $hasChanges = false;
     public $records;
 
+    public $payroll_service;
+
     protected $listeners = ['save', 'approve'];
 
     public function mount() {
@@ -31,7 +31,6 @@ class OtPay extends Component
     public function loadRecords()
     {
         $this->product = config('app.product');
-
         $service = app(OverTimeService::class);
 
         $records = $service->getPayroll($this->payroll_id);
@@ -50,8 +49,8 @@ class OtPay extends Component
             return redirect()->route('payroll.index');
         }
 
+        $this->isApproved = $records['payroll']['status'];
         $this->records = $records;
-
         $this->batchId = $records['batch_id'];
 
     }
@@ -82,8 +81,8 @@ class OtPay extends Component
                 'redirect' => route('payroll.process', ['payroll_id' => $this->payroll_id])
             ]);
         }
-
     }
+    
 
     public function render()
     {

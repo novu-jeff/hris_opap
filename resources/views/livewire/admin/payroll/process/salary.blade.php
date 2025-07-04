@@ -286,6 +286,97 @@
             </div>
         @endif
     @endif
+    
+    @if($product == 'private')
+    <div class="table-responsive pb-3">
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Basic Salary</th>
+                    <th>Salary</th>
+                    <th>Overtime</th>
+                    <th>Holiday Pay</th>
+                    <th>Allowances</th>
+                    <th>Gross Amount</th>
+                    <th>SSS</th>
+                    <th>PhilHealth</th>
+                    <th>Pagibig</th>
+                    <th>W/Tax</th>
+                    <th>AUT</th>
+                    <th>Other Loans</th>
+                    <th>Total Deductions</th>
+                    <th>Net Amount</th>
+                    <th>Bank Name</th>
+                    <th>Bank Account</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
+                    <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
+                        <td colspan="100%">
+                            <div class="d-flex justify-content-between w-100 px-5">
+                                <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                                <span class="text-center flex-grow-1">{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                                <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @foreach($sectionGroup['employees'] as $employeeIndex => $record)
+                        <tr>
+                            <td>
+                                <div class="marked-changed">
+                                    @if(in_array($record['id'] ?? null, $updatedItems ?? []))
+                                        <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
+                                    @else
+                                        <i class="fa-solid fa-check ready" title="No changes made"></i>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>#{{ $employeeIndex + 1 }}</td>
+                            <td>
+                                <a href="{{ route('hris.show', ['employee_no' => $record['employee_no']]) }}"
+                                class="text-dark" target="_blank">
+                                    {{ $record['name'] }}
+                                </a>
+                            </td>
+                            <td>{{ $record['position'] }}</td>
+                            <td>{{ number_format($record['basic_salary'], 2) }}</td>
+                            <td>{{ number_format($record['overtime_pay'], 2) }}</td>
+                            <td>{{ number_format($record['holiday_pay'], 2) }}</td>
+                            <td>{{ number_format($record['allowances'], 2) }}</td>
+                            <td>{{ number_format($record['gross_amount_earned'], 2) }}</td>
+                            <td>{{ number_format($record['sss'], 2) }}</td>
+                            <td>{{ number_format($record['philhealth'], 2) }}</td>
+                            <td>{{ number_format($record['pagibig'], 2) }}</td>
+                            <td>{{ number_format($record['w_tax'], decimals: 2) }}</td>
+                            <td>{{ number_format($record['aut'], decimals: 2) }}</td>
+                            <td>{{ number_format($record['other_loans'], 2) }}</td>
+                            <td>{{ number_format($record['total_deductions'], 2) }}</td>
+                            <td>{{ number_format($record['net_amount'], 2) }}</td>
+                            <td>
+                                {{ $record['bank_name'] }}
+                            </td>
+                            <td>
+                                {{ $record['bank_account'] }}
+                            </td>
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="20" class="py-3 text-uppercase fw-bold text-muted">
+                            No payroll data found.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+    @endif
+    
 
     @if($hasChanges)
         <div class="d-flex justify-content-end mt-5">

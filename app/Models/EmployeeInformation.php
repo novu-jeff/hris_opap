@@ -29,6 +29,7 @@ class EmployeeInformation extends Model
         'monthly_rate',
         'bank_account_no',
         'payroll_account_number',
+        'isTransferingEmp'
     ];
     
     public $timestamps = false;

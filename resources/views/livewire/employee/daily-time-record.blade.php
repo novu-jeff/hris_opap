@@ -612,7 +612,7 @@
                                         @endif
                                         {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
                                              <a href="{{ route('timekeeping.correction-apply', [
-                                                'bsd_no' => $bsd_emp_identical ? $employee_no : ($logs['employee_account']['bsd_no'] ?? null),
+                                                'bsd_no' => $logs['employee_account']['bsd_no'],
                                                 'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
                                             ]) }}" class="btn btn-sm btn-danger btn-correction">
                                                 Correction

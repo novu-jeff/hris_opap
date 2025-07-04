@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
+use App\Services\ContributionsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -168,26 +169,28 @@ class SalaryService extends Controller {
     }
 
     public function computePayroll($payroll, $employees, $type) {
-        
-        $other_service = new OtherServices;
-        $dtr_service = new TimeLogService;
-        $leaveCard_service = new LeaveCardService;
 
         if($this->product == 'government') {
+
+            $other_service = new OtherServices;
+            $dtr_service = new TimeLogService;
+            $leaveCard_service = new LeaveCardService;
+            $payroll_service = app(PayrollService::class);
 
             $data = [];
 
             foreach ($employees as $employee) {
                 $employee_no = $employee['employee_no'];
-                $employee_name = trim($employee['firstname'] . ' ' . $employee['lastname']);
-                $employee_position = $employee['position_name'];
-                $employee_salary = round(floatval($employee['monthly_rate']), 2);
-                $employee_biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
+                $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
+                $position = $employee['position_name'];
+                $basic_salary = round(floatval($employee['monthly_rate']), 2);
+                
+                $bsd_no = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $payroll->cut_off_period;
 
-                // $dtr = $dtr_service->getDTRByRange($employee_biometrics, $monthYear, $cut_off_period);
+                // $dtr = $dtr_service->getDTRByRange($bsd_no, $monthYear, $cut_off_period);
                 $earnings = $other_service->earnings($employee_no);
                 $deductions = $other_service->deductions($employee_no);
 
@@ -198,32 +201,36 @@ class SalaryService extends Controller {
                     ->where('gi.crn_no', $employee['gsis_no'])
                     ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
                     ->first() ?? (object) [];
-
-                $aut = 0;
+                
+                # EARNINGS
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
-                $gross = round($employee_salary + $pera, 2);
-                $rlip = round(floatval($employee_salary * 0.09), 2);
-                $philhealth = round(floatval($employee_salary * 0.05 / 2), 2);
-
+                $gross = round($basic_salary + $pera, 2);
+                
+                # DEDUCTIONS
+                $rlip = round(floatval($basic_salary * 0.09), 2);
+                $philhealth = round(floatval($basic_salary * 0.05 / 2), 2);
                 $hdmf = round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2);
                 $mp2 = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2);
                 $mplstlms = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2);
                 $cir = round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2);
-                $w_tax = round(floatval($employee['w_tax'] ?? 0), 2);
+                $w_tax = round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2);
                 $uca = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2);
-                $dbp = round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2);
-                $kawani = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2);
-
                 $consoloan = round(floatval($social_security->consoloan ?? 0), 2);
                 $emergency_loan = round(floatval($social_security->emrgy_loan ?? 0), 2);
                 $plreg = round(floatval($social_security->plreg ?? 0), 2);
                 $mpl = round(floatval($social_security->mpl ?? 0), 2);
                 $cpl = round(floatval($social_security->cpl ?? 0), 2);
+                $aut = round(floatval(0),2);
+
+                # OPTIONAL DEDUCTIONS
+                $dbp = round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2);
+                $kawani = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2);
+
 
                 $total_deduction = round(
-                    floatval($rlip) +
+                    $rlip +
                     $hdmf +
-                    floatval($philhealth) +
+                    $philhealth +
                     $consoloan +
                     $emergency_loan +
                     $plreg +
@@ -233,7 +240,7 @@ class SalaryService extends Controller {
                     $mplstlms +
                     $cir +
                     $w_tax +
-                    floatval($aut)
+                    $aut
                 );
 
                 $net = round($gross - $total_deduction, 2);
@@ -242,9 +249,9 @@ class SalaryService extends Controller {
                 $data[] = [
                     'payroll_id' => $payroll->id,
                     'employee_no' => $employee_no,
-                    'name' => $employee_name,
-                    'position' => $employee_position,
-                    'basic_salary' => $employee_salary,
+                    'name' => $name,
+                    'position' => $position,
+                    'basic_salary' => $basic_salary,
                     'pera' => $pera,
                     'gross_amount_earned' => $gross,
                     'rlip' => $rlip,
@@ -260,7 +267,7 @@ class SalaryService extends Controller {
                     'cir375_cir449' => $cir,
                     'w_tax' => $w_tax,
                     'uca' => $uca,
-                    'aut' => floatval($aut),
+                    'aut' => $aut,
                     'total_deductions' => $total_deduction,
                     'net_amount' => $net,
                     'dbp' => $dbp,
@@ -273,6 +280,68 @@ class SalaryService extends Controller {
             return $data;
 
         } else {
+
+            $other_service = new OtherServices;
+            $dtr_service = new TimeLogService;
+            $leaveCard_service = new LeaveCardService;
+            $contribution_service = new ContributionsService;
+
+            $data = [];
+
+            foreach ($employees as $employee) {
+                $employee_no = $employee['employee_no'];
+                $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
+                $position = $employee['position_name'];
+                $basic_salary = round(floatval($employee['monthly_rate']), 2);
+                $employee_biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
+
+                $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
+                $cut_off_period = $payroll->cut_off_period;
+
+
+                $overtime = 0;
+                $holiday_pay = 0;
+                $allowances = 0;
+                $aut = 0;
+
+                $sss = $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0;
+                $pagibig = $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0;
+                $philhealth = $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0;
+
+                $w_tax = $contribution_service->computeWithholdingTax( $basic_salary);
+                $other_loans = 0;
+
+                $gross_amount_earned = $basic_salary + $overtime + $holiday_pay + $allowances;
+                $total_deductions = $sss + $pagibig + $philhealth + $w_tax + $other_loans + $aut;
+                $net_amount = $gross_amount_earned - $total_deductions;
+                
+                $bank_account = $employee['account_no'] ?? null;
+                $bank_name = $employee['bank'] ?? null;
+
+                $data[] = [
+                    'payroll_id' => $payroll->id,
+                    'employee_no' => $employee_no,
+                    'name' => $name,
+                    'position' => $position,
+                    'basic_salary' => $basic_salary,
+                    'overtime_pay' => $overtime,
+                    'holiday_pay' => $holiday_pay,
+                    'allowances' => $allowances,
+                    'aut' => $aut,
+                    'gross_amount_earned' => round($gross_amount_earned, 2),
+                    'sss' => round($sss, 2),
+                    'pagibig' => round($pagibig, 2),
+                    'philhealth' => round($philhealth, 2),
+                    'w_tax' => round($w_tax, 2),
+                    'other_loans' => round($other_loans, 2),
+                    'total_deductions' => round($total_deductions, 2),
+                    'net_amount' => round($net_amount, 2),
+                    'bank_account' => $bank_account,
+                    'bank_name' => $bank_name,
+                ];
+            }
+
+            return $data;
 
         }
 

@@ -289,7 +289,7 @@
                                         </tbody>
                                     </table>
                                 @else
-                                    <small class="text-uppercase text-muted">No GSIS Billing Found.</small>
+                                    <small class="text-uppercase text-muted">No {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} Billing Found.</small>
                                 @endif
                             </div>
                         </div>
@@ -325,7 +325,7 @@
                                         @endforeach
                                     </ul>
                                 @else
-                                    <small class="text-uppercase text-muted">No Earnings Found.</small>
+                                    <small class="text-uppercase text-muted">No Deductions Found.</small>
                                 @endif
                             </div>
                         </div>

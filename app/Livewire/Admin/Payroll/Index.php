@@ -310,6 +310,257 @@ class Index extends Component
             ];
         }
 
+        if($product == 'private') {
+            return [
+                'rank and file' => [
+                    'name' => 'Rank and File',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'page' => 'salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                        'mid_year' => [
+                            'name' => 'Mid Year Bonus',
+                            'page' => 'mid_year',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                        'year_end' => [
+                            'name' => 'Year End Bonus',
+                            'page' => 'year_end',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' =>  '',
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(11)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                    ]
+                ],
+                'manager' => [
+                    'name' => 'Manager',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'page' => 'salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                        'mid_year' => [
+                            'name' => 'Mid Year Bonus',
+                            'page' => 'mid_year',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                        'year_end' => [
+                            'name' => 'Year End Bonus',
+                            'page' => 'year_end',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' =>  '',
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(11)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                    ]
+                ],
+                'supervisor' => [
+                    'name' => 'Supervisor',
+                    'sub' => [
+                        'salary' => [
+                            'name' => 'Salary',
+                            'page' => 'salary',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'cut_off_period' => [
+                                    'label' => 'Cut Off Period',
+                                    'type' => 'text',
+                                    'class' => 'range',
+                                    'rules' => [
+                                        'required',
+                                        'unique:payroll,cut_off_period',
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                    ]
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Payroll Date',
+                                    'type' => 'date',
+                                    'rules' => 'required|date'
+                                ],
+                            ]
+                        ],
+                        'mid_year' => [
+                            'name' => 'Mid Year Bonus',
+                            'page' => 'mid_year',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' => ''
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                        'year_end' => [
+                            'name' => 'Year End Bonus',
+                            'page' => 'year_end',
+                            'fields' => [
+                                'employment_type' => [
+                                    'label' => 'Employment Type',
+                                    'type' => 'text',
+                                    'value' => 'Contractual',
+                                    'class' => 'restricted',
+                                    'attr' => ['readonly' => true],
+                                    'rules' =>  '',
+                                ],
+                                'payroll_date' => [
+                                    'label' => 'Date',
+                                    'type' => 'date',
+                                    'value' => Carbon::now()->month(11)->format('Y-m-d'),
+                                    'rules' =>  'required|date',
+                                    'attr' => [
+                                        'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
+                                        'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
+                                    ]
+                                ],
+                            ]
+                        ],
+                    ]
+                ],
+            ];
+        }
+
     }
 
     protected function rules()
@@ -361,7 +612,6 @@ class Index extends Component
             }
             
             $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
-
             $this->isToCreate = true;
 
             return;

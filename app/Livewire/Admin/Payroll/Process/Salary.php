@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Payroll\Process;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Models\Payroll;
 use App\Models\SalaryItemsPayroll;
+use App\Models\SalaryPayroll;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -54,8 +55,8 @@ class Salary extends Component
             return redirect()->route('payroll.index');
         }
 
+        $this->isApproved = $records['payroll']['status'];
         $this->records = $records;
-
         $this->batchId = $records['batch_id'];
 
     }
@@ -65,10 +66,10 @@ class Salary extends Component
         $payroll = &$this->records['payroll'];
         $payroll_item = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
 
-        $payroll_item['hdmf']   = floatval($this->hdmf[$sectionIndex][$employeeIndex] ?? 0);
-        $payroll_item['uca']    = floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0);
-        $payroll_item['dbp']    = floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0);
-        $payroll_item['kawani'] = floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0);
+        $payroll_item['hdmf']   = round(floatval($this->hdmf[$sectionIndex][$employeeIndex] ?? 0), 2);
+        $payroll_item['uca']    = round(floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0), 2);
+        $payroll_item['dbp']    = round(floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0), 2);
+        $payroll_item['kawani'] = round(floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0), 2);
 
         $fields = [
             'rlip', 'hdmf', 'philhealth', 'consoloan', 'emergency_loan',
@@ -76,18 +77,19 @@ class Salary extends Component
             'uca', 'dbp', 'kawani', 'w_tax', 'aut'
         ];
 
-        $totalDeduction = array_sum(array_map(
-            fn($field) => floatval($payroll_item[$field] ?? 0),
+        $totalDeduction = round(array_sum(array_map(
+            fn($field) => round(floatval($payroll_item[$field] ?? 0), 2),
             $fields
-        ));
+        )), 2);
 
-        $gross = floatval($payroll_item['gross_amount_earned'] ?? 0);
-        $net = $gross - $totalDeduction;
+        $gross = round(floatval($payroll_item['gross_amount_earned'] ?? 0), 2);
+        $net = round($gross - $totalDeduction, 2);
+        $half = round($net / 2, 2);
 
-        $payroll_item['total_deductions'] = number_format($totalDeduction, 2, '.', '');
-        $payroll_item['net_amount'] = number_format($net, 2, '.', '');
-        $payroll_item['lbp_payroll_account'] = $payroll_item['net_amount'];
-        $payroll_item['salary'] = number_format(round($net / 2, 2), 2, '.', '');
+        $payroll_item['total_deductions'] = $totalDeduction;
+        $payroll_item['net_amount'] = $net;
+        $payroll_item['lbp_payroll_account'] = $net;
+        $payroll_item['salary'] = $half;
 
         $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? null;
         if ($original) {
@@ -112,12 +114,13 @@ class Salary extends Component
         $overallNet = 0;
         foreach ($this->records['payroll_items'] as $section) {
             foreach ($section['employees'] as $employee) {
-                $overallNet += floatval($employee['net_amount'] ?? 0);
+                $overallNet += round(floatval($employee['net_amount'] ?? 0), 2);
             }
         }
 
-        $payroll['overall_net_amount'] = number_format($overallNet, 2, '.', '');
-        $payroll['overall_salary_amount'] = number_format(round($overallNet / 2, 2), 2, '.', '');
+        $payroll['overall_net_amount'] = round($overallNet, 2);
+        $payroll['overall_salary_amount'] = round($overallNet / 2, 2);
+
 
         \Log::debug('Payroll recomputed', [
             'section' => $sectionIndex,
@@ -127,6 +130,7 @@ class Salary extends Component
             'overall_net' => $payroll['overall_net_amount']
         ]);
     }
+
 
     protected function isChanged(array $current, array $original): bool
     {
@@ -241,7 +245,8 @@ class Salary extends Component
             ]);
 
         } else {
-            $payroll = Payroll::find($this->payroll_id);
+
+            $payroll = SalaryPayroll::find($this->payroll_id);
             $payroll->status = 'approved';
             $payroll->save();
 
@@ -250,7 +255,7 @@ class Salary extends Component
                 'title' => 'Success!', 
                 'showAlert' => true,
                 'message' => 'Payroll was approved, Payslip will be visible to employees',
-                'redirect' => route('payroll.process', ['payroll_id' => $this->payroll_id])
+                'redirect' => route('payroll.process', ['type' => $this->type, 'payroll_id' => $this->payroll_id])
             ]);
         }
 

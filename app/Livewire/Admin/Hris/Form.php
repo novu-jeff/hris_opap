@@ -97,6 +97,14 @@ class Form extends Component
             return;
         }
 
+        if($data->isTransferingEmp) {
+            return redirect()
+                ->route('hris.index')
+                ->with([
+                    'dispatch' => 'isTransfering'
+                ]);
+        }
+
         // Populate employee records
         $this->records = [
             'employee_information' => $this->formatEmployeeInformation($data),

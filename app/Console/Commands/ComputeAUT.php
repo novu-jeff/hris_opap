@@ -16,6 +16,7 @@ class ComputeAUT extends Command
     protected $signature = 'compute-aut';
     protected $description = 'Run command after uploading bulk logs';
 
+    protected $bsd_emp_identical;
     protected TimeLogService $timelogService;
     protected LeaveCardService $leaveCardService;
 
@@ -28,7 +29,7 @@ class ComputeAUT extends Command
 
     public function handle()
     {
-        $bsd_emp_identical = config('app.bsd_emp_identical');
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
         
         $now = Carbon::createFromDate(2025, 5, 1);
         $monthFormatted = strtoupper($now->format('F'));
@@ -57,7 +58,8 @@ class ComputeAUT extends Command
 
                 foreach ($employees as $employee) {
                     try {
-                        $bio_id = !$bsd_emp_identical ? $employee->bsd_no : $employee->employee_no;
+                        
+                        $bio_id = !$this->bsd_emp_identical ? $employee->bsd_no : $employee->employee_no;
                         $employee_no = $employee->employee_no;
 
                         $logs = $this->timelogService->getDTR($bio_id, $monthYear);

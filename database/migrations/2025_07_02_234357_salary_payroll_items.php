@@ -70,6 +70,7 @@ return new class extends Migration
 
                 $table->decimal('overtime_pay', 12, 2)->default(0);
                 $table->decimal('holiday_pay', 12, 2)->default(0);
+                $table->decimal('aut', 12, 2)->default(0);
                 $table->decimal('allowances', 12, 2)->default(0);
                 $table->decimal('gross_amount_earned', 12, 2)->default(0);
 
