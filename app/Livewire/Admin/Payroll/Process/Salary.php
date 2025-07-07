@@ -35,7 +35,7 @@ class Salary extends Component
         $this->product = config('app.product');
 
         $service = app(SalaryService::class);
-        
+
         $records = $service->getPayroll($this->payroll_id);
 
         foreach ($records['payroll_items'] as $sectionIndex => $sectionGroup) {
@@ -55,7 +55,7 @@ class Salary extends Component
             return redirect()->route('payroll.index');
         }
 
-        $this->isApproved = $records['payroll']['status'];
+        $this->isApproved = $records['payroll']['status'] == 'approved' ? true : false;
         $this->records = $records;
         $this->batchId = $records['batch_id'];
 
@@ -234,7 +234,7 @@ class Salary extends Component
     public function approve(bool $isNotify = true) {
 
         if($isNotify) {
-            
+
             $title = 'Are you sure to continue?';
             $message = 'Please be informed that once proceed payslip will be released to the employees. This action cannot be reverted';
             $action = 'approve';
@@ -252,7 +252,7 @@ class Salary extends Component
 
             $this->dispatch('alert', [
                 'status' => 'success',
-                'title' => 'Success!', 
+                'title' => 'Success!',
                 'showAlert' => true,
                 'message' => 'Payroll was approved, Payslip will be visible to employees',
                 'redirect' => route('payroll.process', ['type' => $this->type, 'payroll_id' => $this->payroll_id])
