@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 class ESSRequestTimeLogController extends Controller
 {
     public function __construct() {
-        $this->middleware('permission:read request-log')->only('index');
+        $this->middleware('permission:read time-adjustments')->only('index');
     }
 
     public function index(Request $request)
     {
         $status = $request->status ?? 'pending';
 
-        return view('admin.ess.request-timelog.index', compact('status'));
+        return view('admin.ess.time-adjustments.index', compact('status'));
     }
 }

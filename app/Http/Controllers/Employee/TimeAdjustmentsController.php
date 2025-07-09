@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class EmployeeRequestLogController extends Controller
+class TimeAdjustmentsController extends Controller
 {
     public function __construct() {
-        $this->middleware('permission:read apply-request-timelog')->only('index');
-        $this->middleware('permission:write apply-request-timelog')->only(['create', 'edit']);
+        $this->middleware('permission:read apply-time-adjustments')->only('index');
+        $this->middleware('permission:write apply-time-adjustments')->only(['create', 'edit']);
     }
 
     public function index()
     {
-        return view('employee.request-timelog', [
+        return view('employee.time-adjustments', [
             'action' => 'view',
             'title' => 'ESS | Request Timelogs',
             'header' => 'Manage Request Timelogs',
@@ -24,7 +24,7 @@ class EmployeeRequestLogController extends Controller
 
     public function create()
     {
-        return view('employee.request-timelog', [
+        return view('employee.time-adjustments', [
             'action' => 'create',
             'title' => 'Apply Request Timelogs',
             'header' => 'Apply Request Timelogs',
@@ -35,7 +35,7 @@ class EmployeeRequestLogController extends Controller
 
     public function edit(int $id)
     {
-        return view('employee.request-timelog', [
+        return view('employee.time-adjustments', [
             'id' => $id,
             'action' => 'edit',
             'title' => 'Edit Request Timelogs',

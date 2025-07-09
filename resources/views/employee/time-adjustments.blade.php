@@ -13,20 +13,20 @@
             @if ($action === 'view')
                 <div class="d-md-flex gap-3 ">
                     <a href="{{route('employee.dashboard')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-                    @can('write apply-request-timelog')
-                        <a href="{{route('employee.request-timelog.apply')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Apply Now</a>
+                    @can('write apply-time-adjustments')
+                        <a href="{{route('employee.time-adjustments.apply')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Apply Now</a>
                     @endcan
                 </div>
             @else
-                <a href="{{route('employee.request-timelog')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                <a href="{{route('employee.time-adjustments')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
             @endif
         </div>
     </div>
     <div class="mt-3">
         @if ($action == 'view')
-            @livewire('employee.request-timelog.index')
+            @livewire('employee.time-adjustments.index')
         @else 
-            @livewire('employee.request-timelog.apply', [
+            @livewire('employee.time-adjustments.apply', [
                 'record_id' => $id ?? null
             ])
         @endif

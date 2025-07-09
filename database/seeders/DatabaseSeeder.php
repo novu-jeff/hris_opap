@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 TrancheSeeder::class,
                 TimeEquivalentSeeder::class,
+                JobPostSeeder::class,
             ]);
         }
 

@@ -66,7 +66,7 @@
                                         @foreach($preview_attachments as $item)
                                             <li class="list-unstyled-item">
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <a class="d-flex align-items-center text-decoration-none" href="{{Storage::url('public/request-timelogs/' . $item['attachment'])}}" download>
+                                                    <a class="d-flex align-items-center text-decoration-none" href="{{Storage::url('public/time-adjustmentss/' . $item['attachment'])}}" download>
                                                         {{$item['attachment']}}
                                                     </a>
                                                     <button type="button" class="btn text-danger" wire:click="removeAttachment({{$item['id']}})">

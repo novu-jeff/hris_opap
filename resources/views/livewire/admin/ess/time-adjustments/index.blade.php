@@ -63,7 +63,7 @@
                                         @foreach($view_records->attachments as $item)
                                             <li class="list-unstyled-item">
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <a class="d-flex align-items-center text-decoration-none" href="{{Storage::url('public/request-timelogs/' . $item['attachment'])}}" download>
+                                                    <a class="d-flex align-items-center text-decoration-none" href="{{Storage::url('public/time-adjustmentss/' . $item['attachment'])}}" download>
                                                         {{$item['attachment']}}
                                                     </a>
                                                 </div>
@@ -89,13 +89,13 @@
         <div class="card-body p-0">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.request-timelog', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
+                    <a href="{{route('ess.time-adjustments', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.request-timelog', ['status' => 'granted'])}}" class="nav-link text-uppercase fw-medium {{$status === 'granted' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
+                    <a href="{{route('ess.time-adjustments', ['status' => 'granted'])}}" class="nav-link text-uppercase fw-medium {{$status === 'granted' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Granted</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{route('ess.request-timelog', ['status' => 'disapproved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'disapproved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Disapproved</a>
+                    <a href="{{route('ess.time-adjustments', ['status' => 'disapproved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'disapproved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Disapproved</a>
                 </li>
             </ul>
             <div class="tab-content mt-5" id="pills-tabContent">

@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.ess.request-timelog.index', [
+        @livewire('admin.ess.time-adjustments.index', [
             'status' => $status
         ])
     </div>

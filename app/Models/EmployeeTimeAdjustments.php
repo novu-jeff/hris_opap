@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EmployeeRequestLog extends Model
+class EmployeeTimeAdjustments extends Model
 {
     use HasFactory;
     
-    protected $table = 'employee_request_logs';
+    protected $table = 'employee_time_adjustments';
     protected $fillable = [
         'employee_no',
         'date',
@@ -30,7 +30,7 @@ class EmployeeRequestLog extends Model
     }
 
     public function attachments() {
-        return $this->hasMany(EmployeeRequestLogAttachments::class, 'employee_requests_id', 'id');
+        return $this->hasMany(EmployeeTimeAdjustmentsAttachments::class, 'employee_requests_id', 'id');
     }
 
 }

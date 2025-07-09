@@ -16,17 +16,17 @@ class Index extends Component
 
     public $user_id;
     public $selected_id;
-    protected $listeners = ['remove'];
+    protected $listeners = ['remove', 'cancel'];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
-    public $status = '';
+    public $status = 'pending';
 
     public function mount() {
         $user_id = Auth::user()->employee_no;
 
         if(is_null($user_id)) {
-            return redirect()->route('employee.leave');
+            return redirect()->route('employee.obs.index');
         }
 
         $this->user_id = $user_id;
@@ -141,7 +141,8 @@ class Index extends Component
                 
             if($record) {
                 
-                $record->delete();
+                $record->isDeleted = true;
+                $record->save();
 
                 $this->dispatch('alert', [
                     'status' => 'success',
@@ -162,10 +163,54 @@ class Index extends Component
         }
     }
 
+    public function cancel(bool $isNotify = true, int $id = null) {
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that you are about to cancel your application for rendering overtime <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'cancel';
+
+            $this->selected_id = $id;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeBusinessSlip::find($this->selected_id);
+                
+            if($record) {
+                
+                $record->status = 'cancelled';
+                $record->save();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!', 
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'OBS application #' . strtoupper(format_id($record->id, 6)) . ' has been cancelled successfully.' 
+                ]);
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!', 
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists' 
+                ]);
+            }
+        }
+    }
+
     public function render()
     {
 
-        $model = EmployeeBusinessSlip::where('employee_no', $this->user_id);
+        $model = EmployeeBusinessSlip::where('employee_no', $this->user_id)
+            ->where('isDeleted', false);
 
         if ($this->status) {
             $records = $model->where('status', $this->status);

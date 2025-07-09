@@ -103,12 +103,12 @@ class Apply extends Component
 
     private function gatherDates(string $employee_no)
     {
-        // Collect leave dates
+
         $leaveDates = collect(
             EmployeeLeaveDates::with('employeeLeave.leave_type')
                 ->whereHas('employeeLeave', function ($query) use ($employee_no) {
                     $query->where('employee_no', $employee_no)
-                        ->where('status', '!=', 'disapproved'); // Fixed comparison syntax
+                        ->where('status', '!=', 'disapproved'); 
                 })
                 ->get()
                 ->map(function ($item) {
@@ -116,12 +116,11 @@ class Apply extends Component
                         'date'   => $item->date,
                         'name'   => optional($item->employeeLeave->leave_type)->name ?? 'Leave',
                         'type'   => 'leave',
-                        'status' => $item->employeeLeave->status ?? null // Added leave status
+                        'status' => $item->employeeLeave->status ?? null 
                     ];
                 })
         );
 
-        // Collect holidays
         $holidays = collect(
             Holiday::get()->map(function ($holiday) {
                 return [
@@ -132,7 +131,6 @@ class Apply extends Component
             })
         );
 
-        // Merge safely, sort, and return array
         $myCalendar = $leaveDates->merge($holidays)->sortBy('date')->values();
 
         return $myCalendar->toArray();
@@ -214,12 +212,10 @@ class Apply extends Component
         switch ($this->type) {
             case 1: // Location required for type 1
                 $rules['location'] = 'required|in:ph,abroad';
-                $rules['location_specific'] = 'required';
                 break;
 
             case 2: // Confinement and illness required for type 2
                 $rules['confinement'] = 'required';
-                $rules['illness'] = 'required';
                 break;
 
             case 3: // Mandatory/forced leave - minimum 5 selected dates

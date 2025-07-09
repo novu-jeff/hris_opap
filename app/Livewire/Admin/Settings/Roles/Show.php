@@ -48,7 +48,7 @@ class Show extends Component
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
             ],
             'employee' => [
-                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-messages',
+                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-messages',
                 'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
             ]
         ];
@@ -57,7 +57,7 @@ class Show extends Component
             // Show only 'employee' permissions
             $this->permissions = [
                 'employee' => [
-                    'apply-leave', 'clock-in-out', 'remaining-credit', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-messages',
+                    'apply-leave', 'clock-in-out', 'remaining-credit', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-messages',
                     'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
                 ]
             ];
