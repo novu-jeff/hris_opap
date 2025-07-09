@@ -145,9 +145,9 @@
                                     </li>
                                     @endcanany
                                     
-                                    @canany(['read apply-request-timelog', 'write apply-request-timelog'])
+                                    @canany(['read apply-time-adjustments', 'write apply-time-adjustments'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{ route('employee.request-timelog') }}">Request Timelog</a>
+                                        <a href="{{ route('employee.time-adjustments') }}">Request Timelog</a>
                                     </li>
                                     @endcanany
                                     

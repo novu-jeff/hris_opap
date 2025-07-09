@@ -1,5 +1,5 @@
 <div class="notification d-none d-md-block" wire:poll="loadNotifications" wire:poll.keep-alive wire:visible>
-    <div wire:click="toggle">
+    <div wire:click="toggle" data-bs-toggle="tooltip" title="Notification">
         <i class="fa-regular fa-bell"></i>
         @if($notifications['unread'] > 0)
             <span class="count">{{$notifications['unread']}}</span>

@@ -368,7 +368,7 @@ return new class extends Migration
             $table->enum('status', [
                     'approved',
                     'disapproved',
-                    'pending'
+                    'pending',
                 ])->default('pending');
             $table->longText('remarks')
                 ->nullable();

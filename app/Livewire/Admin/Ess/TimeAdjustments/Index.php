@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Livewire\Admin\Ess\RequestTimelog;
+namespace App\Livewire\Admin\Ess\TimeAdjustments;
 
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeClockInOut;
-use App\Models\EmployeeRequestLog;
+use App\Models\EmployeeTimeAdjustments;
 use App\Models\EmployeeTimelogs;
 use App\Notifications\Notifications;
 use Carbon\Carbon;
@@ -39,7 +39,7 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $this->view_records = EmployeeRequestLog::with('personal', 'attachments')
+        $this->view_records = EmployeeTimeAdjustments::with('personal', 'attachments')
             ->where('id', $id)
             ->first();
     }
@@ -59,7 +59,7 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeRequestLog::where('id', $this->selected_id)
+            $record = EmployeeTimeAdjustments::where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
 
@@ -97,12 +97,12 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeRequestLog::with('employee')->where('id', $this->selected_id)
+            $record = EmployeeTimeAdjustments::with('employee')->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
                 
             if(is_null($record)) {
-                return redirect()->route('ess.request-timelog.index');
+                return redirect()->route('ess.time-adjustments.index');
             }
 
             $record->action_by_id = Auth::user()->id;
@@ -174,7 +174,7 @@ class Index extends Component
             ]);
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('success', 'You\'re request timelog application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.request-timelog'), 'employee'));
+            $user?->notify(new Notifications('success', 'You\'re request timelog application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.time-adjustments'), 'employee'));
 
             return;
 
@@ -198,7 +198,7 @@ class Index extends Component
 
         }  else {
 
-            $record = EmployeeRequestLog::find($this->selected_id);
+            $record = EmployeeTimeAdjustments::find($this->selected_id);
                 
             if($record) {
                 
@@ -238,7 +238,7 @@ class Index extends Component
             $status = $this->status;
         }
 
-        $model = EmployeeRequestLog::with('attachments', 'employee')
+        $model = EmployeeTimeAdjustments::with('attachments', 'employee')
             ->where('status', $status)
             ->where('isDeleted', false);
 
@@ -256,7 +256,7 @@ class Index extends Component
 
         $records = $model->latest()->paginate($this->entries);
 
-        return view('livewire.admin.ess.request-timelog.index', [
+        return view('livewire.admin.ess.time-adjustments.index', [
             'records' => $records
         ]);
     }

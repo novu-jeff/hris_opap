@@ -56,7 +56,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-6 mb-4">
-                                <label class="mb-2" for="location_specific">Specific Location <span class="text-danger">*</span></label>
+                                <label class="mb-2" for="location_specific">Specific Location</label>
                                 <input type="text" wire:model="location_specific" id="location_specific" class="form-control">
                                 <div class="error-field">
                                     @error('location_specific') <span class="text-danger">{{ $message }}</span> @enderror
@@ -76,7 +76,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-6 mb-4">
-                                <label class="mb-2" for="illness">Illness (Specify) <span class="text-danger">*</span></label>
+                                <label class="mb-2" for="illness">Illness (Specify)</label>
                                 <input type="text" wire:model="illness" id="illness" class="form-control">
                                 <div class="error-field">
                                     @error('illness') <span class="text-danger">{{ $message }}</span> @enderror

@@ -29,7 +29,7 @@ class PermissionSeeder extends Seeder
                 'leave',
                 'obs',
                 'arto',
-                'request-log',
+                'time-adjustments',
                 'announcements',
                 'employee-profile-approval',
                 'messages',
@@ -70,7 +70,7 @@ class PermissionSeeder extends Seeder
                 'clock-in-out',
                 'remaining-credit',
                 'apply-atro',
-                'apply-request-timelog',
+                'apply-time-adjustments',
                 'payslip',
                 'employee-messages',
                 'apply-obs',
@@ -86,12 +86,9 @@ class PermissionSeeder extends Seeder
             foreach ($actions as $action) {
                 $guardName = $module === 'employee' ? 'employee' : 'web';
 
-                // Check if the action should only be "read"
                 if (in_array($action, ['my-directory', 'my-team', 'employee-announcements', 'payslip'])) {
-                    // Only create "read" permission for these actions
                     $this->createPermission($module, "read $action", $guardName);
                 } else {
-                    // Create both "read" and "write" permissions for the rest
                     $this->createPermission($module, "read $action", $guardName);
                     $this->createPermission($module, "write $action", $guardName);
                 }

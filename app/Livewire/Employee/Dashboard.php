@@ -8,7 +8,7 @@ use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
 use App\Models\EmployeeLeave;
 use App\Models\EmployeeLeaveCard;
-use App\Models\EmployeeRequestLog;
+use App\Models\EmployeeTimeAdjustments;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -51,12 +51,12 @@ class Dashboard extends Component
                     ->count(),
                 'route' => 'employee.atro',
             ],
-            'request_log' => [
-                'title' => 'Request TimeLog',
-                'count' => EmployeeRequestLog::where('employee_no', $employee_no)
+            'time_adjustments' => [
+                'title' => 'Time Adjustments',
+                'count' => EmployeeTimeAdjustments::where('employee_no', $employee_no)
                     ->where('status', 'pending')
                     ->count(),
-                'route' => 'employee.request-timelog',
+                'route' => 'employee.time-adjustments',
             ],
             'oba' => [
                 'title' => 'OB Application',

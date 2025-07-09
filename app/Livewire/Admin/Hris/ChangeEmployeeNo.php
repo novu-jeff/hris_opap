@@ -118,7 +118,7 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeDeductions::class,
                 \App\Models\EmployeeEarnings::class,
                 \App\Models\EmployeeLeaveCard::class,
-                \App\Models\EmployeeRequestLog::class,
+                \App\Models\EmployeeTimeAdjustments::class,
                 \App\Models\EmployeeUpdateChildren::class,
                 \App\Models\EmployeeUpdateCivilService::class,
                 \App\Models\EmployeeUpdateEducation::class,

@@ -32,7 +32,7 @@
                         </div>
                         <div class="col-12 mb-3">
                             <label for="password" class="mb-2">Password <span class="text-danger">*</span></label>
-                            <input type="password" wire:model="password" id="password" class="form-control">
+                            <input type="password" wire:model="password" id="password" class="form-control" placeholder="Enter Password" autocomplete="off">
                             <div class="error-field">
                                 @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>

@@ -70,7 +70,7 @@ use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncement
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
-use App\Http\Controllers\Employee\EmployeeRequestLogController;
+use App\Http\Controllers\Employee\TimeAdjustmentsController;
 use App\Http\Controllers\Employee\PayslipController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
@@ -238,12 +238,12 @@ Route::prefix('admin')->group(function() {
 
             Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
                 ->name('ess.atro');
-
+                
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
 
-            Route::get('request-timelog', [ESSRequestTimeLogController::class, 'index'])
-                ->name('ess.request-timelog');
+            Route::get('time-adjustments', [ESSRequestTimeLogController::class, 'index'])
+                ->name('ess.time-adjustments');
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
@@ -445,16 +445,16 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 
         });
 
-        Route::prefix('request-timelog')->group(function() {
+        Route::prefix('time-adjustments')->group(function() {
 
-            Route::get('/', [EmployeeRequestLogController::class, 'index'])
-                ->name('employee.request-timelog');
-            Route::get('apply', [EmployeeRequestLogController::class, 'create'])
-                ->name('employee.request-timelog.apply');
-            Route::get('edit/{id}', [EmployeeRequestLogController::class, 'edit'])
-                ->name('employee.request-timelog.edit');
-            Route::get('{id}', [EmployeeRequestLogController::class, 'show'])
-                ->name('employee.request-timelog.show');
+            Route::get('/', [TimeAdjustmentsController::class, 'index'])
+                ->name('employee.time-adjustments');
+            Route::get('apply', [TimeAdjustmentsController::class, 'create'])
+                ->name('employee.time-adjustments.apply');
+            Route::get('edit/{id}', [TimeAdjustmentsController::class, 'edit'])
+                ->name('employee.time-adjustments.edit');
+            Route::get('{id}', [TimeAdjustmentsController::class, 'show'])
+                ->name('employee.time-adjustments.show');
         });
 
         Route::prefix('payslip')->group(function() {

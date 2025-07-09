@@ -24,8 +24,8 @@
             <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
         @endcan
 
-        @can('read request-log')
-            <li><a class="dropdown-item" href="{{route('ess.request-timelog')}}">Request Timelog</a></li>
+        @can('read time-adjustments')
+            <li><a class="dropdown-item" href="{{route('ess.time-adjustments')}}">Time Adjustments</a></li>
         @endcan
 
         @can('read announcements')
