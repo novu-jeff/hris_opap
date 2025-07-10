@@ -76,8 +76,8 @@ class CivilService extends Component
             'records.*.rating' => 'required|string|max:255',
             'records.*.date_exam' => 'required|string|max:255',
             'records.*.place_exam' => 'required|string|max:255',
-            'records.*.license_no' => 'required|string|max:255',
-            'records.*.date_validity' => 'required|date',
+            'records.*.license_no' => 'nullable|string|max:255',
+            'records.*.date_validity' => 'nullable|date',
             'records.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
             'records.*.documents' => function ($attribute, $value, $fail) {
                 $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];

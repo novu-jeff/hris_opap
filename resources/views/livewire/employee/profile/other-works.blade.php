@@ -11,14 +11,16 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Organization</th>
-                            <th>Address</th>
-                            <th>Date From</th>
-                            <th>Date To</th>
-                            <th>Consumed Hours</th>
-                            <th>Position</th>
-                            <th>Documents</th>
+                            <th rowspan="2" class="text-uppercase text-center"></th>
+                            <th rowspan="2" class="text-uppercase text-center">Name & Address of Organization <br> (Write in full)</th>
+                            <th colspan="2" class="text-uppercase text-center">Inclusive Dates <br> (mm/dd/yyyy)</th>
+                            <th rowspan="2" class="text-uppercase text-center">Number of Hours</th>
+                            <th rowspan="2" class="text-uppercase text-center">Position / Nature of Work</th>
+                            <th rowspan="2" class="text-uppercase text-center">Documents</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">From</th>
+                            <th class="text-center">To</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,12 +35,6 @@
                                     <input style="width: 300px" type="text" wire:model="records.{{$key}}.organization" id="records.{{$key}}.organization" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.organization') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </td>
-                                <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.address" id="records.{{$key}}.address" class="form-control text-uppercase">
-                                    <div class="error-field">
-                                        @error('records.'.$key.'.address') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
@@ -88,7 +84,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Other Works Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
@@ -96,11 +92,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

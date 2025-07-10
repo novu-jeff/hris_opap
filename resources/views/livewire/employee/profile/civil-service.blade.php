@@ -11,14 +11,17 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Certification</th>
-                            <th>Rating</th>
-                            <th>Date of Exam</th>
-                            <th>Place of Exam</th>
-                            <th>License No.</th>
-                            <th>Date of Validity</th>
-                            <th>Documents</th>
+                            <th rowspan="2" class="text-center"></th>
+                            <th rowspan="2" class="text-center">Career Service/ RA 1080 (Board / Bar) Under Special Laws/ CES/ CSEE<br>Barangay Eligibility / Driver's License</th>
+                            <th rowspan="2" class="text-center">Rating <br> (if applicable)</th>
+                            <th rowspan="2" class="text-center">Date of Examination / Conferment</th>
+                            <th rowspan="2" class="text-center">Place of Exam / Conferment</th>
+                            <th colspan="2" class="text-center">License (if applicable)</th>
+                            <th rowspan="2" class="text-center">Documents</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">Number</th>
+                            <th class="text-center">Date of validity</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -30,7 +33,7 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.certification" id="records.{{$key}}.certification" class="form-control text-uppercase">
+                                    <input style="width: 100%" type="text" wire:model="records.{{$key}}.certification" id="records.{{$key}}.certification" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.certification') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
@@ -88,7 +91,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Civil Service Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
@@ -96,11 +99,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

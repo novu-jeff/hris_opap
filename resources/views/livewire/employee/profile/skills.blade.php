@@ -11,11 +11,11 @@
                 <table class="table table-bordered mt-3 w-100">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Recognition</th>
-                            <th>Organization</th>
-                            <th>Documents</th>
+                            <th class="text-center text-uppercase"></th>
+                            <th class="text-center text-uppercase">Special Skills and Hobbies</th>
+                            <th class="text-center text-uppercase">Non-Academic Distinctions <br> / Recognition (Write in full)</th>
+                            <th class="text-center text-uppercase">Membership in Association / Organization</th>
+                            <th class="text-center text-uppercase">Documents</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,7 +67,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Skills or Hobbies Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
@@ -75,11 +75,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

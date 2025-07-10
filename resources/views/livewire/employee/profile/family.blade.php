@@ -149,11 +149,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

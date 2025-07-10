@@ -11,13 +11,19 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Level</th>
-                            <th>Name of School</th>
-                            <th>Basic Education / Strand / Degree / Course</th>
-                            <th>Attended From</th>
-                            <th>Attended To</th>
-                            <th>Documents</th>
+                            <th rowspan="2" class="text-center"></th>
+                            <th rowspan="2" class="text-center">Level</th>
+                            <th rowspan="2" class="text-center">Name of School</th>
+                            <th rowspan="2" class="text-center">Basic Education / Degree / Course</th>
+                            <th colspan="2" class="text-center">Period of Attendance</th>
+                            <th rowspan="2" class="text-center">Highest Level / Units Earned <br> (if not graduated)</th>
+                            <th rowspan="2" class="text-center">Year Graduated</th>
+                            <th rowspan="2" class="text-center">Scholarship / Academic <br> Honors Received</th>
+                            <th rowspan="2" class="text-center">Documents</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">From</th>
+                            <th class="text-center">To</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,15 +63,33 @@
                                 </div>
                             </td>
                             <td>
-                                <input type="date" style="width: 300px" wire:model="records.{{$key}}.from_year" id="records.{{$key}}.from_year" class="form-control text-uppercase">
+                                <input type="number" style="width: 300px" wire:model="records.{{$key}}.from_year" id="records.{{$key}}.from_year" class="form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </td>
                             <td>
-                                <input type="date" style="width: 300px" wire:model="records.{{$key}}.to_year" id="records.{{$key}}.to_year" class="form-control text-uppercase">
+                                <input type="number" style="width: 300px" wire:model="records.{{$key}}.to_year" id="records.{{$key}}.to_year" class="form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" style="width: 300px" wire:model="records.{{$key}}.highest_level" id="records.{{$key}}.highest_level" class="form-control text-uppercase">
+                                <div class="error-field">
+                                    @error('records.'.$key.'.highest_level') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </td>
+                            <td>
+                                <input type="number" style="width: 300px" wire:model="records.{{$key}}.year_graduated" id="records.{{$key}}.year_graduated" class="form-control text-uppercase">
+                                <div class="error-field">
+                                    @error('records.'.$key.'.year_graduated') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" style="width: 300px" wire:model="records.{{$key}}.scholarship_honors" id="records.{{$key}}.scholarship_honors" class="form-control text-uppercase">
+                                <div class="error-field">
+                                    @error('records.'.$key.'.scholarship_honors') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </td>
                             <td>
@@ -91,7 +115,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Education Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
@@ -99,11 +123,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

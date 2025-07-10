@@ -62,7 +62,6 @@ class OtherWorks extends Component
 
     private $defaultFields = [
         'organization' => '',
-        'address' => '',
         'date_from' => '',
         'date_to' => '',
         'consumed_hours' => '',

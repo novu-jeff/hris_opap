@@ -232,6 +232,12 @@ return new class extends Migration
                 ->nullable();
             $table->string('to_year')
                 ->nullable();
+            $table->string('highest_level')
+                ->nullable();
+            $table->string('year_graduated')
+                ->nullable();
+            $table->string('scholarship_honors')
+                ->nullable();
             $table->string('documents')
                 ->nullable();
             $table->timestamps();
@@ -241,6 +247,10 @@ return new class extends Migration
 
             $table->id();
             $table->string('employee_no');
+            $table->string('from_year')
+                ->nullable();
+            $table->string('to_year')
+                ->nullable();
             $table->string('position')
                 ->nullable();
             $table->string('department')
@@ -249,16 +259,14 @@ return new class extends Migration
                 ->nullable();
             $table->string('monthly_salary')
                 ->nullable();
+            $table->string('salary_pay_grade')
+                ->nullable();
             $table->string('employment_status')
                 ->nullable();
             $table->enum('isGovernment', [
                     'yes',
                     'no'
                 ])
-                ->nullable();
-            $table->string('from_year')
-                ->nullable();
-            $table->string('to_year')
                 ->nullable();
             $table->string('documents')
                 ->nullable();
@@ -313,8 +321,6 @@ return new class extends Migration
             $table->id();
             $table->string('employee_no');
             $table->string('organization')
-                ->nullable();
-            $table->string('address')
                 ->nullable();
             $table->string('date_from')
                 ->nullable();

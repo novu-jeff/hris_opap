@@ -63,8 +63,8 @@ class Employment extends Component
     private $defaultFields = [
         'position' => '',
         'department' => '',
-        'company_name' => '',
         'monthly_salary' => '',
+        'salary_pay_grade' => '',
         'employment_status' => '',
         'isGovernment' => '',
         'from_year' => '',

@@ -11,14 +11,17 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Type</th>
-                            <th>Name</th>
-                            <th>Date From</th>
-                            <th>Date To</th>
-                            <th>Consumed Hours</th>
-                            <th>Sponsored By</th>
-                            <th>Documents</th>
+                            <th rowspan="2" class="text-uppercase text-center"></th>
+                            <th rowspan="2" class="text-uppercase text-center">Title of learning and development <br> interventions / training programs <br> (Write in full)</th>
+                            <th colspan="2" class="text-uppercase text-center">Inclusive Dates of Attendances</th>
+                            <th rowspan="2" class="text-uppercase text-center">Number of Hours</th>
+                            <th rowspan="2" class="text-uppercase text-center">Type of LD (Managerial / Supervisory / <br> Technician / etc )</th>
+                            <th rowspan="2" class="text-uppercase text-center">Conducted / Sponsored By <br> (Write in full)</th>
+                            <th rowspan="2" class="text-uppercase text-center">Documents</th>
+                        </tr>
+                        <tr>
+                            <th class="text-uppercase text-center">From</th>
+                            <th class="text-uppercase text-center">To</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -28,12 +31,6 @@
                                     <button type="button" class="btn btn-danger" wire:click="removeRecord({{$key}})">
                                         <i class="fa-solid fa-circle-minus"></i>
                                     </button>
-                                </td>
-                                <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.type" id="records.{{$key}}.type" class="form-control text-uppercase">
-                                    <div class="error-field">
-                                        @error('records.'.$key.'.type') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
                                 </td>
                                 <td>
                                     <input style="width: 300px" type="text" wire:model="records.{{$key}}.name" id="records.{{$key}}.name" class="form-control text-uppercase">
@@ -58,7 +55,13 @@
                                     <div class="error-field">
                                         @error('records.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
-                                </td>                                         
+                                </td>     
+                                <td>
+                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.type" id="records.{{$key}}.type" class="form-control text-uppercase">
+                                    <div class="error-field">
+                                        @error('records.'.$key.'.type') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </td>                                    
                                 <td>
                                     <input style="width: 300px" type="text" wire:model="records.{{$key}}.sponsored_by" id="records.{{$key}}.sponsored_by" class="form-control text-uppercase">
                                     <div class="error-field">
@@ -88,7 +91,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Trainings Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
@@ -96,11 +99,6 @@
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
                 </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
             </div>
         </div>
     </div>
