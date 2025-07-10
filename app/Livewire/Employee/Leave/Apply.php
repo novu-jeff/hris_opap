@@ -137,19 +137,6 @@ class Apply extends Component
 
     }
 
-    public function selectDuration() {
-
-        if(!empty($this->duration)) {
-            if($this->duration == 2) {
-                return $this->isMoreThanOne = true;
-            }
-
-            return $this->isMoreThanOne = false;
-        } else {
-            return $this->isMoreThanOne = null;
-        }
-    }
-
     public function setSelectedDates($dates) {
         $this->selectedDates = $dates;
     }
@@ -160,7 +147,6 @@ class Apply extends Component
             ->first();
         $leaveTypes = strtolower($leaveType->code ?? null);
 
-        $this->duration = $duration;
 
         if($this->type == 1 || $this->type == 2) {
             $records = EmployeeLeaveCard::where('employee_no', $this->employee_no)
@@ -172,7 +158,6 @@ class Apply extends Component
 
         } else if($this->type == 3) {
 
-            $this->duration = 2;
             $this->isDurationDisabled = true;
             $this->isMoreThanOne = true;
 
@@ -212,10 +197,12 @@ class Apply extends Component
         switch ($this->type) {
             case 1: // Location required for type 1
                 $rules['location'] = 'required|in:ph,abroad';
+                $rules['duration'] = 'required|in:wholeday,halfday_morning,halfday_afternoon';
                 break;
 
             case 2: // Confinement and illness required for type 2
                 $rules['confinement'] = 'required';
+                $rules['duration'] = 'required|in:wholeday,halfday_morning,halfday_afternoon';
                 break;
 
             case 3: // Mandatory/forced leave - minimum 5 selected dates
@@ -247,6 +234,8 @@ class Apply extends Component
         return [
             'type.required' => 'Leave type is required.',
             'type.exists' => 'The selected leave type does not exist.',
+            'duration.required' => 'Leave duration is required.',
+            'duration.in' => 'Invalid leave duration selected.',
 
             'selectedDates.required' => 'Please select at least one date for your leave.',
             'selectedDates.array' => 'The selected dates must be in a valid format.',
@@ -269,6 +258,19 @@ class Apply extends Component
         ];
     }
 
+     public function selectDuration() {
+
+        if(!empty($this->duration)) {
+            if($this->duration == 2) {
+                return $this->isMoreThanOne = true;
+            }
+
+            return $this->isMoreThanOne = false;
+        } else {
+            return $this->isMoreThanOne = null;
+        }
+    }
+
     public function save(bool $isNotify = true) {
 
         $this->validate();
@@ -289,7 +291,13 @@ class Apply extends Component
             try {
                 DB::beginTransaction();
 
-                $daysCovered = count($this->selectedDates);
+                $selectedCount = count($this->selectedDates);
+
+                if (in_array($this->type, [1, 2]) && $this->duration !== 'wholeday') {
+                    $daysCovered = $selectedCount / 2;
+                } else {
+                    $daysCovered = $selectedCount;
+                }
 
                 $employeeLeaveModel = EmployeeLeave::class;
                 $leaveTypeModel = LeaveType::find($this->type);
@@ -368,11 +376,14 @@ class Apply extends Component
                         }
                     }
                 } else {
+
                     $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
                         ->where('employee_no', $this->employee_no)
                         ->first();
+                    
+                    $leaveCredits = (float) $leaveCredits->credits ?? 0;
 
-                    if (!$leaveCredits || $leaveCredits->credits == 0) {
+                    if (!$leaveCredits || $leaveCredits == 0) {
                         return $this->dispatch('alert', [
                             'showAlert' => true,
                             'status' => 'error',
@@ -381,12 +392,12 @@ class Apply extends Component
                         ]);
                     }
 
-                    if ($daysCovered > $leaveCredits->credits) {
+                    if ($daysCovered > $leaveCredits) {
                         return $this->dispatch('alert', [
                             'showAlert' => true,
                             'status' => 'error',
                             'title' => 'Oops',
-                            'message' => "You're applying for {$daysCovered} day(s), but only have {$leaveCredits->credits} credits."
+                            'message' => "You're applying for {$daysCovered} day(s), but only have {$leaveCredits} credit(s) left."
                         ]);
                     }
                 }
@@ -397,6 +408,7 @@ class Apply extends Component
                 ], [
                     'employee_no' => $this->employee_no,
                     'leave_id' => $this->type,
+                    'duration' => $this->duration,
                     'location' => $this->location ?? null,
                     'location_specific' => $this->location_specific ?? null,
                     'confinement' => $this->confinement ?? null,

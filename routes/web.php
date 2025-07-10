@@ -485,7 +485,7 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
         Route::get('announcements/{id}', [EmployeeAnnouncementController::class, 'view'])
             ->name('employee.announcements.view');
 
-        Route::get('profile', [EmployeeProfileController::class, 'index'])
+        Route::get('profile/{form}', [EmployeeProfileController::class, 'index'])
             ->name('employee.profile');
 
         Route::get('tutorial', [TutorialController::class, 'index'])

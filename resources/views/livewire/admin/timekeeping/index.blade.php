@@ -84,7 +84,7 @@
                                 class="btn btn-primary px-3 text-uppercase fw-medium"
                             >
                                 <span wire:loading.remove wire:target="findLogs('{{ $item['bsd_no'] ?? '' }}')">
-                                    {{ $viewLogBsdNo === $item['bsd_no'] ? 'Close' : 'Open' }}
+                                    {{ $viewLogBsdNo == $item['bsd_no'] ? 'Close' : 'Open' }}
                                 </span>
                                 <span wire:loading wire:target="findLogs('{{ $item['bsd_no'] ?? '' }}')">
                                     <i class="fa-solid fa-spinner fa-spin"></i>

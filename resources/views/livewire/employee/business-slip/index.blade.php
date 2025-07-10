@@ -52,12 +52,18 @@
                                     <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
-                                    <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
-                                    <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                        <i class="fa-solid fa-ban"></i>
-                                    </button>
+                                    @if($record->status == 'pending')
+                                        <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    @else
+                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

@@ -243,16 +243,14 @@ Livewire.on('scrollToError', function(errors) {
     if (errors.length) {
         let errorField = Array.isArray(errors[0]) ? errors[0][0] : errors[0]; 
 
-        // Check for wire:model first
         let $inputElement = $(`[wire\\:model="${errorField}"]`); 
-        // If the input element isn't found, check for wire:model.live
         if (!$inputElement.length) {
             $inputElement = $(`[wire\\:model\\.live="${errorField}"]`);
         }
 
         if ($inputElement.length) {
             $('html, body').animate({
-                scrollTop: $inputElement.offset().top - 100 
+                scrollTop: $inputElement.offset().top - 500 
             }, 100);
         }
     }

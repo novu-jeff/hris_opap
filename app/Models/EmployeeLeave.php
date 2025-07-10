@@ -14,6 +14,7 @@ class EmployeeLeave extends Model
         'employee_no',
         'status',
         'leave_id',
+        'duration',
         'location',
         'location_specific',
         'confinement',

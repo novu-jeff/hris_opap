@@ -42,12 +42,27 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $this->view_records = EmployeeLeave::with('dates', 'employment', 'employee', 'leave_type')
+        $view_records = EmployeeLeave::with('dates', 'employment', 'employee', 'leave_type')
             ->where('id', $id)
             ->first();
+
+        $duration = $view_records->duration ?? 'wholeday'; 
+        $daysCovered = count($view_records->dates ?? []);
+
+        if ($duration == 'wholeday') {
+            $leaveEquiv = number_format(round($daysCovered * 1, 3), 2);
+        } else {
+            $leaveEquiv = number_format(round($daysCovered / 2 * 1, 3), 2);
+        }
+
+        $view_records->leave_equivalent = $leaveEquiv;
+        $this->view_records = $view_records;
+
     }
 
     public function disapproved(bool $isNotify = true) {
+        
+        $this->loadRecords($this->selected_id);
 
         if($isNotify) {
 
@@ -86,6 +101,8 @@ class Index extends Component
 
     public function approved(bool $isNotify = true) {
 
+        $this->loadRecords($this->selected_id);
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
@@ -107,13 +124,11 @@ class Index extends Component
                 return redirect()->route('ess.leave');
             }
 
-            $daysCovered = count($record->dates) ?? 0;
-
-            $record->daysCovered = $daysCovered;
-
             // Update leave credits model
             $leaveCreditsModel = LeaveCredits::class;
             $leaveTypeModel = LeaveType::find($record->leave_id);
+
+            $daysCovered = count($record->dates ?? []);
 
             // if no credits left
 
@@ -135,7 +150,14 @@ class Index extends Component
                     $leaveTotalCredits = $leaveTotalCredits ? $leaveTotalCredits->vl_bal ?? '' : 0;
                 }
 
-                $leaveEquiv = round((float) $daysCovered * 1.00, 3);
+                $duration = $record->duration ?? 'wholeday'; 
+
+
+                if ($duration == 'wholeday') {
+                    $leaveEquiv = number_format(round($daysCovered * 1, 3), 2);
+                } else {
+                    $leaveEquiv = number_format(round($daysCovered / 2 * 1.0, 3), 2);
+                }
 
                 if(empty($leaveTotalCredits)) {
                     return $this->dispatch('alert', [
@@ -189,7 +211,6 @@ class Index extends Component
 
             unset($record->daysCovered);
 
-            // Update the EmployeeLeave record's status
             $record->update([
                 'action_by_id' => Auth::user()->id,
                 'status' => 'approved'

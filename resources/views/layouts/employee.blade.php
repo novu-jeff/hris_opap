@@ -198,7 +198,7 @@
                                     
                                     @canany(['read my-profile', 'write my-profile'])
                                     <li class="list-unstyled-item">
-                                        <a href="{{ route('employee.profile') }}">My Profile</a>
+                                        <a href="{{ route('employee.profile', ['form' => 'details']) }}">My Profile</a>
                                     </li>
                                     @endcanany
                                     
