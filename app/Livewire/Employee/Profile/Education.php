@@ -67,6 +67,9 @@ class Education extends Component
         'from_year' => '',
         'to_year' => '',
         'documents' => '',
+        'highest_level' => '',
+        'year_graduated' => '',
+        'scholarship_honors' => ''
     ];
 
     protected function rules(?string $employee_no = null) {
@@ -74,8 +77,11 @@ class Education extends Component
             'records.*.level' => 'required|string',
             'records.*.school_name' => 'required|string|max:255',
             'records.*.course' => 'required|string|max:255',
-            'records.*.from_year' => 'required|date',
-            'records.*.to_year' => 'required|date',
+            'records.*.from_year' => 'required',
+            'records.*.to_year' => 'required',
+            'records.*.highest_level' => 'nullable|string',
+            'records.*.year_graduated' => 'nullable|numeric',
+            'records.*.scholarship_honors' => 'nullable',
             'records.*.documents' => 'nullable|mimes:jpg,png,jpeg,pdf',
             'records.*.documents' => function ($attribute, $value, $fail) {
                 $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -93,12 +99,12 @@ class Education extends Component
 
     protected function messages() {
         return [
-            'records.*.level.required' => 'The education level is required.',
-            'records.*.school_name.required' => 'The school name is required.',
-            'records.*.course.required' => 'The course name is required.',
-            'records.*.from_year.required' => 'The start year is required.',
-            'records.*.to_year.required' => 'The end year is required.',
-            'records.*.to_year.after_or_equal' => 'The end year must be the same or after the start year.',
+            'records.*.level.required' => '* required',
+            'records.*.school_name.required' => '* required',
+            'records.*.course.required' => '* required',
+            'records.*.from_year.required' => '* required',
+            'records.*.to_year.required' => '* required',
+            'records.*.to_year.after_or_equal' => '* must be the same or after the start year.',
         ];
     }
 
@@ -239,6 +245,9 @@ class Education extends Component
                                     'course' => $item['course'],
                                     'from_year' => $item['from_year'],
                                     'to_year' => $item['to_year'],
+                                    'highest_level' => $item['highest_level'],
+                                    'year_graduated' => $item['year_graduated'],
+                                    'scholarship_honors' => $item['scholarship_honors'],
                                     'documents' => $documents
                                 ])->save();
                             } else {
@@ -249,6 +258,9 @@ class Education extends Component
                                     'course' => $item['course'],
                                     'from_year' => $item['from_year'],
                                     'to_year' => $item['to_year'],
+                                    'highest_level' => $item['highest_level'],
+                                    'year_graduated' => $item['year_graduated'],
+                                    'scholarship_honors' => $item['scholarship_honors'],
                                     'documents' => $documents
                                 ]);
                             }
@@ -264,6 +276,9 @@ class Education extends Component
                                     'course' => $item['course'],
                                     'from_year' => $item['from_year'],
                                     'to_year' => $item['to_year'],
+                                    'highest_level' => $item['highest_level'],
+                                    'year_graduated' => $item['year_graduated'],
+                                    'scholarship_honors' => $item['scholarship_honors'],
                                 ])->save();
                             } else {
                                 $documents = $this->uploadFile($employee_no, 'documents', $path, $item['documents'] ?? null);
@@ -274,6 +289,9 @@ class Education extends Component
                                     'course' => $item['course'],
                                     'from_year' => $item['from_year'],
                                     'to_year' => $item['to_year'],
+                                    'highest_level' => $item['highest_level'],
+                                    'year_graduated' => $item['year_graduated'],
+                                    'scholarship_honors' => $item['scholarship_honors'],
                                     'documents' => $documents
                                 ]);
                             }
@@ -287,6 +305,9 @@ class Education extends Component
                             'course' => $item['course'],
                             'from_year' => $item['from_year'],
                             'to_year' => $item['to_year'],
+                            'highest_level' => $item['highest_level'],
+                            'year_graduated' => $item['year_graduated'],
+                            'scholarship_honors' => $item['scholarship_honors'],
                             'documents' => $documents
                         ]);
                     }

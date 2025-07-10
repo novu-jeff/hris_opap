@@ -11,16 +11,19 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Position</th>
-                            <th>Department</th>
-                            <th>Company Name</th>
-                            <th>Monthly Salary</th>
-                            <th>Employment Status</th>
-                            <th>Is Government?</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Documents</th>
+                            <th rowspan="2" class="text-center"></th>
+                            <th colspan="2" class="text-center">Inclusive Dates <br> (mm/dd/yyyy)</th>
+                            <th rowspan="2" class="text-center">Position Title <br> (Write in full / Do not abbreviate)</th>
+                            <th rowspan="2" class="text-center">Department / Agency / Office / Company <br> (Write in full / Do not abbreviate)</th>
+                            <th rowspan="2" class="text-center">Monthly Salary</th>
+                            <th rowspan="2" class="text-center">Salary / Job / Pay Grade (if applicable) <br> & Step (Format "00-0") / Increment</th>
+                            <th rowspan="2" class="text-center">Status of Appointment</th>
+                            <th rowspan="2" class="text-center">Gov't Service (Y / N)</th>
+                            <th rowspan="2" class="text-center">Documents</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">From</th>
+                            <th class="text-center">To</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -32,37 +35,43 @@
                                     </button>
                                 </td>
                                 <td>
+                                    <input style="width: 300px" type="numeric" wire:model="records.{{$key}}.from_year" id="records.{{$key}}.from_year" class="form-control text-uppercase">
+                                    <div class="error-field">
+                                        @error('records.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </td>
+                                <td>
+                                    <input style="width: 300px" type="numeric" wire:model="records.{{$key}}.to_year" id="records.{{$key}}.to_year" class="form-control text-uppercase">
+                                    <div class="error-field">
+                                        @error('records.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </td>
+                                <td>
                                     <input style="width: 300px" type="text" wire:model="records.{{$key}}.position" id="records.{{$key}}.position" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.position') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.department" id="records.{{$key}}.department" class="form-control text-uppercase">
+                                    <input style="width: 600px" type="text" wire:model="records.{{$key}}.department" id="records.{{$key}}.department" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.department') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.company_name" id="records.{{$key}}.company_name" class="form-control text-uppercase">
-                                    <div class="error-field">
-                                        @error('records.'.$key.'.company_name') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </td>
-                                <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.monthly_salary" id="records.{{$key}}.monthly_salary" class="form-control text-uppercase">
+                                    <input style="width: 300px" type="number" wire:model="records.{{$key}}.monthly_salary" id="records.{{$key}}.monthly_salary" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.monthly_salary') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <select style="width: 300px" wire:model="records.{{$key}}.employment_status" id="records.{{$key}}.employment_status" class="form-select text-uppercase">
-                                        <option value=""> - CHOOSE - </option>
-                                        <option value="regular">Regular</option>
-                                        <option value="part time">Part Time</option>
-                                        <option value="freelance">Freelance</option>
-                                        <option value="project base">Project Base</option>
-                                    </select>
+                                    <input style="width: 100%" type="text" wire:model="records.{{$key}}.salary_pay_grade" id="records.{{$key}}.salary_pay_grade" class="form-control text-uppercase">
+                                    <div class="error-field">
+                                        @error('records.'.$key.'.salary_pay_grade') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </td>
+                                <td>
+                                    <input style="width: 500px" type="text" wire:model="records.{{$key}}.employment_status" id="records.{{$key}}.employment_status" class="form-control text-uppercase">
                                     <div class="error-field">
                                         @error('records.'.$key.'.employment_status') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
@@ -77,18 +86,6 @@
                                         @error('records.'.$key.'.isGovernment') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>                                                
-                                <td>
-                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.from_year" id="records.{{$key}}.from_year" class="form-control text-uppercase">
-                                    <div class="error-field">
-                                        @error('records.'.$key.'.from_year') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </td>
-                                <td>
-                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.to_year" id="records.{{$key}}.to_year" class="form-control text-uppercase">
-                                    <div class="error-field">
-                                        @error('records.'.$key.'.to_year') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div>
@@ -112,19 +109,14 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No Employment History Found.</div>
+            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
             <div class="text-end">
                 <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
                     <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                </button>
-                @if ($errors->any())
-                    <div class="mt-4 pb-5">
-                        <small class="text-danger">There's an error upon submitting, please review your form.</small>
-                    </div>
-                @endif
+                </button> 
             </div>
         </div>
     </div>

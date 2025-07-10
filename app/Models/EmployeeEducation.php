@@ -17,6 +17,9 @@ class EmployeeEducation extends Model
         'course',
         'from_year',
         'to_year',
+        'highest_level',
+        'year_graduated',
+        'scholarship_honors',
         'documents'
     ];
 

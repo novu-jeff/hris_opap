@@ -16,6 +16,7 @@ class EmployeeEmploymentHistory extends Model
         'department',
         'company_name',
         'monthly_salary',
+        'salary_pay_grade',
         'employment_status',
         'isGovernment',
         'from_year',

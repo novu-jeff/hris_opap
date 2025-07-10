@@ -14,7 +14,6 @@ class EmployeeUpdateOtherWorks extends Model
     protected $fillable = [
         'employee_no',
         'organization',
-        'address',
         'date_from',
         'date_to',
         'consumed_hours',
