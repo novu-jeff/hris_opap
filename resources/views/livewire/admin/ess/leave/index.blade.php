@@ -38,20 +38,28 @@
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="duration">Duration</label>
                             <input type="text" id="duration" class="form-control restricted"
-                                value="{{ count($view_records->dates ?? []) }} {{ count($view_records->dates ?? []) === 1 ? 'Day' : 'Days' }}" readonly>
+                                value="{{ count($view_records->dates ?? []) }} {{ count($view_records->dates ?? []) === 1 ? 'Day' : 'Days' }} - {{ str_replace('_', ' ', $view_records->duration ?? '') }}" readonly>
                         </div>
 
-                        <div class="col-12 mb-4">
+                       <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="leave_dates">
                                 Leave Date{{ count($view_records->dates ?? []) > 1 ? 's' : '' }}
                             </label>
-                            <ul>
+                            <ul style="font-size: 16px;">
                                 @foreach($view_records->dates ?? [] as $date)
                                     <li>
                                         {{ format_date($date->date ?? '', 'day_date_string') }}
                                     </li>
                                 @endforeach
                             </ul>
+                        </div>
+
+                       <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="leave_dates">
+                                Leave Equivalent
+                            </label>
+                            <input type="text" id="duration" class="form-control restricted"
+                                value="{{ $view_records->leave_equivalent ?? '' }}" readonly>
                         </div>
 
                         @if(($view_records->leave_type->id ?? null) == 1)

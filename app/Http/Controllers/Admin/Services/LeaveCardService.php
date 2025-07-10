@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers\Admin\Services;
 
-use Illuminate\Support\Collection;
+use App\Models\EmployeeLeave;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use App\Models\EmployeeLeaveDates;
 use App\Models\Holiday;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
-use App\Models\TimeEquivalent;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use DateTime;
-use InvalidArgumentException;
 
 class LeaveCardService extends Controller
 {
@@ -44,10 +40,21 @@ class LeaveCardService extends Controller
 
             $leaveType = LeaveType::find($data->leave_id);
             $leaveCode = strtolower($leaveType->code ?? '');
+        
+            $leave_info = EmployeeLeave::with('dates')
+                    ->find($data->id);
 
-            $leaveDates = EmployeeLeaveDates::where('employee_leave_id', $data->id)->pluck('date')->map(fn ($d) => Carbon::parse($d));
+            $leave_info = array_merge(
+                $leave_info->toArray(),
+                [
+                    'dates' => EmployeeLeaveDates::where('employee_leave_id', $data->id)
+                        ->pluck('date')
+                        ->map(fn($d) => Carbon::parse($d)->toDateString())
+                        ->toArray()
+                ]
+            );
 
-            if ($leaveDates->isEmpty()) return;
+            if (!$leave_info) return;
 
             $latestCard = EmployeeLeaveCard::where('employee_no', $employee_no)
                 ->where('year', $currentYear)
@@ -60,8 +67,9 @@ class LeaveCardService extends Controller
                 default => (float) ($latestCard?->vl_bal ?? 0),
             };
 
+
             // Build leave months from actual leave dates
-            $leaveMonths = $this->processLeaveDates($leaveDates, $leaveCode, $leaveCardBalance);
+            $leaveMonths = $this->processLeaveDates($leave_info, $leaveCode, $leaveCardBalance);
 
             // Latest cards to update
             $latestLeaveCard = EmployeeLeaveCard::where('employee_no', $employee_no)
@@ -71,45 +79,45 @@ class LeaveCardService extends Controller
                 ->toArray();
 
             $mapped = array_map(function ($leaveCard) use ($leaveMonths, $leaveCode) {
-            $match = collect($leaveMonths)->firstWhere('month', $leaveCard['period']);
+                $match = collect($leaveMonths)->firstWhere('month', $leaveCard['period']);
+                
+                if ($match) {
+                    if (in_array($leaveCode, ['vl', 'sl'])) {
+                        $leaveCard[$leaveCode . '_aut_w_pay'] =
+                            floatval($leaveCard[$leaveCode . '_aut_w_pay'] ?? 0) +
+                            floatval($match[$leaveCode . '_aut_w_pay'] ?? 0);
 
-            if ($match) {
-                if (in_array($leaveCode, ['vl', 'sl'])) {
-                    $leaveCard[$leaveCode . '_aut_w_pay'] =
-                        floatval($leaveCard[$leaveCode . '_aut_w_pay'] ?? 0) +
-                        floatval($match[$leaveCode . '_aut_w_pay'] ?? 0);
+                        $leaveCard[$leaveCode . '_aut_wo_pay'] =
+                            floatval($leaveCard[$leaveCode . '_aut_wo_pay'] ?? 0) +
+                            floatval($match[$leaveCode . '_aut_wo_pay'] ?? 0);
+                    } else {
+                        $leaveCard['vl_aut_w_pay'] =
+                            floatval($leaveCard['vl_aut_w_pay'] ?? 0) +
+                            floatval($match['vl_aut_w_pay'] ?? 0);
+                    }
 
-                    $leaveCard[$leaveCode . '_aut_wo_pay'] =
-                        floatval($leaveCard[$leaveCode . '_aut_wo_pay'] ?? 0) +
-                        floatval($match[$leaveCode . '_aut_wo_pay'] ?? 0);
+                    $fieldKeys = $leaveCode === 'mfl'
+                        ? ['particulars', 'remarks']
+                        : [in_array($leaveCode, ['vl', 'sl']) ? 'particulars' : 'remarks'];
+
+                    foreach ($fieldKeys as $key) {
+                        $existing = !empty($leaveCard[$key]) ? explode(', ', trim($leaveCard[$key])) : [];
+                        $new = !empty($match[$key]) ? explode(', ', trim($match[$key])) : [];
+                        $merged = array_filter(array_unique(array_merge($existing, $new)));
+                        $leaveCard[$key] = implode(', ', $merged);
+                    }
                 } else {
-                    $leaveCard['vl_aut_w_pay'] =
-                        floatval($leaveCard['vl_aut_w_pay'] ?? 0) +
-                        floatval($match['vl_aut_w_pay'] ?? 0);
+                    if (in_array($leaveCode, ['vl', 'sl'])) {
+                        $leaveCard[$leaveCode . '_aut_w_pay'] = '';
+                        $leaveCard[$leaveCode . '_aut_wo_pay'] = '';
+                        $leaveCard['particulars'] = '';
+                    } else {
+                        $leaveCard['remarks'] = '';
+                    }
                 }
 
-                $fieldKeys = $leaveCode === 'mfl'
-                    ? ['particulars', 'remarks']
-                    : [in_array($leaveCode, ['vl', 'sl']) ? 'particulars' : 'remarks'];
-
-                foreach ($fieldKeys as $key) {
-                    $existing = !empty($leaveCard[$key]) ? explode(', ', trim($leaveCard[$key])) : [];
-                    $new = !empty($match[$key]) ? explode(', ', trim($match[$key])) : [];
-                    $merged = array_filter(array_unique(array_merge($existing, $new)));
-                    $leaveCard[$key] = implode(', ', $merged);
-                }
-            } else {
-                if (in_array($leaveCode, ['vl', 'sl'])) {
-                    $leaveCard[$leaveCode . '_aut_w_pay'] = '';
-                    $leaveCard[$leaveCode . '_aut_wo_pay'] = '';
-                    $leaveCard['particulars'] = '';
-                } else {
-                    $leaveCard['remarks'] = '';
-                }
-            }
-
-            return $leaveCard;
-        }, $latestLeaveCard);
+                return $leaveCard;
+            }, $latestLeaveCard);
 
 
         $combined = $this->combine($mapped, $latestLeaveCard);
@@ -147,12 +155,14 @@ class LeaveCardService extends Controller
         }
     }
 
-    private function processLeaveDates(Collection $leaveDates, string $leaveCode, float $leaveBalance): array
+    private function processLeaveDates($leaveInfo, string $leaveCode, float $leaveBalance): array
     {
-
+        $leaveDates = $leaveInfo['dates'];
         $holidays = Holiday::pluck('date')->toArray();
-
         $leaveMonths = [];
+
+        $duration = $leaveInfo['duration'] ?? 'wholeday';
+        $daysCovered = count($leaveDates);
 
         foreach ($leaveDates as $date) {
             $carbonDate = $date instanceof Carbon ? $date : Carbon::parse($date);
@@ -165,7 +175,7 @@ class LeaveCardService extends Controller
 
             if (!isset($leaveMonths[$month])) {
                 $leaveMonths[$month] = [
-                    'month' => $month,
+                    'month' => $abbrMonth, 
                     'days' => [],
                     'remarks' => '',
                 ];
@@ -182,6 +192,17 @@ class LeaveCardService extends Controller
                 } else {
                     $leaveMonths[$month]['remarks'] = strtoupper($leaveCode) . ': ' . $abbrMonth;
                 }
+
+                // Compute leave equivalent
+                if (in_array($leaveCode, ['vl', 'sl'])) {
+                    $leaveMonths[$month]['leave_equivalent'] = (float) number_format(round(
+                        $duration === 'wholeday' ? $daysCovered * 1 : $daysCovered / 2, 3), 2);
+                } else {
+                    $leaveMonths[$month]['leave_equivalent'] = (float) number_format(round($daysCovered * 1, 3), 2);
+                }
+
+                $leaveMonths[$month]['daysCovered'] = $daysCovered;
+                $leaveMonths[$month]['duration'] = $duration;
             }
 
             // Exclude weekends and holidays
@@ -193,8 +214,7 @@ class LeaveCardService extends Controller
         }
 
         foreach ($leaveMonths as &$entry) {
-
-            $leaveDays = count($entry['days']);
+            $leaveDays = $entry['leave_equivalent'];
 
             if (in_array($leaveCode, ['vl', 'sl'])) {
                 $entry[$leaveCode . '_aut_w_pay'] = min($leaveBalance, $leaveDays);
@@ -225,8 +245,12 @@ class LeaveCardService extends Controller
 
             $dayRanges = implode(', ', $ranges);
 
+            // Format particulars and remarks
             if (in_array($leaveCode, ['vl', 'sl'])) {
-                $entry['particulars'] .= ' ' . $dayRanges;
+                $entry['particulars'] = strtoupper($leaveCode) . ': ' . $entry['month'] . ' ' . $dayRanges;
+                if ($entry['duration'] !== 'wholeday') {
+                    $entry['particulars'] .= ' (' . str_replace('_', ' ', $entry['duration']) . ')';
+                }
             } elseif ($leaveCode === 'mfl') {
                 $entry['particulars'] .= ' ' . $dayRanges;
                 $entry['remarks'] .= ' ' . $dayRanges;
@@ -235,8 +259,12 @@ class LeaveCardService extends Controller
             }
         }
 
+        $leaveMonths[$month]['month'] = $month;
+
         return array_values($leaveMonths);
     }
+
+
 
     private function combine($a, $b) {
         $mergedData = [];
@@ -248,29 +276,25 @@ class LeaveCardService extends Controller
             foreach ($itemA as $key => $valueA) {
                 $valueB = $itemB[$key] ?? null;
 
-                // Normalize values to remove unwanted characters
                 $valueA = trim(preg_replace('/\s+/', ' ', $valueA ?? ''));
                 $valueB = trim(preg_replace('/\s+/', ' ', $valueB ?? ''));
 
                 if ($key === 'particulars' && $valueB !== null) {
-                    // Convert to an array, filter out empty values and ''
                     $values = array_filter(
                         array_merge(explode(', ', $valueA), explode(', ', $valueB)),
                         fn($v) => $v !== '' && trim($v) !== ''
                     );
-                    // Remove duplicates and reformat
+
                     $mergedValue = implode(', ', array_unique($values));
 
                 } elseif (in_array($key, ['vl_aut_w_pay', 'sl_aut_w_pay', 'vl_aut_wo_pay', 'sl_aut_wo_pay'])) {
-                    // Ensure the values are treated as numbers and pick the maximum
-                    $mergedValue = max((int) $valueA, (int) $valueB);
-
+                     $numA = is_numeric($valueA) ? (float) $valueA : 0;
+                    $numB = is_numeric($valueB) ? (float) $valueB : 0;
+                    $mergedValue = max($numA, $numB);
                 } elseif ($key === 'remarks') {
-                    // Always take remarks from $a
                     $mergedValue = $valueA;
 
                 } else {
-                    // Default merging behavior
                     $mergedValue = $valueB ?? $valueA;
                 }
 
@@ -285,7 +309,6 @@ class LeaveCardService extends Controller
 
 
     public function compute($data) {
-
         for ($i = 0; $i < count($data); $i++) {
             $period = $data[$i]['period'];
             $vl_earned = floatval($data[$i]['vl_earned']);

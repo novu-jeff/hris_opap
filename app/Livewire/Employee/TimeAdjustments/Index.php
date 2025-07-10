@@ -118,21 +118,17 @@ class Index extends Component
 
     public function render()
     {
-
-        if($this->status == 'granted') {
-            $status = 'approved';
-        } else {
-            $status = $this->status;
-        }
         
-        $model = EmployeeTimeAdjustments::where('employee_no', $this->user_id)
+        $query = EmployeeTimeAdjustments::where('employee_no', $this->user_id)
             ->where('isDeleted', false);
 
-        if ($status) {
-            $records = $model->where('status', $status);
+        $status = $this->status === 'granted' ? 'approved' : $this->status;
+
+        if (!empty($status)) {
+            $query->where('status', $status);
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        $records = $query->latest()->paginate($this->entries);
 
         return view('livewire.employee.time-adjustments.index', [
             'records' => $records

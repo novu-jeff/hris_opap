@@ -50,9 +50,15 @@
                                     <a href="{{route('employee.time-adjustments.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                        <i class="fa-solid fa-ban"></i>
-                                    </button>
+                                    @if($record->status == 'pending')
+                                        <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    @else
+                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

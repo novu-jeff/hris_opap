@@ -222,15 +222,16 @@ class Index extends Component
 
     public function render()
     {
-        $model = EmployeeAtro::query()
+        $query = EmployeeAtro::query()
             ->where('employee_no', $this->user_id)
             ->where('isDeleted', false);
     
-        if ($this->status) {
-            $model->where('status', $this->status);
+        $status = $this->status === 'granted' ? 'approved' : $this->status;
+        if (!empty($status)) {
+            $query->where('status', $status);
         }
-    
-        $records = $model->latest()->get(); 
+
+        $records = $query->latest()->get(); 
     
         $mentioned = $this->getMentionedRecords();
         if ($mentioned) {

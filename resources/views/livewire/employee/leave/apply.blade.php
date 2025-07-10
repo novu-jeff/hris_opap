@@ -25,7 +25,7 @@
                         @endif
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
-                            <select wire:model.live="type" wire:change="handleLeaveCredits" id="type" class="form-select">
+                            <select wire:model.live="type" wire:change="handleLeaveCredits" id="type" class="form-select text-uppercase">
                                 <option value=""> - CHOOSE - </option>
                                 @foreach($leaveTypes as $leave)
                                     <option value="{{$leave->id}}">{{$leave->code . ' - ' . $leave->name}}</option>
@@ -35,6 +35,21 @@
                                 @error('type') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        @if(in_array($type, [1,2]))
+                            <div class="col-12 col-md-12 mb-4">
+                                <label class="mb-2" for="duration">Leave Duration <span class="text-danger">*</span></label>
+                                <select wire:model.live="duration"  id="duration" class="form-select text-uppercase">
+                                    <option value=""> - CHOOSE - </option>
+                                    <option value="wholeday">Whole Day</option>
+                                    <option value="halfday_morning">Half Day - Morning</option>
+                                    <option value="halfday_afternoon">Half Day - Afternoon</option>
+                                </select>
+                                <div class="error-field">
+                                    @error('duration') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="col-12 col-md-12 mb-4">
                             <div id="calendar-container" wire:ignore></div>
@@ -46,7 +61,7 @@
                         @if($type == 1)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="location">Location <span class="text-danger">*</span></label>
-                                <select wire:model.live="location" id="location" class="form-select">
+                                <select wire:model.live="location" id="location" class="form-select text-uppercase">
                                     <option value=""> - CHOOSE -</option>
                                     <option value="ph">Within Philippines</option>
                                     <option value="abroad">Abroad</option>
@@ -66,7 +81,7 @@
                         @elseif($type == 2)
                             <div class="col-12 col-md-6 mb-4">
                                 <label class="mb-2" for="confinement">Patient Type <span class="text-danger">*</span></label>
-                                <select wire:model="confinement" id="confinement" class="form-select">
+                                <select wire:model="confinement" id="confinement" class="form-select text-uppercase">
                                     <option value=""> - CHOOSE -</option>
                                     <option value="hospital">In Hospital</option>
                                     <option value="out-patient">Out Patient</option>
@@ -85,7 +100,7 @@
                         @elseif($type == 8)
                             <div class="col-12 {{ $study == '' || $study != 'others' ? 'col-md-12' : 'col-md-4' }} mb-4">
                                 <label class="mb-2" for="study">Purpose <span class="text-danger">*</span></label>
-                                <select wire:model.live="study" id="study" class="form-select">
+                                <select wire:model.live="study" id="study" class="form-select text-uppercase">
                                     <option value=""> - CHOOSE -</option>
                                     <option value="completion_masters">Completion of Master's Degree</option>
                                     <option value="examination">Bar/Board Examination Review</option>
@@ -107,7 +122,7 @@
                         @endif
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="commutation">Commutation <span class="text-danger">*</span></label>
-                            <select wire:model="commutation" id="commutation" class="form-select">
+                            <select wire:model="commutation" id="commutation" class="form-select text-uppercase">
                                 <option value=""> - CHOOSE -</option>
                                 <option value="no">Not Requested</option>
                                 <option value="yes">Requested</option>

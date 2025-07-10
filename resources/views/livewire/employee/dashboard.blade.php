@@ -103,7 +103,7 @@
                 ],
                 [
                     'label' => 'My Profile',
-                    'route' => route('employee.profile'),
+                    'route' => route('employee.profile', ['form' => 'details']),
                     'img' => '/img/profile.png',
                     'permission' => ['read my-profile', 'write my-profile'],
                 ],

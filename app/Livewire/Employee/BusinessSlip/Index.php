@@ -208,18 +208,20 @@ class Index extends Component
 
     public function render()
     {
-
-        $model = EmployeeBusinessSlip::where('employee_no', $this->user_id)
+        $query = EmployeeBusinessSlip::where('employee_no', $this->user_id)
             ->where('isDeleted', false);
 
-        if ($this->status) {
-            $records = $model->where('status', $this->status);
+        $status = $this->status === 'granted' ? 'approved' : $this->status;
+
+        if (!empty($status)) {
+            $query->where('status', $status);
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        $records = $query->latest()->paginate($this->entries);
 
         return view('livewire.employee.business-slip.index', [
             'records' => $records
         ]);
     }
+
 }
