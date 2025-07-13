@@ -1,5 +1,19 @@
 @import 'variables';
 
+.tabsHasChanges {
+    position: relative;
+}
+.tabsHasChanges::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: rgb(181, 0, 0);
+    border-radius: 50%;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
 .ck-editor__editable {
   min-height: 300px;
 }

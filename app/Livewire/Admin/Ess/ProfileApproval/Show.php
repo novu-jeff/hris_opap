@@ -31,7 +31,12 @@ class Show extends Component
 
     public $form;
     public $employee_no;
+    public $tabsHasChanges;
     protected $listeners = ['approved', 'disapproved'];
+
+    public function mount() {
+        $this->tabsHasChanges = $this->getTabsHasChanges();
+    }
 
     public function approved(bool $isNotify = true) {
 
@@ -297,11 +302,36 @@ class Show extends Component
     }
 
     public function updateSkillsData($employee_no) {
-        $this->batchUpdate($employee_no, EmployeeUpdateSkillsHobbies::class, EmployeeSkillsHobbies::class, ['name'], [
-            'name', 'recognition', 'organization', 'documents'
-    ]);
-}
+            $this->batchUpdate($employee_no, EmployeeUpdateSkillsHobbies::class, EmployeeSkillsHobbies::class, ['name'], [
+                'name', 'recognition', 'organization', 'documents'
+        ]);
+    }
 
+
+    public function getTabsHasChanges()
+    {
+        $models = [
+            'personal' => EmployeeUpdatePersonal::class,
+            'family' => EmployeeUpdateParents::class,
+            'children' => EmployeeUpdateChildren::class,
+            'education' => EmployeeUpdateEducation::class,
+            'employment-history' => EmployeeUpdateEmploymentHistory::class,
+            'civil-service' => EmployeeUpdateCivilService::class,
+            'trainings' => EmployeeUpdateTrainings::class,
+            'other-works' => EmployeeUpdateOtherWorks::class,
+            'skills' => EmployeeUpdateSkillsHobbies::class,
+        ];
+
+        $typesWithRecords = collect();
+
+        foreach ($models as $type => $model) {
+            if ($model::whereNotNull('employee_no')->exists()) {
+                $typesWithRecords->push($type);
+            }
+        }
+
+        return $typesWithRecords->toArray() ?? []; 
+    }
 
     public function render()
     {
