@@ -18,6 +18,4 @@ class EmployeeUpdateSkillsHobbies extends Model
         'organization',
         'documents'
     ];
-
-    public $timestamps = false;
 }

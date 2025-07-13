@@ -24,5 +24,4 @@ class EmployeeUpdateEducation extends Model
         'documents'
     ];
 
-    public $timestamps = false;
 }

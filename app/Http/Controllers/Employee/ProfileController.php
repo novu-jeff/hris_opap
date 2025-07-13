@@ -13,6 +13,17 @@ class ProfileController extends Controller
     }
 
     public function index(string $form) {
+
+        $allowed = [
+            'details', 'education', 'family',
+            'children', 'employment-history', 'civil-service',
+            'trainings', 'other-works', 'skills'
+        ];
+
+        if(!in_array( $form, $allowed)) {
+            return redirect()->route('employee.profile', ['form' => 'details']);
+        }
+
         return view('employee.profile', [
             'action' => 'view',
             'title' => 'ESS | My Profile',

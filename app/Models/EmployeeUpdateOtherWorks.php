@@ -20,6 +20,4 @@ class EmployeeUpdateOtherWorks extends Model
         'position',
         'documents'
     ];
-
-    public $timestamps = false;
 }

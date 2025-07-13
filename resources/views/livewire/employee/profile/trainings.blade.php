@@ -33,37 +33,37 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.name" id="records.{{$key}}.name" class="form-control text-uppercase">
+                                    <input style="width: 600px" type="text" wire:model="records.{{$key}}.name" id="records.{{$key}}.name" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.name') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.date_from" id="records.{{$key}}.date_from" class="form-control text-uppercase">
+                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.date_from" id="records.{{$key}}.date_from" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.date_from') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.date_to" id="records.{{$key}}.date_to" class="form-control text-uppercase">
+                                    <input style="width: 300px" type="date" wire:model="records.{{$key}}.date_to" id="records.{{$key}}.date_to" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.date_to') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>  
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.consumed_hours" id="records.{{$key}}.consumed_hours" class="form-control text-uppercase">
+                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.consumed_hours" id="records.{{$key}}.consumed_hours" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.consumed_hours') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>     
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.type" id="records.{{$key}}.type" class="form-control text-uppercase">
+                                    <input style="width: 600px" type="text" wire:model="records.{{$key}}.type" id="records.{{$key}}.type" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.type') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>                                    
                                 <td>
-                                    <input style="width: 300px" type="text" wire:model="records.{{$key}}.sponsored_by" id="records.{{$key}}.sponsored_by" class="form-control text-uppercase">
+                                    <input style="width: 800px" type="text" wire:model="records.{{$key}}.sponsored_by" id="records.{{$key}}.sponsored_by" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.sponsored_by') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
@@ -71,11 +71,11 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div>
-                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('trainings')" wire:model="records.{{$key}}.documents" id="records.{{$key}}.documents" class="form-control">
+                                            <input type="file" style="width: 300px;" wire:model="records.{{$key}}.documents" id="records.{{$key}}.documents" class="form-control">
                                         </div>
                                         @if($records[$key]['documents'])
                                             <div>
-                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'trainings', '{{$key}}')" class="btn btn-primary">
+                                                <a href="javascript:void(0)" wire:click.prevent="download('{{$key}}')" class="btn btn-primary">
                                                     <i class="fa-solid fa-download"></i>
                                                 </a>
                                             </div>
@@ -91,9 +91,9 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
+            <div class="alert alert-danger text-uppercase fw-medium text-center">No data found.</div>
         @endif            
-        <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
+        <div class="card-footer mt-5 pb-3 d-flex justify-content-end bg-transparent border-0">
             <div class="text-end">
                 <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>

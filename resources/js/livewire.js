@@ -8,10 +8,11 @@ import {
 } from "./helpers";
 
 Livewire.on('redirect_to', (event) => {
-    const { url, delay } = event[0];
+    const url = event[0].url;
+    const delay = event[0].delay;
     setTimeout(() => {
         window.location.href = url;
-    }, delay ?? 3000);
+    }, delay ?? 3000);   
 });
 
 Livewire.on('notice', (event) =>  {

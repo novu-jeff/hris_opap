@@ -12,7 +12,6 @@ use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployementTypes;
 use App\Models\ShiftSchedule;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;

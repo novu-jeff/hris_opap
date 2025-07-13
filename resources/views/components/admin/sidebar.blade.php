@@ -95,7 +95,7 @@
                                 @endcan
                         
                                 @can('read employee-profile-approval')
-                                    <li><a class="dropdown-item" href="{{route('ess.approval-profile.index')}}">Employee Profile Approval</a></li>
+                                    <li><a class="dropdown-item" href="{{route('ess.approval-profile.index', )}}">Employee Profile Approval</a></li>
                                 @endcan
                         
                                 @can('read request-status')

@@ -20,5 +20,4 @@ class EmployeeUpdateChildren extends Model
         'documents'
     ];
 
-    public $timestamps = false;
 }

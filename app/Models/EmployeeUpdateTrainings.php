@@ -22,5 +22,4 @@ class EmployeeUpdateTrainings extends Model
         'documents'
     ];
 
-    public $timestamps = false;
 }

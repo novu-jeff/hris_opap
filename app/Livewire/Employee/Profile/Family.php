@@ -34,7 +34,7 @@ class Family extends Component
         $updated = EmployeeUpdateParents::where('employee_no', $this->employee_no)->first();
         $stored = EmployeeParents::where('employee_no', $this->employee_no)->first();
 
-        $data = $updated ?? $stored;
+        $data = !empty($updated) ? $updated : $stored;
 
         $this->originalData = $data;
         $this->records = $this->formatRecords($data);
@@ -217,7 +217,7 @@ class Family extends Component
 
                 $user = EmployeeAccount::find($this->employee_id);
                 $message = 'Employee <strong>' . $this->employee_no . '</strong> has submitted his/her updated <strong>profile information</strong>.';
-                $redirect = route('ess.approval-profile.edit', ['approval' => $user->employee_no]);
+                $redirect = route('ess.approval-profile.show', ['employee_no' => $user->employee_no, 'form' => 'family']);
                 $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
                 return;

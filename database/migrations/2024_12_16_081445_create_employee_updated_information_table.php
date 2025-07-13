@@ -77,6 +77,7 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('tin_no')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_parents', function(Blueprint $table) {
@@ -112,6 +113,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('mother_middlename')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_children', function(Blueprint $table) {
@@ -127,6 +129,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_education', function(Blueprint $table) {
@@ -150,6 +153,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_employment_history', function(Blueprint $table) {
@@ -158,8 +162,6 @@ return new class extends Migration
             $table->string('position')
                 ->nullable();
             $table->string('department')
-                ->nullable();
-            $table->string('company_name')
                 ->nullable();
             $table->string('monthly_salary')
                 ->nullable();
@@ -178,6 +180,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_civil_service', function(Blueprint $table) {
@@ -197,6 +200,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_trainings', function(Blueprint $table) {
@@ -216,6 +220,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_other_works', function(Blueprint $table) {
@@ -233,6 +238,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_update_skills_hobbies', function(Blueprint $table) {
@@ -246,6 +252,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
     }
 

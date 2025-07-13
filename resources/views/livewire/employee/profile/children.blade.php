@@ -11,12 +11,12 @@
                 <table class="table table-bordered mt-3">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>First Name</th>
-                            <th>Middle Name</th>
-                            <th>Last Name</th>
-                            <th>Date of Birth</th>
-                            <th>Documents</th>
+                            <th class="text-center"></th>
+                            <th class="text-center">First Name</th>
+                            <th class="text-center">Middle Name</th>
+                            <th class="text-center">Last Name</th>
+                            <th class="text-center">Date of Birth</th>
+                            <th class="text-center">Documents</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -28,25 +28,25 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.firstname" id="records.{{$key}}.firstname" class="form-control text-uppercase">
+                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.firstname" id="records.{{$key}}.firstname" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.firstname') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.middlename" id="records.{{$key}}.middlename" class="form-control text-uppercase">
+                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.middlename" id="records.{{$key}}.middlename" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.middlename') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.lastname" id="records.{{$key}}.lastname" class="form-control text-uppercase">
+                                    <input type="text" style="width: 300px" wire:model="records.{{$key}}.lastname" id="records.{{$key}}.lastname" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.lastname') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="date" style="width: 300px" wire:model="records.{{$key}}.birthdate" id="records.{{$key}}.birthdate" class="form-control text-uppercase">
+                                    <input type="date" style="width: 300px" wire:model="records.{{$key}}.birthdate" id="records.{{$key}}.birthdate" class="form-control text-uppercase text-center">
                                     <div class="error-field">
                                         @error('records.'.$key.'.birthdate') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
@@ -54,11 +54,11 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div>
-                                            <input type="file" style="width: 300px;" wire:change="setActiveAccordion('children')" wire:model="records.{{$key}}.documents" id="records.{{$key}}.documents" class="form-control">
+                                            <input type="file" style="width: 300px;" wire:model="records.{{$key}}.documents" id="records.{{$key}}.documents" class="form-control">
                                         </div>
                                         @if($records[$key]['documents'])
                                             <div>
-                                                <a href="javascript:void(0)" wire:click.prevent="download('documents', 'children', '{{$key}}')" class="btn btn-primary">
+                                                <a href="javascript:void(0)" wire:click.prevent="download('{{$key}}')" class="btn btn-primary">
                                                     <i class="fa-solid fa-download"></i>
                                                 </a>
                                             </div>
@@ -74,9 +74,9 @@
                 </table>
             </div>    
         @else
-            <div class="alert alert-info text-uppercase fw-medium text-center">No data Found.</div>
+            <div class="alert alert-danger text-uppercase fw-medium text-center">No data found.</div>
         @endif            
-        <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
+        <div class="card-footer mt-5 pb-3 d-flex justify-content-end bg-transparent border-0">
             <div class="text-end">
                 <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
