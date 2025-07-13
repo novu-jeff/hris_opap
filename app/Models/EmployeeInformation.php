@@ -32,7 +32,6 @@ class EmployeeInformation extends Model
         'isTransferingEmp'
     ];
     
-    public $timestamps = false;
 
     public function section() {
         return $this->hasOne(Sections::class, 'id', 'section_id');

@@ -268,8 +268,11 @@ Route::prefix('admin')->group(function() {
                     ->name('ess.faqs.edit');
             });
 
-            Route::resource('profile/approval', ESSApprovalProfile::class)
-                ->names('ess.approval-profile');
+            Route::get('profile/approval', [ESSApprovalProfile::class, 'index'])
+                ->name('ess.approval-profile.index');
+
+             Route::get('profile/approval/{employee_no}/{form}', [ESSApprovalProfile::class, 'show'])
+                ->name('ess.approval-profile.show');
         });
 
         Route::prefix('reports')->group( function() {

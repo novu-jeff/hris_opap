@@ -15,7 +15,6 @@ class EmployeeUpdateEmploymentHistory extends Model
         'employee_no',
         'position',
         'department',
-        'company_name',
         'monthly_salary',
         'salary_pay_grade',
         'employment_status',
@@ -24,6 +23,4 @@ class EmployeeUpdateEmploymentHistory extends Model
         'to_year',
         'documents'
     ];
-
-    public $timestamps = false;
 }

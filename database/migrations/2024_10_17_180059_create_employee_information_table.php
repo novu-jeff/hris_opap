@@ -96,6 +96,7 @@ return new class extends Migration
                 ->default(false);
             $table->string('token')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_personal', function(Blueprint $table) {
@@ -164,6 +165,7 @@ return new class extends Migration
             $table->string('tin_no')
                 ->nullable();
             $table->index(['firstname', 'lastname', 'employee_no']);
+            $table->timestamps();
         });
 
         Schema::create('employee_parents', function(Blueprint $table) {
@@ -201,6 +203,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('mother_middlename')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_children', function(Blueprint $table) {
@@ -217,6 +220,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('documents')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_education', function(Blueprint $table) {
@@ -244,7 +248,6 @@ return new class extends Migration
         });
 
         Schema::create('employee_employment_history', function(Blueprint $table) {
-
             $table->id();
             $table->string('employee_no');
             $table->string('from_year')
@@ -254,8 +257,6 @@ return new class extends Migration
             $table->string('position')
                 ->nullable();
             $table->string('department')
-                ->nullable();
-            $table->string('company_name')
                 ->nullable();
             $table->string('monthly_salary')
                 ->nullable();

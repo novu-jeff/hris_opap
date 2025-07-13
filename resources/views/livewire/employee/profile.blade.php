@@ -18,7 +18,7 @@
                     <a href="{{ route('employee.profile', ['form' => 'civil-service']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'civil-service' ? 'active' : ''}}" id="pills-civil-service-tab" role="tab" aria-controls="pills-civil-service" aria-selected="{{$form == 'civil-service' ? 'true' : 'false'}}">IV. Civil Service Eligibility</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a href="{{ route('employee.profile', ['form' => 'employment']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'employment' ? 'active' : ''}}" id="pills-employment-tab" role="tab" aria-controls="pills-history" aria-selected="{{$form == 'employment' ? 'true' : 'false'}}">V. Work Experience</a>
+                    <a href="{{ route('employee.profile', ['form' => 'employment-history']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'employment-history' ? 'active' : ''}}" id="pills-employment-tab" role="tab" aria-controls="pills-history" aria-selected="{{$form == 'employment' ? 'true' : 'false'}}">V. Work Experience</a>
                 </li>
                     <li class="nav-item" role="presentation">
                     <a href="{{ route('employee.profile', ['form' => 'other-works']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'other-works' ? 'active' : ''}}" id="pills-other-works-tab" role="tab" aria-controls="pills-others" aria-selected="{{$form == 'other-works' ? 'true' : 'false'}}">VI. Voluntary Work or Involvement in Civic / Non-Government / People / Voluntary Organizations</a>
@@ -37,7 +37,7 @@
                         'family' => 'employee.profile.family',
                         'children' => 'employee.profile.children',
                         'education' => 'employee.profile.education',
-                        'employment' => 'employee.profile.employment',
+                        'employment-history' => 'employee.profile.employment',
                         'civil-service' => 'employee.profile.civil-service',
                         'trainings' => 'employee.profile.trainings',
                         'other-works' => 'employee.profile.other-works',
@@ -46,8 +46,10 @@
 
                     $view = $viewForms[$form];
                 @endphp
-                
-                @livewire($view)
+                <hr class="pt-2">
+                <div class="mt-4">
+                    @livewire($view)
+                </div>
             </div>
         </div>
     </div>

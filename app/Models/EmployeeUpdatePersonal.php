@@ -44,8 +44,6 @@ class EmployeeUpdatePersonal extends Model
         'tin_no',
     ];
 
-    public $timestamps = false;
-
     public function education() {
         return $this->hasMany(EmployeeUpdateEducation::class, 'employee_no', 'employee_no');
     }

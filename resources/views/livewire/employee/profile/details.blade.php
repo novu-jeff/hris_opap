@@ -266,7 +266,7 @@
                 </div>
             </div>
         </div>
-        <div class="card-footer d-flex justify-content-end bg-transparent border-0 px-5">
+        <div class="card-footer mt-5 pb-3 d-flex justify-content-end bg-transparent border-0">
             <div class="text-end">
                 <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                     <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>

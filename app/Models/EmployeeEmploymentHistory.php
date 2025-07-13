@@ -24,5 +24,4 @@ class EmployeeEmploymentHistory extends Model
         'documents'
     ];
 
-    public $timestamps = false;
 }
