@@ -24,9 +24,21 @@ class HRISController extends Controller
         return view('admin.hris.staffing');
     }
 
-    public function show(string $employee_no)
+    public function show(string $employee_no, string $form)
     {
-        return view('admin.hris.index', compact('employee_no'));
+
+        $allowed = [
+            'information',
+            'personal', 'education', 'family',
+            'children', 'employment-history', 'civil-service',
+            'trainings', 'other-works', 'skills'
+        ];
+
+        if(!in_array( $form, $allowed)) {
+            return redirect()->route('hris.index');
+        }
+
+        return view('admin.hris.index', compact('employee_no', 'form'));
     }
 
     public function manual()

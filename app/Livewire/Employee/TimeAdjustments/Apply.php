@@ -6,6 +6,7 @@ use App\Models\EmployeeAccount;
 use App\Models\EmployeeTimeAdjustments;
 use App\Models\EmployeeTimeAdjustmentsAttachments;
 use App\Notifications\Notifications;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -53,11 +54,16 @@ class Apply extends Component
                     ->route('employee.request-timelog');
             }
 
+            $clock_in = Carbon::createFromFormat('h:i A', $records->clock_in)->format('H:i:s');
+            $break_in = Carbon::createFromFormat('h:i A', $records->break_in)->format('H:i:s');
+            $break_out = Carbon::createFromFormat('h:i A', $records->break_out)->format('H:i:s');
+            $clock_out = Carbon::createFromFormat('h:i A', $records->clock_out)->format('H:i:s');
+
             $this->date = $records->date;
-            $this->clock_in = $records->clock_in;
-            $this->clock_out = $records->clock_out;
-            $this->break_in = $records->break_in;
-            $this->break_out = $records->break_out;
+            $this->clock_in = $clock_in;
+            $this->clock_out = $clock_out;
+            $this->break_in = $break_in;
+            $this->break_out = $break_out;
             $this->reason = $records->reason;
             $this->preview_attachments = $records->attachments->toArray() ?? [];
         }
@@ -68,10 +74,10 @@ class Apply extends Component
     public function rules() {
         return [
             'date' => 'required|date',
-            'clock_in' => 'required|date_format:H:i',
-            'break_out' => 'required|date_format:H:i',
-            'break_in' => 'required|date_format:H:i',
-            'clock_out' => 'required|date_format:H:i',
+            'clock_in' => 'required',
+            'break_out' => 'required',
+            'break_in' => 'required',
+            'clock_out' => 'required',
             'reason' => 'required|string',
             'attachments' => 'required|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf',

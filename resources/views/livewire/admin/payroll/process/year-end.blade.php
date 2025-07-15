@@ -1,7 +1,7 @@
 <div>
     <div class="action mb-4">
         <div class="d-md-flex justify-content-end gap-3">
-            <a href="{{route('payroll.index', [
+            <a href="{{route('payroll.process', [
                 'type' => $type,
                 'employment_type' => $employment_type
             ])}}" 
@@ -91,7 +91,7 @@
                                 #{{ $employeeIndex + 1 }}
                             </td>
                             <td>
-                                <a href="{{ route('hris.show', ['employee_no' => $record['employee_no']]) }}"
+                                <a href="{{ route('hris.show', ['employee_no' => $record['employee_no'], 'form' => 'information']) }}"
                                 class="text-dark" target="_blank">
                                     {{ $record['name'] }}
                                 </a>

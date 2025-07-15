@@ -18,7 +18,7 @@ class Index extends Component
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
-    public $status = 'pending';
+    public $status = 'all';
 
     public function mount() {
         $user_id = Auth::user()->employee_no;
@@ -122,9 +122,8 @@ class Index extends Component
         $query = EmployeeTimeAdjustments::where('employee_no', $this->user_id)
             ->where('isDeleted', false);
 
-        $status = $this->status === 'granted' ? 'approved' : $this->status;
-
-        if (!empty($status)) {
+        if (!empty($this->status) && $this->status !== 'all') {
+            $status = $this->status === 'granted' ? 'approved' : $this->status;
             $query->where('status', $status);
         }
 

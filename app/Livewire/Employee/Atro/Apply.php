@@ -7,6 +7,7 @@ use App\Models\EmployeeAtro;
 use App\Models\EmployeeAtroRelative;
 use App\Models\EmployeeInformation;
 use App\Notifications\Notifications;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -54,10 +55,13 @@ class Apply extends Component
                     ->route('employee.atro');
             }
 
+            $start_time = Carbon::createFromFormat('h:i A', $records->start_time)->format('H:i:s');
+            $end_time = Carbon::createFromFormat('h:i A', $records->end_time)->format('H:i:s');
+
             $this->fields = [
                 'date' => $records->date,
-                'start_time' => $records->start_time,
-                'end_time' => $records->end_time,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'justification' => $records->justification,
                 'employees' => $records->relative->pluck('employee_no')->toArray(),
             ];

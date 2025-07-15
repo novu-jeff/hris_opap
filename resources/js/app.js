@@ -1,6 +1,7 @@
 import './bootstrap';
 import {post, put, _delete} from './actions';
 import './livewire';
+import { initTimePicker } from './timepicker.js';
 import { 
     reinitializeDataTable, 
     copy_link, 
@@ -23,6 +24,8 @@ window.getLocation = getLocation;
 
 
 $(function() {
+
+    initTimePicker();
 
     Fancybox.bind('[data-fancybox]', {
         
@@ -74,22 +77,17 @@ $(function() {
 
     $('.submenu').hide();
 
-    // Handle clicks on toggle links
     $('.toggle-link').on('click', function (e) {
         e.preventDefault();
         const submenu = $(this).siblings('.submenu');
 
-        // Close other submenus on the same level
         $(this).closest('.list-item').siblings().find('.submenu').slideUp();
 
-        // Close nested submenus inside the current submenu
         submenu.find('.submenu').slideUp();
 
-        // Toggle the current submenu
         submenu.slideToggle();
     });
 
-    // Ensure submenus are closed when clicking outside the menu
     $(document).on('click', function (e) {
         if (!$(e.target).closest('.list-item').length) {
             $('.submenu').slideUp();

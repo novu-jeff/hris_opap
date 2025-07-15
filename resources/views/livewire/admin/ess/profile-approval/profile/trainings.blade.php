@@ -38,7 +38,7 @@
                                 </div>
                             </td>  
                             <td>
-                                <input style="width: 300px" type="text" wire:model="records.{{$key}}.consumed_hours.new" id="records.{{$key}}.consumed_hours.new" class="form-control restricted text-center {{$records[$key]['consumed_hours']['new'] !== $records[$key]['consumed_hours']['old'] ? 'border-danger border-3' : ''}}">
+                                <input style="width: 300px" type="number" wire:model="records.{{$key}}.consumed_hours.new" id="records.{{$key}}.consumed_hours.new" class="form-control restricted text-center {{$records[$key]['consumed_hours']['new'] !== $records[$key]['consumed_hours']['old'] ? 'border-danger border-3' : ''}}">
                                 <div class="error-field">
                                     @error('records.'.$key.'.consumed_hours.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>

@@ -202,7 +202,7 @@ Route::prefix('admin')->group(function() {
         Route::get('hris/staffing', [HRISController::class, 'staffing'])
             ->name('hris.staffing');
             
-        Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
+        Route::get('hris/employee/{employee_no?}/{form}', [HRISController::class, 'show'])
             ->name('hris.show');
 
         Route::get('hris/manual', [HRISController::class, 'manual'])

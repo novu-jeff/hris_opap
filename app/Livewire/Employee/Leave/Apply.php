@@ -47,7 +47,7 @@ class Apply extends Component
     public $scheduledDates;
     public $currentYear;
 
-    protected $listeners = ['setSelectedDates', 'save'];
+    protected $listeners = ['setSelectedDates', 'save', 'setTime'];
 
     public function mount() {
         $this->loadRecords();
@@ -100,6 +100,7 @@ class Apply extends Component
         $this->scheduledDates = $this->gatherDates($employee_no);
 
     }
+
 
     private function gatherDates(string $employee_no)
     {

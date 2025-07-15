@@ -7,7 +7,7 @@ use App\Models\EmployeeUpdatePersonal;
 
 use Livewire\Component;
 
-class Details extends Component
+class Personal extends Component
 {
     public $employee_no;
     public $records;
@@ -82,6 +82,6 @@ class Details extends Component
 
     public function render()
     {
-        return view('livewire.admin.ess.profile-approval.profile.details');
+        return view('livewire.admin.ess.profile-approval.profile.personal');
     }
 }

@@ -21,7 +21,7 @@ class ApprovalUpdateProfile extends Controller
     public function show(string $employee_no, string $form) {
         
         $allowed = [
-            'details', 'education', 'family',
+            'personal', 'education', 'family',
             'children', 'employment-history', 'civil-service',
             'trainings', 'other-works', 'skills'
         ];

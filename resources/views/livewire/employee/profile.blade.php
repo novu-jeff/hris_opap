@@ -3,7 +3,7 @@
         <div class="card-body  px-5">
                 <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a href="{{ route('employee.profile', ['form' => 'details']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'details' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'details' ? 'true' : 'false'}}">I. Personal Information</a>
+                    <a href="{{ route('employee.profile', ['form' => 'personal']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'personal' ? 'active' : ''}}" id="pills-personal-tab" role="tab" aria-controls="pills-personal" aria-selected="{{$form == 'personal' ? 'true' : 'false'}}">I. Personal Information</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a href="{{ route('employee.profile', ['form' => 'family']) }}" class="px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'family' ? 'active' : ''}}" id="pills-family-tab" role="tab" aria-controls="pills-family" aria-selected="{{$form == 'family' ? 'true' : 'false'}}">II. Family Background (A)</a>
@@ -33,7 +33,7 @@
             <div class="tab-content" id="pills-tabContent">
                 @php
                     $viewForms = [
-                        'details' => 'employee.profile.details',
+                        'personal' => 'employee.profile.personal',
                         'family' => 'employee.profile.family',
                         'children' => 'employee.profile.children',
                         'education' => 'employee.profile.education',

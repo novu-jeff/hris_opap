@@ -38,6 +38,10 @@ class Salary extends Component
 
         $records = $service->getPayroll($this->payroll_id);
 
+        $employmentType = $records['payroll']['employment_type'] ?? null;
+
+        $this->employment_type = strtolower($employmentType['name'] ?? ''); 
+
         foreach ($records['payroll_items'] as $sectionIndex => $sectionGroup) {
             $employees = $sectionGroup['employees'] ?? [];
 

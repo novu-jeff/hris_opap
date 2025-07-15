@@ -24,9 +24,11 @@ class CivilService extends Component
     public $employee_id;
     public $employee_no;
     public $originalData;
+    public $isFromUpdate = false;
+    public $recordIndex;
     public $records;
 
-    protected $listeners = ['save'];
+    protected $listeners = ['save', 'removeRecord'];
 
     public function mount() {
         $this->loadRecords();
@@ -44,7 +46,13 @@ class CivilService extends Component
             ->get()
             ->toArray() ?? [];
 
-        $data = !empty($updated) ? $updated : $stored;
+        if(!empty($updated)) {
+            $data = $updated;
+            $this->isFromUpdate = true;
+        } else {
+            $data = $stored;
+            $this->isFromUpdate = false;
+        }
 
         $this->originalData = $data;
         $this->records = $data;
@@ -57,11 +65,48 @@ class CivilService extends Component
         }
     }
 
-    public function removeRecord($index) {
-        if (isset($this->records[$index])) {
-            unset($this->records[$index]);
-            $this->records = array_values($this->records);
+    public function removeRecord(bool $isNotify, $index = null) {
+        
+        if($isNotify) {
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that you will be deleting this record and cannot be undone.';
+            $action = 'removeRecord';
+            $this->recordIndex = $index;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+            return;
         }
+        
+        $updatedRecords = EmployeeUpdateCivilService::where('employee_no', $this->employee_no)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $storedRecords = EmployeeCivilService::where('employee_no', $this->employee_no)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $records = $updatedRecords->isNotEmpty() ? $updatedRecords : $storedRecords;
+
+        $record = $records[$this->recordIndex] ?? null;
+
+
+        if ($record && $record->documents) {
+            $path = 'documents/' . $this->employee_no . '/' . $record->documents;
+
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+        }
+
+        $record->delete();
+
+        unset($this->records[$this->recordIndex]);
+        $this->records = array_values($this->records);
+        
     }
 
     private $defaultFields = [
