@@ -30,7 +30,7 @@
                         @foreach ($records as $key => $item)
                             <tr>
                                 <td>
-                                    <button type="button" class="btn btn-danger" wire:click="removeRecord({{$key}})">
+                                    <button type="button" class="btn btn-danger" wire:click="removeRecord('true', {{$key}})">
                                         <i class="fa-solid fa-circle-minus"></i>
                                     </button>
                                 </td>
@@ -109,7 +109,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase text-center fw-medium text-center">No data Found.</div>
+            <div class="alert alert-danger text-uppercase text-center fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer mt-5 pb-3 d-flex justify-content-end bg-transparent border-0">
             <div class="text-end">

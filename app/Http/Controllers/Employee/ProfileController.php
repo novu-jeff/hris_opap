@@ -15,13 +15,13 @@ class ProfileController extends Controller
     public function index(string $form) {
 
         $allowed = [
-            'details', 'education', 'family',
+            'personal', 'education', 'family',
             'children', 'employment-history', 'civil-service',
             'trainings', 'other-works', 'skills'
         ];
 
         if(!in_array( $form, $allowed)) {
-            return redirect()->route('employee.profile', ['form' => 'details']);
+            return redirect()->route('employee.profile', ['form' => 'personal']);
         }
 
         return view('employee.profile', [

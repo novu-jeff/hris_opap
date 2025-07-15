@@ -20,6 +20,7 @@
             <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
                 <label for="search" class="form-label mb-0">Filter Status:</label>
                 <select wire:model.change="status" id="status" class="form-select w-50 text-uppercase">
+                    <option value="all">All</option>
                     <option value="pending"> Pending </option>
                     <option value="granted"> Granted </option>
                     <option value="disapproved"> Disapproved </option>
@@ -34,6 +35,9 @@
                         <th>ID</th>
                         <th>Purpose</th>
                         <th>Date</th>
+                        @if($status == 'all')
+                            <th>Status</th>
+                        @endif
                         <th style="max-width: 200px;">Action</th>
                     </tr>
                 </thead>                
@@ -44,26 +48,34 @@
                             <td>{{ $record->purpose }}</td>
                             <td>{{format_date($record->from, 'date_string') . ' - ' . format_date($record->to, 'date_string')}}</td>
                             <td>
+                                {!! status_alert($record->status) !!}    
+                            </td>  
+                            <td>
                                 @if ($record->status == 'cancelled')
                                      <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
-                                @else
+                                @endif
+                                @if($record->status == 'pending')
+                                    <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                    <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                @endif
+                                @if($record->status == 'granted')
                                     <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
-                                    @if($record->status == 'pending')
-                                        <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-ban"></i>
-                                        </button>
-                                    @else
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    @endif
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                @endif
+                                @if($record->status == 'disapproved')
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 @endif
                             </td>
                         </tr>

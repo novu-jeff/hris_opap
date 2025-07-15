@@ -3,7 +3,7 @@
         <div class="card-body  px-5">
             <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a href="{{ route('ess.approval-profile.show', ['employee_no' => $employee_no, 'form' => 'details']) }}" class="{{in_array('details', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'details' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'details' ? 'true' : 'false'}}">I. Personal Information</a>
+                    <a href="{{ route('ess.approval-profile.show', ['employee_no' => $employee_no, 'form' => 'personal']) }}" class="{{in_array('personal', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'personal' ? 'active' : ''}}" id="pills-personal-tab" role="tab" aria-controls="pills-personal" aria-selected="{{$form == 'personal' ? 'true' : 'false'}}">I. Personal Information</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a href="{{ route('ess.approval-profile.show', ['employee_no' => $employee_no, 'form' => 'family']) }}" class="{{in_array('family', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'family' ? 'active' : ''}}" id="pills-family-tab" role="tab" aria-controls="pills-family" aria-selected="{{$form == 'family' ? 'true' : 'false'}}">II. Family Background (A)</a>
@@ -33,7 +33,7 @@
             <div class="tab-content" id="pills-tabContent">
                 @php
                     $viewForms = [
-                        'details' => 'admin.ess.profile-approval.profile.details',
+                        'personal' => 'admin.ess.profile-approval.profile.personal',
                         'family' => 'admin.ess.profile-approval.profile.family',
                         'children' => 'admin.ess.profile-approval.profile.children',
                         'education' => 'admin.ess.profile-approval.profile.education',

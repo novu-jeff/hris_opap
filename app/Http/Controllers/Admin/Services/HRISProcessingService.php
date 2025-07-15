@@ -32,7 +32,7 @@ use function PHPUnit\Framework\isEmpty;
 class HRISProcessingService extends Controller
 {
 
-    public function save(bool $isFirstTime = false, string $employee_no, ?string $job_id = null, ?array $data = null) 
+    public function save(bool $isFirstTime = false, string $employee_no, ?string $job_id = null, ?string $target, ?array $data = null) 
     {    
 
         $record = ApplicantUsers::with(['applied' => function ($query) use ($job_id) {
@@ -77,21 +77,45 @@ class HRISProcessingService extends Controller
 
         } else {
 
-            $data['employee_account']['email'] = $data['employee_personal']['email'];
+            switch ($target) {
+                case 'information':
+                    $data['employee_account']['email'] = $data['employee_personal']['email'];
 
-            $this->employee_information($employee_no, $data['employee_information'], false);
-            $this->employee_account($employee_no, $data['employee_account'], false);
-            
-            $this->employee_personal($employee_no, $data['employee_personal'], false);            
-            $this->employee_parents($employee_no, $data['employee_parents'], false);
-            $this->employee_children($employee_no, $data['employee_children']);
-            $this->employee_education($employee_no, $data['employee_education']);
-            $this->employee_employment_history($employee_no, $data['employee_employment_history']);
-            
-            $this->employee_civil_service($employee_no, $data['employee_civil_service']);
-            $this->employee_trainings($employee_no, $data['employee_trainings']);
-            $this->employee_others($employee_no, $data['employee_others']);
-            $this->employee_skills($employee_no, $data['employee_skills']);
+                    $this->employee_information($employee_no, $data['employee_information'], false);
+                    $this->employee_account($employee_no, $data['employee_account'], false);
+                    $this->employee_personal($employee_no, $data['employee_personal'], false);
+                    break;
+                case 'personal':
+                    $this->employee_personal($employee_no, $data, false);
+                    break;
+                case 'family':
+                    $this->employee_parents($employee_no, $data, false);
+                    break;
+                case 'children':
+                    $this->employee_children($employee_no, $data);
+                    break;
+                case 'education':
+                    $this->employee_education($employee_no, $data);
+                    break;
+                case 'employment_history':
+                    $this->employee_employment_history($employee_no, $data);
+                    break;
+                case 'civil_service':
+                    $this->employee_civil_service($employee_no, $data);
+                    break;
+                case 'trainings':
+                    $this->employee_trainings($employee_no, $data);
+                    break;
+                case 'other_works':
+                    $this->employee_others($employee_no, $data);
+                    break;
+                case 'skills':
+                    $this->employee_skills($employee_no, $data);
+                    break;
+                default:
+                    // Optionally handle unknown target
+                    throw new \Exception("Unknown target: {$target}");
+            }
 
         }
     }
@@ -409,7 +433,6 @@ class HRISProcessingService extends Controller
                             'employee_no' => $employee_no,
                             'position' => $item['position'],
                             'department' => $item['department'],
-                            'company_name' => $item['company_name'],
                             'monthly_salary' => $item['monthly_salary'],
                             'employment_status' => $item['employment_status'],
                             'isGovernment' => $item['isGovernment'],
@@ -427,7 +450,6 @@ class HRISProcessingService extends Controller
                             'employee_no' => $employee_no,
                             'position' => $item['position'],
                             'department' => $item['department'],
-                            'company_name' => $item['company_name'],
                             'monthly_salary' => $item['monthly_salary'],
                             'employment_status' => $item['employment_status'],
                             'isGovernment' => $item['isGovernment'],
@@ -442,7 +464,6 @@ class HRISProcessingService extends Controller
                     'employee_no' => $employee_no,
                     'position' => $item['position'],
                     'department' => $item['department'],
-                    'company_name' => $item['company_name'],
                     'monthly_salary' => $item['monthly_salary'],
                     'employment_status' => $item['employment_status'],
                     'isGovernment' => $item['isGovernment'],
@@ -618,7 +639,6 @@ class HRISProcessingService extends Controller
                         $record->fill([
                             'employee_no' => $employee_no,
                             'organization' => $item['organization'],
-                            'address' => $item['address'],
                             'date_from' => $item['date_from'],
                             'date_to' => $item['date_to'],
                             'consumed_hours' => $item['consumed_hours'],
@@ -634,7 +654,6 @@ class HRISProcessingService extends Controller
                         $record->fill([
                             'employee_no' => $employee_no,
                             'organization' => $item['organization'],
-                            'address' => $item['address'],
                             'date_from' => $item['date_from'],
                             'date_to' => $item['date_to'],
                             'consumed_hours' => $item['consumed_hours'],
@@ -647,7 +666,6 @@ class HRISProcessingService extends Controller
                 EmployeeOtherWorks::create([
                     'employee_no' => $employee_no,
                     'organization' => $item['organization'],
-                    'address' => $item['address'],
                     'date_from' => $item['date_from'],
                     'date_to' => $item['date_to'],
                     'consumed_hours' => $item['consumed_hours'],

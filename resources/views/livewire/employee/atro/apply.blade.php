@@ -23,9 +23,9 @@
                         <div class="col-12 col-md-4 mb-3">
                             <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
                             <input 
-                                type="time" 
+                                type="text" 
                                 id="start-time" 
-                                class="form-control @error('fields.start_time') is-invalid @enderror" 
+                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror" 
                                 wire:model="fields.start_time"
                             >
                             <div class="error-field">
@@ -35,9 +35,9 @@
                         <div class="col-12 col-md-4 mb-3">
                             <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
                             <input 
-                                type="time" 
+                                type="text" 
                                 id="end-time" 
-                                class="form-control @error('fields.end_time') is-invalid @enderror" 
+                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror" 
                                 wire:model="fields.end_time"
                             >
                             <div class="error-field">

@@ -103,7 +103,7 @@
                 ],
                 [
                     'label' => 'My Profile',
-                    'route' => route('employee.profile', ['form' => 'details']),
+                    'route' => route('employee.profile', ['form' => 'profile']),
                     'img' => '/img/profile.png',
                     'permission' => ['read my-profile', 'write my-profile'],
                 ],
@@ -137,15 +137,7 @@
                     'img' => '/img/tutorial.png',
                     'permission' => null,
                 ],
-                [
-                    'label' => 'Logout',
-                    'route' => route('employee.logout'),
-                    'img' => '/img/logout.png',
-                    'permission' => null,
-                ],
             ];
-
-            // Sort alphabetically by label
             usort($menuItems, fn($a, $b) => strcmp($a['label'], $b['label']));
         @endphp
         <div class="row">

@@ -20,6 +20,7 @@
             <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
                 <label for="search" class="form-label mb-0">Filter Status:</label>
                 <select wire:model.change="status" id="status" class="form-select w-50 text-uppercase">
+                    <option value="all">All</option>
                     <option value="pending"> Pending </option>
                     <option value="granted"> Granted </option>
                     <option value="disapproved"> Disapproved </option>
@@ -33,6 +34,9 @@
                     <tr>
                         <th>ID</th>
                         <th>Date</th>
+                        @if($status == 'all')
+                            <th>Status</th>
+                        @endif
                         <th style="max-width: 200px;">Action</th>
                     </tr>
                 </thead>                
@@ -42,23 +46,31 @@
                             <td>#{{format_id($record->id, 6)}}</td>
                             <td>{{\Carbon\Carbon::parse($record->date)->format('F d, Y')}}</td>
                             <td>
+                                {!! status_alert($record->status) !!}    
+                            </td>  
+                            <td>
                                 @if ($record->status == 'cancelled')
                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
-                                @else
+                                @endif
+                                @if($record->status == 'granted')
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                @endif
+                                @if($record->status == 'pending')
                                     <a href="{{route('employee.time-adjustments.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    @if($record->status == 'pending')
-                                        <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-ban"></i>
-                                        </button>
-                                    @else
-                                        <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    @endif
+                                    <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                @endif
+                                @if($record->status == 'disapproved')
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 @endif
                             </td>
                         </tr>

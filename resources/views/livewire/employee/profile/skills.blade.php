@@ -22,7 +22,7 @@
                         @foreach ($records as $key => $item)
                             <tr>
                                 <td>
-                                    <button type="button" class="btn btn-danger" wire:click="removeRecord({{$key}})">
+                                    <button type="button" class="btn btn-danger" wire:click="removeRecord('true', {{$key}})">
                                         <i class="fa-solid fa-circle-minus"></i>
                                     </button>
                                 </td>

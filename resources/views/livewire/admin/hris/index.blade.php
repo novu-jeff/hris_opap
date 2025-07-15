@@ -41,7 +41,7 @@
                                                 <li>
                                                     {{ $updated['message'] }}
                                                     <span class="ms-2">
-                                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $updated['employee_no']])}}" class="text-decoration-underline text-primary">View</a>
+                                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $updated['employee_no'], 'form' => 'information'])}}" class="text-decoration-underline text-primary">View</a>
                                                     </span>
                                                 </li>
                                             @endforeach
@@ -266,7 +266,7 @@
                                             title="Download PDS">
                                             <i class="fa-solid fa-download"></i>
                                         </a>
-                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary"
+                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no, 'form' => 'information'])}}" class="btn btn-primary"
                                             title="View Employee Records">
                                             <i class="fa-regular fa-folder-open"></i>
                                         </a>

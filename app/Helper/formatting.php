@@ -281,3 +281,18 @@ if (!function_exists('formatTime')) {
     }
 
 }
+
+if (!function_exists('status_alert')) {
+    function status_alert($status)
+    {
+        $status = strtolower($status);
+
+        return match ($status) {
+            'pending'     => '<div style="width: 100% !important;" class="alert alert-warning text-uppercase fw-bold text-center mb-2 py-2 px-3">Pending</div>',
+            'approved'    => '<div style="width: 100% !important;" class="alert alert-success text-uppercase fw-bold text-center mb-2 py-2 px-3">Approved</div>',
+            'disapproved' => '<div style="width: 100% !important;" class="alert alert-danger text-uppercase fw-bold text-center mb-2 py-2 px-3">Disapproved</div>',
+            'cancelled'   => '<div style="width: 100% !important;" class="alert alert-secondary text-uppercase fw-bold text-center mb-2 py-2 px-3">Cancelled</div>',
+            default       => '<div style="width: 100% !important;" class="alert alert-light text-uppercase fw-bold text-center mb-2 py-2 px-3">Unknown Status</div>',
+        };
+    }
+}
