@@ -1,7 +1,7 @@
 <div>
     <div class="action mb-4">
         <div class="d-md-flex justify-content-end gap-3">
-            <a href="{{route('payroll.process', [
+            <a href="{{route('payroll.index', [
                 'type' => $type,
                 'employment_type' => $employment_type
             ])}}" 
