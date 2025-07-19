@@ -36,7 +36,7 @@ class YearEnd extends Component
 
         $service = app(BonusService::class);
 
-        $records = $service->getPayroll(W$this->payroll_id);
+        $records = $service->getPayroll($this->payroll_id);
 
         $employmentType = $records['payroll']['employment_type'] ?? null;
         $this->employment_type = strtolower($employmentType['name'] ?? ''); 
