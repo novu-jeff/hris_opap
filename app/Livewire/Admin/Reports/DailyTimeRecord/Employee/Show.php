@@ -47,7 +47,7 @@ class Show extends Component
 
         try {
 
-            // Artisan::call('compute-aut');
+            Artisan::call('compute-aut');
 
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
