@@ -23,7 +23,7 @@ class TimeLogService extends Controller
         return $this->processLogs($logs, $timestamp);
     }
 
-    public function getDTR(string $biometrics_id, string $monthYear)
+    public function getDTR(string $employeeNo, string $biometrics_id, string $monthYear)
     {
 
         if (empty($biometrics_id)) {
@@ -46,7 +46,7 @@ class TimeLogService extends Controller
 
         $logs = $this->processLogs($logs, $monthYear, true);
 
-        $logs = $this->formatDayDTR($logs, $monthYear);
+        $logs = $this->formatDayDTR($employeeNo, $logs, $monthYear);
         $summary = $this->getSummary($logs);
 
         return [
@@ -162,8 +162,8 @@ class TimeLogService extends Controller
             $record['remarks'][] = 'Absent';
             return 480;
         }
-
-        if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
+        
+        if (config('app.product') === 'government' && (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out)) {
             $record['remarks'][] = 'Discrepancy';
         }
 
@@ -277,7 +277,18 @@ class TimeLogService extends Controller
         return $time ? Carbon::createFromFormat('h:i A', $time) : null;
     }
 
-    private function formatDayDTR($logs, $monthYear)
+    private function getWeeklySchedule(string $employeeId)
+    {
+        $weeklySchedule = DB::table('employee_schedules')
+            ->leftJoin('employee_information', 'employee_schedules.id', '=', 'employee_information.schedule_id')
+            ->select('employee_schedules.*')
+            ->where('employee_information.employee_no', $employeeId)
+            ->first();
+
+        return (array) $weeklySchedule;
+    }
+
+    private function formatDayDTR($employee_no, $logs, $monthYear)
     {
         try {
             $monthCarbon = Carbon::createFromFormat('m-Y', $monthYear);
@@ -299,11 +310,14 @@ class TimeLogService extends Controller
                 return $leave->employee_no . '|' . $leave->date;
             });
 
+            
         for ($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
             $dateString = $date->toDateString();
-            $isWeekend = $date->isSaturday() || $date->isSunday();
             $isFuture = $date->gt($today);
             $remarks = [];
+            $dayName = strtolower(Carbon::parse($dateString)->format('l'));
+            $isRestDay = false;
+
 
             // 1. Holiday
             $holiday = Holiday::where('date', $date->format('m-d'))->first();
@@ -320,13 +334,17 @@ class TimeLogService extends Controller
                 }
             }
 
-            // 3. Weekend
-            if ($isWeekend) {
-                $remarks[] = 'Rest Day';
+            // 3. is Rest day
+            $weeklySchedule = $this->getWeeklySchedule($employee_no);
+            
+            if(!$weeklySchedule[$dayName]) {
+                $dayRemark = strtolower($today->format('l')) . '_remarks';
+                $isRestDay = true;
+                $remarks[] = $weeklySchedule[$dayRemark];
             }
 
-            // 4. Absent
-            if (!isset($logs[$dateString]) && !$isFuture && !in_array('Leave', $remarks) && !$isWeekend) {
+            // // 4. Absent
+            if (!isset($logs[$dateString]) && !$isRestDay && !$isFuture && !in_array('Leave', $remarks)) {
                 $remarks[] = 'Absent';
             }
 
@@ -337,10 +355,12 @@ class TimeLogService extends Controller
                 $remarks = array_values($intersect);
             }
 
+            
             if (isset($logs[$dateString])) {
+                $employeeNo = $logs[$dateString]['employee_no'];
                 $formattedLogs[$dateString] = $logs[$dateString];
-
-                if ($isWeekend) {
+                
+                if ($isRestDay) {
                     $hasLog = !empty($logs[$dateString]['clock_in']) || !empty($logs[$dateString]['clock_out']);
                     if ($hasLog) {
                         $formattedLogs[$dateString]['workOnHoliday'] = true;
