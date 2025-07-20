@@ -156,7 +156,9 @@
     </div>
     
     <div class="d-lg-flex justify-content-end text-center mb-5 gap-3">
+        @if(config('app.product') === 'government')
         <a href="{{route('hris.staffing')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase mb-3">View Staffing</a>
+        @endif
         <button class="btn btn-primary px-5 py-3 text-uppercase mb-3" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 
