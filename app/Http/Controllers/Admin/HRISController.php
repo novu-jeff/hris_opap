@@ -43,6 +43,7 @@ class HRISController extends Controller
 
     public function manual()
     {
+
         return view('admin.hris.manual');
     }
 
