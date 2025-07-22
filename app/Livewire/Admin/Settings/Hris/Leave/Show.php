@@ -494,10 +494,6 @@ class Show extends Component
         $model = EmployeeInformation::with(['personal'])
             ->where('employment_type_id', 1);
 
-        if(!is_null($this->employee_no)) {
-            $this->search = $this->employee_no;
-        }
-
         if ($this->search) {
             $this->resetPage();
             $model->where(function ($query) {

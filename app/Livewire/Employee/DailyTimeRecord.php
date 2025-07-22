@@ -56,7 +56,7 @@ class DailyTimeRecord extends Component
             $bio_id = !$bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
-            $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
+            $logs = $this->timeLogService->getDTR($employee_no, $bio_id, $monthDate);
 
             $this->logs = [
                 'employee_account' => [
