@@ -91,15 +91,15 @@ class Information extends Component
             'leaveCredits' => $leaveCredits
         ];
 
-        if ($data->section_id) {
+        if (!empty($data->section_id)) {
             $this->select_change('section');
         }
 
-        if($data->personal->citizenship == 'dual_citizenship') {
+        if (!empty($data->personal) && $data->personal->citizenship === 'dual_citizenship') {
             $this->select_change('citizenship');
         }
 
-        if($data->personal->civil_status == 'married') {
+        if (!empty($data->personal) && $data->personal->civil_status === 'married') {
             $this->select_change('civil_status');
         }
     }
@@ -200,49 +200,52 @@ class Information extends Component
         ];
     }
 
-    protected function formatPersonal($data) {
+    protected function formatPersonal($data)
+    {
+        $personal = $data->personal ?? null;
+        $account = $data->account ?? null;
 
-
-        if($data->personal->birth_certificate) {
+        if ($personal && $personal->birth_certificate) {
             $this->hasBirthCert = true;
-        } 
+        }
 
-        if($data->personal->marriage_certificate) {
+        if ($personal && $personal->marriage_certificate) {
             $this->hasMarriageCert = true;
-        } 
+        }
 
         return [
-            'profile' => $data->personal->profile ?? null,
-            'firstname' => $data->personal->firstname ?? null,
-            'middlename' => $data->personal->middlename ?? null,
-            'lastname' => $data->personal->lastname ?? null,
-            'suffix' => $data->personal->suffix ?? null,
-            'birthday' => $data->personal->birthday ?? null,
-            'civil_status' => $data->personal->civil_status ?? null,
-            'sex' => $data->personal->sex ?? null,
-            'citizenship' => $data->personal->citizenship ?? null,
-            'citizenship_type' => $data->personal->citizenship_type ?? null,
-            'solo_parent' => $data->personal->solo_parent ? 'yes' : 'no',
-            'country' => $data->personal->country ?? null,
-            'present_address' => $data->personal->present_address ?? null,
-            'present_province' => $data->personal->present_province ?? null,
-            'present_city' => $data->personal->present_city ?? null,
-            'permanent_address' => $data->personal->permanent_address ?? null,
-            'permanent_province' => $data->personal->permanent_province ?? null,
-            'permanent_city' => $data->personal->permanent_city ?? null,
-            'mobile_number' => $data->personal->mobile_number ?? null,
-            'tel_no' => $data->personal->tel_no ?? null,
-            'email' => $data->account->email ?? null,
-            'height' => $data->personal->height ?? null,
-            'weight' => $data->personal->weight ?? null,
-            'blood_type' => $data->personal->blood_type ?? null,
-            'gsis_no' => $data->personal->gsis_no ?? null,
-            'pagibig_no' => $data->personal->pagibig_no ?? null,
-            'philhealth_no' => $data->personal->philhealth_no ?? null,
-            'sss_no' => $data->personal->sss_no ?? null,
-            'tin_no' => $data->personal->tin_no ?? null,
+            'profile' => $personal->profile ?? null,
+            'firstname' => $personal->firstname ?? null,
+            'middlename' => $personal->middlename ?? null,
+            'lastname' => $personal->lastname ?? null,
+            'suffix' => $personal->suffix ?? null,
+            'birthday' => $personal->birthday ?? null,
+            'civil_status' => $personal->civil_status ?? null,
+            'sex' => $personal->sex ?? null,
+            'citizenship' => $personal->citizenship ?? null,
+            'citizenship_type' => $personal->citizenship_type ?? null,
+            'solo_parent' => $personal && $personal->solo_parent ? 'yes' : 'no',
+            'country' => $personal->country ?? null,
+            'present_address' => $personal->present_address ?? null,
+            'present_province' => $personal->present_province ?? null,
+            'present_city' => $personal->present_city ?? null,
+            'permanent_address' => $personal->permanent_address ?? null,
+            'permanent_province' => $personal->permanent_province ?? null,
+            'permanent_city' => $personal->permanent_city ?? null,
+            'mobile_number' => $personal->mobile_number ?? null,
+            'tel_no' => $personal->tel_no ?? null,
+            'email' => $account->email ?? null,
+            'height' => $personal->height ?? null,
+            'weight' => $personal->weight ?? null,
+            'blood_type' => $personal->blood_type ?? null,
+            'gsis_no' => $personal->gsis_no ?? null,
+            'pagibig_no' => $personal->pagibig_no ?? null,
+            'philhealth_no' => $personal->philhealth_no ?? null,
+            'sss_no' => $personal->sss_no ?? null,
+            'tin_no' => $personal->tin_no ?? null,
         ];
     }
+
 
     protected function rules(?string $employee_no = null) {
         return [

@@ -19,6 +19,7 @@ use App\Models\EmployementTypes;
 use App\Models\Positions;
 use App\Models\Sections;
 use App\Models\Tranche;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeUploadService extends Controller
 {
@@ -55,8 +56,11 @@ class EmployeeUploadService extends Controller
     public function uploadEmployeeInformation($data, $schedules)
     {
         $product = strtolower(env('APP_PRODUCT'));
+        Log::info("Starting uploadEmployeeInformation process for product: {$product}");
 
-        foreach ($data as $employeeData) {
+        foreach ($data as $key => $employeeData) {
+            Log::info("Processing employee row #{$key}", ['employee_no' => $employeeData[0] ?? null]);
+
             if ($product === 'government') {
                 $indexes = [
                     'job_category' => 17,
@@ -70,7 +74,7 @@ class EmployeeUploadService extends Controller
                     'philhealth' => 13,
                     'tin' => 14,
                     'email' => 20,
-                    'monthly_rate' => null, 
+                    'monthly_rate' => null,
                 ];
             } else {
                 $indexes = [
@@ -97,25 +101,29 @@ class EmployeeUploadService extends Controller
             $jobCategory = !empty($jobCategoryName)
                 ? EmployementTypes::firstOrCreate(['name' => $jobCategoryName])
                 : null;
+            Log::info("Job Category processed", ['name' => $jobCategoryName, 'id' => $jobCategory?->id]);
 
             $position = !empty($positionName)
                 ? Positions::firstOrCreate(['name' => $positionName])
                 : null;
+            Log::info("Position processed", ['name' => $positionName, 'id' => $position?->id]);
 
             $section = !empty($sectionName)
                 ? Sections::firstOrCreate(['name' => $sectionName])
                 : null;
+            Log::info("Section processed", ['name' => $sectionName, 'id' => $section?->id]);
 
             $monthlyRate = 0;
             if ($product === 'government') {
                 $monthlyRate = $this->getMonthlySalary(
                     $jobCategory?->id ?? '',
                     $position?->id ?? '',
-                    1 
+                    1
                 );
             } else {
                 $monthlyRate = floatval($employeeData[$indexes['monthly_rate']] ?? 0);
             }
+            Log::info("Monthly rate determined", ['rate' => $monthlyRate]);
 
             $employeeInfo = EmployeeInformation::updateOrCreate(
                 ['employee_no' => $employeeData[0]],
@@ -131,6 +139,7 @@ class EmployeeUploadService extends Controller
                     'monthly_rate' => $monthlyRate,
                 ]
             );
+            Log::info("Employee information updated/created", ['employee_no' => $employeeData[0]]);
 
             $personalData = [
                 'bsd_no' => $employeeData[1],
@@ -157,6 +166,7 @@ class EmployeeUploadService extends Controller
                 ['employee_no' => $employeeData[0]],
                 $personalData
             );
+            Log::info("Employee personal data updated/created", ['employee_no' => $employeeData[0]]);
 
             $this->createAccount(
                 $employeeData[0],
@@ -164,7 +174,10 @@ class EmployeeUploadService extends Controller
                 $employeeData[2],
                 $employeeData[$indexes['email']] ?? null
             );
+            Log::info("Account created for employee", ['employee_no' => $employeeData[0]]);
         }
+
+        Log::info("Completed uploadEmployeeInformation process.");
     }
 
 
