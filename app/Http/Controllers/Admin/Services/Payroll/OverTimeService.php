@@ -181,7 +181,10 @@ class OverTimeService extends Controller {
                 $biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
                 $basic_salary = $employee['monthly_rate'];
 
-                $dtr = $dtr_service->getDTRByRange($biometrics, $payroll->period);
+                // $dtr = $dtr_service->getDTRByRange($employee_no, $biometrics, $payroll->period);
+
+                $dtr = $dtr_service->getSummary($employee_no = null, $payroll->period, $biometrics);
+
                 $totalDays = $dtr['summary']['total_days'];
                 $workedDays = $dtr['summary']['worked_days'];
                 $overtime = $dtr['summary']['overtime'];
@@ -207,7 +210,7 @@ class OverTimeService extends Controller {
             return $data;
 
         } else {
-
+            
         }
 
 

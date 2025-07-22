@@ -231,7 +231,7 @@
     </div>
     <div class="container">
         @if($logs)
-            @if(!$hasLeaveCard)
+            @if(!$hasLeaveCard && config('app.product') === 'government')
                 <div class="warning mt-5 mb-3">
                     <div class="alert alert-info fw-bold text-center" role="alert">
                         <p class="m-0 text-uppercase">No Leave Card Detected</p>
