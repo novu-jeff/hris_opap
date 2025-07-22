@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Services;
 
 use App\Http\Controllers\Controller;
+use App\Services\SummaryServices;
 use App\Models\EmployeeLeave;
 use App\Models\EmployeeLeaveDates;
 use App\Models\EmployeeTimelogs;
@@ -10,6 +11,7 @@ use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class TimeLogService extends Controller
 {
@@ -23,7 +25,7 @@ class TimeLogService extends Controller
         return $this->processLogs($logs, $timestamp);
     }
 
-    public function getDTR(string $biometrics_id, string $monthYear)
+    public function getDTR(string $employeeNo, string $biometrics_id, string $monthYear)
     {
 
         if (empty($biometrics_id)) {
@@ -46,8 +48,8 @@ class TimeLogService extends Controller
 
         $logs = $this->processLogs($logs, $monthYear, true);
 
-        $logs = $this->formatDayDTR($logs, $monthYear);
-        $summary = $this->getSummary($logs);
+        $logs = $this->formatDayDTR($employeeNo, $logs, $monthYear);
+        $summary = $this->getSummary($employeeNo, $monthYear);
 
         return [
             'logs' => $logs,
@@ -80,7 +82,6 @@ class TimeLogService extends Controller
                 $record = $this->initializeRecord($employeeId, $employee, $monthYear);
 
                 $this->assignTimestamps($record, $timestamps);
-                $this->calculateAUTO($record);
 
                 if ($isDTR) {
                     $final[$date] = $record;
@@ -120,13 +121,13 @@ class TimeLogService extends Controller
             $record['lunch_out'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
             $record['clock_out'] = $timestamps[$timestamps->count() - 1]->format('h:i A');
         } elseif ($timestamps->count() === 2) {
-            // Special case: exactly two logs
+            # Special case: exactly two logs
             $record['clock_in'] = $timestamps[0]->format('h:i A');
             $record['clock_out'] = $timestamps[1]->format('h:i A');
         } elseif($timestamps->count() == 1) {
             $record['clock_in'] = $timestamps[0]->format('h:i A');
         } else {
-            // Fallback: assign based on time ranges
+            # Fallback: assign based on time ranges
             foreach ($timestamps as $ts) {
                 $hour = (int) $ts->format('H');
                 if (!isset($record['clock_in']) && $hour >= 5 && $hour <= 9) {
@@ -142,143 +143,30 @@ class TimeLogService extends Controller
         }
     }
 
-    private function calculateAUTO(&$record)
-    {
-        $startTime = Carbon::createFromTime(7, 0);
-        $latestAllowedIn = Carbon::createFromTime(9, 0);
-        $breakStart = Carbon::createFromTime(12, 0);
-        $breakEnd = Carbon::createFromTime(13, 0);
-        $maxOTTime = Carbon::createFromTime(22, 0); // 10:00 PM cutoff for OT
-
-        $record['remarks'] = [];
-        $record['total_aut'] = 0;
-
-        $clock_in = $this->parseTime($record['clock_in']);
-        $clock_out = $this->parseTime($record['clock_out']);
-        $lunch_in = $this->parseTime($record['lunch_in']);
-        $lunch_out = $this->parseTime($record['lunch_out']);
-
-        if (!$clock_in && !$clock_out && !$lunch_in && !$lunch_out) {
-            $record['remarks'][] = 'Absent';
-            return 480;
-        }
-
-        if (!$clock_in || !$clock_out || !$lunch_in || !$lunch_out) {
-            $record['remarks'][] = 'Discrepancy';
-        }
-
-        $actualStart = ($clock_in && $clock_in->lt($startTime)) ? $startTime : $clock_in;
-        $totalAUT = 0;
-
-        if ($actualStart && $actualStart->gt($latestAllowedIn)) {
-            $late = $actualStart->diffInMinutes($latestAllowedIn);
-            $record['aut']['tardiness'] = [
-                'minutes' => $late,
-                'reason' => "Late by {$late} minute(s). Time-in at {$record['clock_in']}, beyond 09:00 AM.",
-            ];
-            $record['remarks'][] = 'Late';
-            $totalAUT += $late;
-        }
-
-        if ($actualStart && $clock_out) {
-            $totalWorked = $clock_out->diffInMinutes($actualStart);
-
-            if ($lunch_in && $lunch_out && $lunch_out->gt($lunch_in)) {
-                $totalWorked -= $lunch_out->diffInMinutes($lunch_in);
-            } elseif ($actualStart->lt($breakStart) && $clock_out->gt($breakEnd)) {
-                $totalWorked -= 60;
-            }
-
-            if ($lunch_in && $lunch_in->lt($breakStart)) {
-                $totalWorked -= $breakStart->diffInMinutes($lunch_in);
-            }
-
-            $expectedWorkMinutes = 480;
-            $standardEnd = $actualStart->copy()->addHours(9); // 8hrs + 1hr break
-
-            // Undertime calculation
-            if ($actualStart->betweenIncluded($startTime, $latestAllowedIn)) {
-                if ($clock_out->lt($standardEnd)) {
-                    $ut = $standardEnd->diffInMinutes($clock_out);
-                    $record['aut']['undertime'] = [
-                        'minutes' => $ut,
-                        'reason' => "Expected out at {$standardEnd->format('h:i A')} (9 hrs incl. lunch), but clocked out at {$clock_out->format('h:i A')} ({$ut} min short).",
-                    ];
-                    $record['remarks'][] = 'Undertime';
-                    $totalAUT += $ut;
-                }
-            } elseif ($totalWorked < $expectedWorkMinutes) {
-                $ut = $expectedWorkMinutes - $totalWorked;
-                $record['aut']['undertime'] = [
-                    'minutes' => $ut,
-                    'reason' => "Worked only {$totalWorked} minute(s), {$ut} minute(s) short of 480 minutes.",
-                ];
-                $record['remarks'][] = 'Undertime';
-                $totalAUT += $ut;
-            }
-
-            // Overtime calculation with 2hr minimum and max until 10pm
-            if ($clock_out->gt($standardEnd)) {
-                $otEnd = $clock_out->lt($maxOTTime) ? $clock_out : $maxOTTime;
-                $otMinutes = $otEnd->diffInMinutes($standardEnd);
-
-                if ($otMinutes >= 120) {
-                    $record['aut']['overtime'] = [
-                        'minutes' => $otMinutes,
-                        'reason' => "Worked {$otMinutes} minute(s) overtime from {$standardEnd->format('h:i A')} to {$otEnd->format('h:i A')}.",
-                    ];
-                    $record['remarks'][] = 'Overtime';
-                    $totalAUT += $otMinutes;
-                }
-            }
-        }
-
-        // Leave Card Check
-        if (isset($record['date'])) {
-            $dateStr = $record['date'];
-            $formats = ['m-Y', 'Y-m-d'];
-            $month = null;
-            $year = null;
-
-            foreach ($formats as $format) {
-                try {
-                    $dt = Carbon::createFromFormat($format, $dateStr);
-                    if ($dt && $dt->format($format) === $dateStr) {
-                        $month = strtolower($dt->format('F'));
-                        $year = $dt->format('Y');
-                        break;
-                    }
-                } catch (\Exception $e) {
-                    // try next format
-                }
-            }
-
-            if ($month && $year) {
-                $leaveCard = (new LeaveCardService())->getLeaveCard($record['employee_no']);
-                $leaveItems = $leaveCard[$year]['items'] ?? null;
-
-                if ($leaveItems) {
-                    $hasAutWoPay = $leaveItems->filter(
-                        fn($item) => strtolower($item->period) === $month && !empty($item->vl_aut_wo_pay)
-                    )->isNotEmpty();
-
-                    if ($hasAutWoPay) {
-                        $record['total_aut'] = $totalAUT;
-                    } else {
-                        $record['total_aut'] = 0;
-                    }
-                }
-            }
-        }
-    }
-
     private function parseTime(?string $time)
     {
         return $time ? Carbon::createFromFormat('h:i A', $time) : null;
     }
 
-    private function formatDayDTR($logs, $monthYear)
+    private function getWeeklySchedule(string $employeeId)
     {
+        $weeklySchedule = DB::table('employee_schedules')
+            ->leftJoin('employee_information', 'employee_schedules.id', '=', 'employee_information.schedule_id')
+            ->select('employee_schedules.*')
+            ->where('employee_information.employee_no', $employeeId)
+            ->first();
+
+        if (!$weeklySchedule) {
+            throw new Exception("No Employee Schedule", 1);
+        }
+
+        return (array) $weeklySchedule;
+    }
+
+    private function formatDayDTR($employee_no, $logs, $monthYear)
+    {
+        $getAUT = app(SummaryServices::class);
+
         try {
             $monthCarbon = Carbon::createFromFormat('m-Y', $monthYear);
             $startDate = $monthCarbon->copy()->startOfMonth();
@@ -299,19 +187,23 @@ class TimeLogService extends Controller
                 return $leave->employee_no . '|' . $leave->date;
             });
 
+            
         for ($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
             $dateString = $date->toDateString();
-            $isWeekend = $date->isSaturday() || $date->isSunday();
             $isFuture = $date->gt($today);
             $remarks = [];
+            $dayName = strtolower(Carbon::parse($dateString)->format('l'));
+            $isRestDay = false;
 
-            // 1. Holiday
+            # 1. Holiday
             $holiday = Holiday::where('date', $date->format('m-d'))->first();
             if ($holiday) {
-                $remarks[] = $holiday->type === 'regular' ? 'Legal Hol' : 'Special Hol';
+               $remarks[] = in_array($holiday->type, ['regular', 'special-working-holiday'])
+                    ? 'Legal Hol'
+                    : 'Special Hol';
             }
 
-            // 2. Leave
+            # 2. Leave
             foreach ($employeeNos as $employeeNo) {
                 $leaveKey = $employeeNo . '|' . $dateString;
                 if (isset($allLeaves[$leaveKey])) {
@@ -320,27 +212,44 @@ class TimeLogService extends Controller
                 }
             }
 
-            // 3. Weekend
-            if ($isWeekend) {
-                $remarks[] = 'Rest Day';
+            # 3. Rest day
+            $weeklySchedule = $this->getWeeklySchedule($employee_no);
+            
+            if(!$weeklySchedule[$dayName]) {
+                $dayRemark = strtolower($today->format('l')) . '_remarks';
+                $isRestDay = true;
+                $remarks[] = $weeklySchedule[$dayRemark];
             }
-
-            // 4. Absent
-            if (!isset($logs[$dateString]) && !$isFuture && !in_array('Leave', $remarks) && !$isWeekend) {
+                        
+            # # 4. Absent
+            if (!isset($logs[$dateString]) && !$isRestDay && !$isFuture && !in_array('Leave', $remarks)) {
                 $remarks[] = 'Absent';
             }
 
-            // Prioritize remarks
+            # Prioritize remarks
             $priorityRemarks = ['Leave', 'Legal Hol', 'Special Hol'];
             $intersect = array_intersect($remarks, $priorityRemarks);
             if (!empty($intersect)) {
                 $remarks = array_values($intersect);
             }
-
+            
             if (isset($logs[$dateString])) {
+                $employeeNo = $logs[$dateString]['employee_no'];
                 $formattedLogs[$dateString] = $logs[$dateString];
+                
+                $lateAndUndertimeRemarks = $getAUT->getTardinessAndUndertime(
+                    $employeeNo,
+                    $logs[$dateString]['clock_in'],
+                    $logs[$dateString]['clock_out']
+                );
 
-                if ($isWeekend) {
+                if($logs[$dateString]['clock_in'] == null || $logs[$dateString]['clock_out'] == null) {
+                    $remarks[] = 'Descrepancy';
+                }
+                
+                $remarks = array_merge($remarks, $lateAndUndertimeRemarks);
+
+                if ($isRestDay) {
                     $hasLog = !empty($logs[$dateString]['clock_in']) || !empty($logs[$dateString]['clock_out']);
                     if ($hasLog) {
                         $formattedLogs[$dateString]['workOnHoliday'] = true;
@@ -353,7 +262,6 @@ class TimeLogService extends Controller
                 );
 
                 $formattedLogs[$dateString]['isFuture'] = $isFuture;
-
             } else {
                 $formattedLogs[$dateString] = [
                     'bsd_no' => null,
@@ -375,103 +283,11 @@ class TimeLogService extends Controller
         return $formattedLogs;
     }
 
-    private function getSummary($logs)
+    private function getSummary($employee_no, $dateInput)
     {
-        $summary = [
-            'leaves' => 0,
-            'worked_days' => 0,
-            'absences' => 0,
-            'overtime' => 0,
-            'total_days_of_work' => count($logs),
-            'less_aut' => 0,
-            'tardiness_freq' => 0,
-            'tardiness' => 0,
-            'undertime_freq' => 0,
-            'undertime' => 0,
-            'rest_days' => 0,
-            'legal_hol' => 0,
-            'special_hol' => 0,
-        ];
+        $summaryService = app(SummaryServices::class);
 
-        foreach ($logs as $date => $log) {
-            $remarks = $log['remarks'] ?? [];
-
-            if (is_array($remarks)) {
-                foreach ($remarks as $remark) {
-                    switch ($remark) {
-                        case 'Absent':
-                            $summary['absences']++;
-                            break;
-
-                        case 'Overtime':
-                            $summary['overtime'] += $log['aut']['overtime']['minutes'] ?? 0;
-                            break;
-
-                        case 'Late':
-                            if (isset($log['aut']['tardiness']['minutes'])) {
-                                $lateMinutes = $log['aut']['tardiness']['minutes'];
-                                $summary['tardiness_freq']++;
-                                $summary['tardiness'] += $lateMinutes;
-                            }
-                            break;
-
-                        case 'Undertime':
-                            if (isset($log['aut']['undertime']['minutes'])) {
-                                $undertimeMinutes = $log['aut']['undertime']['minutes'];
-                                $summary['undertime_freq']++;
-                                $summary['undertime'] += $undertimeMinutes;
-                            }
-                            break;
-
-                        case 'Rest Day':
-                            $summary['rest_days']++;
-                            break;
-
-                        case 'Legal Hol':
-                            $summary['legal_hol']++;
-                            break;
-
-                        case 'Special Hol':
-                            $summary['special_hol']++;
-                            break;
-
-                        case 'Leave':
-                            $summary['leaves']++;
-                            break;
-                    }
-                }
-            }
-
-            // Determine if the log has clock-in and clock-out
-            $hasLog = !empty($log['clock_in']) && !empty($log['clock_out']);
-
-            // If day is not Absent or Leave, OR it has time logs — count as worked
-            $hasAbsentOrLeave = array_intersect($remarks, ['Absent', 'Leave']);
-            if (empty($hasAbsentOrLeave)) {
-                if (!empty(array_intersect($remarks, ['Legal Hol', 'Special Hol', 'Rest Day']))) {
-                    if ($hasLog) {
-                        $summary['worked_days']++;
-                    }
-                } else {
-                    $summary['worked_days']++;
-                }
-            }
-
-            // Add less_aut values
-            if (isset($log['aut']['tardiness']['minutes'])) {
-                $summary['less_aut'] += $log['aut']['tardiness']['minutes'];
-            }
-
-            if (isset($log['aut']['undertime']['minutes'])) {
-                $summary['less_aut'] += $log['aut']['undertime']['minutes'];
-            }
-        }
-
-        // Format numeric values to 2 decimal places
-        $toMins = ['leaves', 'overtime', 'undertime', 'less_aut', 'tardiness'];
-        foreach ($toMins as $key) {
-            $summary[$key] = number_format((float)$summary[$key], 2, '.', '');
-        }
+        $summary = $summaryService->getSummary($employee_no, $dateInput);
 
         return $summary;
     }
@@ -490,22 +306,22 @@ class TimeLogService extends Controller
             abort(400, 'Invalid date range format. Use "YYYY-MM-DD to YYYY-MM-DD".');
         }
 
-        // Get logs only within range
+        # Get logs only within range
         $rawLogs = EmployeeTimelogs::where('employee_id', $biometrics_id)
             ->whereBetween('timestamp', [$startDate, $endDate])
             ->orderBy('timestamp')
             ->get();
 
-        // Process and format logs
+        # Process and format logs
         $processedLogs = $this->processLogs($rawLogs, $startDate->format('m-Y'), true);
         $formattedLogs = $this->formatDayDTR($processedLogs, $startDate->format('m-Y'));
 
-        // Filter logs again for safety
+        # Filter logs again for safety
         $filteredLogs = collect($formattedLogs)->filter(function ($value, $key) use ($startDate, $endDate) {
             return $key >= $startDate->toDateString() && $key <= $endDate->toDateString();
         });
 
-        // Initialize counters
+        # Initialize counters
         $totalWorkedDays = 0;
         $totalOvertime = 0;
         $totalAUT = 0;
@@ -525,7 +341,7 @@ class TimeLogService extends Controller
             }
         }
 
-        // Compute total days in the range (inclusive)
+        # Compute total days in the range (inclusive)
         $totalDays = $startDate->diffInDays($endDate) + 1;
 
         return [
@@ -538,6 +354,4 @@ class TimeLogService extends Controller
             ],
         ];
     }
-
-
 }

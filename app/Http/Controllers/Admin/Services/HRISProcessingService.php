@@ -247,6 +247,16 @@ class HRISProcessingService extends Controller
         }
 
         $record = EmployeePersonal::where('employee_no', $employee_no)->first();
+
+        if (!$record) {
+            $info = EmployeeInformation::where('employee_no', $employee_no)->first();
+
+            if ($info) {
+                $record = new EmployeePersonal();
+                $record->employee_no = $info->employee_no;
+            }
+        }
+
         if ($record) {
             $record->fill($template);
             return $record->save();

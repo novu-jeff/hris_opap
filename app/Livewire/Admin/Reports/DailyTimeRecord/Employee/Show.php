@@ -46,9 +46,6 @@ class Show extends Component
         $this->initializeService();
 
         try {
-
-            Artisan::call('compute-aut');
-
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
             $this->officialTime = Carbon::now()->format('h:i A');
@@ -58,7 +55,7 @@ class Show extends Component
             $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
-            $logs = $this->timeLogService->getDTR($bio_id, $monthDate);
+            $logs = $this->timeLogService->getDTR($employee_no, $bio_id, $monthDate);
 
             $hasLeaveCard = $this->leaveCardService->getLeaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;

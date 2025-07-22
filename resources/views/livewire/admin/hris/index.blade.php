@@ -156,7 +156,9 @@
     </div>
     
     <div class="d-lg-flex justify-content-end text-center mb-5 gap-3">
+        @if(config('app.product') === 'government')
         <a href="{{route('hris.staffing')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase mb-3">View Staffing</a>
+        @endif
         <button class="btn btn-primary px-5 py-3 text-uppercase mb-3" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 
@@ -234,7 +236,7 @@
 
                                 @if(!$item->isTransferingEmp)
                                     <img style="width: 50px; height: 50px;"
-                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname) }}">
+                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname ?? 'UK') }}">
                                 @else
                                     <span class="text-muted fst-italic">Loading...</span>
                                 @endif
@@ -242,7 +244,7 @@
                             <td>{{$item->employee_no}}</td>
                             <td>
                                 @if(!$item->isTransferingEmp)
-                                    {{ $fullname }}
+                                    {!! $fullname ?? '<span class="text-muted fst-italic">No Name</span>' !!}
                                 @else
                                     <span class="text-muted fst-italic">Loading...</span>
                                 @endif
