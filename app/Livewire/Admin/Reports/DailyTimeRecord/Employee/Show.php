@@ -46,9 +46,6 @@ class Show extends Component
         $this->initializeService();
 
         try {
-
-            Artisan::call('compute-aut');
-
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
             $this->officialTime = Carbon::now()->format('h:i A');

@@ -11,6 +11,7 @@ use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class TimeLogService extends Controller
 {
@@ -154,6 +155,10 @@ class TimeLogService extends Controller
             ->select('employee_schedules.*')
             ->where('employee_information.employee_no', $employeeId)
             ->first();
+
+        if (!$weeklySchedule) {
+            throw new Exception("No Employee Schedule", 1);
+        }
 
         return (array) $weeklySchedule;
     }
