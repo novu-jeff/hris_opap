@@ -88,15 +88,16 @@ class Personal extends Component
     protected function formatRecords($data) {
 
 
-        if($data->birth_certificate) {
+        if(!empty($data->birth_certificate)) {
             $this->hasBirthCert = true;
         } 
 
-        if($data->marriage_certificate) {
+        if(!empty($data->marriage_certificate)) {
             $this->hasMarriageCert = true;
         } 
     
-        $email = $data->email ? $data->email  : $data->account['email'];
+        $email = $data->email 
+            ?? ($data->account['email'] ?? null);
     
         $fields = [
             'profile', 'firstname', 'middlename', 'lastname', 'suffix', 'birthday',
