@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class SummaryServices {
 
@@ -264,6 +265,10 @@ class SummaryServices {
                         ->select('shift_schedule.*')
                         ->where('employee_information.employee_no', $employeeNo)
                         ->first();
+
+        if (!$employee_shift) {
+            throw new Exception("No shift schedule assigned", 1);
+        }
 
         return $employee_shift;
     }
