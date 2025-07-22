@@ -79,7 +79,7 @@ class Dashboard extends Component
             return $this->isForRCOnly = true;
         } 
 
-        return $this->isForRCOnly = false;
+        return $this->isForRCOnly = true;
     }
 
     private function getCompanyInformation() {
