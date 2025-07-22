@@ -11,6 +11,7 @@ use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
 use App\Services\ContributionsService;
+use App\Services\SummaryServices;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -285,6 +286,7 @@ class SalaryService extends Controller {
             $dtr_service = new TimeLogService;
             $leaveCard_service = new LeaveCardService;
             $contribution_service = new ContributionsService;
+            $summary_service = new SummaryServices;
 
             $data = [];
 
@@ -298,6 +300,9 @@ class SalaryService extends Controller {
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $payroll->cut_off_period;
 
+                dd($monthYear, $cut_off_period);
+
+                $this->summary_service->getSummary($employee_no);
 
                 $overtime = 0;
                 $holiday_pay = 0;
@@ -308,7 +313,7 @@ class SalaryService extends Controller {
                 $pagibig = $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0;
                 $philhealth = $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0;
 
-                $w_tax = $contribution_service->computeWithholdingTax( $basic_salary);
+                $w_tax = $contribution_service->computeWithholdingTax($basic_salary);
                 $other_loans = 0;
 
                 $gross_amount_earned = $basic_salary + $overtime + $holiday_pay + $allowances;
