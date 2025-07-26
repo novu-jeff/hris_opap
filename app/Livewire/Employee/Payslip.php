@@ -2,17 +2,25 @@
 
 namespace App\Livewire\Employee;
 
+use App\Notifications\Notifications;
+use App\Models\EmployeePayslipRequest;
+use App\Models\EmployeeAccount;
 use App\Models\SalaryItemsPayroll;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class Payslip extends Component
 {
 
+    public $employee_id;
     public $employee_no;
     public $payroll;
     public $payslip;
     public $error;
+    public $requestStatus;
+    protected $listeners = ['request'];
 
     public function mount() {
         $this->loadRecords();
@@ -21,6 +29,7 @@ class Payslip extends Component
     public function loadRecords() {
 
         $this->employee_no = Auth::user()->employee_no;
+        $this->employee_id = Auth::user()->id;
 
         $payroll = SalaryItemsPayroll::with('information.section', 'payroll')
             ->where('employee_no', $this->employee_no)
@@ -36,7 +45,41 @@ class Payslip extends Component
         $this->payroll = $payroll;
         $this->payslip = $payroll;
 
+        $this->checkRequest();
+
     }
+
+    public function checkRequest() {
+        $payroll_request = EmployeePayslipRequest::where('employee_no', $this->employee_no)
+            ->where('payroll_id', $this->payroll->payroll_id)
+            ->first();
+        $this->requestStatus = $payroll_request->status ?? null;
+    }
+
+    public function download()
+    {
+        $this->checkRequest();
+
+        if ($this->requestStatus == 'approved') {
+
+            $payroll_date = Carbon::parse($this->payroll->payroll_date)->format('F d, Y');
+            $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
+
+            return $this->dispatch('download-payslip', [
+                'allowDownload' => true,
+                'filename' => $filename
+            ]);
+        }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Oops!',
+            'message' => 'You\'re request is not yet approved. You have no permission to download this payslip.',
+        ]);
+
+    }
+
 
     public function changePeriod($control, $direction) {
         
@@ -66,6 +109,59 @@ class Payslip extends Component
             $this->payslip = $nextPayroll;
         } else {
             $this->error = 'No more payroll records in this direction.';
+        }
+    }
+
+    public function request(bool $isNotify = true) {
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'You\'re about to send a request for payslip download.';
+            $action = 'request';
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        } else {
+
+            DB::beginTransaction();
+
+            try {
+
+                EmployeePayslipRequest::create([
+                    'payroll_id' => $this->payroll->payroll_id,
+                    'employee_no' => $this->employee_no,
+                    'status' => 'pending'
+                ]);
+              
+                $user = EmployeeAccount::find($this->employee_id);
+                $message = "Employee <strong>{$this->employee_no}</strong> submitted a request for payslip download.";
+                $user->notify(new Notifications('info', $message, route('ess.payslip-request'), 'admin'));
+
+                DB::commit();
+
+                $this->requestStatus = 'pending';
+
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'success',
+                    'title' => 'Yey!',
+                    'message' => 'Your application has been successfully submitted.',
+                    'redirect' => '_reload'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'Error: ' . $e->getMessage()
+                ]);
+            }
+
         }
     }
 

@@ -565,6 +565,8 @@ class Index extends Component
                 $query->where('employment_type_id', $this->selectedType)
                     ->where('isDeleted', false);
             }
+        } else {
+             $query->where('isDeleted', false);
         }
 
         if (!empty($this->search)) {

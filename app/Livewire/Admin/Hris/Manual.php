@@ -36,6 +36,7 @@ class Manual extends Component
         $this->employmentTypes = EmployementTypes::all();
         $this->shiftSchedule = ShiftSchedule::all();
         $this->employeeSchedule = EmployeeSchedule::all();
+        $this->isGovernment = config('app.product')  == 'government' ? true : false;
 
         $this->records = [
             'employee_information' => [
@@ -52,7 +53,7 @@ class Manual extends Component
                 'type' => '',
                 'status' => 'active',
                 'salary_method' => '',
-                'monthly_rate' => '',
+                'salary' => '',
                 'payroll_account_number' => '',
             ],
             'employee_personal' => [
@@ -98,8 +99,23 @@ class Manual extends Component
                 isset($this->records['employee_information']['date_hired'])
                 ? relative_time_duration($this->records['employee_information']['date_hired'])
                 : '';
-
         }
+
+        if($this->isGovernment) {
+            if($property == 'section') {
+                $section_id = $this->records['employee_information']['section_id'];
+                $record = Sections::with('branch', 'department')->where('id', $section_id)->first();
+                
+                if($record) {
+                    $this->records['employee_information']['branch'] = $record->branch->name ?? '';
+                    $this->records['employee_information']['department'] = $record->department->name ?? '';
+                } else {
+                    $this->records['employee_information']['branch'] = '';
+                    $this->records['employee_information']['department'] = '';
+                }
+            }
+        }
+        
     }
 
     public function handleSalary()
@@ -108,11 +124,8 @@ class Manual extends Component
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
-        $product = config('app.product');
 
-        if ($product == 'government') {
-            $this->isGovernment = true;
-
+        if ($this->isGovernment) {
             if ($eligible != 3 && $eligible && $position_id && $step_id) {
                 $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
                 $stepColumn = 'step_' . $step_id;
@@ -122,12 +135,11 @@ class Manual extends Component
                 }])->where('eligible', $eligible)->first();
 
                 $salary = $activeTranche?->items->first()?->$stepColumn ?? 0;
-                $this->records['employee_information']['monthly_rate'] = $salary;
+                $this->records['employee_information']['salary'] = $salary;
             } else {
-                $this->records['employee_information']['monthly_rate'] = 0;
+                $this->records['employee_information']['salary'] = 0;
             }
         } else {
-            $this->isGovernment = false;
             $this->positions = Positions::all();
         }
     }
@@ -150,12 +162,13 @@ class Manual extends Component
             'records.employee_information.type' => 'required|exists:employment_types,id',
             'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id|required_without:records.employee_information.type',
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
-            'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
-            'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.salary_type' => 'required|in:monthly,daily',    
+            'records.employee_information.salary' => 'required|numeric|gt:1000',
+            'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
         ];
     }
 
-      protected function messages() {
+    protected function messages() {
         return [
             'records.employee_information.employee_no.required' => 'The employee no is required.',
             'records.employee_information.employee_no.unique' => 'The employee no is already taken.',
@@ -175,9 +188,12 @@ class Manual extends Component
             'records.employee_information.job_completion.date' => 'The job completion must be a valid date.',
             'records.employee_information.step_id.required' => 'The tranche step is required.',
             'records.employee_information.step_id.in' => 'The tranche step is invalid.',
-            'records.employee_information.monthly_rate.required' => 'The monthly rate is required',
-            'records.employee_information.monthly_rate.numeric' => 'The monthly rate must be numbers',
-            'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
+            'records.employee_information.salary_type.required' => 'The salary type is required',
+            'records.employee_information.salary_type.in' => 'The salary type must be monthly or daily',
+            'records.employee_information.salary.required' => 'The salary rate is required',
+            'records.employee_information.salary.numeric' => 'The salary rate must be numbers',
+            'records.employee_information.salary.gt' => 'The salary rate must be greather than 1000',
+            'records.employee_information.salary_method.required' => 'The salary method is required.',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',
@@ -241,6 +257,8 @@ class Manual extends Component
         return EmployeeInformation::create([
             'employee_no' => $data['employee_no'] ?? null,
             'section_id' => $data['section_id'] ?? null,
+            'shift_id' => $data['shift_schedule'] ?? null,
+            'schedule_id' => $data['employee_schedule'] ?? null,
             'position_id' => $data['position_id'] ?? null,
             'date_hired' => $data['date_hired'] ?? null,
             'bsd_no' => $data['biometrics_id'] ?? null,
@@ -248,56 +266,10 @@ class Manual extends Component
             'employment_type_id' => $data['type'] ?? null,
             'status' => $data['status'] ?? null,
             'salary_method' => $data['salary_method'] ?? null,
-            'monthly_rate' => $data['monthly_rate'] ?? null,
+            'salary_type' => $data['salary_type'] ?? null,
+            'salary' => $data['salary'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);
-    }
-
-    public function employee_account(string $employee_no, array $data) {
-
-        $generate = new Generate;
-
-        $applicant_id = $data['applicant_id'] ?? null;
-        $firstname = $data['firstname'] ?? null;
-        $lastname = $data['lastname'] ?? null;
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-        $email_id = $generate->email($employee_no, $firstname, $lastname);
-
-        $user = EmployeeAccount::create([
-            'employee_no' => $employee_no,
-            'applicant_id' => $applicant_id,
-            'email_id' => $email_id,
-            'email' => $email,
-            'password' => Hash::make($password)
-        ]);
-
-        $user->assignRole('employee');
-
-        $record = EmployeeInformation::with('personal', 'account')->where('employee_no', $employee_no)->first();
-
-
-        if (!$record || empty($record->account->email)) {
-            return $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Oops!',
-                'isRemoveRowDT' => false,
-                'showAlert' => true,
-                'message' => 'Unable to notify this employee, their email address is invalid or empty. Please update it first!'
-            ]);
-        }
-
-        $data = [
-            'is_newly_hired' => false,
-            'employee_no' => $record->employee_no,
-            'email' => $email_id,
-            'fullname' => $record->personal->firstname . ' ' . $record->personal->lastname,
-            'password' => $password
-        ];
-
-        Mail::to($email)->send(new SendEmployeeAccount($data));
-
-        return;
     }
 
     public function render()

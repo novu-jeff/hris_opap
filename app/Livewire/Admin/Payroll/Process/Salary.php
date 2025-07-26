@@ -122,7 +122,7 @@ class Salary extends Component
         }
 
         $payroll['overall_net_amount'] = round($overallNet, 2);
-        $payroll['overall_salary_amount'] = round($overallNet / 2, 2);
+        $payroll['overall_salary'] = round($overallNet / 2, 2);
 
 
         \Log::debug('Payroll recomputed', [

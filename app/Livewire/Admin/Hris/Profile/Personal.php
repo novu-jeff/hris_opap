@@ -171,7 +171,6 @@ class Personal extends Component
 
         return false;
     }
-
     public function setErrorActiveTabAccordions(array $errorKeys) {
         $this->dispatch('scrollToError', $errorKeys);
     }

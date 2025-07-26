@@ -41,10 +41,10 @@ class OtherServices extends Controller
                     $amount = $earning->amount;
                     break;
                 case 'basic_salary':
-                    $amount = $emp->monthly_rate;
+                    $amount = $emp->salary;
                     break;
                 case 'percentage':
-                    $amount = ($earning->amount * $emp->monthly_rate) / 100;
+                    $amount = ($earning->amount * $emp->salary) / 100;
                     break;
                 default:
                     throw new Exception("Invalid amount_basis value.");

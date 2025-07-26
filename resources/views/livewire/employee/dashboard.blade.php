@@ -90,6 +90,13 @@
                     'condition' => $isForRCOnly
                 ],
                 [
+                    'label' => 'Leave Card',
+                    'route' => route('employee.leave-card'),
+                    'img' => '/img/leave-card.png',
+                    'permission' => ['read apply-leave'],
+                    'condition' => $isForRCOnly
+                ],
+                [
                     'label' => 'Leave Credits',
                     'route' => route('employee.credit'),
                     'img' => '/img/remaining-credit.png',

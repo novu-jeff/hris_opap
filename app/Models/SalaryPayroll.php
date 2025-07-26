@@ -15,6 +15,7 @@ class SalaryPayroll extends Model
         'payroll_date',
         'cut_off_period',
         'employment_type',
+        'hasDeductions',
         'status'
     ];
 

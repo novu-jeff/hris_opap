@@ -11,13 +11,12 @@
 
     <h4>Your Employee Account Credentials:</h4>
     <ul>
-        <li><strong>Email:</strong> {{ $data['email'] }}</li>
+        <li><strong>Login (Employee No):</strong> {{ $data['employee_no'] ?? 'TBF'  }}</li>
+        <li><strong>Login (Email ID):</strong> {{$data['email_id']}}</li>
         <li><strong>Password:</strong> {{ $data['password'] }}</li>
     </ul>
 
     <p>We encourage you to change your password immediately after logging in.</p>
-
-    <p>Congratulations once again!</p>
 
     <p>Best regards,<br>
     HR Department</p>

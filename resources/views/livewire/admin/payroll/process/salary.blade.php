@@ -40,12 +40,14 @@
                 Net Amount : <span class="ms-2">PHP {{number_format($records['payroll']['overall_net_amount'], 2)}}</span>
             </div>
             <div class="text-uppercase fw-bold">
-                Salary Amount : <span class="ms-2">PHP {{number_format($records['payroll']['overall_salary_amount'], 2)}}</span>
+                Salary Amount : <span class="ms-2">PHP {{number_format($records['payroll']['overall_salary'], 2)}}</span>
             </div>
         </div>
     </div>
     <hr class="pt-3">
-
+    @php
+        $status = $records['payroll']['status'];
+    @endphp
     @if($product == 'government')
         @if($records['payroll']['employment_type']['id'] == '1')
             <div class="table-responsive pb-3">
@@ -130,7 +132,7 @@
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">{{ number_format($record['philhealth'], 2) }}</td>
                                     <td colspan="2">{{ number_format($record['consoloan'], 2) }}</td>
@@ -145,7 +147,7 @@
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td>{{ $record['aut'] }}</td>
                                     <td>{{ $record['aut'] }}</td>
@@ -154,12 +156,12 @@
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="kawani.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">{{ number_format($record['lbp_payroll_account'], 2) }}</td>
                                     <td colspan="2">{{ number_format($record['salary'], 2) }}</td>
@@ -244,7 +246,7 @@
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $status === 'readonly' ? 'restricted' : '' }}>
                                     </td>
                                     <td colspan="2">{{ number_format($record['philhealth'], 2) }}</td>
                                     <td colspan="2">{{ number_format($record['consoloan'], 2) }}</td>
@@ -259,7 +261,7 @@
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td>{{ $record['aut'] }}</td>
                                     <td>{{ $record['aut'] }}</td>
@@ -268,12 +270,12 @@
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="kawani.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control" style="width: 120px;">
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">{{ number_format($record['lbp_payroll_account'], 2) }}</td>
                                     <td colspan="2">{{ number_format($record['salary'], 2) }}</td>

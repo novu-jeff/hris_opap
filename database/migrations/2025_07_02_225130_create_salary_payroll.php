@@ -19,6 +19,8 @@ return new class extends Migration
             $table->date('payroll_date'); 
             $table->string('cut_off_period');
             $table->integer('employment_type');
+            $table->boolean('hasDeductions')
+                ->default(false);
             $table->string('status')
                 ->default('pending');
             $table->timestamps();

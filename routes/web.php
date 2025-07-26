@@ -13,10 +13,11 @@ use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementControll
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\PayslipRequestController as ESSPayslipRequestController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ESSFAQController;
-use App\Http\Controllers\Admin\ESSRequestTimeLogController;
+use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
@@ -242,7 +243,10 @@ Route::prefix('admin')->group(function() {
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
 
-            Route::get('time-adjustments', [ESSRequestTimeLogController::class, 'index'])
+            Route::get('payslip/request/download', [ESSPayslipRequestController::class, 'index'])
+                ->name('ess.payslip-request');
+
+            Route::get('time-adjustments', [ESSTimeAdjustmentsController::class, 'index'])
                 ->name('ess.time-adjustments');
         
             Route::prefix('announcements')->group(function() {
@@ -419,6 +423,8 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
 
             Route::get('/', [EmployeeLeaveController::class, 'index'])
                 ->name('employee.leave');
+            Route::get('card', [EmployeeLeaveController::class, 'card'])
+                ->name('employee.leave-card');
             Route::get('apply', [EmployeeLeaveController::class, 'create'])
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])

@@ -177,7 +177,7 @@ class BonusService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $employee_name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $employee_position = $employee['position_name'];
-                $employee_salary = round(floatval($employee['monthly_rate']), 2);
+                $employee_salary = round(floatval($employee['salary']), 2);
 
                 $cash_gift = 0;
 
@@ -214,7 +214,7 @@ class BonusService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $employee_name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $employee_position = $employee['position_name'];
-                $employee_salary = round(floatval($employee['monthly_rate']), 2);
+                $employee_salary = round(floatval($employee['salary']), 2);
                 
                 $bonus = $employee_salary;
                 $tax = $this->payrollService->computeBonusTax($bonus);

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
-use App\Http\Controllers\Admin\Services\TimeLogService;
+use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Component;
@@ -96,7 +96,7 @@ class Index extends Component
     private function getLogs(?int $bsd_no = null)
     {
         $timestamp = Carbon::create($this->year, $this->month, $this->day)->format('Y-m-d');
-        $logService = new TimeLogService;
+        $logService = new DailyTimeRecordService;
         $logs = $logService->getLogs($timestamp, $bsd_no);
 
         return $logs[$timestamp] ?? [];

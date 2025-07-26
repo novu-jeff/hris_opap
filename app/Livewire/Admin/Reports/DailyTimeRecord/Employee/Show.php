@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Reports\DailyTimeRecord\Employee;
 
 use App\Http\Controllers\Admin\Services\LeaveCardService;
-use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Models\EmployeeInformation;
 use App\Models\CompanyInformation;
 use App\Services\DailyTimeRecordService;
@@ -27,18 +26,17 @@ class Show extends Component
     public $hasLeaveCard;
     public $bsd_emp_identical;
 
-    protected $timeLogService;
+    protected $dailyTimeRecordService;
     protected $leaveCardService;
 
     public function initializeService()
     {
-        $this->timeLogService = app(TimeLogService::class);
+        $this->dailyTimeRecordService = app(DailyTimeRecordService::class);
         $this->leaveCardService = app(LeaveCardService::class);
     }
 
     public function mount($employee_no, $month, $year)
     {
-
         $this->product = config('app.product');
         $this->company = CompanyInformation::first()->name ?? 'No Comapany Name';
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
@@ -55,7 +53,7 @@ class Show extends Component
             $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
-            $logs = $this->timeLogService->getDTR($employee_no, $bio_id, $monthDate);
+            $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate);
 
             $hasLeaveCard = $this->leaveCardService->getLeaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;

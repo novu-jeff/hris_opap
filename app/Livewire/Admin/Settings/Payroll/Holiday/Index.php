@@ -50,9 +50,7 @@ class Index extends Component
                 
             if($record) {
 
-                $record->update([
-                    'isDeleted' => true
-                ]);
+                $record->delete();
 
                 $this->dispatch('alert', [
                     'status' => 'success',

@@ -67,7 +67,7 @@
                                 <td class="text-start">₱ {{ $record->employer_share }}</td>
                                 <td class="text-start">₱ {{ $record->ec }}</td>
                                 <td class="text-start">₱ {{ $record->total }}</td>
-                                <td class="text-start">₱ {{ number_format($record->monthly_rate, 2) }}</td>
+                                <td class="text-start">₱ {{ number_format($record->salary, 2) }}</td>
                                 <td class="text-start">{{ $record->status }}</td>
                             </tr>
                         @endforeach

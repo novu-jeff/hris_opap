@@ -2,10 +2,6 @@
 
 namespace App\Livewire\Admin\Payroll;
 
-use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
-use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
-use App\Http\Controllers\Admin\Services\Payroll\BonusService;
-use App\Http\Controllers\Admin\Services\Payroll\OTService;
 use App\Http\Controllers\Admin\Services\PayrollService;
 use Illuminate\Support\Facades\Bus;
 use App\Models\EmployementTypes;
@@ -19,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Bus\Batch;
 use Throwable;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class Index extends Component
 {
@@ -41,6 +38,7 @@ class Index extends Component
     public $cut_off_period;
     public $ot_period;
     public $employment_type_id;
+    public $has_deductions;
     public array $employeesChecked;
     public string $activeTab;
     public bool $isToCreate = false;
@@ -129,14 +127,21 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
-                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
+                                        'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/',
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => [
+                                        'required',
+                                        'date',
+                                    ],
+                                ],
+                                'has_deductions' => [
+                                    'label' => 'Apply Deductions',
+                                    'type' => 'checkbox',
+                                    'rules' => 'nullable|boolean',
                                 ],
                             ]
                         ],
@@ -156,7 +161,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'monthyear',
                                     'value' => '',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -176,7 +181,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
@@ -200,7 +205,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(11)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
@@ -226,7 +231,6 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
@@ -253,14 +257,13 @@ class Index extends Component
                                     'type' => 'text',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -281,7 +284,6 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
@@ -308,14 +310,13 @@ class Index extends Component
                                     'type' => 'text',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -347,14 +348,13 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -398,7 +398,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(11)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
@@ -429,14 +429,13 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -456,7 +455,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
@@ -480,7 +479,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(11)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
@@ -511,14 +510,13 @@ class Index extends Component
                                     'class' => 'range',
                                     'rules' => [
                                         'required',
-                                        'unique:'.$model.',cut_off_period',
                                         'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/'
                                     ]
                                 ],
                                 'payroll_date' => [
                                     'label' => 'Payroll Date',
                                     'type' => 'date',
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                 ],
                             ]
                         ],
@@ -538,7 +536,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(5)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(5)->day(31)->format('Y-m-d'),
@@ -562,7 +560,7 @@ class Index extends Component
                                     'label' => 'Date',
                                     'type' => 'date',
                                     'value' => Carbon::now()->month(11)->format('Y-m-d'),
-                                    'rules' => 'required|date|unique:'.$model.',payroll_date',
+                                    'rules' => 'required|date',
                                     'attr' => [
                                         'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
                                         'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
@@ -616,6 +614,7 @@ class Index extends Component
         $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
         $payrollService = app(PayrollService::class);
 
+
         $this->validate();
 
         if (!$this->isToCreate) {
@@ -630,16 +629,15 @@ class Index extends Component
             
             $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
             $this->isToCreate = true;
-
             return;
         }
 
-        if (empty($this->employeesChecked['eligible'])) {
+        if (empty($this->employeesChecked['eligible']['items'])) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops',
-                'message' => 'No employees found for the selected employment type.'
+                'message' => 'No employees found for this payroll.'
             ]); 
         }
 
@@ -647,6 +645,7 @@ class Index extends Component
             'salary' => [
                 'payroll_date'    => $this->payroll_date,
                 'cut_off_period'  => $this->cut_off_period,
+                'has_deductions'  => $this->has_deductions,
                 'employment_type' => $employmentTypeId,
             ],
             'clothing_allowance' => [

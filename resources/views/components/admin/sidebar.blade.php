@@ -86,7 +86,7 @@
                                     <li><a class="dropdown-item" href="{{route('ess.obs')}}">Official Business Slip Application</a></li>
                                 @endcan
                         
-                                @can('read arto')
+                                @can('read atro')
                                     <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
                                 @endcan
                         

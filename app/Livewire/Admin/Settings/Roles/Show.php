@@ -38,9 +38,9 @@ class Show extends Component
             'timekeeping' => ['timelogs', 'correction-timelogs'],
             'payroll' => [],
             'ess' => [
-                'leave', 'obs', 'arto', 'request-log', 'announcements', 
+                'leave', 'obs', 'atro', 'time-adjustments', 'payslip-request', 'announcements', 
                 'employee-profile-approval', 'messages', 'faqs'],
-            'reports' => ['dtr'],
+            'reports' => ['dtr', 'bir-2316'],
             'settings' => [
                 'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
@@ -48,7 +48,7 @@ class Show extends Component
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
             ],
             'employee' => [
-                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-messages',
+                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-payslip-request', 'employee-messages',
                 'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
             ]
         ];

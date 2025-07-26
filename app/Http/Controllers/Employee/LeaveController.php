@@ -3,15 +3,6 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeLeave;
-use App\Models\EmployeeLeaveCard;
-use App\Models\Holiday;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LeaveController extends Controller
 {
@@ -28,6 +19,16 @@ class LeaveController extends Controller
             'title' => 'ESS | Leave Applications',
             'header' => 'Manage Leaves',
             'sub' => 'Track and monitor your leave applications.'
+        ]);
+    }
+
+    public function card()
+    {
+        return view('employee.leave-card', [
+            'action' => 'view',
+            'title' => 'ESS | Leave Card',
+            'header' => 'View Leave Card',
+            'sub' => 'Track and monitor your leaves.'
         ]);
     }
 

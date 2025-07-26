@@ -39,7 +39,6 @@
         </div>
     </div>
     <hr class="pt-3">
-
     @if($product == 'government')
         <div class="table-responsive pb-3">
             <table>
@@ -89,7 +88,7 @@
                                 <td>
                                     <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                         wire:model="allowance.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                        class="form-control" style="width: 120px;">
+                                        class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                 </td>
                             </tr>
                         @endforeach

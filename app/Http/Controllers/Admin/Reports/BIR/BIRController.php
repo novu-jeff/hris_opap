@@ -56,7 +56,7 @@ class BIRController extends Controller
             'tin' => $employee->tin_no,
             'company_name' => $company_information->name,
             'company_address' => $company_information->address,
-            'salary' => $employee->monthly_rate,
+            'salary' => $employee->salary,
         ]);
 
         
@@ -83,12 +83,12 @@ class BIRController extends Controller
         $employees = EmployeeInformation::with('account', 'personal')->get();
 
         foreach ($employees as $employee) {
-            $total_salary += $employee->monthly_rate;
+            $total_salary += $employee->salary;
             $count++;
 
-            $philHealth = $this->contributionsService->computePhilHealth($employee->monthly_rate);
-            $pagibig = $this->contributionsService->computePagibig($employee->monthly_rate);
-            $sss = $this->contributionsService->computeSSS($employee->monthly_rate);
+            $philHealth = $this->contributionsService->computePhilHealth($employee->salary);
+            $pagibig = $this->contributionsService->computePagibig($employee->salary);
+            $sss = $this->contributionsService->computeSSS($employee->salary);
 
             $total_philhealth += $philHealth['employee_share'];
             $total_pagibig += $pagibig['employee_share'];

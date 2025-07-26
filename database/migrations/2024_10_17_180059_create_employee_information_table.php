@@ -38,8 +38,6 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('employee_schedules')
                 ->onDelete('set null');
-            $table->string('date_resignation')
-                ->nullable();
             $table->foreignId('employment_type_id')
                 ->nullable()
                 ->constrained('employment_types')
@@ -57,9 +55,14 @@ return new class extends Migration
                     'e-wallet'
                 ])
                 ->nullable();
-            $table->float('monthly_rate')
+            $table->float('salary')
                 ->default(0)
                 ->nullable();
+
+            $table->enum('salary_type', [
+                'monthly',
+                'daily'
+            ])->default('monthly');
             $table->string('payroll_account_number')
                 ->nullable();
             $table->string('bank_account_no')
@@ -77,6 +80,8 @@ return new class extends Migration
                 ->default(false);
             $table->boolean('isTransferingEmp')
                 ->default(false);
+            $table->string('date_resignation')
+                ->nullable();
             $table->timestamps();
         });
 

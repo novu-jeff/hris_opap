@@ -242,6 +242,9 @@
                 </div>
             @endif
             <div class="print-container mt-4">
+                 @php
+                    $isAdmin = false;
+                @endphp
                 @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
                 @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
             </div>

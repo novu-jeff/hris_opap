@@ -28,8 +28,9 @@ class PermissionSeeder extends Seeder
             'ess' => [
                 'leave',
                 'obs',
-                'arto',
+                'atro',
                 'time-adjustments',
+                'payslip-request',
                 'announcements',
                 'employee-profile-approval',
                 'messages',
@@ -72,6 +73,7 @@ class PermissionSeeder extends Seeder
                 'apply-atro',
                 'apply-time-adjustments',
                 'payslip',
+                'employee-payslip-request',
                 'employee-messages',
                 'apply-obs',
                 'employee-dtr',

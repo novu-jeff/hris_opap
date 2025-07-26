@@ -34,7 +34,7 @@ class EmployeeTestUserSeeder extends Seeder
                 'birthday' => '1990-01-01',
                 'sex' => 'male',
                 'status' => 'active',
-                'monthly_rate' => '293191',
+                'salary' => '293191',
                 'payroll_account_number' => '1234567890',
                 'date_hired' => '2025-01-05',
                 'gsis_no' => '10000000001',
@@ -60,7 +60,7 @@ class EmployeeTestUserSeeder extends Seeder
                 'birthday' => '1990-01-01',
                 'sex' => 'male',
                 'status' => 'active',
-                'monthly_rate' => '293191',
+                'salary' => '293191',
                 'payroll_account_number' => '1234567890',
                 'date_hired' => '2025-01-05',
                 'gsis_no' => '20000000001',
@@ -92,7 +92,7 @@ class EmployeeTestUserSeeder extends Seeder
                     'schedule_id' => $employee['schedule_id'],
                     'section_id' => $section_id ?? null,
                     'position_id' => $position_id ?? null,
-                    'monthly_rate' => $employee['monthly_rate']
+                    'salary' => $employee['salary']
                 ]
             );
         

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Reports\DailyTimeRecord;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeTimelogs;
+use App\Models\EmployeeInformation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,10 @@ class DailyTimeRecordController extends Controller
 
         $month = $request->input('month'); 
         $year = $request->input('year');
+        
+        if(empty($employee_no) || !$this->isValidEmployee($employee_no)) {
+            return redirect()->route('reports.dtr');
+        }
 
         if(empty($month) || empty($year)) {
             $date = $this->getLatestRecordDate();
@@ -64,6 +69,12 @@ class DailyTimeRecordController extends Controller
         }
 
         return $latestRecord->timestamp;
+    }
+
+    private function isValidEmployee(string $employee_no) {
+        return EmployeeInformation::where('employee_no', $employee_no)
+            ->whereNotNull('bsd_no')
+            ->exists();
     }
 
 }

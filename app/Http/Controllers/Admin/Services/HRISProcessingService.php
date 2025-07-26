@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Services;
 use App\Helper\Generate;
 use App\Http\Controllers\Controller;
 use App\Mail\SendEmployeeAccount;
+use App\Mail\SendExistingEmployeeAccount;
 use App\Models\ApplicantUsers;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeChildren;
@@ -80,10 +81,10 @@ class HRISProcessingService extends Controller
             switch ($target) {
                 case 'information':
                     $data['employee_account']['email'] = $data['employee_personal']['email'];
-
                     $this->employee_information($employee_no, $data['employee_information'], false);
+                    break;
+                case 'account':
                     $this->employee_account($employee_no, $data['employee_account'], false);
-                    $this->employee_personal($employee_no, $data['employee_personal'], false);
                     break;
                 case 'personal':
                     $this->employee_personal($employee_no, $data, false);
@@ -113,7 +114,6 @@ class HRISProcessingService extends Controller
                     $this->employee_skills($employee_no, $data);
                     break;
                 default:
-                    // Optionally handle unknown target
                     throw new \Exception("Unknown target: {$target}");
             }
 
@@ -140,7 +140,7 @@ class HRISProcessingService extends Controller
         $record = EmployeeInformation::where('employee_no', $employee_no)
             ->first();
 
-        $monthly_rate = $this->handleSalary($data);
+        $salary = $this->handleSalary($data);
 
         if ($record) {
             $record->fill([
@@ -154,7 +154,7 @@ class HRISProcessingService extends Controller
                 'employment_type_id' => $data['type'],
                 'status' => $data['status'],
                 'salary_method' => $data['salary_method'],
-                'monthly_rate' => $monthly_rate,
+                'salary' => $salary,
                 'payroll_account_number' => $data['payroll_account_number'],
             ]);
 
@@ -164,24 +164,16 @@ class HRISProcessingService extends Controller
         return false;
     }
 
-    public function employee_account(string $employee_no, array $data, bool $isFirstTime = false)  {
-
+    public function employee_account(string $employee_no, array $data, bool $isFirstTime = false)
+    {
         if ($isFirstTime) {
-
             $generate = new Generate;
 
-            $applicant_id = $data['applicant_id'];
-            $firstname = $data['firstname'];
-            $lastname = $data['lastname'];
-            $email = $data['email'];
-
-            $email_id = $generate->email($employee_no, $firstname, $lastname);
-
             $record = EmployeeAccount::create([
-                'employee_no' => $employee_no,
-                'applicant_id' => $applicant_id,
-                'email_id' => $email_id,
-                'email' => $email
+                'employee_no'   => $employee_no,
+                'applicant_id'  => $data['applicant_id'],
+                'email_id'      => $generate->email($employee_no, $data['firstname'], $data['lastname']),
+                'email'         => $data['email'],
             ]);
 
             $record->assignRole('employee');
@@ -189,80 +181,123 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
-        $record = EmployeeAccount::where('employee_no', $employee_no)->first();
+        $record = EmployeeAccount::with('personal')->where('employee_no', $employee_no)->first();
 
-        $record->email = $data['email'];
-        $record->save();
+        if ($record) {
+            if (!empty($data['personal_email'])) {
+                $record->email = $data['personal_email'];
+            }
 
-        if (isset($data['password'])) {
-            $record->password = Hash::make($data['password']);
-            return $record->save();
+            if (empty($record->email_id)) {
+                $generate = new Generate;
+                $firstname = $data['firstname'] ?? ($record->personal->firstname ?? null);
+                $lastname = $data['lastname'] ?? ($record->personal->lastname ?? null);
+                $record->email_id = $generate->email($employee_no, $firstname, $lastname);
+            }
+
+            if (!empty($data['password'])) {
+                $record->password = Hash::make($data['password']);
+            }
+
+            $record->save();
+
+            if (!$record->hasRole('employee')) {
+                $record->assignRole('employee');
+            }
+
+            if (!empty($data['notify_user'])) {
+                $firstname = $record->personal->firstname ?? '';
+                $lastname  = $record->personal->lastname ?? '';
+                $fullname  = trim("$firstname $lastname");
+
+                $data['email']        = $record->email;
+                $data['email_id']     = $record->email_id;
+                $data['fullname']     = $fullname !== '' ? $fullname : 'Employee ' . $record->employee_no;
+                $data['employee_no']  = strtoupper($record->employee_no);
+
+                Mail::to($data['email'])->send(new SendExistingEmployeeAccount($data));
+            }
         }
+
+        return $record;
     }
 
-    public function employee_personal(string $employee_no, array $data, bool $isFirstTime = false)  {
-        
+
+    public function employee_personal(string $employee_no, array $data, bool $isFirstTime = false)
+    {
         $path = 'documents/' . $employee_no;
 
-        $birth_certificate = $this->uploadFile($employee_no, 'birth_certificate', $path,  $data['birth_certificate'] ?? null);
+        $birth_certificate = $this->uploadFile($employee_no, 'birth_certificate', $path, $data['birth_certificate'] ?? null);
         $marriage_certificate = $this->uploadFile($employee_no, 'marriage_certificate', $path, $data['marriage_certificate'] ?? null);
 
         $template = [
             'employee_no' => $employee_no,
-            'profile' => !empty($data['profile']) ? $data['profile'] : null,
-            'firstname' => !empty($data['firstname']) ? $data['firstname'] : null,
-            'middlename' => !empty($data['middlename']) ? $data['middlename'] : null,
-            'lastname' => !empty($data['lastname']) ? $data['lastname'] : null,
-            'suffix' => !empty($data['suffix']) ? $data['suffix'] : null,
-            'birthday' => !empty($data['birthday']) ? $data['birthday'] : null,
-            'civil_status' => !empty($data['civil_status']) ? $data['civil_status'] : null,
-            'sex' => !empty($data['sex']) ? $data['sex'] : null,
-            'citizenship' => !empty($data['citizenship']) ? $data['citizenship'] : null,
-            'citizenship_type' => !empty($data['citizenship_type']) ? $data['citizenship_type'] : null,
-            'country' => !empty($data['country']) ? $data['country'] : null,
+            'profile' => $data['profile'] ?? null,
+            'firstname' => $data['firstname'] ?? null,
+            'middlename' => $data['middlename'] ?? null,
+            'lastname' => $data['lastname'] ?? null,
+            'suffix' => $data['suffix'] ?? null,
+            'birthday' => $data['birthday'] ?? null,
+            'civil_status' => $data['civil_status'] ?? null,
+            'sex' => $data['sex'] ?? null,
+            'citizenship' => $data['citizenship'] ?? null,
+            'citizenship_type' => $data['citizenship_type'] ?? null,
+            'country' => $data['country'] ?? null,
             'birth_certificate' => $birth_certificate,
             'marriage_certificate' => $marriage_certificate,
-            'solo_parent' => isset($data['solo_parent']) && strtolower($data['solo_parent']) === 'yes' ? true : false,
-            'present_address' => !empty($data['present_address']) ? $data['present_address'] : null,
-            'present_province' => !empty($data['present_province']) ? $data['present_province'] : null,
-            'present_city' => !empty($data['present_city']) ? $data['present_city'] : null,
-            'permanent_address' => !empty($data['permanent_address']) ? $data['permanent_address'] : null,
-            'permanent_province' => !empty($data['permanent_province']) ? $data['permanent_province'] : null,
-            'permanent_city' => !empty($data['permanent_city']) ? $data['permanent_city'] : null,
-            'mobile_number' => !empty($data['mobile_number']) ? $data['mobile_number'] : null,
-            'tel_no' => !empty($data['tel_no']) ? $data['tel_no'] : null,
-            'height' => !empty($data['height']) ? $data['height'] : null,
-            'weight' => !empty($data['weight']) ? $data['weight'] : null,
-            'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : null,
-            'gsis_no' => !empty($data['gsis_no']) ? $data['gsis_no'] : null,
-            'pagibig_no' => !empty($data['pagibig_no']) ? $data['pagibig_no'] : null,
-            'philhealth_no' => !empty($data['philhealth_no']) ? $data['philhealth_no'] : null,
-            'sss_no' => !empty($data['sss_no']) ? $data['sss_no'] : null,
-            'tin_no' => !empty($data['tin_no']) ? $data['tin_no'] : null,
-        ];        
+            'solo_parent' => isset($data['solo_parent']) && strtolower($data['solo_parent']) === 'yes',
+            'present_address' => $data['present_address'] ?? null,
+            'present_province' => $data['present_province'] ?? null,
+            'present_city' => $data['present_city'] ?? null,
+            'permanent_address' => $data['permanent_address'] ?? null,
+            'permanent_province' => $data['permanent_province'] ?? null,
+            'permanent_city' => $data['permanent_city'] ?? null,
+            'mobile_number' => $data['mobile_number'] ?? null,
+            'tel_no' => $data['tel_no'] ?? null,
+            'height' => $data['height'] ?? null,
+            'weight' => $data['weight'] ?? null,
+            'blood_type' => $data['blood_type'] ?? null,
+            'gsis_no' => $data['gsis_no'] ?? null,
+            'pagibig_no' => $data['pagibig_no'] ?? null,
+            'philhealth_no' => $data['philhealth_no'] ?? null,
+            'sss_no' => $data['sss_no'] ?? null,
+            'tin_no' => $data['tin_no'] ?? null,
+        ];
 
         if ($isFirstTime) {
-            $template['employee_no'] = $employee_no;
-            return EmployeePersonal::create($template);
-        }
+            EmployeePersonal::create($template);
+        } else {
+            $record = EmployeePersonal::where('employee_no', $employee_no)->first();
 
-        $record = EmployeePersonal::where('employee_no', $employee_no)->first();
+            if (!$record) {
+                $info = EmployeeInformation::where('employee_no', $employee_no)->first();
+                if ($info) {
+                    $record = new EmployeePersonal();
+                    $record->employee_no = $info->employee_no;
+                }
+            }
 
-        if (!$record) {
-            $info = EmployeeInformation::where('employee_no', $employee_no)->first();
-
-            if ($info) {
-                $record = new EmployeePersonal();
-                $record->employee_no = $info->employee_no;
+            if ($record) {
+                $record->fill($template);
+                $record->save();
             }
         }
 
-        if ($record) {
-            $record->fill($template);
-            return $record->save();
+        if (!empty($data['email'])) {
+            $account = EmployeeAccount::firstOrNew(['employee_no' => $employee_no]);
+
+            if (empty($account->email_id)) {
+                $generate = new Generate;
+                $firstname = $data['firstname'] ?? null;
+                $lastname = $data['lastname'] ?? null;
+                $account->email_id = $generate->email($employee_no, $firstname, $lastname);
+            }
+
+            $account->email = $data['email'];
+            $account->save();
         }
 
-        return false;
+        return true;
     }
 
     public function employee_parents(string $employee_no, ?array $data = null, bool $isFirstTime = false) {
@@ -769,11 +804,11 @@ class HRISProcessingService extends Controller
                     : 0;
     
                 if ($activeTranche) {
-                    return $data['monthly_rate'] = $salary;
+                    return $data['salary'] = $salary;
                 }
             }
         } else {
-            return $data['monthly_rate'];
+            return $data['salary'];
         }
         
     }

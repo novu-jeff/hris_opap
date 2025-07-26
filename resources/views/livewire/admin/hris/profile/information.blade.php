@@ -9,7 +9,13 @@
                     <div class="col-12 mb-5">
                         <div class="row">
                             <div class="col-12 col-md-6">
-                                <img style="width: 180px; height: 180px;" src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($records['employee_personal']['firstname'] . ' ' . $records['employee_personal']['lastname']) }}" style="width: 50px; height: 50px; border-radius: 50%; font-weight: bold;">
+                                <img style="width: 180px; height: 180px;" 
+                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(
+                                        (empty($records['employee_personal']['firstname']) && empty($records['employee_personal']['lastname']))
+                                            ? '!'
+                                            : $records['employee_personal']['firstname'] . ' ' . $records['employee_personal']['lastname']
+                                    ) }}" 
+                                    style="width: 50px; height: 50px; border-radius: 50%; font-weight: bold;">
                             </div>
                         </div>
                     </div>  
@@ -197,18 +203,18 @@
                     </div>
                     @if($isGovernment)
                         <div class="col-md-3 mb-3">
-                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
+                            <label class="mb-2" for="salary">Monthly Rate <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
                         <div class="error-field">
-                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         </div>
                     @else
                     <div class="col-md-3 mb-3">
-                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
+                            <label class="mb-2" for="salary">Monthly Rate <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control">
                         <div class="error-field">
-                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         </div>
                     @endif

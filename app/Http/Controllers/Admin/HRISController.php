@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\EmployeeInformation;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -28,13 +29,19 @@ class HRISController extends Controller
     {
 
         $allowed = [
-            'information',
+            'information', 'account',
             'personal', 'education', 'family',
             'children', 'employment-history', 'civil-service',
             'trainings', 'other-works', 'skills'
         ];
 
         if(!in_array( $form, $allowed)) {
+            return redirect()->route('hris.index');
+        }
+
+        $exists = EmployeeInformation::where('employee_no', $employee_no)->exists();
+
+        if(!$exists) {
             return redirect()->route('hris.index');
         }
 

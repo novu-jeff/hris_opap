@@ -26,7 +26,8 @@ class EmployeeInformation extends Model
         'employment_type_id',
         'status',
         'salary_method',
-        'monthly_rate',
+        'salary',
+        'salary_type',
         'bank_account_no',
         'payroll_account_number',
         'isTransferingEmp'

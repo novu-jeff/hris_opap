@@ -10,8 +10,12 @@
             <div class="dropdown ms-3 d-none d-md-flex align-items-start gap-1 dropdown-toggle" data-bs-toggle="dropdown" style="cursor: pointer">
                 <img class="profile-img" style="width: 40px; height: 40px" src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(Auth::user()->name)}}" alt="Profile Image">
                 <div class="name">
-                    <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{Auth::user()->name}}</p>
-                    <small class="text-uppercase fw-bold text-muted mb-0">{{ Auth::user()->getRoleNames()->first() }}</small>
+                    <p class="fw-bold text-uppercase mb-0" style="margin-bottom: -4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                        {{Auth::user()->name}}
+                    </p>
+                    <small class="text-uppercase fw-bold text-muted mb-0" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                        {{ Auth::user()->getRoleNames()->first() }}
+                    </small>
                 </div>   
                 <ul class="dropdown-menu mt-3" aria-labelledby="dropdownMenuButton">
                     <li>

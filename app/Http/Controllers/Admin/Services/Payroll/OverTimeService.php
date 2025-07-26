@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Services\Payroll;
 
 use App\Http\Controllers\Admin\Services\PayrollService;
-use App\Http\Controllers\Admin\Services\TimeLogService;
+use App\Services\DailyTimeRecordService;
 use App\Http\Controllers\Controller;
 use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
@@ -13,12 +13,10 @@ use Carbon\Carbon;
 class OverTimeService extends Controller {
 
     protected $product;
-    protected $bsd_emp_identical;
     protected $payrollService;
 
     public function __construct(PayrollService $payrollService) {
         $this->product = config('app.product');
-        $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $this->payrollService = $payrollService;
     }
 
@@ -169,7 +167,7 @@ class OverTimeService extends Controller {
         if($this->product == 'government') {
 
 
-            $dtr_service = app(TimeLogService::class);
+            $dtr_service = app(DailyTimeRecordService::class);
 
             $data = [];
 
@@ -178,12 +176,9 @@ class OverTimeService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
-                $biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
-                $basic_salary = $employee['monthly_rate'];
+                $basic_salary = $employee['salary'];
 
-                // $dtr = $dtr_service->getDTRByRange($employee_no, $biometrics, $payroll->period);
-
-                $dtr = $dtr_service->getSummary($employee_no = null, $payroll->period, $biometrics);
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $payroll->period);
 
                 $totalDays = $dtr['summary']['total_days'];
                 $workedDays = $dtr['summary']['worked_days'];

@@ -4,10 +4,10 @@
     </div>
     <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
-            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'information']) }}" class="{{in_array('information', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'information' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'details' ? 'true' : 'false'}}">Employee Information</a>
+            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'information']) }}" class="{{in_array('information', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'information' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'information' ? 'true' : 'false'}}">Employee Information</a>
         </li>
         <li class="nav-item" role="presentation">
-            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'personal']) }}" class="{{in_array('personal', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'personal' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'details' ? 'true' : 'false'}}">I. Personal Information</a>
+            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'personal']) }}" class="{{in_array('personal', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'personal' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'personal' ? 'true' : 'false'}}">I. Personal Information</a>
         </li>
         <li class="nav-item" role="presentation">
             <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'family']) }}" class="{{in_array('family', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'family' ? 'active' : ''}}" id="pills-family-tab" role="tab" aria-controls="pills-family" aria-selected="{{$form == 'family' ? 'true' : 'false'}}">II. Family Background (A)</a>
@@ -33,6 +33,9 @@
         <li class="nav-item" role="presentation">
             <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'skills']) }}" class="{{in_array('skills', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'skills' ? 'active' : ''}}" id="pills-skills-tab" role="tab" aria-controls="pills-skills" aria-selected="{{$form == 'skills' ? 'true' : 'false'}}">VIII. Skills or Hobbies</a>
         </li>
+        <li class="nav-item" role="presentation">
+            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'account']) }}" class="{{in_array('information', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'account' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'account' ? 'true' : 'false'}}">IX. Employee Account</a>
+        </li>
     </ul>
     <div class="tab-content" id="pills-tabContent">
         @php
@@ -47,11 +50,13 @@
                 'trainings' => 'admin.hris.profile.trainings',
                 'other-works' => 'admin.hris.profile.other-works',
                 'skills' => 'admin.hris.profile.skills',
+                'account' => 'admin.hris.profile.account',
             ];
 
             $view = $viewForms[$form];
         @endphp
         <hr class="pt-2">
+        <div style="width: fit-content; margin: auto !important;" class="px-5 py-2 text-white bg-info text-uppercase fw-bold text-center my-4 mb-5">Note: Please save your updated data before leaving the current tab.</div>
         <div class="mt-4">
             @livewire($view, ['employee_no' => $employee_no, 'form' => $form])
         </div>
