@@ -60,7 +60,7 @@ class DailyTimeRecordService {
             'summary' => $dtr['summary'],
         ];
     }
-    
+
     public function getLogs(?string $timestamp = null, ?string $employee_id = null)
     {
         $logs = EmployeeTimelogs::with('employee.personal')
@@ -261,7 +261,7 @@ class DailyTimeRecordService {
         return $data;
 
     }
-    private function getBsdNo($employee_no)
+    public function getBsdNo($employee_no)
     {
         return DB::table('employee_information')
                 ->where('employee_no', $employee_no)
@@ -497,7 +497,7 @@ class DailyTimeRecordService {
             'is_break_required' => $employeeSchedule->is_breaktime_required ?? false,
         ];
     }
-    private function getShiftSchedule($employeeNo)
+    public function getShiftSchedule($employeeNo)
     {
         $employee_shift = DB::table('shift_schedule')
                         ->leftJoin('employee_information', 'shift_schedule.id', '=', 'employee_information.shift_id')

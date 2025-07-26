@@ -16,7 +16,8 @@ use Livewire\Component;
 class Clock extends Component
 {
 
-    public $employee_id;
+    public $bsd_emp_identical;
+    public $employee_no;
     public $gps_location;
     public $status;
     public $logs;
@@ -26,23 +27,13 @@ class Clock extends Component
 
     public function mount() {
         $this->loadRecords();
+        $this->toggleStatus();
     }
 
     public function loadRecords() {
-
-        $bsd_emp_identical = config('app.bsd_emp_identical');
         
-        $employee_no = Auth::user()->employee_no;
-
-        $bsd_no = EmployeeInformation::where('employee_no', $employee_no)
-            ->first()
-            ->bsd_no;
-
-        if($bsd_emp_identical) {
-            $this->employee_id = $employee_no;
-        } else {
-            $this->employee_id = $bsd_no;
-        }
+        $this->employee_no = Auth::user()->employee_no;
+        $this->bsd_emp_identical = config('app.bsd_emp_identical');
 
     }
 
@@ -77,22 +68,31 @@ class Clock extends Component
     }
 
     public function showLogs() {
-        $timestamp = Carbon::now()->format('Y-m');
-        $logService = app(DailyTimeRecordService::class);
-        $logs = $logService->getLogs($timestamp, $this->employee_id);
 
-        $cleanLogs = [];
+        $service = app(DailyTimeRecordService::class);
 
-        foreach ($logs as $date => $entries) {
-            if (is_array($entries) && !empty($entries)) {
-                $cleanLogs[$date] = array_values($entries)[0];
+        $timestamp = Carbon::now()->format(format: 'm-Y');
+        $dtr = $service->getDailyTimeRecord($this->employee_no, $timestamp);
+        
+        $filtered = [];
+
+        foreach ($dtr['logs'] as $logs) {
+            if (
+                is_null($logs['clock_in']) &&
+                is_null($logs['lunch_in']) &&
+                is_null($logs['lunch_out']) &&
+                is_null($logs['clock_out'])
+            ) {
+                continue;
             }
+
+            $filtered[$logs['date']] = $logs;
         }
 
-        krsort($cleanLogs);
+        krsort($filtered);
 
-        $this->logs = $cleanLogs;
-        dd($this->logs);
+        $this->logs = $filtered;
+       
         $this->dispatch('showModal', [
             'modal' => 'logs_modal'
         ]);
@@ -100,6 +100,46 @@ class Clock extends Component
     }
 
     public function toggleStatus() {
+        
+        $service = app(DailyTimeRecordService::class);
+
+        $timestamp = Carbon::now()->format('Y-m-d');
+        
+        $bsd_no = $this->bsd_emp_identical ? $this->employee_no : $service->getBsdNo($this->employee_no);
+
+        $model = EmployeeTimelogs::where('employee_id', $bsd_no)
+            ->where('timestamp', 'LIKE', "{$timestamp}%");
+
+        $clockRecords = $model->get();
+
+        $entry = $model->count();
+
+        $hasAccomplishment = $clockRecords->contains(function ($record) {
+            return !empty($record['accomplishment']);
+        });
+
+
+        switch (true) {
+            case $entry === 0:
+                $this->status = 'Clock In';
+                break;
+
+            case $entry === 1:
+                $this->status = 'Lunch Out';
+                break;
+
+            case $entry === 2:
+                $this->status = 'Lunch In';
+                break;
+
+            case $entry === 3:
+                $this->status = 'Clock Out';
+                break;
+
+            case $entry === 4 || $hasAccomplishment:
+                $this->status = 'Done';
+                break;
+        }
 
     }
 
