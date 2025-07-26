@@ -41,9 +41,11 @@
                         @if(!$isToCreate) 
                             @foreach ($dynamicFormFields['items']['fields'] as $fieldKey => $field)
                                 <div class="mb-3">
-                                    <label for="{{ $fieldKey }}" class="form-label text-uppercase">
-                                        {{ $field['label'] }}
-                                    </label>
+                                    @if($field['type'] != 'checkbox') 
+                                        <label for="{{ $fieldKey }}" class="form-label text-uppercase">
+                                            {{ $field['label'] }}
+                                        </label>
+                                    @endif
 
                                     @php
                                         $inputValue = $field['value'] ?? '';
@@ -98,6 +100,22 @@
                                                 @endforeach
                                             </select>
                                             @break
+                                        @case('checkbox')
+                                            <div class="form-check">
+                                                <input 
+                                                    type="checkbox" 
+                                                    id="{{ $fieldKey }}" 
+                                                    class="form-check-input {{ $inputClass }}" 
+                                                    wire:model.defer="{{ $fieldKey }}"
+                                                    @foreach ($inputAttr as $attrKey => $attrVal)
+                                                        {{ $attrKey }}="{{ $attrVal }}"
+                                                    @endforeach
+                                                >
+                                                <label class="form-check-label" for="{{ $fieldKey }}">
+                                                    {{ $field['label'] ?? ucfirst(str_replace('_', ' ', $fieldKey)) }}
+                                                </label>
+                                            </div>
+                                        @break
                                     @endswitch
 
                                     <div class="error-field">
@@ -133,49 +151,24 @@
 
                             <div class="tab-content" id="employeeTabsContent">
                                 <div wire:ignore.self class="tab-pane fade show active" id="eligible" role="tabpanel" aria-labelledby="eligible-tab">
-                                    <div class="table-responsive mt-4" style="max-height: 300px; overflow-y: auto;">
-                                        <table class="table table-striped table-bordered w-100 m-0">
-                                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
-                                                <tr>
-                                                    <th>Employee No</th>
-                                                    <th>Name</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse ($employeesChecked['eligible'] as $employee)
-                                                    <tr>
-                                                        <td>{{ $employee['employee_no'] ?? 'N/A' }}</td>
-                                                        <td>{{ $employee['name'] }}</td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="2" class="text-center fw-bold py-3">No data was found</td>
-                                                    </tr> 
-                                                @endforelse
-                                            </tbody>
-                                        </table>
+                                    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                                        <span class="fw-bold text-success text-uppercase fw-bold">Total Eligible: {{ $employeesChecked['eligible']['count'] }}</span>
                                     </div>
-                                </div>
-                                <div wire:ignore.self class="tab-pane fade" id="ineligible" role="tabpanel" aria-labelledby="ineligible-tab">
-                                    <div class="table-responsive mt-4" style="max-height: 300px; overflow-y: auto;">
+                                    <div class="table-responsive mt-2" style="max-height: 300px; overflow-y: auto;">
                                         <table class="table table-striped table-bordered w-100 m-0">
                                             <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
                                                 <tr>
+                                                    <th>#</th>
                                                     <th>Employee No</th>
                                                     <th>Name</th>
-                                                    <th>Reason</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @forelse ($employeesChecked['ineligible'] as $employee)
+                                                @forelse ($employeesChecked['eligible']['items'] as $index => $employee)
                                                     <tr>
+                                                        <td>{{ $index + 1 }}</td>
                                                         <td>{{ $employee['employee_no'] ?? 'N/A' }}</td>
                                                         <td>{{ $employee['name'] }}</td>
-                                                        <td>
-                                                            <div class="text-danger">
-                                                                {{ is_array($employee['reason']) ? implode(', ', $employee['reason']) : $employee['reason'] }}
-                                                            </div>
-                                                        </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
@@ -186,8 +179,44 @@
                                         </table>
                                     </div>
                                 </div>
+                                <div wire:ignore.self class="tab-pane fade" id="ineligible" role="tabpanel" aria-labelledby="ineligible-tab">
+                                    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                                        <span class="fw-bold text-danger text-uppercase fw-bold">Total Ineligible: {{ $employeesChecked['ineligible']['count'] }}</span>
+                                    </div>
+                                    <div class="table-responsive mt-2" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-striped table-bordered w-100 m-0">
+                                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Employee No</th>
+                                                    <th>Name</th>
+                                                    <th>Reason</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse ($employeesChecked['ineligible']['items'] as $index => $employee)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>{{ $employee['employee_no'] ?? 'N/A' }}</td>
+                                                        <td>{{ $employee['name'] }}</td>
+                                                        <td>
+                                                            <div class="text-danger">
+                                                                {{ is_array($employee['reason']) ? implode(', ', $employee['reason']) : $employee['reason'] }}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="text-center fw-bold py-3">No data was found</td>
+                                                    </tr> 
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="d-flex justify-content-between mt-4 pb-3">
+                            
+                            <div class="d-flex justify-content-between mt-5 pb-3">
                                 <button class="btn btn-outline-primary px-5 py-3 text-uppercase" type="button" wire:click="go_back">
                                     Go Back
                                 </button>

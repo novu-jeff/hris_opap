@@ -50,7 +50,6 @@
         </div>
     </div>
     <hr class="pt-3">
-
     <div class="table-responsive pb-3">
         <table>
             <thead>
@@ -64,7 +63,6 @@
                     <th rowspan="2" class="text-center">Net Amount</th>
                 </tr>
             </thead>
-
             <tbody>
                 @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
                     <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
@@ -99,7 +97,7 @@
                             <td>
                                 <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                     wire:model="bonus.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                    class="form-control" style="width: 120px;">
+                                    class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                             </td>
                             <td>{{ number_format($record['tax'], 2) }}</td>
                             <td>{{ number_format($record['net_amount'], 2) }}</td>

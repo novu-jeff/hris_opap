@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin\Services\Payroll;
 use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Services\OtherServices;
-use App\Http\Controllers\Admin\Services\TimeLogService;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
@@ -15,6 +14,7 @@ use App\Services\SummaryServices;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Services\DailyTimeRecordService;
 
 class SalaryService extends Controller {
 
@@ -54,7 +54,7 @@ class SalaryService extends Controller {
         $salaryAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->salary));
 
         $payroll->overall_net_amount = round($netAmount, 2);
-        $payroll->overall_salary_amount = round($salaryAmount, 2);
+        $payroll->overall_salary = round($salaryAmount, 2);
         $payroll->type = 'Salary Payroll';
 
         $grouped = [];
@@ -94,34 +94,22 @@ class SalaryService extends Controller {
             'payroll_date' => [
                 'required',
                 'date',
-                Rule::unique('payroll_salary')
-                    ->where(function ($query) use($payload) {
-                        return $query->where('cut_off_period', $payload['cut_off_period'])
-                                    ->where('employment_type', $payload['employment_type']);
-                    }),
             ],
             'cut_off_period' => [
                 'required',
                 'regex:/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/',
             ],
             'employment_type' => 'exists:employment_types,id',
+            'has_deductions' => 'nullable|boolean'
         ];
     }
 
-
     public function createPayroll($payload) {
-        if (SalaryPayroll::where([
-            'payroll_date' => $payload['payroll_date'],
-            'cut_off_period' => $payload['cut_off_period'],
-            'employment_type' => $payload['employment_type'],
-        ])->exists()) {
-            throw new \Exception('Payroll for this period and employment type already exists.');
-        }
-
         $payroll = SalaryPayroll::create([
             'payroll_date' => $payload['payroll_date'],
             'cut_off_period' => $payload['cut_off_period'],
             'employment_type' => $payload['employment_type'],
+            'hasDeductions' => $payload['has_deductions'] ?? false,
             'status' => 'pending'
         ]);
 
@@ -141,7 +129,7 @@ class SalaryService extends Controller {
         }
 
         $employees = $this->payrollService->getEmployees($employment_type, $type);
-        $employees = $employees['eligible'];
+        $employees = $employees['eligible']['items'];
 
         $chunks = array_chunk($employees, 1000);
 
@@ -171,10 +159,12 @@ class SalaryService extends Controller {
 
     public function computePayroll($payroll, $employees, $type) {
 
-        if($this->product == 'government') {
+        $hasDeductions = $payroll->hasDeductions ?? false;
+
+        if ($this->product == 'government') {
 
             $other_service = new OtherServices;
-            $dtr_service = new TimeLogService;
+            $dtr_service = new DailyTimeRecordService;
             $leaveCard_service = new LeaveCardService;
             $payroll_service = app(PayrollService::class);
 
@@ -184,64 +174,53 @@ class SalaryService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
-                $basic_salary = round(floatval($employee['monthly_rate']), 2);
-                
+                $basic_salary = round(floatval($employee['salary']), 2);
+
                 $bsd_no = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $payroll->cut_off_period;
 
-                // $dtr = $dtr_service->getDTRByRange($bsd_no, $monthYear, $cut_off_period);
                 $earnings = $other_service->earnings($employee_no);
-                $deductions = $other_service->deductions($employee_no);
+                $deductions = $hasDeductions ? $other_service->deductions($employee_no) : [];
 
                 $current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
-                $social_security = DB::table('social_security as gb')
-                    ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
-                    ->where('gb.billing_month', $current_date)
-                    ->where('gi.crn_no', $employee['gsis_no'])
-                    ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
-                    ->first() ?? (object) [];
-                
-                # EARNINGS
+                $social_security = $hasDeductions
+                    ? DB::table('social_security as gb')
+                        ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
+                        ->where('gb.billing_month', $current_date)
+                        ->where('gi.crn_no', $employee['gsis_no'])
+                        ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
+                        ->first() ?? (object) []
+                    : (object) [];
+
+                // Earnings
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
                 $gross = round($basic_salary + $pera, 2);
-                
-                # DEDUCTIONS
-                $rlip = round(floatval($basic_salary * 0.09), 2);
-                $philhealth = round(floatval($basic_salary * 0.05 / 2), 2);
-                $hdmf = round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2);
-                $mp2 = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2);
-                $mplstlms = round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2);
-                $cir = round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2);
-                $w_tax = round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2);
-                $uca = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2);
-                $consoloan = round(floatval($social_security->consoloan ?? 0), 2);
-                $emergency_loan = round(floatval($social_security->emrgy_loan ?? 0), 2);
-                $plreg = round(floatval($social_security->plreg ?? 0), 2);
-                $mpl = round(floatval($social_security->mpl ?? 0), 2);
-                $cpl = round(floatval($social_security->cpl ?? 0), 2);
-                $aut = round(floatval(0),2);
 
-                # OPTIONAL DEDUCTIONS
-                $dbp = round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2);
-                $kawani = round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2);
+                // Deductions (based on flag)
+                $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
+                $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2) : 0;
+                $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2) : 0;
+                $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
+                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2) : 0;
+                $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
+                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
+                $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
+                $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
+                $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
+                $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
+                $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
+                $aut = 0;
 
+                // Optional deductions
+                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2) : 0;
+                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2) : 0;
 
                 $total_deduction = round(
-                    $rlip +
-                    $hdmf +
-                    $philhealth +
-                    $consoloan +
-                    $emergency_loan +
-                    $plreg +
-                    $mpl +
-                    $cpl +
-                    $mp2 +
-                    $mplstlms +
-                    $cir +
-                    $w_tax +
-                    $aut
+                    $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
+                    $plreg + $mpl + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $aut
                 );
 
                 $net = round($gross - $total_deduction, 2);
@@ -283,10 +262,9 @@ class SalaryService extends Controller {
         } else {
 
             $other_service = new OtherServices;
-            $dtr_service = new TimeLogService;
+            $dtr_service = new DailyTimeRecordService;
             $leaveCard_service = new LeaveCardService;
             $contribution_service = new ContributionsService;
-            $summary_service = new SummaryServices;
 
             $data = [];
 
@@ -294,7 +272,7 @@ class SalaryService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
-                $basic_salary = round(floatval($employee['monthly_rate']), 2);
+                $basic_salary = round(floatval($employee['salary']), 2);
                 $employee_biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');

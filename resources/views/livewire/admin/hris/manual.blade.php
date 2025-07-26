@@ -188,24 +188,35 @@
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-2" for="salary_type">Salary Type <span class="text-danger">*</span></label>
+                        <select wire:model="records.employee_information.salary_type" id="records.employee_information.salary_type" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            <option value="monthly">Monthly Rate</option>
+                            <option value="salary">Daily Rate</option>
+                        </select>
+                        <div class="error-field">
+                            @error('records.employee_information.salary_type') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                     @if($isGovernment)
                         <div class="col-md-3 mb-3">
-                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : ''}}>
+                            <label class="mb-2" for="salary">Salary Amount <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : ''}}>
                         <div class="error-field">
-                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         </div>
                     @else
                     <div class="col-md-3 mb-3">
-                            <label class="mb-2" for="monthly_rate">Monthly Rate <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.monthly_rate" id="records.employee_information.monthly_rate" class="form-control">
+                            <label class="mb-2" for="salary">Salary Amount <span class="text-danger">*</span></label>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control">
                         <div class="error-field">
-                                @error('records.employee_information.monthly_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         </div>
                     @endif
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-2" for="payroll_account_number">Payroll Account No.</label>
                         <input type="text" wire:model="records.employee_information.payroll_account_number" id="records.employee_information.payroll_account_number" class="form-control">
                         <div class="error-field">
@@ -213,11 +224,10 @@
                         </div>
                     </div>
                 </div>
-                <hr class="mt-5">
             </div>
         </div>
         @if (!empty($records))
-            <hr class="mb-4">
+            <hr class="mb-5">
             <div class="card-footer d-flex justify-content-end bg-transparent border-0">
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">

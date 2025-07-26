@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Hris\Profile;
 use App\Http\Controllers\Admin\Services\HRISProcessingService;
 use App\Models\EmployeeEmploymentHistory;
 use App\Models\EmployeeInformation;
-use App\Models\EmployeePersonal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +23,7 @@ class EmploymentHistory extends Component
     public $recordIndex;
     public $records;
 
-    protected $listeners = ['save'];
+    protected $listeners = ['save', 'removeRecord', 'removeDocument'] ;
 
     public function mount() {
         $this->loadRecords();
@@ -36,8 +35,17 @@ class EmploymentHistory extends Component
             ->get()
             ->toArray() ?? [];
 
+        $mappedData = array_map(function ($item) {
+            if (!is_null($item['documents'])) {
+                $item['document_control'] = true;
+            } else {
+                $item['document_control'] = false;
+            }
+            return $item;
+        }, $data);
+
         $this->originalData = $data;
-        $this->records = $data;
+        $this->records = $mappedData;
 
     }
 
@@ -69,20 +77,66 @@ class EmploymentHistory extends Component
 
         $record = $records[$this->recordIndex] ?? null;
 
-        if ($record && $record->documents) {
+        if ($record || $record->documents) {
             $path = 'documents/' . $this->employee_no . '/' . $record->documents;
 
             if (Storage::disk('public')->exists($path)) {
                 Storage::disk('public')->delete($path);
             }
 
+            $record->delete();
         }
-
-        $record->delete();
 
         unset($this->records[$this->recordIndex]);
         $this->records = array_values($this->records);
         
+    }
+
+    public function removeDocument(bool $isNotify, $index = null)
+    {
+        if ($isNotify) {
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that you will be removing the document only.';
+            $action = 'removeDocument';
+            $this->recordIndex = $index;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+            return;
+        }
+
+        $records = EmployeeEmploymentHistory::where('employee_no', $this->employee_no)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $record = $records[$this->recordIndex] ?? null;
+
+        if ($record || $record->documents) {
+            $path = 'documents/' . $this->employee_no . '/' . $record->documents;
+
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            $record->documents = null;
+            $record->save();
+
+            $this->records[$this->recordIndex]['documents'] = null;
+        }
+
+        $this->loadRecords();
+
+        return $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Success!',
+            'isRemoveRowDT' => false,
+            'isReloadDT' => false,
+            'message' => 'Document has been successfully removed.',
+            'redirect' => '_stay'
+        ]);
     }
 
     private $defaultFields = [
@@ -95,6 +149,7 @@ class EmploymentHistory extends Component
         'from_year' => '',
         'to_year' => '',
         'documents' => '',
+        'document_control' => false
     ];
 
     protected function rules(?string $employee_no = null) {
@@ -157,38 +212,6 @@ class EmploymentHistory extends Component
 
     public function setErrorActiveTabAccordions(array $errorKeys) {
         $this->dispatch('scrollToError', $errorKeys);
-    }
-
-    private function uploadFile($employee_no, $identifier, $path, $file)
-    {
-        if ($file instanceof TemporaryUploadedFile) {
-            $record = EmployeePersonal::with([
-                'children', 'employment_history', 'civil_service', 'trainings', 'others', 'skills'
-            ])->where('employee_no', $employee_no)->first();
-        
-            if ($record) {
-                if (!empty($record->$identifier)) {
-                    Storage::disk('public')->delete("$path/{$record->$identifier}");
-                }
-        
-                if ($identifier === 'documents') {
-                    foreach (['children', 'employment_history', 'civil_service', 'trainings', 'others', 'skills'] as $relation) {
-                        if ($record->$relation && !empty($record->$relation->$identifier)) {
-                            Storage::disk('public')->delete("$path/{$record->$relation->$identifier}");
-                        }
-                    }
-                }
-            }
-            
-            $filename = uniqid(time()) . '.' . $file->getClientOriginalExtension();
-            $file->storeAs($path, $filename, 'public');
-        
-            return $filename;
-        }
-        
-        $record = EmployeePersonal::where('employee_no', $employee_no)->first();
-        return $record->$identifier ?? null;
-        
     }
 
     public function download(int $index) {
@@ -279,6 +302,8 @@ class EmploymentHistory extends Component
             $process->save(false, $id, $id, 'employment_history', $this->records);
 
             DB::commit();
+
+            $this->loadRecords();
 
             return $this->dispatch('alert', [
                 'status' => 'success',

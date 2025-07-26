@@ -38,7 +38,7 @@ class PayrollService extends Controller {
                 'ei.employee_no',
                 'ei.employment_type_id',
                 'ei.date_hired',
-                'ei.monthly_rate',
+                'ei.salary',
                 'ei.bsd_no',
                 'ei.position_id',
                 'p.firstname',
@@ -52,17 +52,29 @@ class PayrollService extends Controller {
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
-            ->where('ei.employment_type_id', $employment_type)
+            ->where(function ($query) use ($employment_type) {
+                $query->where('ei.employment_type_id', $employment_type)
+                    ->orWhereNull('ei.employment_type_id'); // include missing type
+            })
             ->get();
 
-
         $employees = [
-            'eligible' => [],
-            'ineligible' => [],
+            'eligible' => [
+                'count' => 0,
+                'items' => []
+            ],
+            'ineligible' => [
+                'count' => 0,
+                'items' => []
+            ],
         ];
 
         foreach ($results as $row) {
             $reasons = [];
+
+            if (empty($row->employment_type_id)) {
+                $reasons[] = 'no employment type';
+            }
 
             $dateHired = $row->date_hired ? Carbon::parse($row->date_hired) : null;
 
@@ -106,7 +118,7 @@ class PayrollService extends Controller {
                 }
             }
 
-            if (empty($row->monthly_rate) || floatval($row->monthly_rate) === 0.0) {
+            if (empty($row->salary) || floatval($row->salary) === 0.0) {
                 $reasons[] = 'no salary rate';
             }
 
@@ -115,11 +127,14 @@ class PayrollService extends Controller {
             $employeeData['status'] = $reasons ? 'ineligible' : 'eligible';
             $employeeData['reason'] = $reasons ?: null;
 
-            $employees[$employeeData['status']][] = $employeeData;
+            $status = $employeeData['status'];
+            $employees[$status]['items'][] = $employeeData;
+            $employees[$status]['count']++;
         }
 
         return $employees;
     }
+
 
     public function getProcess(string $type) {
 

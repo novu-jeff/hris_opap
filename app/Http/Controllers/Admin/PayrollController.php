@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Services\PayrollService;
-use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 

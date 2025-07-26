@@ -289,10 +289,15 @@ table {
     z-index: 99;
   }
 
+
   #map {
     width: 120px;
     height: 100px;
-    border-radius: 20px !important;
+}
+
+  .map-container {
+      width: 100%;
+      max-width: 100%; 
   }
 
   #location-info {

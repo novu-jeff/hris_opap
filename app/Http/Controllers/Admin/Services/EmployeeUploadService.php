@@ -74,7 +74,7 @@ class EmployeeUploadService extends Controller
                     'philhealth' => 13,
                     'tin' => 14,
                     'email' => 20,
-                    'monthly_rate' => null,
+                    'salary' => 20,
                 ];
             } else {
                 $indexes = [
@@ -90,7 +90,7 @@ class EmployeeUploadService extends Controller
                     'tin' => 14,
                     'email' => 21,
                     'sss' => 12,
-                    'monthly_rate' => 21,
+                    'salary' => 21,
                 ];
             }
 
@@ -121,7 +121,7 @@ class EmployeeUploadService extends Controller
                     1
                 );
             } else {
-                $monthlyRate = floatval($employeeData[$indexes['monthly_rate']] ?? 0);
+                $monthlyRate = floatval($employeeData[$indexes['salary']] ?? 0);
             }
             Log::info("Monthly rate determined", ['rate' => $monthlyRate]);
 
@@ -136,7 +136,7 @@ class EmployeeUploadService extends Controller
                     'position_id' => $position?->id,
                     'employment_type_id' => $jobCategory?->id,
                     'bank_account_no' => $employeeData[$indexes['bank_account_no']] ?? null,
-                    'monthly_rate' => $monthlyRate,
+                    'salary' => $monthlyRate,
                 ]
             );
             Log::info("Employee information updated/created", ['employee_no' => $employeeData[0]]);

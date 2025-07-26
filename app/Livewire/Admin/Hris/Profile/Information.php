@@ -155,17 +155,17 @@ class Information extends Component
                 
         
                     if ($activeTranche) {
-                        $this->records['employee_information']['monthly_rate'] = $salary;
+                        $this->records['employee_information']['salary'] = $salary;
                     }
                 } else {
-                    $this->records['employee_information']['monthly_rate'] = 0;
+                    $this->records['employee_information']['salary'] = 0;
                 }
             } else {
                 $salary = EmployeeInformation::where('employee_no', $this->employee_no)->first();
                 if($salary) {
-                    $this->records['employee_information']['monthly_rate'] = $salary->monthly_rate;
+                    $this->records['employee_information']['salary'] = $salary->salary;
                 } else {
-                    $this->records['employee_information']['monthly_rate'] = 0;
+                    $this->records['employee_information']['salary'] = 0;
                 }
             }
         } else {
@@ -195,7 +195,7 @@ class Information extends Component
             'type' => $data->employment_type_id,
             'status' => $data->status,
             'salary_method' => $data->salary_method,
-            'monthly_rate' => $data->monthly_rate,
+            'salary' => $data->salary,
             'payroll_account_number' => $data->payroll_account_number,
         ];
     }
@@ -263,7 +263,7 @@ class Information extends Component
             'records.employee_information.position_id' => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id|required_without:records.employee_information.type',
 
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
-            'records.employee_information.monthly_rate' => 'required|numeric|gt:1000',
+            'records.employee_information.salary' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,bank transfer,paycheck,e-wallet',
         ];
     }
@@ -288,9 +288,9 @@ class Information extends Component
             'records.employee_information.job_completion.date' => 'The job completion must be a valid date.',
             'records.employee_information.step_id.required' => 'The tranche step is required.',
             'records.employee_information.step_id.in' => 'The tranche step is invalid.',
-            'records.employee_information.monthly_rate.required' => 'The monthly rate is required',
-            'records.employee_information.monthly_rate.numeric' => 'The monthly rate must be numbers',
-            'records.employee_information.monthly_rate.gt' => 'The monthly rate must be greather than 1000',
+            'records.employee_information.salary.required' => 'The monthly rate is required',
+            'records.employee_information.salary.numeric' => 'The monthly rate must be numbers',
+            'records.employee_information.salary.gt' => 'The monthly rate must be greather than 1000',
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',

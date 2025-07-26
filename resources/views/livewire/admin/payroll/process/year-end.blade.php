@@ -50,7 +50,9 @@
         </div>
     </div>
     <hr class="pt-3">
-
+    @php
+        $status = $records['payroll']['status'];
+    @endphp
     <div class="table-responsive pb-3">
         <table>
             <thead>
@@ -100,7 +102,7 @@
                             <td>
                                 <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                     wire:model="bonus.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                    class="form-control" style="width: 120px;">
+                                    class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                             </td>
                             <td>{{ number_format($record['cash_gift'], 2) }}</td>
                             <td>{{ number_format($record['tax'], 2) }}</td>

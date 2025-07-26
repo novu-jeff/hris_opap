@@ -69,9 +69,9 @@ class Index extends Component
             $record->employee_share = 0;
             $record->employer_share = 0;
 
-            if ($record->monthly_rate) {
-                $record->monthly_rate = $contributionsService->computeSalary($record->monthly_rate);
-                $contribution = $contributionsService->computePhilHealth($record->monthly_rate);
+            if ($record->salary) {
+                $record->salary = $contributionsService->computeSalary($record->salary);
+                $contribution = $contributionsService->computePhilHealth($record->salary);
 
                 $record->total = $contribution['total'];
                 $record->employee_share = $contribution['employee_share'];

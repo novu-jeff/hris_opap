@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
-use App\Http\Controllers\Admin\Services\TimeLogService;
+use App\Services\DailyTimeRecordService;
 use App\Models\EmployeeAUT;
 use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeInformation;
@@ -54,7 +54,7 @@ class CorrectionApply extends Component
 
         $timestamp = Carbon::create($date)->format('Y-m-d');
         
-        $logService = new TimeLogService;
+        $logService = new DailyTimeRecordService;
                 
         $logs = $logService->getLogs($timestamp);
 

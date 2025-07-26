@@ -91,10 +91,13 @@
                                         <div>
                                             <input type="file" style="width: 300px;" wire:model="records.{{$key}}.documents" id="records.{{$key}}.documents" class="form-control">
                                         </div>
-                                        @if($records[$key]['documents'])
-                                            <div>
+                                        @if($records[$key]['document_control'])
+                                            <div class="d-flex gap-2">
                                                 <a href="javascript:void(0)" wire:click.prevent="download('{{$key}}')" class="btn btn-primary">
                                                     <i class="fa-solid fa-download"></i>
+                                                </a>
+                                                <a href="javascript:void(0)" wire:click.prevent="removeDocument('true', '{{$key}}')" class="btn btn-danger">
+                                                    <i class="fa-solid fa-trash"></i>
                                                 </a>
                                             </div>
                                         @endif
@@ -109,7 +112,7 @@
                 </table>
             </div>
         @else
-            <div class="alert alert-info text-uppercase text-center fw-medium text-center">No data Found.</div>
+            <div class="alert alert-danger text-uppercase text-center fw-medium text-center">No data Found.</div>
         @endif            
         <div class="card-footer mt-5 pb-3 d-flex justify-content-end bg-transparent border-0">
             <div class="text-end">

@@ -65,7 +65,7 @@
                                 <td>{{ $record->personal->firstname }}</td>
                                 <td>{{ $record->personal->middlename }}</td>
                                 <td>{{ $record->personal->birthday }}</td>
-                                <td>₱ {{ number_format($record->monthly_rate, 2) }}</td>
+                                <td>₱ {{ number_format($record->salary, 2) }}</td>
                                 <td>₱{{ $record->employee_share }}</td>
                                 <td>₱{{ $record->employer_share }}</td>
                                 <td>₱{{ $record->total }}</td>

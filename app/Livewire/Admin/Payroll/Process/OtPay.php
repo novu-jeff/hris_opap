@@ -81,7 +81,7 @@ class OtPay extends Component
                 'title' => 'Success!',
                 'showAlert' => true,
                 'message' => 'Payroll was approved, Payslip will be visible to employees',
-                'redirect' => route('payroll.process', ['payroll_id' => $this->payroll_id])
+                'redirect' => route('payroll.process', ['type' => $this->type, 'payroll_id' => $this->payroll_id])
             ]);
         }
     }

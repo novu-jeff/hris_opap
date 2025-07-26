@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ESSRequestTimeLogController extends Controller
+class TimeAdjustmentsController extends Controller
 {
     public function __construct() {
         $this->middleware('permission:read time-adjustments')->only('index');

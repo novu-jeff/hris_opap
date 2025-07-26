@@ -16,9 +16,9 @@ class TimeAdjustmentsController extends Controller
     {
         return view('employee.time-adjustments', [
             'action' => 'view',
-            'title' => 'ESS | Request Timelogs',
-            'header' => 'Manage Request Timelogs',
-            'sub' => 'Track and monitor your request timelogs.'
+            'title' => 'ESS | Time Adjustments',
+            'header' => 'Manage Time Adjustments',
+            'sub' => 'Track and monitor your time adjustments.'
         ]);
     }
 
@@ -26,9 +26,9 @@ class TimeAdjustmentsController extends Controller
     {
         return view('employee.time-adjustments', [
             'action' => 'create',
-            'title' => 'Apply Request Timelogs',
-            'header' => 'Apply Request Timelogs',
-            'sub' => 'By proceeding, you\'ll be able to apply for requesting a timelog.'
+            'title' => 'Apply Time Adjustments',
+            'header' => 'Apply Time Adjustments',
+            'sub' => 'By proceeding, you\'ll be able to apply for requesting time adjustments.'
         ]);
 
     }
@@ -38,9 +38,9 @@ class TimeAdjustmentsController extends Controller
         return view('employee.time-adjustments', [
             'id' => $id,
             'action' => 'edit',
-            'title' => 'Edit Request Timelogs',
-            'header' => 'Edit Request Timelogs',
-            'sub' => 'Feel free to edit or update your leave application.'
+            'title' => 'Edit Time Adjustments',
+            'header' => 'Edit Time Adjustments',
+            'sub' => 'Feel free to edit or update your time adjustments.'
         ]);
 
     }

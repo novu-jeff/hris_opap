@@ -8,7 +8,8 @@ import {
     ckeditor, 
     formatTime,
     convertToHoursAndMinutes,
-    getLocation
+    getGPSCoordinates,
+    setupMap
 }
 from './helpers';
 
@@ -20,8 +21,8 @@ window.copy_link = copy_link;
 window.reinitializeDataTable = reinitializeDataTable;
 window.formatTime = formatTime;
 window.convertToHoursAndMinutes = convertToHoursAndMinutes;
-window.getLocation = getLocation;
-
+window.getGPSCoordinates = getGPSCoordinates;
+window.setupMap = setupMap;
 
 $(function() {
 
@@ -92,6 +93,23 @@ $(function() {
         if (!$(e.target).closest('.list-item').length) {
             $('.submenu').slideUp();
         }
+    });
+
+    window.addEventListener('wheel', function (e) {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    window.addEventListener('keydown', function (e) {
+        const zoomKeys = ['+', '-', '=', '0'];
+        if ((e.ctrlKey || e.metaKey) && zoomKeys.includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
     });
 
 });

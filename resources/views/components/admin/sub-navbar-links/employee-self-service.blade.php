@@ -20,12 +20,16 @@
             <li><a class="dropdown-item" href="{{route('ess.obs')}}">Official Business Slip Application</a></li>
         @endcan
 
-        @can('read arto')
+        @can('read atro')
             <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
         @endcan
 
         @can('read time-adjustments')
             <li><a class="dropdown-item" href="{{route('ess.time-adjustments')}}">Time Adjustments</a></li>
+        @endcan
+
+        @can('read payslip-request')
+            <li><a class="dropdown-item" href="{{route('ess.payslip-request')}}">Payslip Request</a></li>
         @endcan
 
         @can('read announcements')

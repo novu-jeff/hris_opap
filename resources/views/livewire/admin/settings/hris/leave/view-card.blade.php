@@ -34,11 +34,12 @@
                             <td colspan="12">
                                 <strong>{{ $total_bal[$year]['sl'] != 0 ? $total_bal[$year]['sl'] : '' }}</strong>
                             </td>
-                            <div class="overlay">Click To Expand</div>
                         </tr>
-
+                        @php 
+                            $latestYear = collect($records)->keys()->max();
+                        @endphp
                         @foreach($data['items'] as $key => $item)
-                            <tr class="year-content" wire:ignore.self data-year="{{ $year }}" style="display: none;">
+                            <tr class="year-content" wire:ignore.self data-year="{{ $year }}" style="{{ $year == $latestYear ? '' : 'display: none;' }}">
                                 <td>{{ $item['period'] }}</td>
                                 <td>
                                     <textarea wire:model="particulars.{{$year}}.{{ $key }}" wire:key="particulars-{{$year}}.{{ $key }}" class="form-control" style="width: 400px; height: 100px;"></textarea>

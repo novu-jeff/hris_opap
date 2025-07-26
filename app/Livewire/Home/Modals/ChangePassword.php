@@ -60,6 +60,7 @@ class ChangePassword extends Component
             'status' => 'success',
             'title' => 'Password Changed Successfully', 
             'message' => 'You\'re password has been changed.',
+            'redirect' => '_reload'
         ]);
 
 

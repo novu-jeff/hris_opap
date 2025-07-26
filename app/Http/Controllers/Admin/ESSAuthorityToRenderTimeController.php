@@ -9,7 +9,7 @@ class ESSAuthorityToRenderTimeController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read arto')->only('index');
+        $this->middleware('permission:read atro')->only('index');
     }
 
     public function index(Request $request)

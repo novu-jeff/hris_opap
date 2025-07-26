@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Ess\Leave;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
-use App\Models\EmployeeLeaveDates;
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;

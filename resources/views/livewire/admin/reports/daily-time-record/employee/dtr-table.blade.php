@@ -53,30 +53,24 @@
                             <div class="shaded-box">|</div>
                         @endif
                     </td>
-                    @if(is_array($day['remarks']) && in_array('rest day', array_map('strtolower', $day['remarks'])) && !$day['workOnHoliday'])
-                        <td colspan="4">
-                            Rest Day
-                        </td>
-                    @else
-                        <!-- AM -->
-                        <td>
-                            @isset($day['clock_in'])
-                                {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i A') }}
-                            @else
-                                {{ ' ' }}
-                            @endisset
-                        </td>
-                        <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
+                    <!-- AM -->
+                    <td>
+                        @isset($day['clock_in'])
+                            {{ \Carbon\Carbon::parse($day['clock_in'])->format('g:i A') }}
+                        @else
+                            {{ ' ' }}
+                        @endisset
+                    </td>
+                    <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
 
-                        <!-- PM -->
-                        <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
-                        <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
-
-                    @endif
+                    <!-- PM -->
+                    <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
+                    <td> {{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
 
                     @php
                         // Flag to check if it's a future date
                         $isFuture = $day['isFuture'] ?? false;
+                        $isBreakRequired = $day['is_break_required'] ?? false;
                     
                         // Allowed remarks
                         $allowedRemarks = ['absent', 'rest day', 'special hol', 'legal hol'];
@@ -85,14 +79,6 @@
                         $remarks = $day['remarks'] ?? null;
                         $isEmpty = false;
                     
-                        if (is_array($remarks)) {
-                            $normalized = array_map('strtolower', array_map('trim', $remarks));
-                            $isEmpty = count($normalized) === 1 && in_array($normalized[0], $allowedRemarks);
-                        } elseif (is_string($remarks)) {
-                            $normalized = strtolower(trim($remarks));
-                            $isEmpty = in_array($normalized, $allowedRemarks);
-                        }
-                    
                         // Check if any required clock times are missing or empty
                         $clockIn = $day['clock_in'] ?? null;
                         $lunchIn = $day['lunch_in'] ?? null;
@@ -100,19 +86,34 @@
                         $clockOut = $day['clock_out'] ?? null;
                     
                         // If any clock times are empty or null, mark isEmpty = true
-                        if (empty($clockIn) || empty($lunchIn) || empty($lunchOut) || empty($clockOut)) {
-                            $isEmpty = true;
+
+                        if($isBreakRequired){
+                            if (empty($clockIn) && empty($lunchIn) && empty($lunchOut) && empty($clockOut)) {
+                                $isEmpty = true;
+                            }
+                        } else {
+                            if (empty($clockIn) && empty($clockOut)) {
+                                $isEmpty = true;
+                            }
                         }
-                    
-                        // Overtime calculation
-                        $totalOvertime = $day['aut']['overtime']['minutes'] ?? 0;
-                        $overtimeHours = intdiv($totalOvertime, 60);
-                        $overtimeMinutes = $totalOvertime % 60;
-                    
-                        // Total AUT calculation
-                        $totalMinutes = $day['total_aut'] ?? 0;
-                        $hours = intdiv($totalMinutes, 60);
-                        $minutes = $totalMinutes % 60;
+
+                        // overtime
+                        $overtimeMinutes = $day['aut']['overtime']['minutes']  ?? 0;
+                        $otHour = floor($overtimeMinutes / 60);
+                        $otMins = $overtimeMinutes % 60;
+                        
+                        // total AUT
+                        $tardinessMinutes = $day['aut']['tardiness']['minutes'] ?? 0;
+                        $tarHours = floor($tardinessMinutes / 60);
+                        $tarMins = $tardinessMinutes % 60;
+
+                        // total AUT
+                        $undertimeMinutes = $day['aut']['undertime']['minutes'] ?? 0;
+                        $underHours = floor($undertimeMinutes / 60);
+                        $underMins = $undertimeMinutes % 60;
+
+                        $autHours = $tarHours + $underHours;
+                        $autMins = $tarMins + $underMins;
                     @endphp
                 
                     
@@ -120,7 +121,7 @@
                     <td>
                         @if(!$isFuture)
                             @if(!$isEmpty)
-                                {{ $overtimeHours > 0 ? str_pad($overtimeHours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                {{ $otHour }}
                             @endif
                         @endif
                     </td>
@@ -129,16 +130,16 @@
                     <td>
                         @if(!$isFuture)
                             @if(!$isEmpty)
-                                {{ $overtimeMinutes > 0 ? str_pad($overtimeMinutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                {{ $otMins }}
                             @endif
                         @endif
                     </td>
                     
-                    <!-- Total Combined Hours -->
+                    <!-- Total AUT Hours -->
                     <td>
                         @if(!$isFuture)
                             @if(!$isEmpty)
-                                {{ $hours > 0 ? str_pad($hours, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                {{ $autHours }}
                             @endif
                         @endif
                     </td>
@@ -147,7 +148,7 @@
                     <td>
                         @if(!$isFuture)
                             @if(!$isEmpty)
-                                {{ $minutes > 0 ? str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':00' : '0' }}
+                                {{ $autMins  }}
                             @endif
                         @endif
                     </td>
@@ -172,14 +173,22 @@
                         @else
                             <small> </small>
                         @endif
-                        {{-- @if(isset($day['remarks']) && in_array('Discrepancy', $day['remarks'])) --}}
-                            <a href="{{ route('timekeeping.correction-apply', [
-                                'bsd_no' => $logs['employee_account']['bsd_no'] ?? null,
-                                'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
-                            ]) }}" class="btn btn-sm btn-danger btn-correction">
-                                Correction
-                            </a>
-                        {{-- @endif    --}}
+                        @if($isAdmin)
+                            @if(
+                                    isset($day['remarks'])
+                                    && (
+                                        in_array('Discrepancy', $day['remarks'])
+                                        || in_array('Absent', $day['remarks'])
+                                    )
+                                )
+                                <a href="{{ route('timekeeping.correction-apply', [
+                                    'bsd_no' => $logs['employee_account']['bsd_no'] ?? null,
+                                    'date' => \Carbon\Carbon::parse($key)->format('Y-m-d'),
+                                ]) }}" class="btn btn-sm btn-danger btn-correction">
+                                    Correction
+                                </a>
+                            @endif   
+                        @endif
                     </td>                      
                 </tr>
             @endforeach

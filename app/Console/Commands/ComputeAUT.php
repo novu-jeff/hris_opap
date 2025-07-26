@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
-use App\Http\Controllers\Admin\Services\TimeLogService;
+use App\Services\DailyTimeRecordService;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use Carbon\Carbon;
@@ -17,13 +17,13 @@ class ComputeAUT extends Command
     protected $description = 'Run command after uploading bulk logs';
 
     protected $bsd_emp_identical;
-    protected TimeLogService $timelogService;
+    protected DailyTimeRecordService $dailyTimeRecordService;
     protected LeaveCardService $leaveCardService;
 
-    public function __construct(TimeLogService $timelogService, LeaveCardService $leaveCardService)
+    public function __construct(DailyTimeRecordService $dailyTimeRecordService, LeaveCardService $leaveCardService)
     {
         parent::__construct();
-        $this->timelogService = $timelogService;
+        $this->dailyTimeRecordService = $dailyTimeRecordService;
         $this->leaveCardService = $leaveCardService;
     }
 
@@ -62,7 +62,7 @@ class ComputeAUT extends Command
                         $bio_id = !$this->bsd_emp_identical ? $employee->bsd_no : $employee->employee_no;
                         $employee_no = $employee->employee_no;
 
-                        $logs = $this->timelogService->getDTR($bio_id, $monthYear);
+                        $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $bio_id, $monthYear);
                         $aut = $logs['summary']['less_aut'] ?? 0;
                         $converted = $aut * 0.002;
 

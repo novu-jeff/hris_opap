@@ -62,7 +62,7 @@ class Index extends Component
             $sheet->setCellValue('G9', strtoupper($records->employee->personal->lastname) ?? '');
             $sheet->setCellValue('I9', strtoupper($records->employee->personal->firstname) ?? '');
             $sheet->setCellValue('N9', strtoupper($records->employee->personal->middlename) ?? '');
-            $sheet->setCellValue('O11', strtoupper($records->employee->monthly_rate) ?? '');
+            $sheet->setCellValue('O11', strtoupper($records->employee->salary) ?? '');
             $sheet->setCellValue('H11', strtoupper($records->employee->positions->name) ?? '');
 
             // Set created date
