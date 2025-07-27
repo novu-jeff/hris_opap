@@ -7,7 +7,7 @@
                 <button wire:click="delete" class="btn btn-danger mt-3">Delete Record</button>
             </div>
             <div class="col-12 col-md-12 mb-3 mb-3">
-                <div class="row">
+                <div class="row capture-content">
                     <div class="col-12 col-md-5">
                         <div class="row">
                             <div class="col-12 mb-3">
@@ -16,27 +16,26 @@
                                         {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
                                         {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
                                         {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
-                                    wire:click="triggerClock" wire:target="triggerClock">
+                                    wire:target="capture">
                                     <div class="card-body d-flex align-items-center">
                                         <div>
                                             <div class="d-flex justify-content-center">
-                                                <span wire:loading.remove wire:target="triggerClock">
-                                                    <i class="fa-regular fa-circle-check"></i>
+                                                <span wire:loading.remove wire:target="capture">
                                                 </span>
-                                                <span wire:loading wire:target="triggerClock">
+                                                <span wire:loading wire:target="capture">
                                                     <i class="fa-solid fa-spinner fa-spin"></i>
                                                 </span>
                                             </div>
                                             <div class="text-center fw-bold text-uppercase mt-1">
-                                                <span wire:loading.remove wire:target="triggerClock">{{$status}}</span>
-                                                <span wire:loading wire:target="triggerClock">Saving...</span>
+                                                <span wire:loading.remove wire:target="capture">{{$status}}</span>
+                                                <span wire:loading wire:target="capture">Saving...</span>
                                             </div>
                                         </div>
                                     </div>      
                                 </div>  
                                 @if (in_array($status, ['Lunch Out']))
                                     <div class="text-center mt-3">
-                                        <button style="border-radius: 15px" class="btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold" wire:click="triggerClockOut(true)" wire:target="triggerClockOut">
+                                        <button style="border-radius: 15px" class="clock-process-forced btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold">
                                             Clock Out
                                         </button>
                                     </div>     
@@ -68,8 +67,11 @@
                         <div class="camera d-flex justify-content-center align-items-center w-100">
                             <video id="video" autoplay></video>
                             <canvas id="canvas"></canvas>
+                            <div class="alert-container">
+                                
+                            </div>
                             <div class="watermark">
-                                <img src="{{asset('img/logo.png')}}" alt="watermark">
+                                <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
                             </div>
                             <div class="overlay py-3">
                                 <div class="{{ $gps_location ? 'd-block' : 'd-none' }}">
@@ -77,7 +79,7 @@
                                         <div id="map"></div>
                                     </div>
                                 </div>
-                                <div class="details p-3 d-flex align-items-center">
+                                <div class="details p-2 d-flex align-items-center">
                                     <div id="location-info">
                                         @if($gps_location)
                                             @php
@@ -85,6 +87,7 @@
                                                 $lat = $gps_location['coordinates']['lat'] ?? 0;
                                                 $lng = $gps_location['coordinates']['lng'] ?? 0;
                                             @endphp
+                                            <div class="mb-0" id="face-status"></div>
                                             <div class="mb-0">{{ $place }}</div>
                                             <div class="mb-0">Lat: {{ number_format($lat, 5) }}°, Long: {{ number_format($lng, 5) }}°</div>
                                             <div class="mb-0">{{ now()->toDayDateTimeString() }}</div>
@@ -96,8 +99,13 @@
                             </div>
                         </div>
                         <div class="text-muted text-center text-muted text-uppercase mt-3 fst-italic">
-                            <small>Make sure your location is visible in the frame before proceeding.</small>
+                            <small>Please ensure your face is clearly visible and your location is enabled before proceeding.</small>
                         </div>
+                    </div>
+                </div>
+                <div class="row capture-preview">
+                    <div class="col-12">
+                        <img src="" alt="" srcset="">
                     </div>
                 </div>
             </div>
@@ -116,21 +124,28 @@
                 <div class="modal-body">
                     @if (!empty($logs))
                         <div class="accordion" id="logsAccordion">
-                            @forelse($logs as $date => $item)
+                            @foreach($logs as $item)
+                                @php
+                                    $dateKey = str_replace('/', '-', $item['date']);
+                                    $logList = $item['logs'] ?? [];
+                                    $accomplishment = collect($logList)->firstWhere('accomplishment');
+                                    $hasImage = collect($logList)->contains(fn($log) => !empty($log['captured_image']));
+                                @endphp
+
                                 <div class="accordion-item">
-                                    <h2 class="accordion-header" id="heading{{ $date }}">
-                                        <button class="accordion-button text-uppercase fw-bold {{ $loop->first  ? '' : 'collapsed' }}" 
-                                                type="button" 
-                                                data-bs-toggle="collapse" 
-                                                data-bs-target="#collapse{{ $date }}" 
-                                                aria-expanded="{{ $loop->first ? 'true' : 'false' }}" 
-                                                aria-controls="collapse{{ $date }}">
-                                                {{ \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format(format: 'd, l') }}
+                                    <h2 class="accordion-header" id="heading{{ $dateKey }}">
+                                        <button class="accordion-button text-uppercase fw-bold {{ $loop->first ? '' : 'collapsed' }}"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#collapse{{ $dateKey }}"
+                                                aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                                aria-controls="collapse{{ $dateKey }}">
+                                                {{ \Carbon\Carbon::createFromFormat('j/n/Y', $item['date'])->format('d, l') }}
                                         </button>
                                     </h2>
-                                    <div id="collapse{{ $date }}" 
-                                        class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}" 
-                                        aria-labelledby="heading{{ $date }}" 
+                                    <div id="collapse{{ $dateKey }}"
+                                        class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
+                                        aria-labelledby="heading{{ $dateKey }}"
                                         data-bs-parent="#logsAccordion">
                                         <div class="accordion-body">
                                             <table class="table table-bordered text-center">
@@ -144,21 +159,60 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>{{ isset($item['clock_in']) ? \Carbon\Carbon::parse($item['clock_in'])->format('h:i A') : '-' }}</td>
-                                                        <td>{{ isset($item['lunch_in']) ? \Carbon\Carbon::parse($item['lunch_in'])->format('h:i A') : '-' }}</td>
-                                                        <td>{{ isset($item['lunch_out']) ? \Carbon\Carbon::parse($item['lunch_out'])->format('h:i A') : '-' }}</td>
-                                                        <td>{{ isset($item['clock_out']) ? \Carbon\Carbon::parse($item['clock_out'])->format('h:i A') : '-' }}</td>
+                                                        <td>
+                                                            {{ isset($logList[0]['time']) ? \Carbon\Carbon::parse($logList[0]['time'])->format('h:i A') : '-' }}
+                                                        </td>
+                                                        <td>
+                                                            {{ isset($logList[1]['time']) ? \Carbon\Carbon::parse($logList[1]['time'])->format('h:i A') : '-' }}
+                                                        </td>
+                                                        <td>
+                                                            {{ isset($logList[2]['time']) ? \Carbon\Carbon::parse($logList[2]['time'])->format('h:i A') : '-' }}
+                                                        </td>
+                                                        <td>
+                                                            {{ isset($logList[3]['time']) ? \Carbon\Carbon::parse($logList[3]['time'])->format('h:i A') : '-' }}
+                                                        </td>
                                                     </tr>
-                                                          
+
+                                                    @if($hasImage)
+                                                        <tr>
+                                                            @for ($i = 0; $i < 4; $i++)
+                                                                <td>
+                                                                    @if (!empty($logList[$i]['captured_image']))
+                                                                        <a style="cursor: pointer" data-fancybox data-src="{{ Storage::url('timelogs/' . $logList[$i]['captured_image']) }}">
+                                                                            <img src="{{ Storage::url('timelogs/' . $logList[$i]['captured_image']) }}"
+                                                                                alt="log image"
+                                                                                style="width: 100%; height: 100px; object-fit: cover;">
+                                                                        </a>
+                                                                    @else
+                                                                        No Image
+                                                                    @endif
+                                                                </td>
+                                                            @endfor
+                                                        </tr>
+                                                    @endif
+
+                                                    @if(!empty($accomplishment))
+                                                        <tr>
+                                                            <td colspan="4">
+                                                                <div class="text-start mt-2 px-3">
+                                                                    <p class="mb-2 fw-bold">Accomplishment Report:</p>
+                                                                    <p class="text-primary d-flex align-items-center gap-2 mt-3">
+                                                                        <i class="fa-solid fa-download"></i>
+                                                                        <a href="{{ Storage::url('accomplishments/' . $accomplishment['accomplishment']) }}" download>
+                                                                            {{ $accomplishment['accomplishment'] }}
+                                                                        </a>
+                                                                    </p>
+                                                                </div>
+                                                            </td>    
+                                                        </tr>  
+                                                    @endif
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="text-center py-4 text-uppercase fw-bold text-muted">No logs for this month</div>
-                            @endforelse
-                        </div>                    
+                            @endforeach
+                        </div>
                     @else
                         <div class="alert alert-info mb-0">Currently no clock logs.</div>
                     @endif
@@ -166,66 +220,247 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
+
+                    <div class="modal-header border-0 pt-2 pb-0">
+                        <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3" wire:ignore>
+                            <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
+                        </div>
+
+                        @if($entry === 3)
+                            <div class="mb-3">
+                                <label for="accomplishment" class="text-start">Accomplishment Report</label>
+                                <input type="file" wire:model="accomplishment" name="accomplishment" id="accomplishment" class="form-control">
+                                @error('accomplishment') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
+                        <button type="button" class="btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
+                            Retake
+                        </button>
+
+                        <button type="submit"
+                            class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
+                            wire:target="{{ $entry === 3 ? 'saveAccomplishment' : 'triggerClock' }}"
+                            wire:loading.attr="disabled">
+                            <span>Proceed</span>
+                            <span wire:loading wire:target="{{ $entry === 3 ? 'saveAccomplishment' : 'triggerClock' }}">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+
 </div>
 
 @section('script')
- 
-<script>
+<script type="module">
+    $(function () {
 
-
-   $(function() { 
-
+        let isFaceDetected = false;
+        let place = null;
 
         locateMe();
-
-        async function locateMe() {
-            try {
-                const {lat, lng} = await getGPSCoordinates();
-                Livewire.dispatch('getLocation', { lat, lng }); 
-            } catch (error) {
-                console.error(error);
-            }
-        }
+        startCameraWithFaceDetection();
 
         Livewire.on('loadMap', (event) => {
-            const { token, lng, lat } = event[0];
+            const { token, lng, lat, place: eventPlace } = event[0];
+            place = eventPlace;
             setupMap(token, [lng, lat]);
         });
 
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-        let isImageCaptured = false;
 
-        video.addEventListener('loadedmetadata', () => {
+        $('.clock-process').on('click', async function () {
+
+            const captureElement = document.querySelector('.camera');
+
+            if (!captureElement) {
+                console.error('Capture element not found.');
+                return;
+            }
+
+            const snapshotCanvas = await html2canvas(captureElement, {
+                useCORS: true,
+                allowTaint: true,
+                scale: window.devicePixelRatio,
+            });
+
+            const imageData = snapshotCanvas.toDataURL('image/png');
+
+
+            if (!isFaceDetected) {
+                Swal.fire({
+                    title: 'No Face Detected',
+                    text: 'No face detected. Please ensure your face is visible to the camera.',
+                    icon: 'info',
+                });
+
+                return;
+            }
+
+            if (place == null) {
+                Swal.fire({
+                    title: 'No Location Detected',
+                    text: 'No location detected. Please make sure to enable your location or GPS.',
+                    icon: 'info',
+                });
+
+                return;
+            }
+
+            if (imageData) {
+                document.querySelector('#clockInPreviewImage').src = imageData;
+
+                const modal = new bootstrap.Modal(document.getElementById('clockInModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                modal.show();
+            }
+
+            Livewire.dispatch('imageCaptured', [imageData, isFaceDetected]);
+        });
+
+        $('.clock-process-forced').on('click', async function () {
+
+            const captureElement = document.querySelector('.camera');
+
+            if (!captureElement) {
+                console.error('Capture element not found.');
+                return;
+            }
+
+            const snapshotCanvas = await html2canvas(captureElement, {
+                useCORS: true,
+                allowTaint: true,
+                scale: window.devicePixelRatio,
+            });
+
+            const imageData = snapshotCanvas.toDataURL('image/png');
+
+
+            if (!isFaceDetected) {
+                Swal.fire({
+                    title: 'No Face Detected',
+                    text: 'No face detected. Please ensure your face is visible to the camera.',
+                    icon: 'info',
+                });
+
+                return;
+            }
+
+            if (place == null) {
+                Swal.fire({
+                    title: 'No Location Detected',
+                    text: 'No location detected. Please make sure to enable your location or GPS.',
+                    icon: 'info',
+                });
+
+                return;
+            }
+
+            if (imageData) {
+                document.querySelector('#clockInPreviewImage').src = imageData;
+
+                const modal = new bootstrap.Modal(document.getElementById('clockInModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                modal.show();
+            }
+
+            Livewire.dispatch('imageCaptured', [imageData, isFaceDetected, true]);
+        });
+
+
+        async function locateMe() {
+            try {
+                const { lat, lng } = await getGPSCoordinates();
+                Livewire.dispatch('getLocation', { lat, lng });
+            } catch (error) {
+                console.error('Geolocation error:', error);
+            }
+        }
+
+        const video = $('#video')[0];
+        const canvas = $('#canvas')[0];
+        const context = canvas.getContext('2d');
+
+        $(video).on('loadedmetadata', () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
         });
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    video.srcObject = stream;
-                })
-                .catch((err) => {
-                    Swal.fire({
-                        title: 'Please be informed',
-                        text: 'Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.',
-                        icon: 'info',
-                    });
+        async function startCameraWithFaceDetection() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+
+                video.onloadeddata = async () => {
+                    await loadFaceApiModels();
+                    await video.play(); 
+                    detectFacesLoop();
+                };
+            } catch (err) {
+                Swal.fire({
+                    title: 'Please be informed',
+                    text: 'Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.',
+                    icon: 'info',
                 });
-        } else {
-            Swal.fire({
-                title: 'Please be informed',
-                text: 'Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.',
-                icon: 'info',
-            });
+            }
         }
-        
-        
-        
-});
 
+        async function loadFaceApiModels() {
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/faceapi');
+                console.log('Face API model loaded');
+            } catch (error) {
+                console.error('Failed to load Face API model:', error);
+            }
+        }
+
+        async function detectFacesLoop() {
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 });
+
+            async function detect() {
+                try {
+                    if (video.readyState >= 2) {
+                        const result = await faceapi.detectAllFaces(video, options);
+                        if (result.length < 1) {
+                            $('.alert-container').html(`
+                                <div class="alert-no-face">
+                                    <div>Face Is Not Detected</div>
+                                </div>
+                            `);
+                            isFaceDetected = false;
+                        } else {
+                            $('.alert-container').empty();
+                            isFaceDetected = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Face detection failed:', error);
+                }
+                requestAnimationFrame(detect);
+            }
+
+            detect();
+        }
+    });
 </script>
-
 @endsection

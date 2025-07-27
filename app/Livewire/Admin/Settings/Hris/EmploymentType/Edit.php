@@ -17,20 +17,40 @@ class Edit extends Component
     public function mount() {
         $this->loadRecords($this->id);
     }
-
     public function loadRecords(int $id) {
-
         $records = EmployementTypes::find($id);
 
-        if(!$records) {
+        if (!$records) {
             return redirect()->route('position.index');
         }
 
-        return $this->fields = [
+        $settings = DB::table('employment_type_settings')
+                    ->where('employment_type_id', $records->id)
+                    ->first();
+
+        if (!$settings) {
+            $settings = (object) [
+                'is_salary' => true,
+                'is_ot_pay' => false,
+                'is_clothing_allowance' => false,
+                'is_mid_year' => false,
+                'is_year_end' => false,
+            ];
+        }
+
+        $data = $this->fields = [
             'code' => $records->code,
             'name' => $records->name,
+            'is_salary' => (bool) $settings->is_salary,
+            'is_ot_pay' => (bool) $settings->is_ot_pay,
+            'is_clothing_allowance' => (bool) $settings->is_clothing_allowance,
+            'is_mid_year' => (bool) $settings->is_mid_year,
+            'is_year_end' => (bool) $settings->is_year_end,
         ];
+
+        return $data;
     }
+
 
     public function save() {
         
@@ -54,6 +74,29 @@ class Edit extends Component
             $employmentType->code = $this->fields['code'];
             $employmentType->name = $this->fields['name'];
             $employmentType->save();
+
+            $existing = DB::table('employment_type_settings')
+                ->where('employment_type_id', $this->id)
+                ->first();
+
+            $data = [
+                'employment_type_id' => $this->id,
+                'is_salary' => $this->fields['is_salary'],
+                'is_ot_pay' => $this->fields['is_ot_pay'] ?? false,
+                'is_clothing_allowance' => $this->fields['is_clothing_allowance'] ?? false,
+                'is_mid_year' => $this->fields['is_mid_year'] ?? false,
+                'is_year_end' => $this->fields['is_year_end'] ?? false,
+                'updated_at' => now(),
+            ];
+
+            if ($existing) {
+                DB::table('employment_type_settings')
+                    ->where('employment_type_id', $this->id)
+                    ->update($data);
+            } else {
+                $data['created_at'] = now();
+                DB::table('employment_type_settings')->insert($data);
+            }
 
             DB::commit();
 
@@ -91,6 +134,11 @@ class Edit extends Component
                 Rule::unique('employment_types', 'name')
                     ->ignore($this->id)
             ],
+            'fields.is_salary' => 'required|boolean',
+            'fields.is_ot_pay' => 'nullable|boolean',
+            'fields.is_clothing_allowance' => 'nullable|boolean',
+            'fields.is_mid_year' => 'nullable|boolean',
+            'fields.is_year_end' => 'nullable|boolean'
         ];
     }
 

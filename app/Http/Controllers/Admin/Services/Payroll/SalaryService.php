@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Services\DailyTimeRecordService;
+use Illuminate\Support\Facades\Log;
 
 class SalaryService extends Controller {
 
@@ -175,11 +176,14 @@ class SalaryService extends Controller {
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $basic_salary = round(floatval($employee['salary']), 2);
-
-                $bsd_no = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
+                $salary_type = $employee['salary_type'];
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
-                $cut_off_period = $payroll->cut_off_period;
+                $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
+
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);
+
+                $dtr_summary  = $dtr['summary'];
 
                 $earnings = $other_service->earnings($employee_no);
                 $deductions = $hasDeductions ? $other_service->deductions($employee_no) : [];
@@ -212,7 +216,7 @@ class SalaryService extends Controller {
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
                 $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
                 $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
-                $aut = 0;
+                $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
 
                 // Optional deductions
                 $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2) : 0;
@@ -265,6 +269,7 @@ class SalaryService extends Controller {
             $dtr_service = new DailyTimeRecordService;
             $leaveCard_service = new LeaveCardService;
             $contribution_service = new ContributionsService;
+            $payroll_service = app(PayrollService::class);
 
             $data = [];
 
@@ -273,19 +278,24 @@ class SalaryService extends Controller {
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $basic_salary = round(floatval($employee['salary']), 2);
-                $employee_biometrics = !$this->bsd_emp_identical ? $employee['bsd_no'] : $employee['employee_no'];
+
+                $salary_type = $employee['salary_type'];
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
-                $cut_off_period = $payroll->cut_off_period;
+                $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
 
-                dd($monthYear, $cut_off_period);
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);
 
-                $this->summary_service->getSummary($employee_no);
+                $dtr_summary  = $dtr['summary'];
 
-                $overtime = 0;
-                $holiday_pay = 0;
+                $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
+                
+                $overtime = $overtimeData['gross_ot_pay'];
+
+                $holiday_pay = round($payroll_service->computeHolidayPayment($basic_salary, $dtr_summary, $salary_type));
                 $allowances = 0;
-                $aut = 0;
+                
+                $aut = round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type)));
 
                 $sss = $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0;
                 $pagibig = $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0;
@@ -329,5 +339,6 @@ class SalaryService extends Controller {
         }
 
     }
+
 
 }
