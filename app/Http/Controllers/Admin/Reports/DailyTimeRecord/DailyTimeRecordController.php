@@ -71,10 +71,18 @@ class DailyTimeRecordController extends Controller
         return $latestRecord->timestamp;
     }
 
-    private function isValidEmployee(string $employee_no) {
+    private function isValidEmployee(string $employee_no)
+    {
+        $bsd_emp_identical = config('app.bsd_emp_identical');
+
+        if (in_array($employee_no, $bsd_emp_identical)) {
+            return EmployeeInformation::where('employee_no', $employee_no)->exists();
+        }
+
         return EmployeeInformation::where('employee_no', $employee_no)
             ->whereNotNull('bsd_no')
             ->exists();
     }
+
 
 }
