@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Services\PayrollService;
+use App\Models\EmployementTypes;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -15,65 +16,39 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        $product = config('app.product');
+        $employmentTypes =  EmployementTypes::with(['setting'])->get();
 
         $defaultActions = 'salary';
-        $defaultEmploymentType = $product === 'government' ? 'contractual' : 'rank and file';
+        $defaultEmploymentType = $employmentTypes[0]->name;
 
-        if ($product === 'government') {
-            $options = [
-                'contractual' => [
-                    'name' => 'contractual',
-                    'sub' => [
-                        'salary' => 'Salary',
-                        'clothing_allowance' => 'Clothing Allowance',
-                        'mid_year' => 'Mid Year Bonus',
-                        'year_end' => 'Year End Bonus',
-                        'ot_pay' => 'Overtime Pay',
-                    ],
-                ],
-                'contract of service' => [
-                    'name' => 'contract of service',
-                    'sub' => [
-                        'salary' => 'Salary',
-                        'ot_pay' => 'Overtime Pay',
-                    ],
-                ],
-                'job order' => [
-                    'name' => 'Job Order',
-                    'sub' => [
-                        'salary' => 'Salary',
-                    ],
-                ],
+        $options = $employmentTypes->mapWithKeys(function ($item) {
+            $subs = [];
+
+            $settings = $item->setting ?? [];
+
+            if ($settings['is_salary']) {
+                $subs['salary'] = 'Salary';
+            }
+            if ($settings['is_clothing_allowance']) {
+                $subs['clothing_allowance'] = 'Clothing Allowance';
+            }
+            if ($settings['is_mid_year']) {
+                $subs['mid_year'] = 'Mid Year Bonus';
+            }
+            if ($settings['is_year_end']) {
+                $subs['year_end'] = 'Year End Bonus';
+            }
+            if ($settings['is_ot_pay']) {
+                $subs['ot_pay'] = 'Overtime Pay';
+            }
+
+            return [
+                strtolower($item->name) => [
+                    'name' => $item->name,
+                    'sub' => $subs,
+                ]
             ];
-        } else {
-            $options = [
-                'rank and file' => [
-                    'name' => 'rank and file',
-                    'sub' => [
-                        'salary' => 'Salary',
-                        'mid_year' => 'Mid Year Bonus',
-                        'year_end' => 'Year End Bonus',
-                    ],
-                ],
-                'manager' => [
-                    'name' => 'manager',
-                    'sub' => [
-                        'salary' => 'Salary',
-                        'mid_year' => 'Mid Year Bonus',
-                        'year_end' => 'Year End Bonus',
-                    ],
-                ],
-                'supervisor' => [
-                    'name' => 'Supervisor',
-                    'sub' => [
-                        'salary' => 'Salary',
-                        'mid_year' => 'Mid Year Bonus',
-                        'year_end' => 'Year End Bonus',
-                    ],
-                ],
-            ];
-        }
+        })->toArray();
 
         $employmentTypeInput = strtolower($request->input('employment_type', $defaultEmploymentType));
         $typeInput = strtolower($request->input('type', $defaultActions));

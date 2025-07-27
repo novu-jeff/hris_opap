@@ -182,7 +182,7 @@ class OverTimeService extends Controller {
 
                 $totalDays = $dtr['summary']['total_days'];
                 $workedDays = $dtr['summary']['worked_days'];
-                $overtime = $dtr['summary']['overtime'];
+                $overtime = $dtr['summary']['overtime_minues'];
 
                 $ot = $this->payrollService->computeOvertimePay($basic_salary, $workedDays, $overtime);
 

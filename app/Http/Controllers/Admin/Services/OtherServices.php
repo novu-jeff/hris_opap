@@ -12,6 +12,7 @@ use App\Models\OtherEarnings;
 use Carbon\Carbon;
 use Exception;
 use PDO;
+use Illuminate\Support\Facades\Log;
 
 class OtherServices extends Controller
 {
@@ -35,7 +36,7 @@ class OtherServices extends Controller
 
             $amount = 0;
 
-            // Calculate the amount based on the amount basis
+            # Calculate the amount based on the amount basis
             switch ($earning->amount_basis) {
                 case 'entry':
                     $amount = $earning->amount;
@@ -50,10 +51,10 @@ class OtherServices extends Controller
                     throw new Exception("Invalid amount_basis value.");
             }
 
-            // Initial eligibility check based on IDs
+            # Initial eligibility check based on IDs
             $isEligible = in_array($empJobCategory, $eligibleIds);
 
-            // Initialize the result item
+            # Initialize the result item
             $resultItem = [
                 'code' => $earning->code,
                 'name' => $earning->name,
@@ -61,11 +62,11 @@ class OtherServices extends Controller
                 'isEligible' => $isEligible,
             ];
 
-            // Further eligibility checks based on duration and context
+            # Further eligibility checks based on duration and context
             if ($isEligible && $earning->duration && $earning->count && $earning->context && $earning->date) {
                 $compareDate = Carbon::parse($earning->date);
 
-                // Adjust compare date based on duration
+                # Adjust compare date based on duration
                 switch ($earning->duration) {
                     case 'days':
                         $compareDate->addDays($earning->count);
@@ -80,7 +81,7 @@ class OtherServices extends Controller
                         throw new Exception("Invalid duration type.");
                 }
 
-                // Check eligibility based on context
+                # Check eligibility based on context
                 switch ($earning->context) {
                     case 'from':
                         $isEligible = $dateHired->greaterThanOrEqualTo($compareDate);
@@ -96,7 +97,7 @@ class OtherServices extends Controller
                 }
             }
 
-            // Update eligibility in the result item
+            # Update eligibility in the result item
             $resultItem['isEligible'] = $isEligible;
             $result[] = $resultItem;
         }
@@ -115,28 +116,28 @@ class OtherServices extends Controller
 
     public function leaves(string $employee_no) 
     {
-        // Get all leave types
+        # Get all leave types
         $leaves = LeaveType::all();
 
-        // Get all credits for the given employee
+        # Get all credits for the given employee
         $credits = LeaveCredits::where('employee_no', $employee_no)->get();
 
-        // Map leave credits and calculate totals for specific leave types
+        # Map leave credits and calculate totals for specific leave types
         $leaveCredits = $leaves->map(function ($leave) use ($credits, $employee_no) {
 
-            // If leave type is VL or SL (ID 1 or 2), get balance from EmployeeLeaveCard
+            # If leave type is VL or SL (ID 1 or 2), get balance from EmployeeLeaveCard
             if ($leave->id == 1 || $leave->id == 2) {
-                // Get the latest leave card record for the employee for the current year
+                # Get the latest leave card record for the employee for the current year
                 $record = EmployeeLeaveCard::where('employee_no', $employee_no)
                     ->where('year', Carbon::now()->year)
                     ->orderBy('year', 'asc') 
                     ->get()
                     ->last();
 
-                // Set leave total credits, fallback to 0 if not found
+                # Set leave total credits, fallback to 0 if not found
                 $leave->credits = $record ? ($record->{strtolower($leave->code) . '_bal'} ?? 0) : 0;
             } else {
-                // Otherwise, use the credits from the LeaveCredits table
+                # Otherwise, use the credits from the LeaveCredits table
                 $credit = $credits->firstWhere('leave_type_id', $leave->id);
                 $leave->credits = $credit ? $credit->credits : 0;
             }
@@ -144,10 +145,13 @@ class OtherServices extends Controller
             return $leave;
         });
 
-        // Convert the collection to an array and return
+        # Convert the collection to an array and return
         return $leaveCredits->toArray();
     }
 
-
+    public function splitDateRange(string $range): array
+    {
+        return array_map('trim', explode('to', $range));
+    }
     
 }

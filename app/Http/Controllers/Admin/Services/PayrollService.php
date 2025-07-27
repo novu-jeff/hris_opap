@@ -41,6 +41,7 @@ class PayrollService extends Controller {
                 'ei.salary',
                 'ei.bsd_no',
                 'ei.position_id',
+                'ei.salary_type',
                 'p.firstname',
                 'p.lastname',
                 'p.gsis_no',
@@ -134,7 +135,6 @@ class PayrollService extends Controller {
 
         return $employees;
     }
-
 
     public function getProcess(string $type) {
 
@@ -244,4 +244,84 @@ class PayrollService extends Controller {
             'net_ot_pay' => $netOtPay,
         ];
     }
+
+    public function computeAutDeduction(array $summary, $salary, $payType)
+    {
+        $totalAbsences = $summary['absences'];          # Days
+        $workPerWeek = $summary['workingDaysPerWeek'];  # 5 or 6 days
+        $tardiness_mins = $summary['tardiness'];        # Minutes
+        $undertime_mins = $summary['undertime'];        # Minutes
+
+        $TOTAL_AUT = 0;
+
+        if ($payType === 'monthly') {
+            # DOLE standard: 22 or 26 working days per month
+            $daysPerMonth = $workPerWeek > 5 ? 26 : 22;
+
+            $daily_rate = $salary / $daysPerMonth;
+            $hourly_rate = $daily_rate / 8; # 8 hours per day
+            $minute_rate = $hourly_rate / 60;
+
+            $absenceDeduction = $daily_rate * $totalAbsences;
+            $tardinessDeduction = $minute_rate * $tardiness_mins;
+            $undertimeDeduction = $minute_rate * $undertime_mins;
+
+            $TOTAL_AUT = $absenceDeduction + $tardinessDeduction + $undertimeDeduction;
+        }
+
+        if ($payType === 'daily') {
+            # If salary is daily rate directly
+            $daily_rate = $salary;
+            $hourly_rate = $daily_rate / 8; # 8 hours per day
+            $minute_rate = $hourly_rate / 60;
+
+            $absenceDeduction = $daily_rate * $totalAbsences;
+            $tardinessDeduction = $minute_rate * $tardiness_mins;
+            $undertimeDeduction = $minute_rate * $undertime_mins;
+
+            $TOTAL_AUT = $absenceDeduction + $tardinessDeduction + $undertimeDeduction;
+        }
+
+        return $TOTAL_AUT;
+    }
+
+   public function computeHolidayPayment($salary, $summary, $payType) 
+    {
+        $work_on_legal_hol = $summary['worked_on_legal_holidays'];
+        $work_on_special_hol = $summary['worked_on_special_holidays'];
+        $workPerWeek = $summary['workingDaysPerWeek'];  # 5 or 6 days
+
+        $legal_hol = 0;
+        $special_hol = 0;
+
+        if ($payType === 'monthly') {
+            # Assume: 22 days for 5-day work week, 26 for 6-day
+            $daysPerMonth = $workPerWeek > 5 ? 26 : 22;
+
+            $daily_rate = $salary / $daysPerMonth;
+
+            if ($work_on_legal_hol > 0) {
+                $legal_hol = $daily_rate * 2 * $work_on_legal_hol;
+            }
+
+            if ($work_on_special_hol > 0) {
+                $special_hol = $daily_rate * 1.3 * $work_on_special_hol;
+            }
+        }
+
+        if ($payType === 'daily') {
+            $daily_rate = $salary;
+
+            if ($work_on_legal_hol > 0) {
+                $legal_hol = $daily_rate * 2 * $work_on_legal_hol;
+            }
+
+            if ($work_on_special_hol > 0) {
+                $special_hol = $daily_rate * 1.3 * $work_on_special_hol;
+            }
+        }
+
+        return round($legal_hol + $special_hol, 2);
+    }
+
 }

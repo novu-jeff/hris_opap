@@ -12,6 +12,8 @@ import {
     setupMap
 }
 from './helpers';
+import { initializeClockFace } from './clock-face.js';
+
 
 window.post = post;
 window.put = put
@@ -23,6 +25,7 @@ window.formatTime = formatTime;
 window.convertToHoursAndMinutes = convertToHoursAndMinutes;
 window.getGPSCoordinates = getGPSCoordinates;
 window.setupMap = setupMap;
+window.initializeClockFace = initializeClockFace;
 
 $(function() {
 

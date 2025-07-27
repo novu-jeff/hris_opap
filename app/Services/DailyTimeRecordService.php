@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\EmployeePersonal;
 
 class DailyTimeRecordService {
+    
     protected $bsd_emp_identical;
 
     public function __construct()
@@ -99,6 +100,7 @@ class DailyTimeRecordService {
         $formattedLogs = [];
 
         $weeklySchedule = $this->getWeeklySchedule($employee_no);
+        $countWorkingDays = $this->countWorkingDays($weeklySchedule);
         $employeeSchedule = $this->getShiftSchedule($employee_no);
         $is_break_required = $employeeSchedule->is_breaktime_required;
 
@@ -244,13 +246,14 @@ class DailyTimeRecordService {
             'less_aut'                      => 0,
             'tardiness_freq'                => $total_tardiness_perminutes,
             'tardiness'                     => $total_tardiness_freq,
-            'undertime_freq'                => $total_undertime_minutes,
-            'undertime'                     => $total_undertime_freq,
+            'undertime_freq'                => $total_undertime_freq,
+            'undertime'                     => $total_undertime_minutes,
             'rest_days'                     => $restDays,
             'legal_hol'                     => $legalHolidays,
             'worked_on_legal_holidays'      => $workedOnLegalHolidays,
             'special_hol'                   => $specialHolidays,
             'worked_on_special_holidays'    => $workedOnSpecialHolidays,
+            'workingDaysPerWeek'            => $countWorkingDays
         ];
 
         $data  =  [
@@ -261,12 +264,14 @@ class DailyTimeRecordService {
         return $data;
 
     }
+
     public function getBsdNo($employee_no)
     {
         return DB::table('employee_information')
                 ->where('employee_no', $employee_no)
                 ->value('bsd_no');
     }
+
     private function getTotalLeaves($employeeNo, $dateInput)
     {
         $WHOLEDAY = 1;
@@ -383,7 +388,7 @@ class DailyTimeRecordService {
 
         return $data;
     }
-    private function getWeeklySchedule($employee_no)
+    public function getWeeklySchedule($employee_no)
     {
         $weeklySchedule = DB::table('employee_schedules')
             ->leftJoin('employee_information', 'employee_schedules.id', '=', 'employee_information.schedule_id')
@@ -396,6 +401,20 @@ class DailyTimeRecordService {
         }
 
         return $weeklySchedule;
+    }
+    private function countWorkingDays($weeklySchedule)
+    {
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        $workingDays = 0;
+
+        foreach ($days as $day) {
+            if (property_exists($weeklySchedule, $day) && (int) $weeklySchedule->$day === 1) {
+                $workingDays++;
+            }
+        }
+
+        return $workingDays;
     }
     private function getHolidayByDate($date)
     {
@@ -584,14 +603,13 @@ class DailyTimeRecordService {
             'raw_minutes' => $totalMinutes,
         ];
     }
-
+    
     private function processLogs($employee, $logs, $monthYear, $isDTR = false)
     {
         $groupedLogs = [];
 
         foreach ($logs as $log) {
             $date = Carbon::parse($log->timestamp)->toDateString();
-
             $groupedLogs[$date][] = [
                 'timestamp' => Carbon::parse($log->timestamp),
                 'isWeb' => $log->isWeb,
@@ -605,18 +623,29 @@ class DailyTimeRecordService {
 
         foreach ($groupedLogs as $date => $entries) {
             $timestamps = collect($entries)->pluck('timestamp')->sort()->values();
-
             $firstEntry = $entries[0];
 
             $record = $this->initializeRecord($employee, $firstEntry, $date);
-
             $this->assignTimestamps($record, $timestamps);
+
+            $record['timelogs'] = [];
+
+            foreach ($entries as $entry) {
+                $record['timelogs'][] = [
+                    'timestamp' => $entry['timestamp'],
+                    'isWeb' => $entry['isWeb'],
+                    'captured_image' => $entry['captured_image'],
+                    'captured_location' => $entry['captured_location'],
+                    'accomplishment' => $entry['accomplishment'],
+                ];
+            }
 
             $processedLogs[$date] = $record;
         }
 
         return $processedLogs;
     }
+
 
     private function initializeRecord($employee, $log, $date)
     {
@@ -634,10 +663,7 @@ class DailyTimeRecordService {
                 'overtime' => ['minutes' => 0, 'reason' => null],
             ],
             'total_aut' => 0,
-            'isWeb' => $log['isWeb'],
-            'captured_image' => $log['captured_image'],
-            'captured_location' => $log['captured_location'],
-            'accomplishment' => $log['accomplishment'],
+            'timelogs' => []
         ];
     }
 
