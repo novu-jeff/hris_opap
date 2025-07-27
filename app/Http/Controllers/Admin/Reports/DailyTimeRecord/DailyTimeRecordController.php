@@ -75,7 +75,7 @@ class DailyTimeRecordController extends Controller
     {
         $bsd_emp_identical = config('app.bsd_emp_identical');
 
-        if (in_array($employee_no, $bsd_emp_identical)) {
+        if ($bsd_emp_identical) {
             return EmployeeInformation::where('employee_no', $employee_no)->exists();
         }
 
