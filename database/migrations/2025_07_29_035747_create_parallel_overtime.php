@@ -22,6 +22,7 @@ return new class extends Migration
                 ->default('0');
             $table->string('total_night_diff_hrs')
                 ->default('0');
+            $table->string('cut_off_period');
             $table->timestamps();
         });
     }
