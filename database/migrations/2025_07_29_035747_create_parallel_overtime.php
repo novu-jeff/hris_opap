@@ -15,15 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('employee_no');
             $table->string('total_overtime')
-                ->default(0);
+                ->default('0');
             $table->string('total_overtime_hrs')
-                ->default(0);
+                ->default('0');
             $table->string('total_night_diff_amount')
-                ->default(0);
+                ->default('0');
             $table->string('total_night_diff_hrs')
-                ->default(0);
+                ->default('0');
             $table->timestamps()
-                ->default(0);
+                ->default('0');
         });
     }
 
