@@ -117,7 +117,7 @@ class Overtime extends Component
         try {
             $path = $this->tempPath;
             $files = glob($path . '/*.csv');
-            
+
             $jobs = [];
 
             foreach ($files as $file) {
@@ -136,6 +136,7 @@ class Overtime extends Component
                 $jobs[] = new TimelogUploadProcess($formattedData);
                 unlink($file);
             }
+            
 
             if (!empty($jobs)) {
                 Bus::batch($jobs)
