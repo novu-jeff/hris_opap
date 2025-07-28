@@ -22,8 +22,7 @@ return new class extends Migration
                 ->default('0');
             $table->string('total_night_diff_hrs')
                 ->default('0');
-            $table->timestamps()
-                ->default('0');
+            $table->timestamps();
         });
     }
 
