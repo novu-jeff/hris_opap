@@ -2,6 +2,7 @@
 
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\OthersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
@@ -64,7 +65,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
-use App\Http\Controllers\Employee\ClockInOutController as EmployeeTimelogsController;
+use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
@@ -210,9 +211,6 @@ Route::prefix('admin')->group(function() {
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
-
-            Route::get('logs/{month?}/{day?}/{year?}', [TimeKeepingController::class, 'index'])
-                ->name('timekeeping.index');
             Route::get('upload', [TimeKeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
             Route::get('upload/job/{id}', [TimeKeepingController::class, 'job'])
@@ -300,6 +298,11 @@ Route::prefix('admin')->group(function() {
                 ->name('reports.pagibig');
         });
         
+        Route::prefix('others/uploads')->group( function() {
+            Route::get('overtime', [OthersController::class, 'overtime'])
+                ->name('others.overtime');
+        });
+
         Route::prefix('settings')->group( function() {
         
             Route::resource('assessments', InterviewController::class)->names('job.interview');
@@ -474,7 +477,7 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
         Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
             ->name('employee.dtr');
 
-        Route::get('clock-in-out', [EmployeeTimelogsController::class, 'index'])
+        Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
             ->name('employee.clock');
 
         Route::get('remaining-credit', [EmployeeRemainingCreditController::class, 'index'])

@@ -22,6 +22,7 @@ class PayrollController extends Controller
         $defaultEmploymentType = $employmentTypes[0]->name;
 
         $options = $employmentTypes->mapWithKeys(function ($item) {
+            
             $subs = [];
 
             $settings = $item->setting ?? [];
@@ -78,8 +79,7 @@ class PayrollController extends Controller
             'options' => $options,
         ]);
     }
-
-
+    
     public function process(string $type, int $id) {
 
         $service = app(PayrollService::class);

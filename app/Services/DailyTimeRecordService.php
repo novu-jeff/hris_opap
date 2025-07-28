@@ -361,7 +361,7 @@ class DailyTimeRecordService {
                         ->first();
 
         if (!$shift) {
-            throw new Exception("No shift schedule assigned", 1);
+            throw new \Exception("No shift schedule assigned", 1);
         }
 
         return $shift;
@@ -387,7 +387,7 @@ class DailyTimeRecordService {
             ->first();
 
         if (!$weeklySchedule) {
-            throw new Exception("No Employee Schedule", 1);
+            throw new \Exception("No Employee Schedule", 1);
         }
 
         return $weeklySchedule;
@@ -411,7 +411,7 @@ class DailyTimeRecordService {
                     ->first();
 
         if (!$weeklySchedule) {
-            throw new Exception("No Employee Schedule", 1);
+            throw new \Exception("No Employee Schedule", 1);
         }
 
         return $weeklySchedule;
@@ -1005,5 +1005,6 @@ class DailyTimeRecordService {
             }
         }
     }
-    
+
+
 }   

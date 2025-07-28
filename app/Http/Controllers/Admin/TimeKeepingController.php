@@ -17,17 +17,6 @@ class TimeKeepingController extends Controller
         $this->middleware('permission:read correction-timelogs')->only(['correction', 'correction_apply']);
     }
 
-    public function index(?string $month = null, ?int $day = null, ?int $year = null)
-    {
-        if (is_null($month) || is_null($day) || is_null($year)) {
-            [$year, $month, $day] = $this->resolveDateFrom('timestamp');
-            return redirect()->route('timekeeping.index', compact('month', 'day', 'year'));
-        }
-
-        $setup = request()->query('setup');
-        return view('admin.timekeeping.index', compact('month', 'day', 'year', 'setup'));
-    }
-
     public function upload()
     {
         return view('admin.timekeeping.upload');
