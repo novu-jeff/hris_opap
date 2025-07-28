@@ -21,6 +21,12 @@ return new class extends Migration
         Schema::create('timelogs', function (Blueprint $table) {
             $table->id(); 
             $table->string('employee_id');
+            $table->string('shift_id')
+                ->nullable()
+                ->default(1);
+            $table->string('schedule_id')
+                ->nullable()
+                ->default(1);
             $table->dateTime('timestamp');
             $table->boolean('status')
                 ->nullable();

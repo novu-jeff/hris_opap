@@ -1,70 +1,157 @@
-import {
-    getGPSCoordinates,
-    setupMap
-} from './helpers';
+import { setupMap } from './helpers';
 
-export function initializeClockFace(Livewire) {
+export function initializeClockFace() {
     $(function () {
-        locateMe();
-        startCameraWithFaceDetection();
 
-        Livewire.on('loadMap', (event) => {
-            const { token, lng, lat } = event[0];
+        let isFaceDetected = false;
+        let place = null;
+        let stream = null;
+        let watchId = null;
+        let longitude = null;
+        let latitude = null;
+
+        const $video = $('#video');
+        const $canvas = $('#canvas');
+        const canvas = $canvas[0];
+        const context = canvas.getContext('2d');
+        const captureElement = document.querySelector('.camera');
+        const $alertContainer = $('.alert-container');
+        const $clockPreview = $('#clockInPreviewImage');
+        const $clockModal = $('#clockInModal');
+        const clockModal = new bootstrap.Modal($clockModal[0], { backdrop: 'static', keyboard: false });
+
+        startLocate();
+        startCamera();
+
+        Livewire.on('loadMap', ([{ token, lng, lat, place: eventPlace }]) => {
+            longitude = lng;
+            latitude = lat;
+            place = eventPlace;
             setupMap(token, [lng, lat]);
         });
 
-        Livewire.on('captureImage', async () => {
-            const captureElement = document.querySelector('.camera');
+        Livewire.on('loadDefaults', () => {
+            startLocate();
+            startCamera();
+        });
 
-            if (!captureElement) {
-                console.error('Capture element not found.');
-                return;
+        $(document).on('click', '.clock-process', async function () {
+            const status = $(this).data('status');
+
+            if (!captureElement) return console.error('Camera element not found.');
+
+            const imageData = await captureSnapshot(captureElement);
+            if (status === 'Done') return showAlert('Please be informed', 'You\'ve completed today’s work.');
+
+            if (!isFaceDetected) return showAlert('No Face Detected', 'Please ensure your face is visible to the camera.');
+            if (!place) return showAlert('No Location Detected', 'Please enable your location or GPS.');
+
+            if (imageData) {
+                $clockPreview.attr('src', imageData);
+                showCountdownModal(imageData, isFaceDetected);
+                stopCamera();
+                stopLocate();
             }
+        });
 
-            const snapshotCanvas = await html2canvas(captureElement, {
+        $(document).on('click', '.clock-process-forced', async () => {
+            if (!captureElement) return console.error('Camera element not found.');
+
+            const imageData = await captureSnapshot(captureElement);
+
+            if (!isFaceDetected) return showAlert('No Face Detected', 'Please ensure your face is visible to the camera.');
+            if (!place) return showAlert('No Location Detected', 'Please enable your location or GPS.');
+
+            if (imageData) {
+                $clockPreview.attr('src', imageData);
+                showCountdownModal(imageData, isFaceDetected, true); 
+                stopCamera();
+                stopLocate();
+            }
+        });
+
+
+        $(document).on('click', '.retakeButton', () => {
+            startCamera();
+            startLocate();
+        });
+
+        async function captureSnapshot(element) {
+            const canvas = await html2canvas(element, {
                 useCORS: true,
                 allowTaint: true,
                 scale: window.devicePixelRatio,
             });
+            return canvas.toDataURL('image/png');
+        }
 
-            const imageData = snapshotCanvas.toDataURL('image/png');
-            Livewire.dispatch('imageCaptured', [imageData]);
-        });
+        function showAlert(title, text) {
+            Swal.fire({ title, text, icon: 'info' });
+        }
 
-        async function locateMe() {
-            try {
-                const { lat, lng } = await getGPSCoordinates();
-                Livewire.dispatch('getLocation', { lat, lng });
-            } catch (error) {
-                console.error('Geolocation error:', error);
+        function showCountdownModal(imageData, faceStatus, forced = false) {
+            clockModal.show();
+            const proceedBtn = $clockModal.find('button[type="submit"]')[0];
+            const proceedLabel = proceedBtn.querySelector('span');
+            let countdown = 5;
+
+            proceedBtn.disabled = true;
+            proceedLabel.textContent = `Proceed (${countdown})`;
+
+            const interval = setInterval(() => {
+                countdown--;
+                proceedLabel.textContent = countdown > 0 ? `Proceed (${countdown})` : 'Proceed';
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    proceedBtn.disabled = false;
+                }
+            }, 1000);
+
+            Livewire.dispatch('imageCaptured', [imageData, faceStatus, forced]);
+        }
+
+
+        function startLocate() {
+            if (!('geolocation' in navigator)) return console.error('Geolocation not supported.');
+
+            watchId = navigator.geolocation.watchPosition(
+                ({ coords }) => {
+                    const { latitude: lat, longitude: lng } = coords;
+                    Livewire.dispatch('getLocation', { lat, lng });
+                },
+                error => console.error('Geolocation error:', error),
+                { enableHighAccuracy: true, timeout: 50000, maximumAge: 0 }
+            );
+        }
+
+        function stopLocate() {
+            if (watchId !== null && 'geolocation' in navigator) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                Livewire.dispatch('getLocation', { lat: latitude, lng: longitude, isToHide: true });
             }
         }
 
-        const video = $('#video')[0];
-        const canvas = $('#canvas')[0];
-        const context = canvas.getContext('2d');
-
-        $(video).on('loadedmetadata', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-        });
-
-        async function startCameraWithFaceDetection() {
+        async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                $video[0].srcObject = stream;
 
-                video.onloadeddata = async () => {
+                $video[0].onloadeddata = async () => {
                     await loadFaceApiModels();
-                    await video.play(); // Ensure the video plays
+                    await $video[0].play();
                     detectFacesLoop();
                 };
             } catch (err) {
-                Swal.fire({
-                    title: 'Please be informed',
-                    text: 'Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.',
-                    icon: 'info',
-                });
+                showAlert('Please be informed', 'Camera and location access are required to continue.');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                $video[0].srcObject = null;
             }
         }
 
@@ -82,27 +169,33 @@ export function initializeClockFace(Livewire) {
 
             async function detect() {
                 try {
-                    if (video.readyState >= 2) {
-                        const result = await faceapi.detectAllFaces(video, options);
-                        if (result.length < 1) {
-                            $('.alert-container').html(`
+                    if ($video[0].readyState >= 2) {
+                        const results = await faceapi.detectAllFaces($video[0], options);
+                        if (results.length === 0) {
+                            $alertContainer.html(`
                                 <div class="alert-no-face">
                                     <div>Face Is Not Detected</div>
                                 </div>
                             `);
-                            $('.clock-process').attr('wire:click', 'triggerClock(true, false, false)');
+                            isFaceDetected = false;
                         } else {
-                            $('.alert-container').empty();
-                            $('.clock-process').attr('wire:click', 'triggerClock(true, false, true)');
+                            $alertContainer.empty();
+                            isFaceDetected = true;
                         }
                     }
-                } catch (error) {
-                    console.error('Face detection failed:', error);
+                } catch (err) {
+                    console.error('Face detection error:', err);
                 }
                 requestAnimationFrame(detect);
             }
 
             detect();
         }
+
+        // Set canvas size when video metadata is loaded
+        $video.on('loadedmetadata', () => {
+            canvas.width = $video[0].videoWidth;
+            canvas.height = $video[0].videoHeight;
+        });
     });
 }

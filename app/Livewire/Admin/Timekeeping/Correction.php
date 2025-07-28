@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
-use App\Models\EmployeeClockInOut;
 use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;

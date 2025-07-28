@@ -22,6 +22,7 @@ class Clock extends Component
     public $employee_no;
     public $gps_location;
     public $isFaceDetected;
+    public $isToHide = false;
     public $status;
     public $entry;
     public $imageCaptured;
@@ -64,10 +65,12 @@ class Clock extends Component
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
     }
 
-    public function getLocation($lng, $lat)
+    public function getLocation($lng, $lat, $isToHide = false)
     {
         $accessToken = env('MAPBOX_API');
         $url = "https://api.mapbox.com/geocoding/v5/mapbox.places/{$lng},{$lat}.json";
+
+        $this->isToHide = $isToHide;
 
         $response = Http::get($url, ['access_token' => $accessToken]);
 
@@ -152,6 +155,7 @@ class Clock extends Component
             ->values();
     }
 
+   
     public function toggleStatus()
     {
         $service = app(DailyTimeRecordService::class);
@@ -168,28 +172,42 @@ class Clock extends Component
         $hasAccomplishment = $clockRecords->contains(fn($record) => !empty($record->accomplishment));
         $this->entry = $entry;
 
+        if ($hasAccomplishment) {
+            $this->status = 'Done';
+            return;
+        }
+
         if ($hasBreaktime) {
-            $this->status = match (true) {
-                $entry === 0 => 'Clock In',
-                $entry === 1 => 'Lunch Out',
-                $entry === 2 => 'Lunch In',
-                $entry === 3 => 'Clock Out',
-                $entry === 4 || $hasAccomplishment => 'Done',
+            $this->status = match ($entry) {
+                0 => 'Clock In',
+                1 => 'Lunch Out',
+                2 => 'Lunch In',
+                3 => 'Clock Out',
                 default => 'Done',
             };
         } else {
-            $this->status = match (true) {
-                $entry === 0 => 'Clock In',
-                $entry === 1 => 'Clock Out',
-                $entry === 2 || $hasAccomplishment => 'Done',
+            $this->status = match ($entry) {
+                0 => 'Clock In',
+                1 => 'Clock Out',
                 default => 'Done',
             };
         }
-    }
 
+        $this->dispatch('loadDefaults');
+    }
 
    public function triggerClock()
     {
+
+        if($this->status == 'Done') {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'info',
+                'title' => 'Please be informed',
+                'message' => 'You\'ve completed today\'s work.',
+            ]);
+            return;
+        }
 
         if (!$this->isFaceDetected) {
             $this->dispatch('alert', [
@@ -218,6 +236,7 @@ class Clock extends Component
                 'title' => 'Image Missing',
                 'message' => 'No image was captured.',
             ]);
+
             return;
         }
 
@@ -239,7 +258,6 @@ class Clock extends Component
             'message' => $response['message'],
         ]);
 
-        $this->imageCaptured = null;
         $this->toggleStatus();
     }
 

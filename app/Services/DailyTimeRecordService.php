@@ -17,10 +17,21 @@ class DailyTimeRecordService {
     {
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
     }
+
     /**
-    * Retrieve the Daily Time Record for a specific employee and date.
-    * Date could be month-year or date range.
-    */
+     * Retrieve and compute the Daily Time Record (DTR) of an employee for a given date range or month.
+     *
+     * @param string $employee_no The employee number.
+     * @param array|string $dateInput Either:
+     *      - An array with two elements [startDate, endDate] (e.g. ['2025-07-01', '2025-07-31']), or
+     *      - A string in the format 'mm-YYYY' (e.g. '07-2025').
+     *
+     * @return array An associative array containing:
+     *      - 'logs' => array of daily formatted logs
+     *      - 'summary' => overall attendance summary for the period
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException If the input date format is invalid.
+     */
     public function getDailyTimeRecord($employee_no, $dateInput)
     {
         try {
@@ -44,8 +55,11 @@ class DailyTimeRecordService {
         # get bsd number
         $bsd_no = $this->bsd_emp_identical ? $employee_no : $this->getBsdNo($employee_no);
 
+        $today = now()->toDateString();
+
         $logs = EmployeeTimelogs::where('employee_id', $bsd_no)
             ->whereBetween('timestamp', [$startDate, $endDate])
+            ->whereDate('timestamp', '!=', $today)
             ->orderBy('timestamp')
             ->get();
 
@@ -53,7 +67,7 @@ class DailyTimeRecordService {
             ->first()
             ->toArray() ?? [];
 
-        $logs = $this->processLogs($employee, $logs, $dateInput, true);
+        $logs = $this->processLogs($employee, $logs);
         $dtr = $this->computeDTR($employee_no, $logs, $dateInput);
 
         return [
@@ -62,18 +76,29 @@ class DailyTimeRecordService {
         ];
     }
 
-    public function getLogs(?string $timestamp = null, ?string $employee_id = null)
-    {
-        $logs = EmployeeTimelogs::with('employee.personal')
-            ->when($employee_id, fn($q) => $q->where('employee_id', $employee_id))
-            ->when($timestamp, fn($q) => $q->where('timestamp', 'like', "{$timestamp}%"))
-            ->orderBy('timestamp')
-            ->get();
-
-        return $this->processLogs($logs, $timestamp);
-    }
-
-    # Main
+    /**
+     * Computes the Daily Time Record (DTR) for a given employee over a specified date range.
+     *
+     * This function processes time logs and employee schedule data to determine:
+     * - Daily attendance status
+     * - Absences, leaves, rest days, holidays (legal/special), and work during holidays
+     * - Tardiness, undertime, and overtime (duration and frequency)
+     *
+     * Input date range can be either:
+     * - A string in 'MM-YYYY' format
+     * - An array with two dates [start_date, end_date]
+     *
+     * The function returns both detailed logs and a summary of metrics.
+     *
+     * @param string $employee_no  The employee number identifier.
+     * @param array $logs          Array of daily logs keyed by date (Y-m-d format).
+     * @param string|array $dateInput Either a date range array or a 'MM-YYYY' string.
+     *
+     * @return array [
+     *     'formated_logs' => array of daily log entries with computed fields,
+     *     'summary' => summary computation
+     * ]
+     */
     private function computeDTR($employee_no, $logs, $dateInput) 
     {
         try {
@@ -99,10 +124,14 @@ class DailyTimeRecordService {
         $today = Carbon::today();
         $formattedLogs = [];
 
+        # current schedule
         $weeklySchedule = $this->getWeeklySchedule($employee_no);
         $countWorkingDays = $this->countWorkingDays($weeklySchedule);
-        $employeeSchedule = $this->getShiftSchedule($employee_no);
-        $is_break_required = $employeeSchedule->is_breaktime_required;
+
+        # weekly schedule only on first log
+        $firstScheduleId = collect($logs)->first()['schedule_id'] ?? null;
+
+        $employeeSchedule = $this->getShiftScheduleById($firstScheduleId);
 
         # Counters
         $absences = 0;
@@ -140,6 +169,14 @@ class DailyTimeRecordService {
             $isLeave = false;
 
             $dateLogs = $logs[$dateString] ?? null;
+
+            # schedules
+
+            if(isset($dateLogs)) {
+                $weeklySchedule = $this->getWeeklyScheduleById($dateLogs['schedule_id']);
+            }
+
+            $is_break_required = $employeeSchedule->is_breaktime_required;
 
             $date_is_in_logs = isset($logs[$dateString]) && !empty($logs[$dateString]);
 
@@ -265,6 +302,15 @@ class DailyTimeRecordService {
 
     }
 
+    /**
+     * Retrieve the BSD number of a specific employee.
+     *
+     * This function queries the `employee_information` table and returns
+     * the `bsd_no` value associated with the given employee number.
+     *
+     * @param  string  $employee_no  The employee number.
+     * @return string|null           The BSD number, or null if not found.
+     */
     public function getBsdNo($employee_no)
     {
         return DB::table('employee_information')
@@ -272,6 +318,124 @@ class DailyTimeRecordService {
                 ->value('bsd_no');
     }
 
+    /**
+     * Retrieve the assigned shift schedule for a given employee number.
+     *
+     * This function queries the `shift_schedule` table joined with the `employee_information` table
+     * using the employee number to find the associated shift. It throws an exception if no shift is assigned.
+     *
+     * @param  string  $employeeNo  The employee number.
+     * @return object               The shift schedule record.
+     * @throws \Exception           If no shift schedule is assigned to the employee.
+     */
+    public function getShiftSchedule($employeeNo)
+    {
+        $employee_shift = DB::table('shift_schedule')
+                        ->leftJoin('employee_information', 'shift_schedule.id', '=', 'employee_information.shift_id')
+                        ->select('shift_schedule.*')
+                        ->where('employee_information.employee_no', $employeeNo)
+                        ->first();
+
+        if (!$employee_shift) {
+            throw new Exception("No shift schedule assigned", 1);
+        }
+
+        return $employee_shift;
+    }
+
+    /**
+     * Retrieve the shift schedule based on the given shift ID.
+     *
+     * This function queries the `shift_schedule` table using the provided shift ID
+     * and returns the corresponding record. If no matching record is found,
+     * an exception is thrown.
+     *
+     * @param  int  $shift_id  The ID of the shift schedule.
+     * @return object          The shift schedule record.
+     * @throws \Exception      If no shift schedule is found for the given ID.
+     */
+    public function getShiftScheduleById($shift_id)
+    {
+        $shift = DB::table('shift_schedule')
+                        ->where('id', $shift_id)
+                        ->first();
+
+        if (!$shift) {
+            throw new Exception("No shift schedule assigned", 1);
+        }
+
+        return $shift;
+    }
+
+    /**
+     * Retrieve the weekly schedule assigned to a specific employee.
+     *
+     * This function joins the `employee_schedules` and `employee_information` tables
+     * using the schedule ID, and fetches the weekly schedule for the provided employee number.
+     * Throws an exception if no schedule is found.
+     *
+     * @param  string  $employee_no  The employee number.
+     * @return object                The weekly schedule record.
+     * @throws \Exception            If no schedule is assigned to the employee.
+     */
+    public function getWeeklySchedule($employee_no)
+    {
+        $weeklySchedule = DB::table('employee_schedules')
+            ->leftJoin('employee_information', 'employee_schedules.id', '=', 'employee_information.schedule_id')
+            ->select('employee_schedules.*')
+            ->where('employee_information.employee_no', $employee_no)
+            ->first();
+
+        if (!$weeklySchedule) {
+            throw new Exception("No Employee Schedule", 1);
+        }
+
+        return $weeklySchedule;
+    }
+
+    /**
+     * Retrieve the weekly schedule based on the given schedule ID.
+     *
+     * This function queries the `employee_schedules` table using the provided schedule ID
+     * and returns the corresponding weekly schedule record. If no record is found,
+     * an exception is thrown.
+     *
+     * @param  int  $schedule_id  The ID of the employee's weekly schedule.
+     * @return object             The weekly schedule record.
+     * @throws \Exception         If no schedule is found for the given ID.
+     */
+    public function getWeeklyScheduleById($schedule_id)
+    {
+        $weeklySchedule = DB::table('employee_schedules')
+                    ->where('id', $schedule_id)
+                    ->first();
+
+        if (!$weeklySchedule) {
+            throw new Exception("No Employee Schedule", 1);
+        }
+
+        return $weeklySchedule;
+    }
+
+    /**
+     * Calculate the total number of leaves taken by an employee within a given period.
+     *
+     * Supports two formats for the date input:
+     * - A string in "MM-YYYY" format to filter leaves within a specific month and year.
+     * - An array with two elements [startDate, endDate] to filter leaves within a date range.
+     *
+     * Only leaves with a status of "approved" are considered.
+     * Duration is calculated as:
+     * - 1.0 for "wholeday"
+     * - 0.5 for others (assumed to be "halfday")
+     *
+     * @param  string       $employeeNo   The employee number.
+     * @param  string|array $dateInput    The date input (either "MM-YYYY" or [startDate, endDate]).
+     * @return array                      Returns an array with:
+     *                                    - 'count': Number of leave records
+     *                                    - 'dates': Collection of leave dates
+     *                                    - 'duration': Total duration of leave in days
+     */
     private function getTotalLeaves($employeeNo, $dateInput)
     {
         $WHOLEDAY = 1;
@@ -312,8 +476,47 @@ class DailyTimeRecordService {
             'duration' => $DURATION,
         ];
     }
+
+    /**
+     * Check and determine the attendance status and related remarks for a specific date.
+     *
+     * This function evaluates if the employee is scheduled to work, is on leave, worked during a holiday,
+     * or is absent based on the given date, schedule, and logs. It also identifies if the date falls on 
+     * a rest day or a holiday (legal or special).
+     *
+     * @param  string   $dateString       The date to check (format: YYYY-MM-DD).
+     * @param  bool     $date_is_in_logs  Whether there is an attendance log for the date.
+     * @param  object   $weeklySchedule   The weekly schedule object for the employee.
+     * @param  string   $dayName          The name of the day (e.g., 'monday', 'tuesday').
+     * @param  bool     $isFuture         Whether the date is in the future.
+     * @param  bool     $isLeave          Whether the employee is on approved leave that day.
+     *
+     * @return array                      Returns an array with the following keys:
+     *                                    - 'remarks': array of string remarks for the date
+     *                                    - 'isAbsent': bool
+     *                                    - 'isWorkedDays': bool
+     *                                    - 'isRestDays': bool
+     *                                    - 'isLegalHolidays': bool
+     *                                    - 'isSpecialHolidays': bool
+     *                                    - 'isWorkedOnLegalHolidays': bool
+     *                                    - 'isWorkedOnSpecialHolidays': bool
+     */
     private function checkAttendance($dateString,  $date_is_in_logs, $weeklySchedule, $dayName, $isFuture, $isLeave)
     {
+        # Skip if today
+        if (Carbon::parse($dateString)->isToday()) {
+            return [
+                'remarks' => [],
+                'isAbsent' => false,
+                'isWorkedDays' => false,
+                'isRestDays' => false,
+                'isLegalHolidays' => false,
+                'isSpecialHolidays' => false,
+                'isWorkedOnLegalHolidays' => false,
+                'isWorkedOnSpecialHolidays' => false,
+            ];
+        }
+        
         $isScheduled = $weeklySchedule->$dayName == 1;
         $ownRemarks = [];
 
@@ -388,20 +591,16 @@ class DailyTimeRecordService {
 
         return $data;
     }
-    public function getWeeklySchedule($employee_no)
-    {
-        $weeklySchedule = DB::table('employee_schedules')
-            ->leftJoin('employee_information', 'employee_schedules.id', '=', 'employee_information.schedule_id')
-            ->select('employee_schedules.*')
-            ->where('employee_information.employee_no', $employee_no)
-            ->first();
 
-        if (!$weeklySchedule) {
-            throw new Exception("No Employee Schedule", 1);
-        }
-
-        return $weeklySchedule;
-    }
+    /**
+     * Count the number of working days in a weekly schedule.
+     *
+     * This function iterates through each day of the week and counts how many days
+     * are marked as working days (value equals 1) in the provided weekly schedule object.
+     *
+     * @param  object  $weeklySchedule  The weekly schedule object containing day properties (e.g., monday, tuesday, ...).
+     * @return int                      The number of working days in the week.
+     */
     private function countWorkingDays($weeklySchedule)
     {
         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -416,6 +615,16 @@ class DailyTimeRecordService {
 
         return $workingDays;
     }
+
+    /**
+     * Retrieve holiday information for a specific date.
+     *
+     * This function queries the `holidays` table and returns the holiday record
+     * that matches the provided date, excluding deleted entries (`isDeleted = false`).
+     *
+     * @param  string  $date  The date to check (format: YYYY-MM-DD).
+     * @return object|null    The holiday record if found, or null if none exists.
+     */
     private function getHolidayByDate($date)
     {
         return DB::table('holidays')
@@ -423,6 +632,25 @@ class DailyTimeRecordService {
             ->where('date', $date)
             ->first();
     }
+
+    /**
+     * Check if an employee has approved leave on a specific date.
+     *
+     * This function queries the `employee_leave_dates` and `employee_leave` tables
+     * to retrieve leave entries that match the given employee number and date,
+     * and have a status of "approved".
+     *
+     * It calculates the total duration of leave taken on that date:
+     * - 1.0 for "wholeday"
+     * - 0.5 for other durations (assumed to be "halfday")
+     *
+     * @param  string  $employee_no  The employee number.
+     * @param  string  $date         The specific date to check (format: YYYY-MM-DD).
+     * @return array                 Returns an array with:
+     *                               - 'count': Number of leave records
+     *                               - 'dates': Collection of leave records
+     *                               - 'duration': Total leave duration for the date
+     */
     private function checkLeave($employee_no, $date)
     {
         $WHOLEDAY = 1;
@@ -452,6 +680,31 @@ class DailyTimeRecordService {
             'duration' => $DURATION,
         ];
     }
+
+    /**
+     * Calculate undertime and tardiness for a specific employee on a given date.
+     *
+     * This function analyzes an employee's time logs against their scheduled shift
+     * to determine:
+     * - Tardiness: if the employee clocked in after the scheduled start time
+     * - Undertime: if the employee clocked out before the scheduled end time
+     *
+     * If the schedule requires a break, it also checks for missing break logs and flags discrepancies.
+     * Logs are written for late arrivals and undertimes.
+     *
+     * @param  string  $employee_no        The employee number.
+     * @param  object  $employeeSchedule   The schedule object for the employee.
+     * @param  array   $log                Array of time logs with keys: clock_in, lunch_out, lunch_in, clock_out.
+     * @param  string  $date               The date being evaluated (format: YYYY-MM-DD).
+     *
+     * @return array                       Returns an array with:
+     *                                     - 'tardiness_minutes': Total minutes late
+     *                                     - 'tardiness_freq': Count of tardiness instances
+     *                                     - 'undertime_minutes': Total minutes of undertime
+     *                                     - 'undertime_freq': Count of undertime instances
+     *                                     - 'remarks': Array of remarks (e.g. Late, Undertime, Discrepancy)
+     *                                     - 'is_break_required': Whether break time was required on that day
+     */
     private function undertimeAndTardiness($employee_no, $employeeSchedule, $log, $date)
     {
         $TARDINESS_MINUTES = 0;
@@ -516,20 +769,22 @@ class DailyTimeRecordService {
             'is_break_required' => $employeeSchedule->is_breaktime_required ?? false,
         ];
     }
-    public function getShiftSchedule($employeeNo)
-    {
-        $employee_shift = DB::table('shift_schedule')
-                        ->leftJoin('employee_information', 'shift_schedule.id', '=', 'employee_information.shift_id')
-                        ->select('shift_schedule.*')
-                        ->where('employee_information.employee_no', $employeeNo)
-                        ->first();
 
-        if (!$employee_shift) {
-            throw new Exception("No shift schedule assigned", 1);
-        }
-
-        return $employee_shift;
-    }
+    /**
+     * Get the scheduled time-in, time-out, break-out, and break-in based on the given schedule.
+     *
+     * - For hybrid setup:
+     *   - Uses 'latest_in' as the basis for time-in.
+     *   - Adjusts time-in to actual log-in time if earlier.
+     *   - Calculates time-out by adding work hours (+1 buffer hour) to time-in.
+     * - For regular setup:
+     *   - Uses 'start_shift' and 'end_shift' directly for time-in and time-out.
+     * 
+     * @param  object       $schedule   The schedule object containing work setup and time configurations.
+     * @param  string|null  $date       The date to apply for the schedule (format: Y-m-d).
+     * @param  string|null  $firstLog   The first actual log-in time (optional).
+     * @return array                    An array with [time_in, time_out, break_out, break_in] or nulls if unavailable.
+     */
     private function getScheduledInOut($schedule, $date = null, $firstLog = null)
     {
         if ($schedule->work_setup === 'hybrid') {
@@ -561,6 +816,22 @@ class DailyTimeRecordService {
 
         return [null, null, null, null];
     }
+
+    /**
+     * Get the total approved overtime of an employee for a specific date, month-year, or date range.
+     *
+     * @param string $employeeNo  Employee number to filter overtime logs.
+     * @param string|array $dateInput Either:
+     *                                - a string in "MM-YYYY" format for monthly query, or
+     *                                - an array with two dates [startDate, endDate] for range query.
+     * 
+     * @return array {
+     *     @type int    $count        Number of approved overtime entries.
+     *     @type object $dates        Collection of overtime entries (date, start_time, end_time).
+     *     @type string $total_hours  Total time in "X hr(s) Y min(s)" format.
+     *     @type int    $raw_minutes  Total overtime in minutes.
+     * }
+     */
     private function getTotalOvertime($employeeNo, $dateInput) 
     {
         $query = DB::table('employee_atro')
@@ -602,9 +873,18 @@ class DailyTimeRecordService {
             'total_hours' => "{$hours} hr(s) {$minutes} min(s)",
             'raw_minutes' => $totalMinutes,
         ];
-    }
+    }  
     
-    private function processLogs($employee, $logs, $monthYear, $isDTR = false)
+    /**
+     * Process raw log entries for an employee by grouping them per date,
+     * assigning time-in/time-out, and attaching related log metadata
+     * such as location, image, and accomplishment.
+     *
+     * @param  object  $employee  The employee data object.
+     * @param  array   $logs      The array of log entries.
+     * @return array              Processed logs grouped by date with time records and details.
+     */
+    private function processLogs($employee, $logs)
     {
         $groupedLogs = [];
 
@@ -612,6 +892,8 @@ class DailyTimeRecordService {
             $date = Carbon::parse($log->timestamp)->toDateString();
             $groupedLogs[$date][] = [
                 'timestamp' => Carbon::parse($log->timestamp),
+                'shift_id' => $log->shift_id ?? 1,
+                'schedule_id' => $log->schedule_id ?? 1,
                 'isWeb' => $log->isWeb,
                 'captured_image' => $log->captured_image,
                 'captured_location' => $log->captured_location,
@@ -632,6 +914,8 @@ class DailyTimeRecordService {
 
             foreach ($entries as $entry) {
                 $record['timelogs'][] = [
+                    'shift_id' => $entry['shift_id'],
+                    'schedule_id' => $entry['schedule_id'],
                     'timestamp' => $entry['timestamp'],
                     'isWeb' => $entry['isWeb'],
                     'captured_image' => $entry['captured_image'],
@@ -642,12 +926,18 @@ class DailyTimeRecordService {
 
             $processedLogs[$date] = $record;
         }
-
         return $processedLogs;
     }
 
-
-    private function initializeRecord($employee, $log, $date)
+    /**
+     * Initializes a daily time record array for an employee.
+     *
+     * @param  mixed  $employee  The employee object or array containing bsd_no or employee_no.
+     * @param  string $date      The date of the record in 'Y-m-d' format.
+     *
+     * @return array  Initialized time record structure with default values.
+     */
+    private function initializeRecord($employee, $first_log, $date)
     {
         return [
             'bsd_no' => is_array($employee) ? ($employee['bsd_no'] ?? $employee['employee_no']) : ($employee->bsd_no ?? $employee->employee_no),
@@ -655,6 +945,8 @@ class DailyTimeRecordService {
             'lunch_in' => null,
             'lunch_out' => null,
             'clock_out' => null,
+            'shift_id' => $first_log['shift_id'],
+            'schedule_id' => $first_log['schedule_id'],
             'origin' => null,
             'date' => $date,
             'aut' => [
@@ -667,6 +959,24 @@ class DailyTimeRecordService {
         ];
     }
 
+    /**
+     * Assigns time-in and time-out values (clock-in, lunch-in/out, clock-out) to the record
+     * based on the provided collection of timestamps.
+     *
+     * Logic:
+     * - If 4 or more timestamps are present, assigns them in typical sequence.
+     * - If exactly 2 timestamps, assumes they are clock-in and clock-out.
+     * - If only 1 timestamp, assigns it to clock-in.
+     * - Otherwise, attempts to determine type based on time ranges:
+     *     - clock_in: 5 AM – 9 AM
+     *     - lunch_in: 11 AM – 12 PM
+     *     - lunch_out: 12 PM – 1 PM
+     *     - clock_out: 3 PM – 6 PM
+     *
+     * @param array $record     Reference to the time log record to be updated
+     * @param \Illuminate\Support\Collection $timestamps   Collection of Carbon instances
+     * @return void
+     */
     private function assignTimestamps(&$record, $timestamps) {
         if ($timestamps->count() >= 4) {
             $record['clock_in'] = $timestamps[0]->format('h:i A');

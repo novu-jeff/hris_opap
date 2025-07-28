@@ -58,7 +58,6 @@ return new class extends Migration
             $table->float('salary')
                 ->default(0)
                 ->nullable();
-
             $table->enum('salary_type', [
                 'monthly',
                 'daily'

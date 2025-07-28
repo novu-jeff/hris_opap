@@ -64,7 +64,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
-use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
+use App\Http\Controllers\Employee\ClockInOutController as EmployeeTimelogsController;
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
@@ -474,7 +474,7 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
         Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
             ->name('employee.dtr');
 
-        Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
+        Route::get('clock-in-out', [EmployeeTimelogsController::class, 'index'])
             ->name('employee.clock');
 
         Route::get('remaining-credit', [EmployeeRemainingCreditController::class, 'index'])

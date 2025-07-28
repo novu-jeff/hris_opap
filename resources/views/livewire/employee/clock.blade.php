@@ -11,7 +11,7 @@
                     <div class="col-12 col-md-5">
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <div 
+                                <div data-status="{{ $status }}"
                                     class="clock-process card border-3 
                                         {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
                                         {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
@@ -74,14 +74,14 @@
                                 <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
                             </div>
                             <div class="overlay py-3">
-                                <div class="{{ $gps_location ? 'd-block' : 'd-none' }}">
+                                <div class="{{ $gps_location && !$isToHide ? 'd-block' : 'd-none' }}">
                                     <div class="map-container" wire:ignore>
                                         <div id="map"></div>
                                     </div>
                                 </div>
                                 <div class="details p-2 d-flex align-items-center">
                                     <div id="location-info">
-                                        @if($gps_location)
+                                        @if($gps_location && !$isToHide)
                                             @php
                                                 $place = $gps_location['place'] ?? 'Unknown';
                                                 $lat = $gps_location['coordinates']['lat'] ?? 0;
@@ -235,7 +235,7 @@
                             <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
                         </div>
 
-                        @if($entry === 3)
+                        @if($entry === 3 || $isForcedOut)
                             <div class="mb-3">
                                 <label for="accomplishment" class="text-start">Accomplishment Report</label>
                                 <input type="file" wire:model="accomplishment" name="accomplishment" id="accomplishment" class="form-control">
@@ -244,17 +244,16 @@
                         @endif
                     </div>
 
-                    <div class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
-                        <button type="button" class="btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
+                    <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
+                        <button type="button" class="retakeButton btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
                             Retake
                         </button>
-
                         <button type="submit"
                             class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
-                            wire:target="{{ $entry === 3 ? 'saveAccomplishment' : 'triggerClock' }}"
+                            wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
                             wire:loading.attr="disabled">
                             <span>Proceed</span>
-                            <span wire:loading wire:target="{{ $entry === 3 ? 'saveAccomplishment' : 'triggerClock' }}">
+                            <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
                                 <i class="fa-solid fa-spinner fa-spin"></i>
                             </span>
                         </button>
@@ -264,203 +263,10 @@
             </div>
         </div>
     </div>
-
-
 </div>
 
-@section('script')
 <script type="module">
-    $(function () {
-
-        let isFaceDetected = false;
-        let place = null;
-
-        locateMe();
-        startCameraWithFaceDetection();
-
-        Livewire.on('loadMap', (event) => {
-            const { token, lng, lat, place: eventPlace } = event[0];
-            place = eventPlace;
-            setupMap(token, [lng, lat]);
-        });
-
-
-        $('.clock-process').on('click', async function () {
-
-            const captureElement = document.querySelector('.camera');
-
-            if (!captureElement) {
-                console.error('Capture element not found.');
-                return;
-            }
-
-            const snapshotCanvas = await html2canvas(captureElement, {
-                useCORS: true,
-                allowTaint: true,
-                scale: window.devicePixelRatio,
-            });
-
-            const imageData = snapshotCanvas.toDataURL('image/png');
-
-
-            if (!isFaceDetected) {
-                Swal.fire({
-                    title: 'No Face Detected',
-                    text: 'No face detected. Please ensure your face is visible to the camera.',
-                    icon: 'info',
-                });
-
-                return;
-            }
-
-            if (place == null) {
-                Swal.fire({
-                    title: 'No Location Detected',
-                    text: 'No location detected. Please make sure to enable your location or GPS.',
-                    icon: 'info',
-                });
-
-                return;
-            }
-
-            if (imageData) {
-                document.querySelector('#clockInPreviewImage').src = imageData;
-
-                const modal = new bootstrap.Modal(document.getElementById('clockInModal'), {
-                    backdrop: 'static',
-                    keyboard: false
-                });
-                modal.show();
-            }
-
-            Livewire.dispatch('imageCaptured', [imageData, isFaceDetected]);
-        });
-
-        $('.clock-process-forced').on('click', async function () {
-
-            const captureElement = document.querySelector('.camera');
-
-            if (!captureElement) {
-                console.error('Capture element not found.');
-                return;
-            }
-
-            const snapshotCanvas = await html2canvas(captureElement, {
-                useCORS: true,
-                allowTaint: true,
-                scale: window.devicePixelRatio,
-            });
-
-            const imageData = snapshotCanvas.toDataURL('image/png');
-
-
-            if (!isFaceDetected) {
-                Swal.fire({
-                    title: 'No Face Detected',
-                    text: 'No face detected. Please ensure your face is visible to the camera.',
-                    icon: 'info',
-                });
-
-                return;
-            }
-
-            if (place == null) {
-                Swal.fire({
-                    title: 'No Location Detected',
-                    text: 'No location detected. Please make sure to enable your location or GPS.',
-                    icon: 'info',
-                });
-
-                return;
-            }
-
-            if (imageData) {
-                document.querySelector('#clockInPreviewImage').src = imageData;
-
-                const modal = new bootstrap.Modal(document.getElementById('clockInModal'), {
-                    backdrop: 'static',
-                    keyboard: false
-                });
-                modal.show();
-            }
-
-            Livewire.dispatch('imageCaptured', [imageData, isFaceDetected, true]);
-        });
-
-
-        async function locateMe() {
-            try {
-                const { lat, lng } = await getGPSCoordinates();
-                Livewire.dispatch('getLocation', { lat, lng });
-            } catch (error) {
-                console.error('Geolocation error:', error);
-            }
-        }
-
-        const video = $('#video')[0];
-        const canvas = $('#canvas')[0];
-        const context = canvas.getContext('2d');
-
-        $(video).on('loadedmetadata', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-        });
-
-        async function startCameraWithFaceDetection() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-
-                video.onloadeddata = async () => {
-                    await loadFaceApiModels();
-                    await video.play(); 
-                    detectFacesLoop();
-                };
-            } catch (err) {
-                Swal.fire({
-                    title: 'Please be informed',
-                    text: 'Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.',
-                    icon: 'info',
-                });
-            }
-        }
-
-        async function loadFaceApiModels() {
-            try {
-                await faceapi.nets.tinyFaceDetector.loadFromUri('/faceapi');
-                console.log('Face API model loaded');
-            } catch (error) {
-                console.error('Failed to load Face API model:', error);
-            }
-        }
-
-        async function detectFacesLoop() {
-            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 });
-
-            async function detect() {
-                try {
-                    if (video.readyState >= 2) {
-                        const result = await faceapi.detectAllFaces(video, options);
-                        if (result.length < 1) {
-                            $('.alert-container').html(`
-                                <div class="alert-no-face">
-                                    <div>Face Is Not Detected</div>
-                                </div>
-                            `);
-                            isFaceDetected = false;
-                        } else {
-                            $('.alert-container').empty();
-                            isFaceDetected = true;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Face detection failed:', error);
-                }
-                requestAnimationFrame(detect);
-            }
-
-            detect();
-        }
-    });
+    $(function() {
+        initializeClockFace();
+    })
 </script>
-@endsection

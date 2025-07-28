@@ -36,7 +36,7 @@ class EmployeeAccount extends Authenticatable
 
     public function timekeeping()
     {
-        return $this->hasMany(EmployeeClockInOut::class, 'employee_no', 'employee_no');
+        return $this->hasMany(EmployeeTimelogs::class, 'employee_no', 'employee_no');
     }
 
     public function personal() {

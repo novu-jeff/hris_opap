@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
 use App\Models\CompanyInformation;
 use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeave;
 use App\Models\EmployementTypes;
@@ -72,7 +72,7 @@ class Index extends Component
             ->orderBy('billing_month', 'desc')
             ->first();
 
-        $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today())->get();
+        $clockinout = EmployeeTimelogs::whereDate('created_at', Carbon::today())->get();
         
         $this->companyInfo = $this->getCompanyInformation();
 
