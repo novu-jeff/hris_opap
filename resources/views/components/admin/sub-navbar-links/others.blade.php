@@ -4,6 +4,6 @@
         Others
     </a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{route('')}}">Company Information</a></li>
+        <li><a class="dropdown-item" href="{{route('others.overtime')}}">Overtime</a></li>
     </ul>
 </li>
