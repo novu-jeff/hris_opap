@@ -70,7 +70,7 @@ class Overtime extends Component
                 }
             }
 
-            $chunks = array_chunk($data, 500);
+            $chunks = array_chunk($data, 1000);
 
             $tempPath = resource_path('temp/' . time());
             if (!file_exists($tempPath)) mkdir($tempPath, 0777, true);
@@ -117,6 +117,7 @@ class Overtime extends Component
         try {
             $path = $this->tempPath;
             $files = glob($path . '/*.csv');
+            
             $jobs = [];
 
             foreach ($files as $file) {
