@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Ess\TimeAdjustments;
 
 use App\Models\EmployeeAccount;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeTimeAdjustments;
 use App\Models\EmployeeTimelogs;
 use App\Notifications\Notifications;

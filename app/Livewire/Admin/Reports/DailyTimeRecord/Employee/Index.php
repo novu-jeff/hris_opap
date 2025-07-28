@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Reports\DailyTimeRecord\Employee;
 
 use App\Models\EmployeeAccount;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

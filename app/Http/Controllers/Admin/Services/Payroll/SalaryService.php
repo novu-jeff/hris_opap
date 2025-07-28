@@ -281,7 +281,6 @@ class SalaryService extends Controller {
 
                 $salary_type = $employee['salary_type'];
 
-                $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
 
                 $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);

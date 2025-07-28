@@ -294,11 +294,11 @@
         <table>
             <thead>
                 <tr>
+                    <th></th>
                     <th>No.</th>
                     <th>Name</th>
                     <th>Position</th>
                     <th>Basic Salary</th>
-                    <th>Salary</th>
                     <th>Overtime</th>
                     <th>Holiday Pay</th>
                     <th>Allowances</th>
@@ -376,9 +376,8 @@
                 @endforelse
             </tbody>
         </table>
-
+    </div>
     @endif
-    
 
     @if($hasChanges)
         <div class="d-flex justify-content-end mt-5">

@@ -114,7 +114,7 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeBusinessSlip::class,
                 \App\Models\EmployeeAtro::class,
                 \App\Models\EmployeeAtroRelative::class,
-                \App\Models\EmployeeClockInOut::class,
+                \App\Models\EmployeeTimelogs::class,
                 \App\Models\EmployeeDeductions::class,
                 \App\Models\EmployeeEarnings::class,
                 \App\Models\EmployeeLeaveCard::class,

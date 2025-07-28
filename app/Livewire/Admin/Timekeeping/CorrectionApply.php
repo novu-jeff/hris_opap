@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Timekeeping;
 
 use App\Services\DailyTimeRecordService;
 use App\Models\EmployeeAUT;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeTimelogs;
 use App\Models\ShiftSchedule;
