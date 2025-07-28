@@ -42,6 +42,9 @@
                 <!-- Settings -->
                 @include('components.admin.sub-navbar-links.settings')
 
+                {{-- Others  --}}
+                @include('components.admin.sub-navbar-links.others')
+
             </ul>
         </div>
     </div>

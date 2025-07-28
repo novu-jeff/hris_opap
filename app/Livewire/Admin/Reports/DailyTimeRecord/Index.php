@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Reports\DailyTimeRecord;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
-use App\Models\EmployeeTimelogs;
 use App\Models\EmployementTypes;
 use Carbon\Carbon;
 use Livewire\Component;

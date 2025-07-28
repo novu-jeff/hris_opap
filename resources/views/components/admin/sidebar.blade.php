@@ -62,9 +62,6 @@
                                 Timekeeping
                             </a>
                             <ul class="submenu">
-                                @can('read timelogs')
-                                    <li><a class="dropdown-item" href="{{route('timekeeping.index')}}">View Time Logs</a></li>
-                                @endcan
                                 @can('write timelogs')
                                     <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
                                 @endcan
