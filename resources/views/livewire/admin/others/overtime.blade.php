@@ -1,6 +1,17 @@
 <div>
-    <label class="mb-2" for="file">File Upload</label>
-    <input type="file" wire:model="file" id="file" class="form-control" wire:loading.attr="disabled" wire:target="upload_file">
+    <div class="mb-3">
+        <label class="mb-2" for="file">Cut Off Period</label>
+        <input type="text" wire:model.defer="cut_off_period" id="cut_off_period" class="form-control range">
+        @error('cut_off_period') 
+            <div class="error-field mt-3">
+                @error('cut_off_period') <span class="text-danger">{{ $message }}</span> @enderror
+            </div>
+        @enderror
+    </div>
+    <div class="mb-3">
+        <label class="mb-2" for="file">File Upload</label>
+        <input type="file" wire:model="file" id="file" class="form-control" wire:loading.attr="disabled" wire:target="upload_file">
+    </div>
     <div class="mt-2 text-muted fw-bold text-uppercase d-flex justify-content-between align-items-center" style="font-size: 13px">
         <small>Note: only csv files are allowed.</small>
     </div>
@@ -61,3 +72,16 @@
     </style>
 </div>
 
+<script>
+    $(function() {
+        $('.range').attr('autocomplete', 'off');
+        $('.range').daterangepicker({
+            locale: { format: 'YYYY-MM-DD' },
+            autoUpdateInput: false
+        });
+
+        $('.range').on('apply.daterangepicker', function(ev, picker) {
+            @this.set('cut_off_period', picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+        });
+    });
+</script>

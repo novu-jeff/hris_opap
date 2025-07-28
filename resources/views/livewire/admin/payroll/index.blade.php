@@ -287,6 +287,7 @@
         $(function() {
 
             Livewire.on('initDateRange', (event) => {
+                $('.range').attr('autocomplete', 'off');
                 $('.range').daterangepicker({
                     locale: { format: 'YYYY-MM-DD' },
                     autoUpdateInput: false
