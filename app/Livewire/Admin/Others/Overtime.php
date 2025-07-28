@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Others;
 
-use App\Jobs\TimelogUploadProcess;
+use App\Jobs\Parallel\Overtime as ParallelOvertime;
 use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
@@ -20,6 +20,7 @@ class Overtime extends Component
 
     public $file;
     public $upload_preview;
+    public $cut_off_period;
     public $tempPath;
     public $monthYear;
     public bool $isParsing = false, $isUploading = false;
@@ -27,6 +28,11 @@ class Overtime extends Component
     public $actionBy;
 
     protected $listeners = ['cancelUpload'];
+
+    protected $rules = [
+        'cut_off_period' => 'required',
+        'upload_preview' => 'required|string',
+    ];
 
     public function mount()
     {
@@ -63,13 +69,6 @@ class Overtime extends Component
             $headers = array_map('trim', array_map('strtoupper', $data[0]));
             $this->checkIfValidFormat($headers);
 
-            foreach ($data as $i => $row) {
-                if ($i === 0) continue; 
-                if (!empty($row[0])) {
-                    $data[$i][1] = $row[0]; 
-                }
-            }
-
             $chunks = array_chunk($data, 1000);
 
             $tempPath = resource_path('temp/' . time());
@@ -79,8 +78,12 @@ class Overtime extends Component
             foreach ($chunks as $index => $chunkData) {
                 $chunkFileName = "/tmp_{$index}.csv";
                 $chunkFilePath = $tempPath . $chunkFileName;
-                $csvContent = implode("\n", array_map(fn($row) => implode(',', $row), $chunkData));
-                file_put_contents($chunkFilePath, $csvContent);
+
+                $handle = fopen($chunkFilePath, 'w');
+                foreach ($chunkData as $row) {
+                    fputcsv($handle, $row);
+                }
+                fclose($handle);
             }
 
             $this->isParsing = false;
@@ -95,24 +98,7 @@ class Overtime extends Component
 
     public function upload_file()
     {
-        if (Gate::denies('write timelogs')) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Access Denied!',
-                'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.',
-            ]);
-            return;
-        }
-
-        if (!$this->upload_preview) {
-            return $this->dispatch('alert', [
-                'status' => 'warning',
-                'title' => 'Missing File',
-                'showAlert' => true,
-                'message' => 'Please upload a file before continuing.',
-            ]);
-        }
+        $this->validate();
 
         try {
             $path = $this->tempPath;
@@ -122,21 +108,10 @@ class Overtime extends Component
 
             foreach ($files as $file) {
                 $data = array_map('str_getcsv', file($file));
-                $header = $data[0];
-                array_shift($data); 
-
-                $formattedData = [];
-
-                foreach ($data as $row) {
-                    $formattedRow = array_combine($header, $row);
-                    $formattedRow['origin'] = 'biometrics';
-                    $formattedData[] = $formattedRow;
-                }
-
-                $jobs[] = new TimelogUploadProcess($formattedData);
+                array_shift($data);
+                $jobs[] = new ParallelOvertime($this->cut_off_period, $data);
                 unlink($file);
             }
-            
 
             if (!empty($jobs)) {
                 Bus::batch($jobs)
@@ -144,12 +119,12 @@ class Overtime extends Component
                         'id' => $this->actionBy->id,
                         'name' => $this->actionBy->name
                     ])
-                    ->name('Overtime Upload Batch')
+                    ->name('Parallel Overtime Upload Batch')
                     ->catch(function (Batch $batch, \Throwable $e) {
                         \Log::error('Error: ' . $e->getMessage());
                         $this->actionBy?->notify(new Notifications(
                             'error',
-                            'Overtime upload failed.',
+                            'Parallel Overtime for testing failed.',
                             route('system.jobs', ['id' => $batch->id]),
                             'admin'
                         ));
@@ -157,7 +132,7 @@ class Overtime extends Component
                     ->then(function (Batch $batch) {
                         $this->actionBy?->notify(new Notifications(
                             'success',
-                            'Overtime upload complete.',
+                            'Parallel Overtime for testing completed.',
                             route('system.jobs', ['id' => $batch->id]),
                             'admin'
                         ));
