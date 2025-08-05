@@ -18,7 +18,6 @@ class DeductionController extends Controller
     {
 
         $header = OtherDeductions::where('id', $id)
-            ->where('source', 'entry')
             ->first();
 
         if(!$header) {
@@ -26,15 +25,5 @@ class DeductionController extends Controller
         }
 
         return view('admin.settings.hris.emp-deductions.index', compact('id', 'header'));
-    }
-
-    public function create(int $id)
-    {
-        return view('admin.settings.hris.emp-deductions.create', compact('id'));
-    }
-
-    public function edit(int $id)
-    {
-        return view('admin.settings.hris.emp-deductions.edit', compact('id'));
     }
 }

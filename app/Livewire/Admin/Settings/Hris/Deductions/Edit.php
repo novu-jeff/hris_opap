@@ -31,9 +31,7 @@ class Edit extends Component
         $this->fields = [
             'name' => $records->name,
             'code' => $records->code,
-            'frequency' => $records->frequency,
-            'eligible' => explode(',', $records->eligible), 
-            'source' => $records->source
+            'amount' => $records->amount,
         ];
 
     }
@@ -66,32 +64,29 @@ class Edit extends Component
 
     public function rules() {
         return [
-            'fields.name' => 'required|string|max:255',
-            'fields.frequency' => 'required|in:bi_monthly,monthly',
-            'fields.eligible' => 'required|array|min:1',
-            'fields.source' => 'required|in:entry'
+            'fields.code' => 'required|string|max:255|exists:other_deductions,code',
+            'fields.name' => 'required|string|max:255|exists:other_deductions,name',
+            'fields.amount' => 'required|numeric',
         ];
     }
 
     public function messages() {
         return [
+            'fields.code.required' => 'The code field is required.',
+            'fields.code.string' => 'The code must be a string.',
+            'fields.code.max' => 'The code may not be greater than 255 characters.',
+
             'fields.name.required' => 'The name field is required.',
-            'fields.name.string' => 'The name must be a valid string.',
-            'fields.name.max' => 'The name should not exceed 255 characters.',
-            
-            'fields.frequency.required' => 'Please select a frequency.',
-            'fields.frequency.in' => 'The frequency must be either "Bi-Monthly" or "Monthly".',
-            
-            'fields.eligible.required' => 'Please select at least one eligible category.',
-            'fields.eligible.array' => 'The eligible field must be an array of selected categories.',
-            'fields.eligible.min' => 'You must select at least one eligible category.',
+            'fields.name.string' => 'The name must be a string.',
+            'fields.name.max' => 'The name may not be greater than 255 characters.',
+
+            'fields.amount.required' => 'The amount field is required.',
+            'fields.amount.numeric' => 'The amount must be a number.',
         ];
     }
     
     public function save() {
-
-        
-        if (Gate::denies('write other-deductions')) {
+        if (Gate::denies('write other-earnings')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -101,46 +96,41 @@ class Edit extends Component
             return;
         }
 
-        $this->dispatch('reinitializeSelect');
-
         $this->validate();
 
         DB::beginTransaction();
 
-        
         try {
-            $deduction = OtherDeductions::find($this->id);
-            if (!$deduction) {
-                throw new \Exception('Deduction record not found.');
-            }
-
-            $deduction->code = $this->fields['code'] ?? null;
-            $deduction->name = $this->fields['name'];
-            $deduction->frequency = $this->fields['frequency'];
-            $deduction->eligible = implode(',', $this->fields['eligible']);
-            $deduction->source = $this->fields['source'];
-            $deduction->save();
-
-            $message = 'Additional Deductions ' . strtoupper($this->fields['code']) . ' was updated successfully.';
+            
+            $deduction = OtherDeductions::updateOrCreate([
+                'id' => $this->id
+            ],[
+                'code' => $this->fields['code'],
+                'name' => $this->fields['name'],
+                'amount' => $this->fields['amount'],
+            ]);
 
             $this->dispatch('alert', [
                 'status' => 'success',
-                'title' => 'Success!',
+                'title' => 'Success!', 
                 'showAlert' => true,
-                'message' => $message,
+                'message' => 'Additional Earning ' . strtoupper($this->fields['code']) . ' was added successfully.'
             ]);
-
+            
             DB::commit();
-
+        
+            if ($deduction->wasRecentlyCreated) {
+                $this->reset('fields');
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops!',
+                'title' => 'Oops!', 
                 'showAlert' => true,
-                'message' => 'Error occurred: ' . $e->getMessage(),
+                'message' => 'Error occured: ' . $e->getMessage()
             ]);
         }
     }

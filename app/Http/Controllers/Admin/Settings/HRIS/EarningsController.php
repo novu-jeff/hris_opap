@@ -21,20 +21,14 @@ class EarningsController extends Controller
         $header = OtherEarnings::where('id', $id)
             ->first();
 
+
         if(!$header) {
             return redirect()->route('other-earnings.index');
         }
 
-        return view('admin.settings.hris.emp-earnings.index', compact('id', 'header'));
+        $formatted = ucwords('Employees ' . $header->name);
+
+        return view('admin.settings.hris.emp-earnings.index', compact('id', 'formatted'));
     }
 
-    public function create(int $id)
-    {
-        return view('admin.settings.hris.emp-earnings.create', compact('id'));
-    }
-
-    public function edit(int $id)
-    {
-        return view('admin.settings.hris.emp-earnings.edit', compact('id'));
-    }
 }

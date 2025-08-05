@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Services;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeDeductions;
+use App\Models\EmployeeEarnings;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
@@ -19,98 +20,49 @@ class OtherServices extends Controller
 
     public function earnings(string $employee_no) {
 
-        $emp = EmployeeInformation::where('employee_no', $employee_no)->first();
-        if (!$emp) {
-            session()->forget('target');
-            return redirect()->route('hris.index');
-        }
+        $records = EmployeeEarnings::where('employee_no', $employee_no)
+            ->get();
 
-        $dateHired = format_date($emp->date_hired, 'carbon_date');
-        $empJobCategory = $emp->employment_type_id;
-        $otherEarnings = OtherEarnings::all();
-        $result = [];
+        $newRecords = [];
 
 
-        foreach ($otherEarnings as $earning) {
-            $eligibleIds = explode(',', $earning->eligible);
-
-            $amount = 0;
-
-            # Calculate the amount based on the amount basis
-            switch ($earning->amount_basis) {
-                case 'entry':
-                    $amount = $earning->amount;
-                    break;
-                case 'basic_salary':
-                    $amount = $emp->salary;
-                    break;
-                case 'percentage':
-                    $amount = ($earning->amount * $emp->salary) / 100;
-                    break;
-                default:
-                    throw new Exception("Invalid amount_basis value.");
+        foreach($records as $record) {
+            
+            if($record['amount_type'] == 'fixed_amount') {
+                $newRecords[] = [
+                    'amount_type' => 'fixed_amount',
+                    'first_term' => $record->first_term,
+                    'second_term' => $record->second_term,
+                ];
             }
 
-            # Initial eligibility check based on IDs
-            $isEligible = in_array($empJobCategory, $eligibleIds);
-
-            # Initialize the result item
-            $resultItem = [
-                'code' => $earning->code,
-                'name' => $earning->name,
-                'amount' => $amount,
-                'isEligible' => $isEligible,
-            ];
-
-            # Further eligibility checks based on duration and context
-            if ($isEligible && $earning->duration && $earning->count && $earning->context && $earning->date) {
-                $compareDate = Carbon::parse($earning->date);
-
-                # Adjust compare date based on duration
-                switch ($earning->duration) {
-                    case 'days':
-                        $compareDate->addDays($earning->count);
-                        break;
-                    case 'months':
-                        $compareDate->addMonths($earning->count);
-                        break;
-                    case 'years':
-                        $compareDate->addYears($earning->count);
-                        break;
-                    default:
-                        throw new Exception("Invalid duration type.");
-                }
-
-                # Check eligibility based on context
-                switch ($earning->context) {
-                    case 'from':
-                        $isEligible = $dateHired->greaterThanOrEqualTo($compareDate);
-                        break;
-                    case 'prior_to':
-                        $isEligible = $dateHired->lessThan($compareDate);
-                        break;
-                    case 'subsequent_to':
-                        $isEligible = now()->greaterThan($compareDate);
-                        break;
-                    default:
-                        throw new Exception("Invalid context type.");
-                }
+            if($record['amount_type'] == 'percentage') {
+                $newRecords[] = [
+                    'amount_type' => 'fixed_amount',
+                    'first_term' => $record->first_term,
+                    'second_term' => $record->second_term,
+                ];
             }
 
-            # Update eligibility in the result item
-            $resultItem['isEligible'] = $isEligible;
-            $result[] = $resultItem;
+            if($record['amount_type'] == 'basic_salary') {
+                $newRecords[] = [
+                    'amount_type' => 'basic_salary',
+                    'first_term' => $record->first_term,
+                    'second_term' => $record->second_term,
+                ];
+            }
+
         }
 
-        return $result;
+        return $records;
     }
 
     public function deductions(string $employee_no) {
         
-        $otherDeductions = EmployeeDeductions::with('deduction')->where('employee_no', $employee_no)->get()
-            ->toArray();
-        
-        return $otherDeductions ?? [];
+        $records = EmployeeDeductions::where('employee_no', $employee_no)
+            ->get();
+
+        return $records;
     
     }
 

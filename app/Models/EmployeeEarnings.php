@@ -13,8 +13,9 @@ class EmployeeEarnings extends Model
     protected $fillable = [
         'employee_no',
         'earning_id',
-        'amount',
-        'as_of'
+        'amount_type',
+        'first_term',
+        'second_term'
     ];
 
     public function personal() {

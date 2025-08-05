@@ -6,10 +6,7 @@
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>{{$header->name}}</h1>
-        </div>
-        <div class="actions">
-            <a href="{{route('other-earnings.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <h1>{{$formatted}}</h1>
         </div>
     </div>
     <div class="mt-5">

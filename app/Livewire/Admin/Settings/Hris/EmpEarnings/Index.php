@@ -2,16 +2,13 @@
 
 namespace App\Livewire\Admin\Settings\Hris\EmpEarnings;
 
-use App\Imports\DeductionImport;
 use App\Imports\EarningImport;
-use App\Models\EmployeeDeductions;
 use App\Models\EmployeeEarnings;
 use App\Models\EmployeeInformation;
-use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -19,183 +16,160 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class Index extends Component
 {
+    use WithPagination, WithFileUploads;
 
-    use WithPagination;
-    use WithFileUploads;
+    public $id, $selected_id, $entries = 10, $search = '', $page, $toUpdate, $amountType, $file;
+    public $employees;
 
-    public $id;
-    public $entries = 10;
-    public $search = '';
-    public $earnings = [];
-    public $as_of = [];
-    public $file;
+    public $fields = [
+        'employee_no' => [],
+        'amount_type' => null,
+        'first_term'  => null,
+        'second_term' => null,
+    ];
 
     protected $paginationTheme = 'bootstrap';
-
     protected $listeners = ['remove'];
 
-    public function mount() {
-        $this->loadRecords();
+    public function mount()
+    {
+        $config = OtherEarnings::findOrFail($this->id);
+
+        $this->fields['first_term'] = $config->first_term;
+        $this->fields['second_term'] = $config->second_term;
+
+        if ($config->amount_type) {
+            $this->onChange('amount_type', $config->amount_type);
+        }
     }
 
+    public function onChange(string $property, string $value)
+    {
+        if ($property === 'amount_type') {
+            $this->fields['amount_type'] = str_replace('_', ' ', $value);
+            $this->amountType = $value;
+        }
+    }
 
-    public function loadRecords() {
-
-   
-        $employees = EmployeeInformation::with(['personal'])
-            ->get();
-            
-        $earnings = EmployeeEarnings::where('earning_id', $this->id)->get();
-
-        $this->earnings = [];
-        $storedEarnings = [];
-
-        foreach ($employees as $employee) {
-            $_earnings = $earnings->firstWhere('employee_no', $employee['employee_no']);
-            $storedEarnings[] = $_earnings;
-            $this->earnings[$employee['employee_no']]['amount'] = $_earnings ? $_earnings->amount : 0;
-            $this->earnings[$employee['employee_no']]['as_of'] = $_earnings ? $_earnings->as_of : 0;
+    public function setPage(string $page = null, string $toUpdate = null)
+    {
+        $this->page = $page;
+        $this->toUpdate = $toUpdate;
+        
+        if ($page === 'edit' && $toUpdate) {
+            $data = EmployeeEarnings::where('employee_no', $toUpdate)->first();
+            $this->fields = [
+                'employee_no' => [$toUpdate],
+                'amount_type' => $data->amount_type ?? null,
+                'first_term'  => $data->first_term ?? null,
+                'second_term' => $data->second_term ?? null,
+            ];
+        $this->onChange('amount_type', $data->amount_type);
         }
 
+        $this->employees = $this->getEmployees();
+        $this->dispatch('set_select');
     }
 
-    protected function rules() {
-        return [
-            'file' => 'required|mimes:xlsx,xls,csv',
-        ];
+    public function getEmployees()
+    {
+        return ($this->page === 'create')
+            ? EmployeeInformation::with('personal')->whereDoesntHave('earnings')->get()
+            : EmployeeInformation::with('personal')->get();
     }
 
-    public function messages() {
+    protected function fileRules(): array
+    {
+        return ['file' => 'required|file|mimes:xlsx,xls,csv'];
+    }
+
+    protected function fileMessages(): array
+    {
         return [
             'file.required' => 'File is required.',
-            'file.mimes' => 'Only accepts xlsx, xls, and csv.'
+            'file.mimes'    => 'Only accepts xlsx, xls, and csv.',
         ];
     }
 
-    public function upload_file(Request $request) {
-
-        $this->validate();
-
-        $value = $this->getValue($this->id);
-
-        Excel::import(new EarningImport($this->id), $this->file);
-
-
-        $this->dispatch('alert', [
-            'status' => 'success',
-            'title' => 'Saved!',
-            'showAlert' => true,
-            'message' => 'Earning added for ' . $value['name'],
-        ]);
-
-        return;
-
-    }
-
-    private function getValue(string $type) {
-
-        $data = [
-            '1' => [
-                'name' => 'Personal Economic Relief Allowance',
-                'alias' => 'pera',
-            ],
-            '2' => [
-                'name' => 'Clothing Allowance',
-                'alias' => 'clothing',
-            ],
-            '3' => [
-                'name' => 'Mid Year Bonus',
-                'alias' => 'mid',
-            ],
-            '4' => [
-                'name' => 'Year End Bonus',
-                'alias' => 'yearend',
-            ],
-            '5' => [
-                'name' => 'Cash Gift',
-                'alias' => 'cashgift',
-            ],
-            '6' => [
-                'name' => 'Premium Pay',
-                'alias' => 'premium',
-            ],
+    protected function rules(): array
+    {
+        $rules = [
+            'fields.amount_type' => ['required', Rule::in(['fixed amount', 'percentage', 'basic salary'])],
         ];
 
-        return $data[$type];
+        $amountType = $this->fields['amount_type'] ?? null;
 
+        $termRules = ($amountType === 'basic salary') ? 'nullable|numeric' : 'required|numeric';
+
+        $rules['fields.first_term'] = $termRules;
+        $rules['fields.second_term'] = $termRules;
+
+        return $rules;
     }
 
-    public function save() {
-        
+    protected function messages(): array
+    {
+        return [
+            'fields.amount_type.required' => 'The amount type field is required.',
+            'fields.first_term.required' => 'The first term field is required.',
+            'fields.second_term.required' => 'The second term field is required.',
+        ];
+    }
+
+    public function save()
+    {
         if (Gate::denies('write employee-earnings')) {
-            
-            $this->dispatch('alert', [
+            return $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
-
-            return;
         }
 
-
-        $this->validate([
-            'earnings.*.amount' => 'required|numeric|min:0',
-            'earnings.*.as_of' => function ($attribute, $value, $fail) {
-                $index = str_replace(['earnings.', '.as_of'], '', $attribute);
-                if (isset($this->earnings[$index]['amount']) && $this->earnings[$index]['amount'] > 0 && empty($value)) {
-                    $fail('This field is required when amount is greater than 0.');
-                }
-            },
-        ], [
-            'earnings.*.amount.required' => '*required',
-            'earnings.*.amount.numeric' => '*number only',
-        ]);
+        $this->validate($this->rules(), $this->messages());
 
         DB::beginTransaction();
 
         try {
-                        
-            $record = null; 
+            $earningId = $this->id;
+            $amountType = str_replace(' ', '_', $this->fields['amount_type']);
+            $firstTerm = $this->fields['first_term'];
+            $secondTerm = $this->fields['second_term'];
 
-            foreach ($this->earnings as $employeeId => $earnings) {
-                if ($employeeId && $earnings !== null) {
-                    if ($earnings['amount'] == 0) {
-                        EmployeeEarnings::where('employee_no', (string) $employeeId)
-                            ->where('earning_id', $this->id)
-                            ->delete();
-                    } else {
-                        $record = EmployeeEarnings::firstOrNew(
-                            [
-                                'employee_no' => (string) $employeeId,
-                                'earning_id' => $this->id,
-                            ]
-                        );
+            foreach ($this->employees as $employee) {
+                $data = [
+                    'amount_type' => $amountType,
+                ];
 
-                        $record->amount = $earnings['amount'] ?? 0;
-                        $record->as_of = $earnings['as_of'];
-                        $record->save();
-                    }
+                if ($amountType === 'basic salary') {
+                    $data['amount'] = $employee->salary;
+                } else {
+                    $data['first_term'] = $firstTerm ;
+                    $data['second_term'] = $secondTerm;
                 }
+
+                EmployeeEarnings::updateOrCreate(
+                    [
+                        'earning_id' => $earningId,
+                        'employee_no' => $employee->employee_no,
+                    ],
+                    $data
+                );
             }
 
             DB::commit();
 
-            $earning = OtherEarnings::find($this->id);
-
-            $action = $record && $record->wasRecentlyCreated ? 'added' : 'updated';
-
+            $employees = $this->fields['employee_no'];
+            $this->dispatch('set_select');
             $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Saved!',
                 'showAlert' => true,
-                'message' => 'Earning for ' . $earning->name . ' was ' . $action . '.',
+                'message' => 'Earning(s) saved',
             ]);
-        } catch (\Exception $e) {
-
+        } catch (\Throwable $e) {
             DB::rollBack();
-
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Error!',
@@ -203,32 +177,57 @@ class Index extends Component
                 'message' => $e->getMessage(),
             ]);
         }
+    }
 
+    public function remove(bool $isNotify = true, ?string $employee_no = null)
+    {
+        if ($isNotify) {
+            $this->selected_id = $employee_no;
+            return $this->dispatch('showConfirmation', [
+                'title' => 'Are you sure to continue?',
+                'message' => 'You are about to delete earning record <b>#' . strtoupper(format_id($employee_no, 6)) . '</b>. This action cannot be undone!',
+                'action' => 'remove',
+            ]);
+        }
+
+        $record = EmployeeEarnings::where('employee_no', $this->selected_id)->first();
+
+        if ($record) {
+            $record->delete();
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Deleted!',
+                'id' => $this->selected_id,
+                'isRemoveRowDT' => true,
+                'message' => 'Earning record #' . strtoupper(format_id($this->selected_id, 6)) . ' has been deleted successfully.'
+            ]);
+        } else {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Error!',
+                'isRemoveRowDT' => false,
+                'message' => 'Error: ID does not exist.'
+            ]);
+        }
     }
 
     public function render()
     {
-
-        $model = EmployeeInformation::with(['personal']);
+        $query = EmployeeEarnings::with('personal')->where('earning_id', $this->id);
 
         if ($this->search) {
-            
             $this->resetPage();
-        
-            $records = $model->where(function ($query) {
-                $query->where('employee_no', 'like', '%' . $this->search . '%')
-                      ->orWhereHas('personal', function ($q) {
-                          $q->where('firstname', 'like', '%' . $this->search . '%')
+            $query->where(function ($q) {
+                $q->where('employee_no', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('personal', function ($sub) {
+                        $sub->where('firstname', 'like', '%' . $this->search . '%')
                             ->orWhere('lastname', 'like', '%' . $this->search . '%');
-                      });
+                    });
             });
         }
-        
-
-        $records = $model->paginate($this->entries);
 
         return view('livewire.admin.settings.hris.emp-earnings.index', [
-            'records' => $records
+            'records' => $query->paginate($this->entries),
         ]);
     }
 }

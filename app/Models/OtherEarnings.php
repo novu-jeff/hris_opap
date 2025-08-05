@@ -14,17 +14,11 @@ class OtherEarnings extends Model
     protected $fillable = [
         'code',
         'name',
-        'amount_basis',
+        'amount_type',
         'amount',
-        'frequency_basis',
-        'frequency',
-        'eligible',
+        'first_term',
+        'second_term',
         'isTaxable',
-        'forcasted',
-        'duration',
-        'count',
-        'context',
-        'date'
     ];
 
 }

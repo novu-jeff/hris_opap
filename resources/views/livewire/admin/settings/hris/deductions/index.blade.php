@@ -37,17 +37,15 @@
                             <td>{{$record->code}}</td>
                             <td>{{$record->name}}</td>
                             <td class="d-flex justify-content-start">
-                                @if ($record->source == 'entry')
-                                    <a href="{{route('deductions.index', ['id' => $record->id])}}" class="btn btn-secondary mx-1">
-                                        <i class="fa-solid fa-plus text-white"></i>
-                                    </a>
-                                @endif
+                               <a href="{{route('deductions.index', ['id' => $record->id])}}" class="btn btn-secondary mx-1">
+                                    <i class="fa-solid fa-plus text-white"></i>
+                                </a>
                                 <a href="{{route('other-deductions.edit', ['other_deduction' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                {{-- <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                     <i class="fa-solid fa-trash"></i>
-                                </button> --}}
+                                </button>
                             </td>
                         </tr>
                     @empty

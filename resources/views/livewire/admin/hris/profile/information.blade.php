@@ -239,7 +239,7 @@
                         <ul class="list-unstyled">
                             @foreach ($records['leaveCredits'] as $item)
                                 <li class="d-flex align-items-center gap-3 mb-2">
-                                    <div>
+                                    <div class="text-uppercase">
                                         <span> {{ strtoupper($item['code']) . ' - ' .  ucwords($item['name']) }}</span>
                                         <strong> ({{ $item['credits'] }})</strong>
                                     </div>
@@ -258,14 +258,11 @@
                         <ul class="list-unstyled">
                             @if (count($records['other_earnings']) > 0)
                                 @foreach ($records['other_earnings'] as $item)
-                                    <li class="d-flex align-items-center gap-3 mb-2">
-                                        <span>
-                                            {{ strtoupper($item['code']) }} -
-                                            @if ($item['isEligible'])
-                                                <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
-                                            @endif
-                                        </span>
-                                        <i class="fa {{ $item['isEligible'] ? 'fa-check text-primary' : 'fa-times text-danger' }} fs-4" style="margin-bottom: 5px" aria-hidden="true"></i>
+                                     <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
+                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        -
+                                        <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
+                                        <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
                                     </li>
                                 @endforeach
                             @else
@@ -290,12 +287,11 @@
                             {{-- Display Other Deductions --}}
                             @if($hasDeductions)
                                 @foreach ($records['other_deductions'] as $item)
-                                    <li class="d-flex align-items-center gap-3 mb-2">
-                                        <div>
-                                            <span>{{ ucwords($item['deduction']['name']) }}</span>
-                                            <strong>worth ₱{{ number_format($item['amount'], 2) }}</strong>
-                                            <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
-                                        </div>
+                                    <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
+                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        -
+                                        <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
+                                        <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
                                     </li>
                                 @endforeach
                             @endif
