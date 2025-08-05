@@ -12,52 +12,28 @@ return new class extends Migration
     public function up(): void
     {
 
-        $product = config('app.product');
+        Schema::create('other_deductions', function (Blueprint $table) {
+            $table->id();
+            $table->string('code')
+                ->nullable();
+            $table->string('name');
+            $table->string('amount')
+                ->default('0');
+            $table->timestamps();
+        });
 
-        if ($product === 'government') {
-            Schema::create('other_deductions', function (Blueprint $table) {
-                $table->id();
-                $table->string('code')
-                    ->nullable();
-                $table->string('name');
-                $table->enum('frequency', [
-                    'bi_monthly',
-                    'monthly'
-                ]);
-                $table->string('month_frequency')
-                    ->nullable();
-                $table->string('eligible');
-                $table->enum('source', [
-                    'entry',
-                    'file_upload',
-                ]);
-                $table->timestamps();
-            });
-        }
-
-        if ($product === 'private') {
-
-             Schema::create('other_deductions', function (Blueprint $table) {
-                $table->id();
-                $table->string('code')->nullable();
-                $table->string('name');
-                $table->timestamps();
-            });
-
-            Schema::create('employee_deductions', function (Blueprint $table) {
-                $table->id();
-                $table->string('employee_no');
-                $table->foreignId('deduction_id')
-                    ->constrained('other_deductions')
-                    ->onDelete('cascade');
-                $table->string('amount')
-                    ->default('0');
-                $table->string('valid_until');
-                $table->timestamps();
-            });
-
-        }
-
+        Schema::create('employee_deductions', function (Blueprint $table) {
+            $table->id();
+            $table->string('employee_no');
+            $table->foreignId('deduction_id')
+                ->constrained('other_deductions')
+                ->onDelete('cascade');
+            $table->string('amount')    
+                ->nullable()
+                ->default('0');
+            $table->string('valid_until');
+            $table->timestamps();
+        });
 
 
     }
@@ -67,12 +43,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $product = config('app.product');
-
-        if ($product === 'private') {
-            Schema::dropIfExists('employee_deductions');
-        }
-
+        Schema::dropIfExists('employee_deductions');
         Schema::dropIfExists('other_deductions');
     }
 };

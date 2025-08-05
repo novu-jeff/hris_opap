@@ -94,6 +94,10 @@ class EmployeeInformation extends Model
         return $this->hasOne(LeaveCredits::class, 'employee_no', 'employee_no');
     }
 
+    public function earnings() {
+        return $this->hasOne(EmployeeEarnings::class, 'employee_no', 'employee_no');
+    }
+
     public function deductions() {
         return $this->hasOne(EmployeeDeductions::class, 'employee_no', 'employee_no');
     }

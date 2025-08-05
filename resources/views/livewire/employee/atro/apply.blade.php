@@ -99,8 +99,6 @@
                 $('.multi-select').select2();
             });
 
-            console.log($('.multi-select').select2('val'));
-
             Livewire.on('select2Err', (error) => {
                 $('.select2-error').html('<span class="text-danger">'+error+'</span>');
             });
