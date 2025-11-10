@@ -243,7 +243,7 @@ class Clock extends Component
         $service = app(ClockInOutService::class);
 
         $toProcess = [
-            'timestamp' => $this->manipulate_timestamp,
+            'timestamp' => Carbon::now(),
             'captured_image' => $this->imageCaptured,
             'captured_location' => $this->gps_location,
             'accomplishment' => $this->accomplishment ?? null,

@@ -60,6 +60,9 @@
                                     <a href="{{route('employee.obs.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
                                     <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
