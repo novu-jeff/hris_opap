@@ -17,7 +17,7 @@ class AdminAccountSeeder extends Seeder
 
         $product = config('app.product');
 
-        if($product == 'opap') {
+        if($product == 'government') {
             $admins = [
                 [
                     'name' => 'Opapru Superadmin', 
@@ -33,9 +33,6 @@ class AdminAccountSeeder extends Seeder
                     'email' => 'opapru02@hris.com', 
                     'password' => Hash::make('password')
                 ],
-            ];
-        } else if($product == 'novu' || $product == 'testing') {
-            $admins = [
                 [
                     'name' => 'Mike Gabriel Pascaran', 
                     'username' => 'mike01',
@@ -72,7 +69,7 @@ class AdminAccountSeeder extends Seeder
                     'password' => Hash::make('password')
                 ],
             ];
-        }
+        } 
 
         $admins[] =  [
             'name' => 'Carl Llemos', 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Reports\DailyTimeRecord;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeTimelogs;
+use App\Models\EmployeeInformation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,8 @@ class DailyTimeRecordController extends Controller
 {
     public function index(Request $request)
     {
-        return view('admin.reports.daily-time-record.index');
+        $type = $request->input('type');
+        return view('admin.reports.daily-time-record.index', compact('type'));
     }
 
     public function show(Request $request, string $employee_no)
@@ -19,6 +21,10 @@ class DailyTimeRecordController extends Controller
 
         $month = $request->input('month'); 
         $year = $request->input('year');
+        
+        if(empty($employee_no) || !$this->isValidEmployee($employee_no)) {
+            return redirect()->route('reports.dtr');
+        }
 
         if(empty($month) || empty($year)) {
             $date = $this->getLatestRecordDate();
@@ -28,7 +34,8 @@ class DailyTimeRecordController extends Controller
                 $month = $date->format('F');
                 $year = $date->format('Y');
             } else {
-                $date = Carbon::createFromFormat('d/m/Y H:i', $date)->format('F, Y');
+
+                $date = Carbon::parse($date)->format('F, Y');
 
                 $month = trim(explode(',', $date)[0]);
                 $year = trim(explode(',', $date)[1]);
@@ -55,12 +62,27 @@ class DailyTimeRecordController extends Controller
     }
     
     private function getLatestRecordDate() {
-        $latestRecord = EmployeeTimelogs::orderBy('logdatetime', 'desc')->first();
+        $latestRecord = EmployeeTimelogs::orderBy('timestamp', 'desc')->first();
+        
         if(is_null($latestRecord)) {
             return null;
         }
 
-        return $latestRecord->logdatetime;
+        return $latestRecord->timestamp;
     }
+
+    private function isValidEmployee(string $employee_no)
+    {
+        $bsd_emp_identical = config('app.bsd_emp_identical');
+
+        if ($bsd_emp_identical) {
+            return EmployeeInformation::where('employee_no', $employee_no)->exists();
+        }
+
+        return EmployeeInformation::where('employee_no', $employee_no)
+            ->whereNotNull('bsd_no')
+            ->exists();
+    }
+
 
 }

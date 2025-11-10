@@ -1,4 +1,15 @@
 <div class="dashboard">
+    <div class="company-information mt-5 text-uppercase">
+        <h2 class="fw-bold">{{$companyInfo->name}}</h2>
+        <h5 class="fw-medium">{{$companyInfo->address}}</h5>
+        <h5 class="fw-medium">{{$companyInfo->type->name . ' • ' . $companyInfo->contact}}</h5>
+    </div>
+    <hr class="mt-4 mb-1">
+    <div class="d-lg-flex justify-content-between align-items-center">
+        <div class="section-title">
+            <h1>Dashboard</h1>
+        </div>
+    </div>
     <div class="row mt-5">
         <div class="row">
             <div class="col-12 col-md-7">
@@ -85,11 +96,11 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">Rejected</p>
+                                    <p class="mb-0 fw-bold">Disapproved</p>
                                     <hr>
                                     <h1>{{$stats['leave']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.leave', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.leave', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>
@@ -99,7 +110,7 @@
                 <div class="col-12 mb-3">
                     <div class="card">
                         <div class="card-header bg-primary text-white px-4">
-                            <h5 class="my-2 text-uppercase fw-bold">OBS Applications</h5>
+                            <h5 class="my-2 text-uppercase fw-bold">Official Business Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
                             <div class="d-lg-flex gap-3 w-100">
@@ -120,11 +131,11 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">Rejected</p>
+                                    <p class="mb-0 fw-bold">Disapproved</p>
                                     <hr>
                                     <h1>{{$stats['obs']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.obs', ['status' => 'rejected'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.obs', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                             </div>
@@ -134,7 +145,7 @@
                 <div class="col-12 mb-3">
                     <div class="card">
                         <div class="card-header bg-primary text-white px-4">
-                            <h5 class="my-2 text-uppercase fw-bold">ATRO Applications</h5>
+                            <h5 class="my-2 text-uppercase fw-bold">Authority To Render Overtime Applications</h5>
                         </div>
                         <div class="card-body px-3 d-flex">
                             <div class="d-lg-flex gap-3 w-100">
@@ -151,16 +162,42 @@
                                     <hr>
                                     <h1>{{$stats['atro']['granted']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.atro', ['status' => 'approve'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.atro', ['status' => 'granted'])}}" class="text-white">View</a>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
-                                    <p class="mb-0 fw-bold">Rejected</p>
+                                    <p class="mb-0 fw-bold">Disapproved</p>
                                     <hr>
                                     <h1>{{$stats['atro']['rejected']}}</h1>
                                     <div class="float-end">
-                                        <a href="{{route('ess.atro', ['status' => 'denied'])}}" class="text-white">View</a>
+                                        <a href="{{route('ess.atro', ['status' => 'disapproved'])}}" class="text-white">View</a>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="card trail">
+                        <div class="card-header bg-primary text-white px-4 d-flex justify-content-between">
+                            <div>
+                                <h5 class="my-2 text-uppercase fw-bold">Audit Trail Logs</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="scrollable">
+                                <div class="px-4 pt-3">
+                                    @if(!empty($this->trails))
+                                        <ul class="list-unstyled">
+                                            @foreach($this->trails as $index => $log)
+                                                <li>
+                                                    <a href="javascript:void(0)" wire:click="download('{{$log}}')" class="d-flex align-items-center gap-2"><i class="fa-solid fa-download"></i> {{$log}}</a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else 
+                                        <p class="text-muted fw-bold text-uppercase text-center">no trails found</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -218,21 +255,21 @@
                     <div class="col-12 mb-3">
                         <div class="card">
                             <div class="card-header bg-primary text-white px-4 d-flex justify-content-between">
-                                @if(!empty($stats['gsis_billing']['billing_month']))
+                                @if(!empty($stats['social_security']['billing_month']))
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        LATEST GSIS BILLING 
+                                        LATEST {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} BILLING 
                                     </h5>
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        ({{ $stats['gsis_billing']['billing_month'] }})
+                                        ({{ $stats['social_security']['billing_month'] }})
                                     </h5>
                                 @else
                                     <h5 class="my-2 text-uppercase fw-bold">
-                                        LATEST GSIS BILLING
+                                        LATEST {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} BILLING
                                     </h5>
                                 @endif
                             </div>
                             <div class="card-body">
-                                @if(!empty($stats['gsis_billing']['items']) && count($stats['gsis_billing']['items']) > 0)
+                                @if(!empty($stats['social_security']['items']) && count($stats['social_security']['items']) > 0)
                                     <table class="table text-uppercase fw-bold w-100 data-tables">
                                         <thead class="table-light">
                                             <tr>
@@ -242,7 +279,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($stats['gsis_billing']['items'] as $billing)
+                                            @foreach($stats['social_security']['items'] as $billing)
                                                 <tr>
                                                     <td>{{ $billing['bp_no'] ?? 'N/A' }}</td>
                                                     <td>{{ $billing['crn_no'] ?? 'N/A' }}</td> 
@@ -252,7 +289,7 @@
                                         </tbody>
                                     </table>
                                 @else
-                                    <small class="text-uppercase text-muted">No GSIS Billing Found.</small>
+                                    <small class="text-uppercase text-muted">No {{env('APP_PRODUCT') == 'government' ? 'GSIS' : 'SSS'}} Billing Found.</small>
                                 @endif
                             </div>
                         </div>
@@ -288,14 +325,13 @@
                                         @endforeach
                                     </ul>
                                 @else
-                                    <small class="text-uppercase text-muted">No Earnings Found.</small>
+                                    <small class="text-uppercase text-muted">No Deductions Found.</small>
                                 @endif
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
+            </div>       
         </div>
     </div>
 </div>

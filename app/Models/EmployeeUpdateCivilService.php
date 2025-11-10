@@ -19,6 +19,7 @@ class EmployeeUpdateCivilService extends Model
         'place_exam',
         'license_no',
         'date_validity',
+        'documents'
     ];
 
     public $timestamps = false;

@@ -2,6 +2,7 @@
 
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\OthersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HRISController;
 use App\Http\Controllers\Admin\Job\ApplicantController;
@@ -13,13 +14,18 @@ use App\Http\Controllers\Admin\AnnouncementController as ESSAnnouncementControll
 use App\Http\Controllers\Admin\ClockInOutController as ESSClockInOutController;
 use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
+use App\Http\Controllers\Admin\PayslipRequestController as ESSPayslipRequestController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ESSFAQController;
-use App\Http\Controllers\Admin\ESSRequestTimeLogController;
+use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
+use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
+use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
+use App\Http\Controllers\Admin\Reports\SSS\SSSController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\SchedulerController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -38,6 +44,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
 use App\Http\Controllers\Admin\Settings\EmployeeScheduleController;
+use App\Http\Controllers\Admin\Settings\HRIS\EarningsController;
 use App\Http\Controllers\Admin\Settings\OrganizationController;
 use App\Http\Controllers\Admin\Settings\Payroll\HolidayController;
 use App\Http\Controllers\Admin\Settings\RoleController;
@@ -65,15 +72,19 @@ use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncement
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
-use App\Http\Controllers\Employee\EmployeeRequestLogController;
+use App\Http\Controllers\Employee\TimeAdjustmentsController;
+use App\Http\Controllers\Employee\PayslipController;
 use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
+use App\Http\Controllers\Employee\RemainingCreditController as EmployeeRemainingCreditController;
 use App\Http\Controllers\Employee\TutorialController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
+use App\Http\Controllers\TestController;
 use App\Livewire\Employee\DailyTimeRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use App\Http\Controllers\SystemJobsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +154,9 @@ Route::prefix('admin')->group(function() {
 
     Route::redirect('/', 'admin/login', 302);
 
+    Route::get('system/jobs', [SystemJobsController::class, 'index'])
+        ->name('system.jobs');
+
     Route::get('login', [AdminLoginController::class, 'index'])
         ->name('admin.index');
     Route::post('login', [AdminLoginController::class, 'login'])
@@ -186,17 +200,17 @@ Route::prefix('admin')->group(function() {
         
         Route::get('hris', [HRISController::class, 'index'])
             ->name('hris.index');
+
+        Route::get('hris/staffing', [HRISController::class, 'staffing'])
+            ->name('hris.staffing');
             
-        Route::get('hris/employee/{employee_no?}', [HRISController::class, 'show'])
+        Route::get('hris/employee/{employee_no?}/{form}', [HRISController::class, 'show'])
             ->name('hris.show');
 
         Route::get('hris/manual', [HRISController::class, 'manual'])
             ->name('hris.manual');
         
         Route::prefix('timekeeping')->group(function() {
-
-            Route::get('logs/{month?}/{day?}/{year?}', [TimeKeepingController::class, 'index'])
-                ->name('timekeeping.index');
             Route::get('upload', [TimeKeepingController::class, 'upload'])
                 ->name('timekeeping.upload');
             Route::get('upload/job/{id}', [TimeKeepingController::class, 'job'])
@@ -211,7 +225,7 @@ Route::prefix('admin')->group(function() {
             Route::get('/', [PayrollController::class, 'index'])
                 ->name('payroll.index');
 
-            Route::get('process/{payroll_id}/{employment_type?}', [PayrollController::class, 'process'])
+            Route::get('process/{type}/{payroll_id}', [PayrollController::class, 'process'])
                 ->name('payroll.process');
 
         });
@@ -223,12 +237,15 @@ Route::prefix('admin')->group(function() {
 
             Route::get('authority-to-render-over-time', [ESSAuthorityToRenderTimeController::class, 'index'])
                 ->name('ess.atro');
-
+                
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
 
-            Route::get('request-timelog', [ESSRequestTimeLogController::class, 'index'])
-                ->name('ess.request-timelog');
+            Route::get('payslip/request/download', [ESSPayslipRequestController::class, 'index'])
+                ->name('ess.payslip-request');
+
+            Route::get('time-adjustments', [ESSTimeAdjustmentsController::class, 'index'])
+                ->name('ess.time-adjustments');
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
@@ -239,9 +256,9 @@ Route::prefix('admin')->group(function() {
                     ->name('ess.announcements.edit');
             });
 
-            Route::prefix('request-status')->group(function() {
+            Route::prefix('messages')->group(function() {
                 Route::get('{employee_no?}', [ESSRequestStatusController::class, 'index'])
-                    ->name('ess.request-status');
+                    ->name('ess.messages');
             });
 
             Route::prefix('faqs')->group(function() {
@@ -253,15 +270,39 @@ Route::prefix('admin')->group(function() {
                     ->name('ess.faqs.edit');
             });
 
-            Route::resource('profile/approval', ESSApprovalProfile::class)
-                ->names('ess.approval-profile');
+            Route::get('profile/approval', [ESSApprovalProfile::class, 'index'])
+                ->name('ess.approval-profile.index');
+
+             Route::get('profile/approval/{employee_no}/{form}', [ESSApprovalProfile::class, 'show'])
+                ->name('ess.approval-profile.show');
         });
 
         Route::prefix('reports')->group( function() {
             Route::get('daily-time-record', [DailyTimeRecordController::class, 'index'])->name('reports.dtr');
             Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+
+            Route::get('bir/index', [BIRController::class, 'index'])
+                ->name('reports.bir');
+            Route::get('bir/form-2316/{id}', [BIRController::class, 'form2316'])
+                ->name('reports.form-2316');
+            Route::get('bir/form-1601', [BIRController::class, 'form1601'])
+                ->name('reports.form-1601');
+                
+            Route::get('philhealth', [PhilhealthController::class, 'index'])
+                ->name('reports.philhealth');
+
+            Route::get('sss', [SSSController::class, 'index'])
+                ->name('reports.sss');
+
+            Route::get('pagibig', [PagibigController::class, 'index'])
+                ->name('reports.pagibig');
         });
         
+        Route::prefix('others/uploads')->group( function() {
+            Route::get('overtime', [OthersController::class, 'overtime'])
+                ->name('others.overtime');
+        });
+
         Route::prefix('settings')->group( function() {
         
             Route::resource('assessments', InterviewController::class)->names('job.interview');
@@ -318,12 +359,17 @@ Route::prefix('admin')->group(function() {
                 Route::resource('other-deductions', OtherDeductionsController::class)
                     ->names('other-deductions');
 
+                Route::get('employee/earnings/{id}', [EarningsController::class, 'index'])
+                    ->name('earnings.index');
+
+                Route::post('employee/earnings/{id}', [EarningsController::class, 'create'])
+                    ->name('earnings.create');
+
                 Route::get('employee/deductions/{id}', [DeductionController::class, 'index'])
                     ->name('deductions.index');
 
                 Route::post('employee/deductions/{id}', [DeductionController::class, 'create'])
                     ->name('deductions.create');
-
             });
 
             Route::resource('shift-schedule', ShiftScheduleController::class)
@@ -380,6 +426,8 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
 
             Route::get('/', [EmployeeLeaveController::class, 'index'])
                 ->name('employee.leave');
+            Route::get('card', [EmployeeLeaveController::class, 'card'])
+                ->name('employee.leave-card');
             Route::get('apply', [EmployeeLeaveController::class, 'create'])
                 ->name('employee.leave.apply');
             Route::get('edit/{id}', [EmployeeLeaveController::class, 'edit'])
@@ -409,18 +457,22 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 
         });
 
-        Route::prefix('request-timelog')->group(function() {
+        Route::prefix('time-adjustments')->group(function() {
 
-            Route::get('/', [EmployeeRequestLogController::class, 'index'])
-                ->name('employee.request-timelog');
-            Route::get('apply', [EmployeeRequestLogController::class, 'create'])
-                ->name('employee.request-timelog.apply');
-            Route::get('edit/{id}', [EmployeeRequestLogController::class, 'edit'])
-                ->name('employee.request-timelog.edit');
-            Route::get('{id}', [EmployeeRequestLogController::class, 'show'])
-                ->name('employee.request-timelog.show');
+            Route::get('/', [TimeAdjustmentsController::class, 'index'])
+                ->name('employee.time-adjustments');
+            Route::get('apply', [TimeAdjustmentsController::class, 'create'])
+                ->name('employee.time-adjustments.apply');
+            Route::get('edit/{id}', [TimeAdjustmentsController::class, 'edit'])
+                ->name('employee.time-adjustments.edit');
+            Route::get('{id}', [TimeAdjustmentsController::class, 'show'])
+                ->name('employee.time-adjustments.show');
         });
 
+        Route::prefix('payslip')->group(function() {
+            Route::get('/', [PayslipController::class, 'index'])
+                ->name('employee.payslip');
+        });
 
         Route::get('daily-time-record', [EmployeeDailyTimeRecordController::class, 'index'])
             ->name('employee.dtr');
@@ -428,21 +480,24 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
         Route::get('clock-in-out', [EmployeeClockInOutController::class, 'index'])
             ->name('employee.clock');
 
+        Route::get('remaining-credit', [EmployeeRemainingCreditController::class, 'index'])
+            ->name('employee.credit');
+
         Route::get('directory', [EmployeeDirectoryController::class, 'index'])
             ->name('employee.directory');
         
         Route::get('team', [EmployeeTeamController::class, 'index'])
             ->name('employee.team');
 
-        Route::get('request-status', [EmployeeRequestStatusController::class, 'index'])
-            ->name('employee.request-status');
+        Route::get('messages', [EmployeeRequestStatusController::class, 'index'])
+            ->name('employee.messages');
 
         Route::get('announcements', [EmployeeAnnouncementController::class, 'index'])
             ->name('employee.announcements.index');
         Route::get('announcements/{id}', [EmployeeAnnouncementController::class, 'view'])
             ->name('employee.announcements.view');
 
-        Route::get('profile', [EmployeeProfileController::class, 'index'])
+        Route::get('profile/{form}', [EmployeeProfileController::class, 'index'])
             ->name('employee.profile');
 
         Route::get('tutorial', [TutorialController::class, 'index'])

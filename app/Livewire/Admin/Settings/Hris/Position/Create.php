@@ -68,7 +68,7 @@ class Create extends Component
         $this->records = [];
 
         $expectedHeaders = [
-            "Position", "Salary Grade", "Type"
+            "Position", "Salary Grade", "Type", "W/Tax"
         ];
 
         if (!Storage::exists($filePath)) {
@@ -145,7 +145,8 @@ class Create extends Component
                 $records[] = [
                     'name' => $record['Position'],          
                     'salary_grade' => $record['Salary Grade'],
-                    'type' => $record['Type']
+                    'type' => $record['Type'],
+                    'w_tax' => $record['W/Tax']
                 ];
             }
 
@@ -161,6 +162,7 @@ class Create extends Component
                         'name' => $record['name'],
                         'salary_grade' => $record['salary_grade'],
                         'type' => $record['type'],
+                        'w_tax' => $record['w_tax'] ?? null,
                     ],
                 );
             }

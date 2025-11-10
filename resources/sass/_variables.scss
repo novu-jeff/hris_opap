@@ -1,7 +1,6 @@
-// Body
 $body-bg: #f8fafc;
 
-$primary:    #225F8B;
+$primary:    #225f8b;
 $secondary:  #d19e04;
 $success:    #198754;
 $danger:     #dc3545;
@@ -10,11 +9,13 @@ $info:       #005668;
 $light:      #f8f9fa;
 $dark:       #212529;
 
-// Typography
 $font-family-sans-serif: "Helvetica", sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
 
+// * {
+//     user-select: none !important;
+// }
 
 .form-control:hover,
 .form-control:focus,
@@ -151,3 +152,9 @@ $line-height-base: 1.6;
         }
     }
 }
+
+.green      { background-color: #225f8b!important; }
+.yellow       { background-color: #e67e22!important; }
+.skyblue      { background-color: #6dbfb8!important; }
+.red       { background-color: #8A0303!important; }
+.grey   { background-color: #777!important; }

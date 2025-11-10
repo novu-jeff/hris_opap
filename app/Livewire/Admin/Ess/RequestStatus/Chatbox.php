@@ -40,13 +40,12 @@ class Chatbox extends Component
         $this->dispatch('showLatest');
     }
 
-    public function loadRecords(string $employee_no = null)
+    public function loadRecords( ? string $employee_no = null)
     {
         
         $user = EmployeeInformation::with(['personal', 'positions'])
             ->when($employee_no, fn($query) => $query->where('employee_no', $employee_no))
             ->first();
-
 
         if (!$user) {
             return redirect()->route('ess.request-status');
@@ -70,6 +69,15 @@ class Chatbox extends Component
 
     public function updated($propertyName)
     {
+        try {
+            $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($propertyName === 'attachments') {
+                $this->addError('attachments', $e->validator->errors()->first('attachments'));
+            }
+            return;
+        }
+
         if ($propertyName === 'attachments') {
             $this->preview_attachments = collect($this->attachments)
                 ->filter(fn($attachment) => $attachment instanceof \Illuminate\Http\UploadedFile)
@@ -87,9 +95,9 @@ class Chatbox extends Component
             return ['type' => 'image', 'url' => $attachment->temporaryUrl()];
         }
 
-        if ($extension === 'pdf') {
+        if (in_array($extension, ['pdf', 'xls', 'xlsx', 'doc', 'docs', 'docx'])) {
             $filename = $attachment->store('public/temp');
-            return ['type' => 'pdf', 'url' => Storage::url($filename)];
+            return ['type' => 'file', 'url' => Storage::url($filename)];
         }
 
         return null;
@@ -99,16 +107,20 @@ class Chatbox extends Component
     {
         return [
             'message' => 'required_without:attachments',
-            'attachments' => 'required_without:message|array',
-            'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:2048',
+            'attachments' => 'required_without:message|array|max:5',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,xlsx,xls,doc,docs,docx|max:5120',
         ];
     }
 
     public function messages()
     {
         return [
-            'message.required_without' => 'Message is required',
-            'attachments.required_without' => 'Attachment is required',
+            'message.required_without' => 'Message is required when no attachments are provided.',
+            'attachments.required_without' => 'At least one attachment is required when no message is provided.',
+            'attachments.max' => 'You can upload a maximum of 5 files.',
+            'attachments.*.file' => 'Each attachment must be a valid file.',
+            'attachments.*.mimes' => 'Only JPG, JPEG, PNG, GIF, and PDF files are allowed.',
+            'attachments.*.max' => 'Each file must not exceed 2 MB.',
         ];
     }
 
@@ -160,7 +172,7 @@ class Chatbox extends Component
         $sender_name = $sender->name . ' (' . $sender->roles[0]->name . ')';
        
         $user = EmployeeAccount::where('employee_no', $this->selected_id)->first();
-        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('employee.request-status'), 'employee'));
+        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('employee.messages'), 'employee'));
 
         $this->reset('message', 'preview_attachments', 'attachments');
         $this->loadRecords($this->selected_id);
@@ -208,6 +220,12 @@ class Chatbox extends Component
                 ->where('to_id', 0)
                 ->update(['isSeen' => true]);
         }
+    }
+
+    public function remove(int $index) {
+        unset($this->preview_attachments[$index]);
+        unset($this->attachments[$index]);
+        $this->preview_attachments = array_values($this->preview_attachments);
     }
 
     public function render()

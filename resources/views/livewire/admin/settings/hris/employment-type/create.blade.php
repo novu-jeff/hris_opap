@@ -1,5 +1,5 @@
 <form wire:submit.prevent="save">
-    <div class="row">
+    <div class="row g-4">
         <div class="col-12">
             <div class="card shadow p-4">
                 <div class="card-header bg-transparent border-0">
@@ -23,7 +23,53 @@
                             </div>
                         </div>
                     </div>
+
+                    <p class="text-muted mb-3 text-uppercase fst-italic">Settings</p>
+
+                    <hr class="mb-4">
+                    <div class="row mx-2">
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" disabled type="checkbox" wire:model="fields.is_salary" id="is_salary">
+                            <label class="form-check-label" for="is_salary">Salary</label>
+                            <div class="error-field">
+                                @error('fields.is_salary') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" type="checkbox" wire:model="fields.is_ot_pay" id="is_ot_pay">
+                            <label class="form-check-label" for="is_ot_pay">OT Pay</label>
+                            <div class="error-field">
+                                @error('fields.is_ot_pay') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" type="checkbox" wire:model="fields.is_clothing_allowance" id="is_clothing_allowance">
+                            <label class="form-check-label" for="is_clothing_allowance">Clothing Allowance</label>
+                            <div class="error-field">
+                                @error('fields.is_clothing_allowance') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" type="checkbox" wire:model="fields.is_mid_year" id="is_mid_year">
+                            <label class="form-check-label" for="is_mid_year">Mid-Year Bonus</label>
+                            <div class="error-field">
+                                @error('fields.is_mid_year') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" type="checkbox" wire:model="fields.is_year_end" id="is_year_end">
+                            <label class="form-check-label" for="is_year_end">Year-End Bonus</label>
+                            <div class="error-field">
+                                @error('fields.is_year_end') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">

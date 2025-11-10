@@ -10,7 +10,7 @@
                     </a>
                 </li>
 
-                <!-- recruitment -->
+                <!-- Recruitment -->
                 @include('components.admin.sub-navbar-links.recruitment')
 
                 <!-- HRIS -->
@@ -25,13 +25,13 @@
 
                 @include('components.admin.sub-navbar-links.timelogs')
 
-                <!-- HRIS -->
+                <!-- Payroll -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{route('payroll.index')}}">
                         <i class="fa-solid fa-dollar-sign"></i>
                         Payroll
                     </a>
-                </li>
+                </li> 
 
                 <!-- Employee Self Service -->
                 @include('components.admin.sub-navbar-links.employee-self-service')
@@ -41,6 +41,9 @@
                 
                 <!-- Settings -->
                 @include('components.admin.sub-navbar-links.settings')
+
+                {{-- Others  --}}
+                {{-- @include('components.admin.sub-navbar-links.others') --}}
 
             </ul>
         </div>

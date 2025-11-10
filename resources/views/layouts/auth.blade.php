@@ -4,7 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="{{$provider['favicon']}}/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{$provider['favicon']}}/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{$provider['favicon']}}/favicon-16x16.png">
+    <link rel="manifest" href="{{$provider['favicon']}}/site.webmanifest">
+    
     <title>{{ $title }}</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />

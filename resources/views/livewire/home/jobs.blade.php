@@ -6,7 +6,7 @@
                     <input type="text" name="search" id="search" class="form-control" wire:model.defer='search_query' placeholder="Job, Title, Keyword" value="{{$search_query ?? ''}}">
                 </div>
                 <div class="search-submit" class="d-flex">
-                    <button class="btn btn-primary px-4 py-2 text-uppercase fw-bold" wire:click='find'>Search 
+                    <button class="btn btn-primary px-4 py-2 text-light text-uppercase fw-bold" wire:click='find'>Search 
                         <span class="ms-1">
                             <i class="fa-solid fa-magnifying-glass fa-shake"></i>
                         </span>
@@ -127,7 +127,7 @@
                                                 <h4 class="fw-bold">Oops! No jobs were found.</h4>
                                                 <p class="mb-0 fs-5">Unfortunately, we couldn't retrieve any data this time. We’re sorry for the inconvenience caused.</p>
                                                 <p class="mb-0 fs-5">
-                                                    If the issue persists, kindly contact our administrator at <a href="mailto:{{env('ADMINISTRATOR_EMAIL')}}">{{env('ADMINISTRATOR_EMAIL')}}</a>.
+                                                    If the issue persists, kindly contact our administrator at <a href="mailto:{{$provider['email']}}">{{$provider['email']}}</a>.
                                                     Thank you for letting us know, and we’ll work on resolving the issue as quickly as possible.
                                                 </p>
                                             @else
@@ -176,14 +176,14 @@
                                         <div class="actions d-flex gap-3 justify-content-start">
                                             @if (!in_array($record_info->id, $applied_job_ids))
                                                 @if (!in_array($record_info->id, $saved_job_ids))
-                                                    <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
+                                                    <button class="btn text-light btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
                                                         <i class="fa-solid fa-thumbtack"></i>
                                                         <span>
                                                             Save Job
                                                         </span>
                                                     </button>
                                                 @else
-                                                    <button class="btn btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
+                                                    <button class="btn text-light btn-primary d-flex align-items-center gap-2" wire:click='save_job({{$record_info->id}})' href="javascript:void(0)">
                                                         <i class="fa-solid fa-xmark"></i>
                                                         <span>
                                                             Unsave Job

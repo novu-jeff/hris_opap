@@ -16,18 +16,18 @@ class CompanyInformationSeeder extends Seeder
         
         $product = config('app.product');
 
-        if($product == 'opap') {
+        if($product == 'government') {
             $information = [
                 'name' => 'Office of the Presidential Adviser on Peace, Reconciliation and Unity', 
                 'address' => 'Agusting 1 Bldg., F, Ortigas Jr. Road, Ortigas Center, Pasig, Metro Manila',
                 'contact' => '8636-0707',
                 'type_id' => 10
             ];
-        } else if ($product == 'novu' || $product == 'testing') {
+        } else if ($product == 'private') {
             $information = [
-                'name' => 'Novulutions Inc.', 
-                'address' => 'EcoTower, 32nd St. Cor, 9th Ave, Taguig, Metro Manila, Philippines',
-                'contact' => '',
+                'name' => 'Filoil Inc.', 
+                'address' => 'San Juan City, 1500 Metro Manila, Philippines',
+                'contact' => '63284777644',
                 'type_id' => 5
             ];
         }
@@ -35,7 +35,10 @@ class CompanyInformationSeeder extends Seeder
         $company = CompanyInformation::where('id', 1)->first();
 
         if ($company) {
-            $company->update($information);
+            foreach ($information as $key => $value) {
+            $company->$key = $value;
+            }
+            $company->save();
         } else {
             CompanyInformation::create($information);
         }

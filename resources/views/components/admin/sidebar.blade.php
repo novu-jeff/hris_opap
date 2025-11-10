@@ -6,7 +6,7 @@
         </div>
         <div class="w-100 px-4">
             <a class="navbar-brand text-uppercase" href="{{ url('/') }}">
-                <img src="{{asset('img/logo.png')}}" alt="logo">
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
             </a>
             <div class="content">
                 <ul class="list-unstyled sidebar-menu">
@@ -14,8 +14,8 @@
                     <div class="d-flex align-items-center gap-3 pb-0">
                         <img class="profile-img" style="width: 40px; height: 40px" src="https://ui-avatars.com/api/?background=005668&amp;color=ffffff&amp;font-size=0.4&amp;bold=true&amp;name=Kim+Mariano" alt="Profile Image">
                         <div class="name">
-                            <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">Kim Mariano</p>
-                            <small class="text-uppercase fw-bold text-muted mb-0">admin</small>
+                            <p class="fw-bold text-uppercase" style="margin-bottom: -4px;">{{Auth::user()->name}}</p>
+                            <small class="text-uppercase fw-bold text-muted mb-0">{{ Auth::user()->getRoleNames()->first() }}</small>
                         </div>
                     </div>
                     <hr>
@@ -61,9 +61,6 @@
                                 Timekeeping
                             </a>
                             <ul class="submenu">
-                                @can('read timelogs')
-                                    <li><a class="dropdown-item" href="{{route('timekeeping.index')}}">View Time Logs</a></li>
-                                @endcan
                                 @can('write timelogs')
                                     <li><a class="dropdown-item" href="{{route('timekeeping.upload')}}">Add Time Logs</a></li>
                                 @endcan
@@ -85,7 +82,7 @@
                                     <li><a class="dropdown-item" href="{{route('ess.obs')}}">Official Business Slip Application</a></li>
                                 @endcan
                         
-                                @can('read arto')
+                                @can('read atro')
                                     <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
                                 @endcan
                         
@@ -94,7 +91,7 @@
                                 @endcan
                         
                                 @can('read employee-profile-approval')
-                                    <li><a class="dropdown-item" href="{{route('ess.approval-profile.index')}}">Employee Profile Approval</a></li>
+                                    <li><a class="dropdown-item" href="{{route('ess.approval-profile.index', )}}">Employee Profile Approval</a></li>
                                 @endcan
                         
                                 @can('read request-status')

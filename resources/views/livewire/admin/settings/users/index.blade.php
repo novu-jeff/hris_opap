@@ -284,7 +284,7 @@
                                             <td>{{$record->date_hired}}</td>
                                         @endif
                                         <td>
-                                            <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->employee_no])}}" class="btn btn-success mx-1">
+                                            <a target="_blank" href="{{route('hris.show', ['employee_no' => $record->employee_no, 'form' => 'information'])}}" class="btn btn-primary mx-1">
                                                 <i class="fa-solid fa-person"></i>
                                             </a>
                                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">

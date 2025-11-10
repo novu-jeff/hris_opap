@@ -5,6 +5,7 @@ namespace App\Livewire\Employee\BusinessSlip;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeBusinessSlip;
 use App\Notifications\Notifications;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,8 +77,8 @@ class Apply extends Component
             $this->date_filed = $dataToEdit->date_filed;
             $this->destination = $dataToEdit->destination;
             $this->purpose = $dataToEdit->purpose;
-            $this->departure_time = $dataToEdit->departure_time;
-            $this->arrival_time = $dataToEdit->arrival_time;
+            $this->departure_time = Carbon::parse($dataToEdit->departure_time)->format('h:i A');
+            $this->arrival_time = Carbon::parse($dataToEdit->arrival_time)->format('h:i A');
         }
     
         $this->firstname = $employee->first()->firstname;
@@ -121,6 +122,10 @@ class Apply extends Component
             try {
                 $model = EmployeeBusinessSlip::class;
 
+
+                $departure_time = Carbon::createFromFormat('h:i A', $this->departure_time)->format('H:i:s');
+                $arrival_time = Carbon::createFromFormat('h:i A', $this->arrival_time)->format('H:i:s');
+
                 $model::updateOrCreate(
                     ['id' => $this->record_id],
                     [
@@ -128,8 +133,8 @@ class Apply extends Component
                         'date_filed' => $this->date_filed,
                         'destination' => $this->destination,
                         'purpose' => $this->purpose,
-                        'departure_time' => $this->departure_time,
-                        'arrival_time' => $this->arrival_time,
+                        'departure_time' => $departure_time,
+                        'arrival_time' => $arrival_time
                     ]
                 );
 
@@ -151,7 +156,7 @@ class Apply extends Component
                     $redirect = route('ess.obs');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
-                    $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'position', 'department', 'branch');
+                    $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'section', 'position', 'department', 'branch');
 
                     return;
 

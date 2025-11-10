@@ -11,47 +11,50 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('other_earnings', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
+            $table->string('code')
+                ->nullable();
             $table->string('name');
-            $table->enum('amount_basis', [
-                'entry',
-                'basic_salary',
+            $table->enum('amount_type', [
+                'fixed_amount',
                 'percentage',
-            ]);
-            $table->float('amount')
-                ->nullable();
-            $table->enum('frequency_basis', [
-                'monthly',
-                'yearly',
-                'month_picked'
-            ]);
-            $table->string('frequency')
-                ->nullable();
-            $table->string('eligible');
+                'basic_salary'
+            ])->default('fixed_amount');
+            $table->string('first_term')
+                ->nullable()
+                ->default('0');
+            $table->string('second_term')
+                ->nullable()
+                ->default('0');
             $table->boolean('isTaxable')
                 ->default(false);
-            $table->float('forcasted')
-                ->default(0)
-                ->nullable();
-            $table->enum('duration', [
-                'days',
-                'months',
-                'years'
-            ])->nullable();
-            $table->integer('count')->nullable();
-            $table->enum('context', [
-                'from',
-                'prior_to',
-                'subsequent_to'
-            ])->nullable();
-            $table->string('date')
-                ->nullable();
             $table->timestamps();
         });
 
-
+        Schema::create('employee_earnings', function (Blueprint $table) {
+            $table->id();
+            $table->string('employee_no');
+            $table->foreignId('earning_id')
+                ->constrained('other_earnings')
+                ->onDelete('cascade');
+            $table->enum('amount_type', [
+                    'fixed_amount',
+                    'percentage',
+                    'basic_salary'
+                ])->default('fixed_amount');
+            $table->string('amount')
+                ->nullable()
+                ->default(0);
+            $table->string('first_term')
+                ->nullable()
+                ->default('0');
+            $table->string('second_term')
+                ->nullable()
+                ->default('0');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -59,6 +62,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('employee_earnings');
         Schema::dropIfExists('other_earnings');
     }
 };

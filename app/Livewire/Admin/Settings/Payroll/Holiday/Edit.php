@@ -66,12 +66,11 @@ class Edit extends Component
 
             $date = Carbon::parse($this->date)->format('m-d');
 
-            Holiday::where('id', $this->id)
-                ->update([
-                    'name' => $this->name,
-                    'date' => $date,
-                    'type' => $this->type,
-            ]);
+            $holiday = Holiday::find($this->id);
+            $holiday->name = $this->name;
+            $holiday->date = $date;
+            $holiday->type = $this->type;
+            $holiday->save();
 
             DB::commit();
 

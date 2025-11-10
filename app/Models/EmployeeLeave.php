@@ -14,6 +14,7 @@ class EmployeeLeave extends Model
         'employee_no',
         'status',
         'leave_id',
+        'duration',
         'location',
         'location_specific',
         'confinement',
@@ -21,8 +22,6 @@ class EmployeeLeave extends Model
         'study',
         'study_other_purpose',
         'commutation',
-        'from',
-        'to',
     ];
 
     public function employment() {
@@ -35,6 +34,10 @@ class EmployeeLeave extends Model
 
     public function leave_type() {
         return $this->hasOne(LeaveType::class, 'id', 'leave_id');
+    }
+
+    public function dates() {
+        return $this->hasMany(EmployeeLeaveDates::class, 'employee_leave_id', 'id');
     }
 
 }

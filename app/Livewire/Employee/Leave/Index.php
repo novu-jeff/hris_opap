@@ -20,11 +20,11 @@ class Index extends Component
 
     public $selected_id;
     public $user_id;
-    protected $listeners = ['remove'];
+    protected $listeners = ['remove', 'cancel'];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
-    public $status = '';
+    public $status = 'all';
 
     public function mount() {
         $user_id = Auth::user()->employee_no;
@@ -40,15 +40,12 @@ class Index extends Component
         
         $employee_no = $this->user_id;
     
-        // Fetch leave record with employee details
         $records = EmployeeLeave::with('employee.personal', 'employee.positions')->where('employee_no', $employee_no)
             ->where('id', $leave_id)
             ->first();
     
-        // Template file path
         $template = public_path('templates/forms/HRMS-PD Form 03.xlsx');
     
-        // Check if template file exists
         if (!file_exists($template)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
@@ -59,15 +56,13 @@ class Index extends Component
         }
     
         try {
-            // Load the spreadsheet template
             $spreadsheet = IOFactory::load($template);
             $sheet = $spreadsheet->getActiveSheet();
     
-            // Set employee information
             $sheet->setCellValue('G9', strtoupper($records->employee->personal->lastname) ?? '');
             $sheet->setCellValue('I9', strtoupper($records->employee->personal->firstname) ?? '');
             $sheet->setCellValue('N9', strtoupper($records->employee->personal->middlename) ?? '');
-            $sheet->setCellValue('O11', strtoupper($records->employee->monthly_rate) ?? '');
+            $sheet->setCellValue('O11', strtoupper($records->employee->salary) ?? '');
             $sheet->setCellValue('H11', strtoupper($records->employee->positions->name) ?? '');
 
             // Set created date
@@ -90,12 +85,10 @@ class Index extends Component
                 13 => 'C29',
             ];
     
-            // Set leave type
             if (isset($leaveType[$records->leave_id])) {
                 $sheet->setCellValue($leaveType[$records->leave_id], '/');
             }
     
-            // Handle specific leave types with additional conditions
             if($records->leave_id == 1 || $records->leave_id == 6) {
                 if($records->location == 'ph') {
                     $sheet->setCellValue('J18', '/');
@@ -126,31 +119,26 @@ class Index extends Component
                 }
             }
     
-            // Handle commutation
             $sheet->setCellValue($records->commutation == 'YES' ? 'J34' : 'J33', '/');
     
-            // Calculate the number of days covered
             $from = Carbon::parse($records->from);
             $to = isset($records->to) ? Carbon::parse($records->to) : null;
             $daysCovered = $to ? $from->diffInDays($to) + 1 : 1;
 
 
-            // Get holidays from the database
             $holidays = Holiday::pluck('date')->map(function ($date) {
                 return Carbon::createFromFormat('m-d', $date)->format('m-d'); // Normalize to MM-DD
             })->toArray();
 
-            // Generate a period of dates between 'from' and 'to'
             $period = $to ? CarbonPeriod::create($from, $to) : CarbonPeriod::create($from, $from);
             $dates = [];
 
             foreach ($period as $date) {
-                $formattedDate = $date->format('m-d'); // Extract MM-DD format
-                $dayOfWeek = $date->format('D'); // Get day of the week (Sat/Sun)
+                $formattedDate = $date->format('m-d'); 
+                $dayOfWeek = $date->format('D'); 
 
-                // Skip weekends and holidays
                 if ($dayOfWeek !== 'Sat' && $dayOfWeek !== 'Sun' && !in_array($formattedDate, $holidays)) {
-                    $dates[] = $date->format('m/d/y'); // Keep only valid dates
+                    $dates[] = $date->format('m/d/y');
                 }
             }
 
@@ -159,26 +147,25 @@ class Index extends Component
 
             if($records->leave_id == 1) {
                 $vl_latest = $leaveCardBalance->vl_bal;
-                $vl_coveredBal = round(count($dates), 3);
-                $vl_bal = $vl_latest - $vl_coveredBal;
+                $vl_covered = number_format($daysCovered, 2);
+                $vl_bal = $vl_latest - $vl_covered;
             } else if($records->leave_id == 2) {
                 $sl_latest = $leaveCardBalance->sl_bal;
-                $sl_coveredBal = round(count($dates), 3);
-                $sl_bal = $sl_latest - $sl_coveredBal;
+                $sl_covered = number_format($daysCovered, 2);
+                $sl_bal = $sl_latest - $sl_covered;
             }
 
             $sheet->setCellValue('F42', $currentTimestamp ?? '');
 
             $sheet->setCellValue('F45', $vl_latest ?? 0);
-            $sheet->setCellValue('F46', $vl_coveredBal ?? 0);
+            $sheet->setCellValue('F46', $vl_covered ?? 0);
             $sheet->setCellValue('F47', $vl_bal ?? 0);
 
             $sheet->setCellValue('G45', $sl_latest ?? 0);
-            $sheet->setCellValue('G46', $sl_coveredBal ?? 0);
+            $sheet->setCellValue('G46', $sl_covered ?? 0);
             $sheet->setCellValue('G47', $sl_bal ?? 0);
 
-            // Set the days covered and list of dates
-            $sheet->setCellValue('E33', count($dates) . ($daysCovered > 1 ? ' days' : ' day'));
+            $sheet->setCellValue('E33', $daysCovered . ($daysCovered > 1 ? ' days' : ' day'));
             $sheet->setCellValue('E35', implode(', ', $dates));
     
             return response()->streamDownload(function () use ($spreadsheet) {
@@ -234,14 +221,58 @@ class Index extends Component
                 
             if($record) {
                 
-                $record->delete();
+                $record->isDeleted = true;
+                $record->save();
 
                 $this->dispatch('alert', [
                     'status' => 'success',
                     'title' => 'Success!', 
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' deleted successfully.' 
+                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' was deleted successfully.' 
+                ]);
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!', 
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists' 
+                ]);
+            }
+        }
+    }
+
+    public function cancel(bool $isNotify = true, int $id = null) {
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that you are about to cancel your leave application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'cancel';
+
+            $this->selected_id = $id;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeLeave::find($this->selected_id);
+                
+            if($record) {
+                
+                $record->status = 'cancelled';
+                $record->save();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!', 
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' was cancelled successfully.' 
                 ]);
             } else {
                 return $this->dispatch('alert', [
@@ -257,17 +288,20 @@ class Index extends Component
 
     public function render()
     {
-        
-        $model = EmployeeLeave::where('employee_no', $this->user_id);
+        $query = EmployeeLeave::where('employee_no', $this->user_id)
+            ->where('isDeleted', false);
 
-        if ($this->status) {
-            $records = $model->where('status', $this->status);
+        if (!empty($this->status) && $this->status !== 'all') {
+            $status = $this->status === 'granted' ? 'approved' : $this->status;
+            $query->where('status', $status);
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        $records = $query->latest()->paginate($this->entries);
 
         return view('livewire.employee.leave.index', [
             'records' => $records
         ]);
     }
+
+
 }

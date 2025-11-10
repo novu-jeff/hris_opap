@@ -128,8 +128,8 @@
                                                 <thead class="bg-gray-200">
                                                     <tr>
                                                         <th class="border text-uppercase text-center px-4 py-2">Clock In</th>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Break Out</th>
-                                                        <th class="border text-uppercase text-center px-4 py-2">Break In</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Lunch Out</th>
+                                                        <th class="border text-uppercase text-center px-4 py-2">Lunch In</th>
                                                         <th class="border text-uppercase text-center px-4 py-2">Clock Out</th>
                                                     </tr>
                                                 </thead>

@@ -1,12 +1,12 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Add Section (Offices)'
+    'title' => 'HRIS | Add Section'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Add Section (Offices)</h1>
+            <h1>Add Section</h1>
             <p>Create new sections or offices</p>
         </div>
         <div class="actions">

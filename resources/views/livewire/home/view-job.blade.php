@@ -6,7 +6,7 @@
                     <input type="text" name="search" id="search" class="form-control" wire:model.defer='search_query' placeholder="Job, Title, Keyword" value="{{$search_query ?? ''}}">
                 </div>
                 <div class="search-submit">
-                    <button class="btn btn-primary px-4 py-2 text-uppercase fw-bold" wire:click='find'>Search 
+                    <button class="btn btn-primary px-4 py-2 text-light text-uppercase fw-bold" wire:click='find'>Search 
                         <span class="ms-1">
                             <i class="fa-solid fa-magnifying-glass fa-shake"></i>
                         </span>

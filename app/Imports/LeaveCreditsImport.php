@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\EmployeeLeaveCard;
 use App\Models\LeaveCredits;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -29,9 +30,10 @@ class LeaveCreditsImport implements ToModel, WithStartRow, SkipsEmptyRows
 
     public function model(array $row)
     {
+
         if($this->isVlSl) {
             return new EmployeeLeaveCard([
-                'employee_no'    => is_null($this->employee_no) ? $row[0] : $this->employee_no,
+                'employee_no'    => $row[0],
                 'year'           => $row[1] ?? '',
                 'period'         => $row[2] ?? '',
                 'particulars'    => $row[3] ?? '',

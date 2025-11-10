@@ -10,7 +10,9 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('admin.reports.daily-time-record.index')
+        @livewire('admin.reports.daily-time-record.index', [
+            'selectedType' => $type ?? null,
+        ])
     </div>
 </div>
 @endsection

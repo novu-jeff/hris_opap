@@ -520,11 +520,11 @@
                                             </button>
                                         @endif
                                         @if($status == 'hired') 
-                                            <button wire:click="set_action('navigate', '{{$record->id}}')" class="btn btn-primary">
-                                                <span wire:loading.remove wire:target="set_action('navigate', '{{$record->id}}')">
+                                            <button wire:key="navigate-{{$record->id}}" wire:click="set_action('navigate', '{{$record->applicant->id}}')" class="btn btn-primary">
+                                                <span wire:loading.remove wire:target="set_action('navigate', '{{$record->applicant->id}}')">
                                                     <i class="fa-solid fa-briefcase"></i>
                                                 </span>
-                                                <span wire:loading wire:target="set_action('navigate', '{{$record->id}}')">
+                                                <span wire:loading wire:target="set_action('navigate', '{{$record->applicant->id}}')">
                                                     <i class="fa-solid fa-spinner fa-spin"></i>
                                                 </span>
                                             </button>

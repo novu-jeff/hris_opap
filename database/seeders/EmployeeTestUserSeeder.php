@@ -15,77 +15,87 @@ class EmployeeTestUserSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $product = config('app.product');
+        
         $testEmployees = [
             [
                 'employee_no' => 'EMP-TEST-01',
-                'bsd_no' => '01',
-                'company_name' => 'Test Company A',
+                'bsd_no' => '959',
+                'shift_id' => 1,
+                'schedule_id' => 1,
+                'company_name' => '',
                 'email_id' => 'employee.test01@hris.com',
                 'email' => 'employee01@gmail.com',
                 'password' => Hash::make('password'),
-                'firstname' => 'Test',
-                'middlename' => 'A.',
-                'lastname' => 'Employee',
+                'firstname' => 'Kim Anne',
+                'middlename' => 'T.',
+                'lastname' => 'Llemos',
                 'birthday' => '1990-01-01',
                 'sex' => 'male',
                 'status' => 'active',
-                'monthly_rate' => 50000,
+                'salary' => '293191',
                 'payroll_account_number' => '1234567890',
                 'date_hired' => '2025-01-05',
+                'gsis_no' => '10000000001',
+                'pagibig_no' => '10000000002',
+                'philhealth_no' => '10000000003',
+                'sss_no' => '10000000004',
+                'tin_no' => '10000000005',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'employee_no' => 'EMP-TEST-02',
-                'bsd_no' => '02',
-                'company_name' => 'Test Company B',
+                'bsd_no' => '100',
+                'shift_id' => 1,
+                'schedule_id' => 1,
+                'company_name' => '',
                 'email_id' => 'employee.test02@hris.com',
                 'email' => 'employee02@gmail.com',
                 'password' => Hash::make('password'),
-                'firstname' => 'Lorem',
-                'middlename' => null,
-                'lastname' => 'Ipsum',
-                'birthday' => '1995-05-15',
-                'sex' => 'female',
-                'status' => 'active',
-                'monthly_rate' => 45000,
-                'payroll_account_number' => '0987654321',
-                'date_hired' => '2025-01-05',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'employee_no' => 'EMP-TEST-03',
-                'bsd_no' => '03',
-                'company_name' => 'Test Company C',
-                'email_id' => 'employee.test03@hris.com',
-                'email' => 'employee03@gmail.com',
-                'password' => Hash::make('password'),
-                'firstname' => 'Demo',
-                'middlename' => 'B.',
-                'lastname' => 'Employee',
-                'birthday' => '1988-03-10',
+                'firstname' => 'Albert',
+                'middlename' => 'R.',
+                'lastname' => 'Yabut',
+                'birthday' => '1990-01-01',
                 'sex' => 'male',
                 'status' => 'active',
-                'monthly_rate' => 55000,
-                'payroll_account_number' => '1122334455',
+                'salary' => '293191',
+                'payroll_account_number' => '1234567890',
                 'date_hired' => '2025-01-05',
+                'gsis_no' => '20000000001',
+                'pagibig_no' => '20000000002',
+                'philhealth_no' => '20000000003',
+                'sss_no' => '20000000004',
+                'tin_no' => '20000000005',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ];
         
         foreach ($testEmployees as $employee) {
+
+            if($product == 'government') {
+                $section_id = rand(1,3);
+                $position_id = 1;
+                $employment_type_id = 1;
+            }
+
             EmployeeInformation::updateOrCreate(
-                ['employee_no' => $employee['employee_no']], // Unique field for updating or creating
+                ['employee_no' => $employee['employee_no']], 
                 [
                     'employee_no' => $employee['employee_no'],
                     'bsd_no' => $employee['bsd_no'],
                     'date_hired' => $employee['date_hired'],
+                    'employment_type_id' => $employment_type_id ?? null,
+                    'shift_id' => $employee['shift_id'],
+                    'schedule_id' => $employee['schedule_id'],
+                    'section_id' => $section_id ?? null,
+                    'position_id' => $position_id ?? null,
+                    'salary' => $employee['salary']
                 ]
             );
         
-            // Create related personal and account records
             EmployeePersonal::updateOrCreate(
                 ['employee_no' => $employee['employee_no']],
                 [
@@ -94,6 +104,11 @@ class EmployeeTestUserSeeder extends Seeder
                     'lastname' => $employee['lastname'],
                     'birthday' => $employee['birthday'],
                     'sex' => $employee['sex'],
+                    'gsis_no' => $employee['gsis_no'],
+                    'pagibig_no' => $employee['pagibig_no'],
+                    'philhealth_no' => $employee['philhealth_no'],
+                    'sss_no' => $employee['sss_no'],
+                    'tin_no' => $employee['tin_no'],
                 ]
             );
         

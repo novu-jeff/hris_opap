@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class BusinessSlipController extends Controller
 {
@@ -18,7 +17,7 @@ class BusinessSlipController extends Controller
         return view('employee.business-slip', [
             'action' => 'view',
             'title' => 'ESS | Business Slip Applications',
-            'header' => 'Manage Business Slip',
+            'header' => 'Manage Business Applications',
             'sub' => 'Track and monitor your OB applications.'
         ]);
     }
@@ -29,7 +28,7 @@ class BusinessSlipController extends Controller
             'action' => 'create',
             'title' => 'Apply Business Slip',
             'header' => 'Business Slip Application',
-            'sub' => 'By proceeding, you\'ll be able to apply for a Business Slip.'
+            'sub' => 'By proceeding, you\'ll be able to apply for a business application.'
         ]);
 
     }

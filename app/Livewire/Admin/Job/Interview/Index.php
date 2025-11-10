@@ -19,7 +19,7 @@ class Index extends Component
     public $search = '';
 
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if (Gate::denies('write assessments')) {
             $this->dispatch('alert', [
