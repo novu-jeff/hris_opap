@@ -21,4 +21,8 @@ class EmployeeAnnouncements extends Model
         return $this->hasMany(EmployeeAnnouncementAttachments::class, 'announcement_id');
     }
 
+    public function seen() {
+        return $this->hasMany(EmployeeAnnouncementsSeen::class, 'announcement_id');
+    }
+
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeDailyTimeRecordController extends Controller
 {
@@ -16,6 +17,8 @@ class EmployeeDailyTimeRecordController extends Controller
 
     public function index(Request $request)
     {
+
+        $employee_no = Auth::user()->employee_no;
 
         $month = $request->input('month'); 
         $year = $request->input('year');
@@ -28,7 +31,7 @@ class EmployeeDailyTimeRecordController extends Controller
                 $month = $date->format('F');
                 $year = $date->format('Y');
             } else {
-                $date = Carbon::createFromFormat('d/m/Y H:i', $date)->format('F, Y');
+                $date = Carbon::parse($date)->format('F, Y');
 
                 $month = trim(explode(',', $date)[0]);
                 $year = trim(explode(',', $date)[1]);
@@ -55,16 +58,19 @@ class EmployeeDailyTimeRecordController extends Controller
             'header' => 'Daily Time Record',
             'sub' => 'My Daily Time Record',
             'month' => $month,
-            'year' => $year
+            'year' => $year,
+            'employee_no' => $employee_no
         ]);        
     }
 
     private function getLatestRecordDate() {
-        $latestRecord = EmployeeTimelogs::orderBy('logdatetime', 'desc')->first();
+        $latestRecord = EmployeeTimelogs::orderBy('timestamp', 'desc')->first();
+        
         if(is_null($latestRecord)) {
             return null;
         }
 
-        return $latestRecord->logdatetime;
+        return $latestRecord->timestamp;
     }
+
 }

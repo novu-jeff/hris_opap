@@ -30,5 +30,4 @@ class EmployeeUpdateParents extends Model
         'mother_middlename',
     ];
 
-    public $timestamps = false;
 }

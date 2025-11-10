@@ -91,12 +91,12 @@ class Edit extends Component
 
         try {
 
-            Sections::where('id', $this->id)->update([
-                'code' => $this->fields['code'],
-                'name' => $this->fields['name'],
-                'branch_id' => $this->fields['branch'],
-                'department_id' => $this->fields['department'],
-            ]);
+            $section = Sections::find($this->id);
+            $section->code = $this->fields['code'];
+            $section->name = $this->fields['name'];
+            $section->branch_id = $this->fields['branch'];
+            $section->department_id = $this->fields['department'];
+            $section->save();
 
             DB::commit();
 

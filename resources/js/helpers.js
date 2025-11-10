@@ -137,123 +137,54 @@ export function convertToHoursAndMinutes(mins) {
     return `${hours} hr ${minutes} min`;
 }
 
+export function getGPSCoordinates() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject('Geolocation is not supported by your browser.');
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const coords = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    resolve(coords);
+                },
+                (error) => {
+                    reject(`Geolocation error: ${error.message}`);
+                }
+            );
+        }
+    });
+}
 
-export function getLocation(token) {
+export function setupMap(token, center, width = 120, height = 100) {
+    const mapContainer = document.getElementById("map");
+
+    if (!mapContainer) {
+        console.error("Error: #map container not found in the DOM.");
+        return;
+    }
+
+    mapContainer.style.width = `${width}px`;
+    mapContainer.style.height = `${height}px`;
+
     mapboxgl.accessToken = token;
 
-    let infoBox = $('#location-info');
-    infoBox.html("<div class='mb-2 text-nowrap' style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>Locating <i class='ms-2 fa-solid fa-spinner fa-spin'></i></div>");
-
-    // Watch the position in real time
-    navigator.geolocation.watchPosition(successLocation, handleError, {
-        enableHighAccuracy: true,
-        maximumAge: 1000,  // Set the maximum age for location data to avoid stale information
-        timeout: 5000  // Set a timeout for location fetching
-    });
-
-    function successLocation(position) {
-        const { latitude, longitude } = position.coords;
-        setupMap([longitude, latitude]);
-        getAddress(longitude, latitude);
-    }
-
-    function handleError(error) {
-        let $card = $('.clock-process'); // Select elements with wire:click
-    
-        // Set initial opacity
-        $card.css('opacity', '0.5');
-    
-        // Remove wire:click after a short delay
-        setTimeout(() => {
-            $card.removeAttr('wire:click wire:target');
-        }, 1500); // Adjust delay as needed
-    
-        Swal.fire({
-            icon: "info",
-            title: "Please be informed",
-            text: "Camera and location access are required to continue. Please ensure both are enabled in your device settings before proceeding.",
-            confirmButtonText: "Got it",
-            confirmButtonColor: "#143953" 
-        });         
-    }
-
-    function setupMap(center) {
-        if (!document.getElementById("map")) {
-            console.error("Error: #map container not found in the DOM.");
-            return;
-        }
-
+    try {
         const map = new mapboxgl.Map({
             container: "map",
             style: "mapbox://styles/mapbox/streets-v12",
             center: center,
             zoom: 14,
             interactive: false,
-
-            // Allows html2canvas to capture WebGL map
             preserveDrawingBuffer: true,
         });
 
         new mapboxgl.Marker().setLngLat(center).addTo(map);
-    }
 
-    function getAddress(lng, lat) {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`;
-
-        $.getJSON(url, function (data) {
-            if (!data.features || data.features.length === 0) {
-                console.error("No location data found");
-                displayAddress("Location not found", lng, lat);
-                return;
-            }
-
-            const features = data.features;
-            const placeName = features[0]?.place_name || "Location not found";
-            const city = getFeature(features, 'place') || "Unknown City";
-            const province = getFeature(features, 'region') || "Unknown Province";
-            const country = getFeature(features, 'country') || "Unknown Country";
-            const address = features[0]?.text || "Unknown Address";
-            const region = getRegion(features[0]?.context) || "Unknown Region";
-            const postalCode = getFeature(features, 'postcode') || "Unknown Postal Code";
-
-            const formattedAddress = `
-                <div class='mb-0'>${city}, ${province}, ${country}</div>
-                <div class='mb-0'>${address}, ${region}, ${postalCode} ${country}</div>
-                <div class='mb-0'>Lat ${lat.toFixed(5)} ° , Long ${lng.toFixed(5)} °</div>
-                <div class='mb-0'>${getCurrentDateTime()}</div>
-            `;
-
-            displayAddress(formattedAddress, lng, lat);
-        }).fail(function () {
-            displayAddress("Unable to retrieve address", lng, lat);
-        });
-    }
-
-    function getFeature(features, type) {
-        return features.find(f => f.place_type.includes(type))?.text || null;
-    }
-
-    function getRegion(context) {
-        if (!context) return null;
-        const regionFeature = context.find(f => f.id.includes('region'));
-        return regionFeature ? regionFeature.text.toUpperCase() : null;
-    }
-
-    function getCurrentDateTime() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, "0");
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const year = String(now.getFullYear()).slice(-2);
-        const hours = now.getHours() % 12 || 12;
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-        const ampm = now.getHours() >= 12 ? "PM" : "AM";
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        return `${day}/${month}/${year} ${hours}:${minutes} ${ampm} ${timeZone}`;
-    }
-
-    function displayAddress(address, lng, lat) {
-        infoBox.html(address);
+        map.on('load', () => map.resize());
+    } catch (e) {
+        console.error("Mapbox failed to initialize:", e);
     }
 }
-

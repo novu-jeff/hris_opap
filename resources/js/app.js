@@ -1,15 +1,19 @@
 import './bootstrap';
 import {post, put, _delete} from './actions';
 import './livewire';
+import { initTimePicker } from './timepicker.js';
 import { 
     reinitializeDataTable, 
     copy_link, 
     ckeditor, 
     formatTime,
     convertToHoursAndMinutes,
-    getLocation
+    getGPSCoordinates,
+    setupMap
 }
 from './helpers';
+import { initializeClockFace } from './clock-face.js';
+
 
 window.post = post;
 window.put = put
@@ -19,10 +23,13 @@ window.copy_link = copy_link;
 window.reinitializeDataTable = reinitializeDataTable;
 window.formatTime = formatTime;
 window.convertToHoursAndMinutes = convertToHoursAndMinutes;
-window.getLocation = getLocation;
-
+window.getGPSCoordinates = getGPSCoordinates;
+window.setupMap = setupMap;
+window.initializeClockFace = initializeClockFace;
 
 $(function() {
+
+    initTimePicker();
 
     Fancybox.bind('[data-fancybox]', {
         
@@ -74,26 +81,38 @@ $(function() {
 
     $('.submenu').hide();
 
-    // Handle clicks on toggle links
     $('.toggle-link').on('click', function (e) {
         e.preventDefault();
         const submenu = $(this).siblings('.submenu');
 
-        // Close other submenus on the same level
         $(this).closest('.list-item').siblings().find('.submenu').slideUp();
 
-        // Close nested submenus inside the current submenu
         submenu.find('.submenu').slideUp();
 
-        // Toggle the current submenu
         submenu.slideToggle();
     });
 
-    // Ensure submenus are closed when clicking outside the menu
     $(document).on('click', function (e) {
         if (!$(e.target).closest('.list-item').length) {
             $('.submenu').slideUp();
         }
+    });
+
+    window.addEventListener('wheel', function (e) {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    window.addEventListener('keydown', function (e) {
+        const zoomKeys = ['+', '-', '=', '0'];
+        if ((e.ctrlKey || e.metaKey) && zoomKeys.includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
     });
 
 });

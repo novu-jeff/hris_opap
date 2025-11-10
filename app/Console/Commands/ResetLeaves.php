@@ -46,7 +46,7 @@ class resetLeaves extends Command
             $afterInterval = Carbon::parse($savedTimestamp)->addHours($resetInterval);
             $now = Carbon::now();
 
-            if ($product == 'opap') {
+            if ($product == 'government') {
                 if ($now >= $afterInterval) {
                     $users = EmployeeInformation::with('personal')->where('employment_type_id', 1)
                         ->get();

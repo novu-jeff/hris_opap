@@ -18,7 +18,9 @@
         </div>
     </div>
     <div class="mt-3">
-        @livewire('employee.profile')
+        @livewire('employee.profile', [
+            'form' => $form
+        ])
     </div>
 </div>
 @endsection

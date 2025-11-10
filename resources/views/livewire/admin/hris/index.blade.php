@@ -41,7 +41,7 @@
                                                 <li>
                                                     {{ $updated['message'] }}
                                                     <span class="ms-2">
-                                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $updated['employee_no']])}}" class="text-decoration-underline text-primary">View</a>
+                                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $updated['employee_no'], 'form' => 'information'])}}" class="text-decoration-underline text-primary">View</a>
                                                     </span>
                                                 </li>
                                             @endforeach
@@ -144,7 +144,7 @@
                                 <div class="alert alert-danger d-flex justify-content-center gap-3 align-items-center" role="alert">
                                     <i class="fa-solid fa-triangle-exclamation fs-5"></i>
                                     <div class="text-uppercase fw-bold">
-                                        Please do not close the modal or reload the page to prevent errors during the upload process.
+                                        Please do not close the modal or refresh the page to prevent errors during the upload process.
                                     </div>
                                 </div>  
                             </div> 
@@ -156,11 +156,42 @@
     </div>
     
     <div class="d-lg-flex justify-content-end text-center mb-5 gap-3">
+        @if(config('app.product') === 'government')
+        <a href="{{route('hris.staffing')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase mb-3">View Staffing</a>
+        @endif
         <button class="btn btn-primary px-5 py-3 text-uppercase mb-3" data-bs-toggle="modal" data-bs-target="#upload_employee">Add Employee</button>
     </div>
 
     <div>
         <div class="row mb-5">
+            <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('hris.index') }}"
+                    class="nav-link text-uppercase fw-bold {{ is_null($selectedType) ? 'active' : '' }}">
+                        All
+                    </a>
+                </li>
+                @foreach($employmentTypes as $employmentType)
+                    <li class="nav-item d-flex gap-3 my-3" role="presentation">
+                        <a href="{{ route('hris.index', ['employment_type' => $employmentType->id]) }}"
+                        class="nav-link text-uppercase fw-bold {{ $selectedType == $employmentType->id ? 'active' : '' }}">
+                            {{ $employmentType->name }}
+                        </a>
+                    </li>
+                @endforeach
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('hris.index', ['employment_type' => 'unassigned']) }}"
+                    class="nav-link text-uppercase fw-bold {{ $selectedType === 'unassigned' ? 'active' : '' }}">
+                        Unassigned
+                    </a>
+                </li>
+                <li class="nav-item ms-auto d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('hris.index', ['employment_type' => 'archived']) }}"
+                    class="nav-link text-uppercase fw-bold {{ $selectedType === 'archived' ? 'active' : '' }}">
+                        Archived
+                    </a>
+                </li>
+            </ul>
             <div class="col-md-6 d-flex align-items-center gap-2">
                 <label for="entries" class="form-label mb-0">Show entries:</label>
                 <select id="entries" wire:model.live="entries" class="form-select w-auto">
@@ -197,26 +228,69 @@
                     @forelse($employees as $key => $item)
                         <tr data-id="{{$item->employee_no}}">
                             <td class="text-center">
-                                <img style="width: 50px; height: 50px;"
-                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($item->personal->firstname . ' ' . $item->personal->lastname) }}">              
+                                @php
+                                    $fullname = optional($item->personal)->firstname && optional($item->personal)->lastname
+                                        ? $item->personal->firstname . ' ' . $item->personal->lastname
+                                        : null;
+                                @endphp
+
+                                @if(!$item->isTransferingEmp)
+                                    <img style="width: 50px; height: 50px;"
+                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname ?? 'UK') }}">
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
                             </td>
                             <td>{{$item->employee_no}}</td>
-                            <td>{{$item->personal->firstname . ' ' . $item->personal->lastname}}</td>
-                            <td>{{format_date($item->date_hired, 'day_date_string')}}</td>
+                            <td>
+                                @if(!$item->isTransferingEmp)
+                                    {!! $fullname ?? '<span class="text-muted fst-italic">No Name</span>' !!}
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if(!$item->isTransferingEmp)
+                                    {{format_date($item->date_hired, 'day_date_string')}}
+                                @else
+                                    <span class="text-muted fst-italic">Loading...</span>
+                                @endif
+                            </td>
                             <td wire:ignore.self>
                                 <div class="d-flex gap-2">
-                                    <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                        <i class="fa-solid fa-download"></i>
-                                    </a>
-                                    <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no])}}" class="btn btn-primary">
-                                        <i class="fa-regular fa-folder-open"></i>
-                                    </a>
-                                    <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info">
-                                        <i class="fa-solid fa-business-time"></i>
-                                    </a>
-                                    <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    @if($selectedType == 'archived')
+                                        <button wire:click="restore('true', '{{$item->employee_no}}')" class="btn btn-info"
+                                            title="Restore Archived Employee">
+                                            <i class="fa-solid fa-retweet"></i>
+                                        </button>
+                                    @else
+                                        <a target="_blank" href="{{route('download.view', ['show' => 'employee', 'employee_no' => $item->employee_no])}}" class="btn btn-primary"
+                                            title="Download PDS">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                        <a target="_blank" href="{{route('hris.show', ['employee_no' => $item->employee_no, 'form' => 'information'])}}" class="btn btn-primary"
+                                            title="View Employee Records">
+                                            <i class="fa-regular fa-folder-open"></i>
+                                        </a>
+                                        <a target="_blank" href="{{route('dtr.show', ['id' => $item->employee_no])}}" class="btn btn-info"
+                                            title="View DTR">
+                                            <i class="fa-solid fa-business-time"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" wire:click="changeEmployeeNo('{{ $item->employee_no }}')" class="btn btn-info"
+                                            title="Change Employee No.">
+                                            <i class="fa-solid fa-person-walking-arrow-loop-left"></i>
+                                        </a>
+                                        @if(optional($item->account)->isLocked)
+                                            <button wire:click="unlock('true', '{{ $item->employee_no }}')" class="btn btn-info"
+                                                title="Unlock Employee Account">
+                                                <i class="fa-solid fa-lock-open"></i>
+                                            </button>
+                                        @endif
+                                        <button wire:click="remove('true', '{{$item->employee_no}}')" class="btn btn-danger"
+                                            title="Remove Employee">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -232,4 +306,7 @@
             </div>
         </div>     
     </div>
+
+    @livewire('admin.hris.change-employee-no')
+
 </div>

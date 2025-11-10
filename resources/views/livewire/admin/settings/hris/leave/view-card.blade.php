@@ -23,60 +23,51 @@
                 </thead>
                 <tbody>
                     @forelse($records as $year => $data)
-                        <tr class="year-header">
-                            <td colspan="1">
-                                {{$year}} 
-                            </td>
+                        <tr class="year-header" data-year="{{ $year }}" style="cursor: pointer; background-color: #f8f9fa;">
+                            <td colspan="1">{{ $year }}</td>
                             <td colspan="3" style="font-weight: 500 !important">
-                                {{$total_bal[$year]['vl'] != 0 || $total_bal[$year]['sl'] != 0 ? '(Bal. brought forward)' : ''}}
+                                {!! $total_bal[$year]['vl'] != 0 || $total_bal[$year]['sl'] != 0 ? '(Bal. brought forward from ' . ($year - 1) . ')' : '' !!}
                             </td>
                             <td colspan="4">
-                                <strong>
-                                    {{ $total_bal[$year]['vl'] != 0 ? $total_bal[$year]['vl'] : '' }}
-                                </strong>
+                                <strong>{{ $total_bal[$year]['vl'] != 0 ? $total_bal[$year]['vl'] : '' }}</strong>
                             </td>
                             <td colspan="12">
-                                <strong>
-                                    {{ $total_bal[$year]['sl'] != 0 ? $total_bal[$year]['sl'] : '' }}
-                                </strong>
+                                <strong>{{ $total_bal[$year]['sl'] != 0 ? $total_bal[$year]['sl'] : '' }}</strong>
                             </td>
                         </tr>
-                    
+                        @php 
+                            $latestYear = collect($records)->keys()->max();
+                        @endphp
                         @foreach($data['items'] as $key => $item)
-                        <tr>
-                            <td>{{ $item['period'] }}</td>
-                            <td>
-                                <textarea wire:model="particulars.{{$year}}.{{ $key }}" wire:key="particulars-{{$year}}.{{ $key }}" class="form-control" style="width: 400px; height: 100px;"></textarea>
-                            </td>
-                            <td>
-                                <input type="text" wire:key="vl_earned-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_earned'] ?? '' }}">
-                            </td>
-                            <td style="color: red">
-                                <input type="text" wire:key="vl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_w_pay'] ?? '' }}">
-                            </td>
-                            <td style="color: red">
-                                {{$vl_bal[$year][$key]}}
-                            </td>
-                            <td>
-                                <input type="text" wire:key="vl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="vl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_wo_pay'] ?? '' }}">
-                            </td>
-                            <td>
-                                <input type="text" wire:key="sl_earned-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_earned'] ?? '' }}">
-                            </td>
-                            <td style="color: red">
-                                <input type="text" wire:key="sl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_w_pay'] ?? '' }}">
-                            </td>
-                            <td style="color: red">
-                                {{$sl_bal[$year][$key]}}
-                            </td>
-                            <td>
-                                <input type="text" wire:key="sl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="sl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_wo_pay'] ?? '' }}">
-                            </td>
-                            <td>
-                                <textarea wire:model="remarks.{{$year}}.{{ $key }}" wire:key="remarks-{{$year}}.{{ $key }}" class="form-control" style="width: 200px; height: 80px;"></textarea>
-                            </td>                            
-                        </tr>  
-                                        
+                            <tr class="year-content" wire:ignore.self data-year="{{ $year }}" style="{{ $year == $latestYear ? '' : 'display: none;' }}">
+                                <td>{{ $item['period'] }}</td>
+                                <td>
+                                    <textarea wire:model="particulars.{{$year}}.{{ $key }}" wire:key="particulars-{{$year}}.{{ $key }}" class="form-control" style="width: 400px; height: 100px;"></textarea>
+                                </td>
+                                <td>
+                                    <input type="text" wire:key="vl_earned-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_earned'] ?? '' }}">
+                                </td>
+                                <td style="color: red">
+                                    <input type="text" wire:key="vl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('vl', {{$year}}, {{$key}})" wire:model="vl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_w_pay'] ?? '' }}">
+                                </td>
+                                <td style="color: red">{{ $vl_bal[$year][$key] }}</td>
+                                <td>
+                                    <input type="text" wire:key="vl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="vl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['vl_aut_wo_pay'] ?? '' }}">
+                                </td>
+                                <td>
+                                    <input type="text" wire:key="sl_earned-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_earned.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_earned'] ?? '' }}">
+                                </td>
+                                <td style="color: red">
+                                    <input type="text" wire:key="sl_aut_w_pay-{{$year}}.{{ $key }}" wire:change="onChange('sl', {{$year}}, {{$key}})" wire:model="sl_aut_w_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_w_pay'] ?? '' }}">
+                                </td>
+                                <td style="color: red">{{ $sl_bal[$year][$key] }}</td>
+                                <td>
+                                    <input type="text" wire:key="sl_aut_wo_pay-{{$year}}.{{ $key }}" wire:model="sl_aut_wo_pay.{{$year}}.{{ $key }}" class="form-control" style="width: 100px;" value="{{ $item['sl_aut_wo_pay'] ?? '' }}">
+                                </td>
+                                <td>
+                                    <textarea wire:model="remarks.{{$year}}.{{ $key }}" wire:key="remarks-{{$year}}.{{ $key }}" class="form-control" style="width: 200px; height: 80px;"></textarea>
+                                </td>
+                            </tr>
                         @endforeach
                     @empty
                         <tr>
@@ -86,11 +77,27 @@
                 </tbody>
             </table>
         </div>
-        <div class="d-flex justify-content-end mt-5">
-            <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
-                <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-            </button>
+        <div class="d-flex justify-content-between mt-5 gap-3">
+            @if($records->isNotEmpty())
+                <div class="d-flex gap-3">
+                    <div class="dropdown">
+                        <button type="button" wire:click="removeYear(true)" class="btn btn-outline-primary px-5 py-3 text-uppercase fw-bold" role="button">
+                            <span wire:loading.remove wire:target="removeYear">Remove Latest </span>
+                            <span wire:loading wire:target="removeYear"> <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                        </button>
+                    </div>
+                    <button type="button" wire:click="addYear" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="addYear">Add Slot </span>
+                        <span wire:loading wire:target="addYear"> <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
+                </div>
+            @endif
         </div>
     </form>
 
@@ -118,3 +125,17 @@
         }
     </style>
 </div>
+@section('script')
+<script type="module">
+    $(document).ready(function () {
+
+        $(".year-header").click(function () {
+            let year = $(this).data("year");
+
+            $(".year-content").not("[data-year='" + year + "']").hide();
+
+            $(".year-content[data-year='" + year + "']").toggle();
+        });
+    });
+</script>
+@endsection

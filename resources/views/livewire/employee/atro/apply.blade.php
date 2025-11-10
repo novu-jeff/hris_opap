@@ -7,70 +7,70 @@
                 </div>
                 <hr class="mx-3">
                 <div class="card-body">
-                    @foreach($fields as $index => $field)
-                        <div class="row mb-3">
-                            <div class="col-12 col-md-4 mb-3">
-                                <label for="date-{{ $index }}" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
-                                <input 
-                                    type="date" 
-                                    id="date-{{ $index }}" 
-                                    class="form-control @error('fields.' . $index . '.date') is-invalid @enderror" 
-                                    wire:model="fields.{{ $index }}.date"
-                                >
-                                <div class="error-field">
-                                    @error('fields.' . $index . '.date') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="date" 
+                                id="date" 
+                                class="form-control @error('fields.date') is-invalid @enderror" 
+                                wire:model="fields.date"
+                            >
+                            <div class="error-field">
+                                @error('fields.date') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-12 col-md-4 mb-3">
-                                <label for="start-time-{{ $index }}" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
-                                <input 
-                                    type="time" 
-                                    id="start-time-{{ $index }}" 
-                                    class="form-control @error('fields.' . $index . '.start_time') is-invalid @enderror" 
-                                    wire:model="fields.{{ $index }}.start_time"
-                                >
-                                <div class="error-field">
-                                    @error('fields.' . $index . '.start_time') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="text" 
+                                id="start-time" 
+                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror" 
+                                wire:model="fields.start_time"
+                            >
+                            <div class="error-field">
+                                @error('fields.start_time') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-12 col-md-4 mb-3">
-                                <label for="end-time-{{ $index }}" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
-                                <input 
-                                    type="time" 
-                                    id="end-time-{{ $index }}" 
-                                    class="form-control @error('fields.' . $index . '.end_time') is-invalid @enderror" 
-                                    wire:model="fields.{{ $index }}.end_time"
-                                >
-                                <div class="error-field">
-                                    @error('fields.' . $index . '.end_time') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="text" 
+                                id="end-time" 
+                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror" 
+                                wire:model="fields.end_time"
+                            >
+                            <div class="error-field">
+                                @error('fields.end_time') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-12 col-md-12 mb-3">
-                                <label for="justification-{{ $index }}" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
-                                <textarea 
-                                    rows="5" 
-                                    placeholder="Write something..."
-                                    id="justification-{{ $index }}" 
-                                    class="form-control @error('fields.' . $index . '.justification') is-invalid @enderror" 
-                                    wire:model="fields.{{ $index }}.justification"
-                                ></textarea>
-                                <div class="error-field">
-                                    @error('fields.' . $index . '.justification') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                        </div>
+                        <div class="col-12 col-md-12 mb-3" wire:ignore>
+                            <label for="relative-emp" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
+                            <select class="form-select multi-select" multiple wire:model="fields.employees">
+                                @foreach($OtherEmployees as $employee)
+                                    <option value="{{ $employee->employee_no }}">
+                                        ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
+                                    </option>
+                                @endforeach
+                            </select>                                
+                            <div class="error-field select2-error">
+                                
                             </div>
-                            <div class="col-md-12 text-end mt-3">
-                                @if($index > 0)
-                                    <button type="button" class="btn btn-danger float-end px-3 py-2 text-uppercase" wire:click="removeField({{ $index }})">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                @endif
+                        </div>
+                        <div class="col-12 col-md-12 mb-3">
+                            <label for="justification" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
+                            <textarea 
+                                rows="5" 
+                                placeholder="Write something..."
+                                id="justification" 
+                                class="form-control @error('fields.justification') is-invalid @enderror" 
+                                wire:model="fields.justification"
+                            ></textarea>
+                            <div class="error-field">
+                                @error('fields.justification') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
-                        </div>                    
-                        <hr>
-                    @endforeach
-                    <button type="button" class="btn btn-dark float-end px-3 py-2 text-uppercase" wire:click="addField">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
+                        </div>
+                    </div>  
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end gap-3">
@@ -83,3 +83,26 @@
         </div>
     </div>
 </form>
+
+@section('script')
+    <script>
+        $(function() {
+            $('.multi-select').select2();
+
+            $('.multi-select').on('change', function (e) {
+                const data = $('.multi-select').select2('val');
+                @this.dispatch('onChange', [data ?? null]);
+            });
+
+
+            Livewire.on('reloadSelect2', () => {
+                $('.multi-select').select2();
+            });
+
+            Livewire.on('select2Err', (error) => {
+                $('.select2-error').html('<span class="text-danger">'+error+'</span>');
+            });
+
+        });
+    </script>
+@endsection

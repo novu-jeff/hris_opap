@@ -9,6 +9,7 @@ class EmployeeInformation extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql';
     protected $table = 'employee_information';
 
     protected $fillable = [
@@ -20,18 +21,18 @@ class EmployeeInformation extends Model
         'position_id',
         'job_completion',
         'date_hired',
+        'company_name',
         'date_resignation',
         'employment_type_id',
         'status',
         'salary_method',
-        'monthly_rate',
-        'daily_rate',
-        'company_name',
+        'salary',
+        'salary_type',
         'bank_account_no',
         'payroll_account_number',
+        'isTransferingEmp'
     ];
     
-    public $timestamps = false;
 
     public function section() {
         return $this->hasOne(Sections::class, 'id', 'section_id');
@@ -91,6 +92,10 @@ class EmployeeInformation extends Model
 
     public function leave_credits() {
         return $this->hasOne(LeaveCredits::class, 'employee_no', 'employee_no');
+    }
+
+    public function earnings() {
+        return $this->hasOne(EmployeeEarnings::class, 'employee_no', 'employee_no');
     }
 
     public function deductions() {

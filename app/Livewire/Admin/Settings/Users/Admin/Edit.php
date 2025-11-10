@@ -99,14 +99,15 @@ class Edit extends Component
             $user = User::find($this->id);
 
             if ($user) {
-                $updateData = array_filter([
-                    'name' => $this->name,
-                    'username' => $this->username,
-                    'email' => $this->email,
-                    'password' => $this->password ? bcrypt($this->password) : null, // Hash password if provided
-                ], fn($value) => !is_null($value) && $value !== '');
+                $user->name = $this->name;
+                $user->username = $this->username;
+                $user->email = $this->email;
 
-                $user->update($updateData);
+                if ($this->password) {
+                    $user->password = bcrypt($this->password); // Hash password if provided
+                }
+
+                $user->save();
             }
 
             $user->assignRole($this->role);

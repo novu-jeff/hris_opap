@@ -7,7 +7,7 @@
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
             <h1>Leave Applications</h1>
-            <p>Manage all employee's application</p>
+            <p>Manage all applications</p>
         </div>
     </div>
     <div class="mt-3">

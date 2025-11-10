@@ -17,4 +17,9 @@ class CompanyInformation extends Model
         'type_id'
     ];
 
+    public function type()
+    {
+        return $this->belongsTo(CompanyBusinessType::class, 'type_id');
+    }
+
 }

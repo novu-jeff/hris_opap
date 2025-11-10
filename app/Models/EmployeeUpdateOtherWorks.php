@@ -14,12 +14,10 @@ class EmployeeUpdateOtherWorks extends Model
     protected $fillable = [
         'employee_no',
         'organization',
-        'address',
         'date_from',
         'date_to',
         'consumed_hours',
         'position',
+        'documents'
     ];
-
-    public $timestamps = false;
 }

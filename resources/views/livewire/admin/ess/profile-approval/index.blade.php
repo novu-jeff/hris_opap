@@ -31,23 +31,22 @@
                                 <tr>
                                     <th>Employee No.</th>
                                     <th>Employee Name</th>
+                                    <th>Updates Made</th>
                                     <th>Date Applied</th>
                                     <th style="max-width: 200px;">Action</th>
                                 </tr>
                             </thead>                
                             <tbody>
                                 @forelse($records as $record)
-                                    <tr data-id="{{$record->id}}">
-                                        <td>{{$record->employee_no}}</td>
-                                        <td>{{$record->firstname . ' ' . $record->lastname}}</td>
-                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
+                                    <tr data-id="{{$record['id']}}">
+                                        <td>{{$record['employee_no']}}</td>
+                                        <td>{{$record['name']}}</td>
+                                        <td>{{$record['types']}}</td>
+                                        <td>{{$record['date_applied']}}</td>
                                         <td>
-                                            <a target="_blank" href="{{route('ess.approval-profile.edit', ['approval' => $record->employee_no])}}" class="btn btn-primary mx-1">
+                                            <a target="_blank" href="{{route('ess.approval-profile.show', ['employee_no' => $record['employee_no'], 'form' => $record['type']])}}" class="btn btn-primary mx-1">
                                                 <i class="fa-solid fa-eye"></i>
                                             </a>
-                                            <button wire:click='remove(true, "{{$record->employee_no}}")' class="btn btn-danger mx-1">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
                                         </td>
                                     </tr>
                                 @empty

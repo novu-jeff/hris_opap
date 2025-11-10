@@ -3,6 +3,7 @@
 namespace App\Livewire\Employee;
 
 use App\Models\EmployeeAnnouncements;
+use App\Models\EmployeeAnnouncementsSeen;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,6 +16,7 @@ class Announcements extends Component
     public $record_id;
     public $user_id;
     public $nextAndPrev;
+    public $seenBy;
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 6;
@@ -31,6 +33,8 @@ class Announcements extends Component
         }
 
         $this->loadRecords();
+        $this->getSeen($user_id);
+        $this->makeSeen($user_id);
 
         return $this->user_id = $user_id;
     }
@@ -39,19 +43,20 @@ class Announcements extends Component
         $records = EmployeeAnnouncements::with('attachments')
             ->where('isDeleted', false);
 
-        if(!is_null($this->record_id)) {
+        if (!is_null($this->record_id)) {
             
-            $records = $records->where('id', $this->record_id)->first();
+            $record = $records->where('id', $this->record_id)->first();
 
-            if(!$records) {
+            if (!$record) {
                 return redirect()->route('employee.announcements.index');
             }
 
-            $this->getPreviousNextAnnouncements($records->id);
+            $this->getPreviousNextAnnouncements($record->id);
 
-            return $this->view = $records;
+            $this->view = $record;
         }
 
+        return $this->view;
     }
 
     public function getPreviousNextAnnouncements($id) {
@@ -73,6 +78,61 @@ class Announcements extends Component
 
     }
 
+    private function getSeen(? string $employee_no = null) {
+        
+        $announcement_id = $this->record_id;
+
+        $records = EmployeeAnnouncementsSeen::with('personal')
+                ->where('announcement_id', $announcement_id)
+                ->get();
+
+        $seenBy = [];
+        $me = null;
+
+        foreach($records as $record) {
+            if($record->employee_no == $employee_no) {
+            $me = [
+                'name' => 'Me',
+                'timestamp' => $record->created_at
+            ];
+            } else {
+            $seenBy[] = [
+                'name' => strtolower($record->personal->firstname . ' ' . $record->personal->lastname),
+                'timestamp' => $record->created_at
+            ];
+            }
+        }
+
+        if ($me) {
+            array_unshift($seenBy, $me);
+        }
+
+        return $this->seenBy = $seenBy;
+    }
+
+    private function makeSeen(string $employee_no) {
+        
+        $announcement_id = $this->record_id;
+
+        $record = EmployeeAnnouncements::find($announcement_id);
+
+        if ($record) {
+            $exists = EmployeeAnnouncementsSeen::where('announcement_id', $announcement_id)
+                ->where('employee_no', $employee_no)
+                ->exists();
+
+            if (!$exists) {
+                $seen = new EmployeeAnnouncementsSeen();
+                $seen->announcement_id = $announcement_id;
+                $seen->employee_no = $employee_no;
+                $seen->save();
+
+                return redirect()->route('employee.announcements.view', ['id' => $announcement_id]);
+
+            }
+        }
+    }
+
     public function render()
     {
 
@@ -83,7 +143,7 @@ class Announcements extends Component
             $model->where('title', 'like', '%' . $this->search . '%');
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        $records = $model->paginate($this->entries);
 
         return view('livewire.employee.announcements', [
             'records' => $records

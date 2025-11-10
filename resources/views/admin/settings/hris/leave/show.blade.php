@@ -45,7 +45,8 @@
             </div>
             <div class="mt-3">
                 @livewire('admin.settings.hris.leave.show', [
-                    'id' => $id
+                    'id' => $id,
+                    'employee_no' => $employee,
                 ])
             </div>
         </div>

@@ -20,12 +20,16 @@
             <li><a class="dropdown-item" href="{{route('ess.obs')}}">Official Business Slip Application</a></li>
         @endcan
 
-        @can('read arto')
+        @can('read atro')
             <li><a class="dropdown-item" href="{{route('ess.atro')}}">Authority To Render Overtime Application</a></li>
         @endcan
 
-        @can('read request-log')
-            <li><a class="dropdown-item" href="{{route('ess.request-timelog')}}">Request Timelog</a></li>
+        @can('read time-adjustments')
+            <li><a class="dropdown-item" href="{{route('ess.time-adjustments')}}">Time Adjustments</a></li>
+        @endcan
+
+        @can('read payslip-request')
+            <li><a class="dropdown-item" href="{{route('ess.payslip-request')}}">Payslip Request</a></li>
         @endcan
 
         @can('read announcements')
@@ -36,8 +40,8 @@
             <li><a class="dropdown-item" href="{{route('ess.approval-profile.index')}}">Employee Profile Approval</a></li>
         @endcan
 
-        @can('read request-status')
-            <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
+        @can('read messages')
+            <li><a class="dropdown-item" href="{{route('ess.messages')}}">Messages</a></li>
         @endcan
 
         @can('read faqs')

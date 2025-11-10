@@ -9,25 +9,50 @@ class EmployeeTimelogs extends Model
 {
     use HasFactory;
 
-    protected $table = 'employee_timelogs';
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
 
-    protected $fillable = [
-        'origin',
-        'biometricdtrid',
-        'bsd_no',
-        'isindtr',
-        'logdatetime',
-        'nfcdeviceid',
-        'type',
-        'ismanual',
-        'captured_image',
-        'captured_location',
-        'accomplishment',
-        'isComputed',
-    ];
+        $external = config('app.external_timelogs');
 
-    public function employee() {
-        return $this->hasOne(EmployeeInformation::class, 'bsd_no', 'bsd_no');
+        $this->setConnection($external ? 'mysql2' : 'mysql');
+
+        $this->setTable($external ? 'attendances' : 'timelogs');
+
+        $this->fillable = $external
+            ? [
+                'sn',
+                'table',
+                'stamp',
+                'employee_id',
+                'timestamp',
+                'status1',
+                'isWeb',
+                'captured_image',
+                'captured_location',
+                'accomplishment',
+            ]
+            : [
+                'employee_id',
+                'timestamp',
+                'status',
+                'isWeb',
+                'captured_image',
+                'captured_location',
+                'accomplishment',
+            ];
     }
 
+    public function employee()
+    {
+
+        $bsd_emp_identical = config('app.bsd_emp_identical');
+
+        if(!$bsd_emp_identical) {
+            return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'bsd_no');
+        } 
+
+        return $this->belongsTo(EmployeeInformation::class, 'employee_id', 'employee_no');
+
+    }
 }

@@ -158,7 +158,7 @@ class Index extends Component
                     $this->delete($id);
                     break;
                 case 'navigate':
-                    $this->navigate();
+                    $this->navigate($id);
                     break;
                 default: 
                     return redirect()->route('job.applicants.index');
@@ -310,6 +310,7 @@ class Index extends Component
             $action = 'set_placement';
             $this->notify($title, $message, $action);
         } else {
+
             $model = JobApplicants::find($this->selected_id);
             $model->update([
                 'status' => 'placement',
@@ -352,8 +353,6 @@ class Index extends Component
                 'status' => 'onboarding',
             ]);
     
-            
-
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
@@ -381,8 +380,8 @@ class Index extends Component
 
         } else {
 
-
             if($this->create_employee()) {
+
 
                 $model->job->slots -= 1;
                 $model->job->save();
@@ -390,8 +389,6 @@ class Index extends Component
                 $model->update([
                     'status' => 'hired',
                 ]);
-    
-                
 
                 $this->dispatch('alert', [
                     'id' => $this->selected_id,
@@ -407,7 +404,7 @@ class Index extends Component
     }
 
     # send offer in under placement
-    public function send_offer($isSaved, int $id = null) {
+    public function send_offer($isSaved, ? int $id = null) {
 
         if(!$isSaved) {
 
@@ -477,14 +474,6 @@ class Index extends Component
             ]);
         }
 
-        $this->dispatch('alert', [
-            'id' => $this->selected_id,
-            'status' => 'processing',
-            'title' => 'Processing...',
-            'message' => 'Please wait while the job offer is being sent.',
-            'isRemoveRowDT' => false,
-            'isReloadDT' => false,
-        ]);
         
         DB::beginTransaction();
 
@@ -514,7 +503,7 @@ class Index extends Component
             ];
     
             $this->validate($rules, $messages);
-    
+
             $folder = strtolower($records->applicant->firstname . '_' . $records->applicant->lastname . '_' . $records->applicant->id);
     
             $attachment = $this->job_offer['attachment'];
@@ -561,18 +550,24 @@ class Index extends Component
 
         } catch (ValidationException $e) {
             $validationErrors = $e->validator->errors()->all(); 
+
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Error: ' . ($validationErrors[0] ?? 'Unknown validation error'),
+                'message' => ($validationErrors[0] ?? 'Unknown validation error'),
+                'isRemoveRowDT' => false,
+                'isReloadDT' => true,
             ]);
+
         } catch (\Exception $e) {
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
                 'message' => 'Error: ' . $e->getMessage(),
+                'isRemoveRowDT' => false,
+                'isReloadDT' => true,
             ]);
         }
         
@@ -683,8 +678,6 @@ class Index extends Component
             }
 
             $record->delete();
-    
-            
             
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -699,11 +692,9 @@ class Index extends Component
     
     }
 
-    public function navigate() {
+    public function navigate(string $id) {
 
-        $user_id = Auth::user()->id;
-
-        $employee = EmployeeAccount::where('applicant_id', $user_id)->first();
+        $employee = EmployeeAccount::where('applicant_id', $id)->first();
 
         if(!$employee) {
             return redirect()->route('job.applicants.index', ['status' => 'hired']);
@@ -730,7 +721,6 @@ class Index extends Component
         DB::beginTransaction();
         
         $record = JobApplicants::with('applicant', 'job')->find($this->selected_id);
-
 
         if(!$record) {
 

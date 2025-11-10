@@ -23,10 +23,14 @@
         .card {
             border-radius: 15px;
 
-            .logo img {
-                width: 120px;
+            .logo {
+                position: relative;
             }
 
+            .logo img {
+                width: 150px;
+                object-fit: cover;
+            }
         }
 
     }
@@ -142,6 +146,11 @@
     .login {
         height: auto !important;
         padding: 100px 0 100px;
+    }
+
+    .logo img {
+        width: 150px !important;
+        margin-bottom: 20px;
     }
 
 }

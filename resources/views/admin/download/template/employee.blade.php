@@ -155,7 +155,7 @@
                     </td>
                     <td>
                         <p class="label">Monthly Rate</p>
-                        <p class="value">₱{{number_format($data['monthly_rate'], 2) ?? 'N/A'}}</p>
+                        <p class="value">₱{{number_format($data['salary'], 2) ?? 'N/A'}}</p>
                     </td>
                     <td>
                         <p class="label">Payroll Account Number</p>

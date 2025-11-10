@@ -1,13 +1,13 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | All Branches'
+    'title' => 'HRIS | Central / Field Offices'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>All Branches</h1>
-            <p>See all branch locations</p>
+            <h1>Central / Field Offices</h1>
+            <p>See all locations</p>
         </div>
         <div class="actions">
             <a href="{{route('branch.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Create New</a>

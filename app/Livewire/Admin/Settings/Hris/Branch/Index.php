@@ -72,21 +72,21 @@ class Index extends Component
 
     public function render()
     {
-
         $model = Branches::query();
 
         if ($this->search) {
-
             $this->resetPage(); 
 
-            $records = $model->where('code', 'like', '%' . $this->search . '%')
-                ->orWhere('name', 'like', '%' . $this->search . '%');
+            $model->where(function($query) {
+                $query->where('code', 'like', '%' . $this->search . '%')
+                    ->orWhere('name', 'like', '%' . $this->search . '%');
+            });
         }
 
         $records = $model->latest()->paginate($this->entries);
 
         return view('livewire.admin.settings.hris.branch.index', [
-            'records' => $records
+            'records' => $records,
         ]);
     }
 }

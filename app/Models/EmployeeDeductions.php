@@ -9,11 +9,12 @@ class EmployeeDeductions extends Model
 {
     use HasFactory;
 
-    protected $table = 'employee_deduction';
+    protected $table = 'employee_deductions';
     protected $fillable = [
         'employee_no',
         'deduction_id',
-        'amount'
+        'amount',
+        'valid_until'
     ];
 
     public function personal() {

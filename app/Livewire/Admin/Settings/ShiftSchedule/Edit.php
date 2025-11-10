@@ -207,8 +207,6 @@ class Edit extends Component
             return;
         }
         
-        $this->validate();
-
         if ($isNotify) {
             $title = 'Are you sure to continue?';
             $message = 'The action cannot be undone or reverted!';
@@ -219,6 +217,9 @@ class Edit extends Component
                 'action' => $action
             ]);
         } else {
+
+            $this->validate();
+
             try {
                 // Determine the values for clock-in fields based on work setup
                 $mobileEarliestClockin = $this->work_setup === 'hybrid' ? $this->mobile_earliest_clockin : null;
@@ -258,9 +259,12 @@ class Edit extends Component
                 }
 
                 // Update or create the shift schedule
-                $record = ShiftSchedule::updateOrCreate([
-                    'id' => $this->id,
-                ], $data);
+                if ($this->id) {
+                    $record = ShiftSchedule::find($this->id);
+                    $record->update($data);
+                } else {
+                    $record = ShiftSchedule::create($data);
+                }
 
                 // Success message after creating or updating the record
                 if (is_null($this->id)) {

@@ -6,7 +6,7 @@
         </div>
         <div class="w-100 px-4">
             <a class="navbar-brand text-uppercase" href="{{ url('/') }}">
-                <img src="{{asset('img/logo.png')}}" alt="logo">
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
             </a>
             <div class="content">
                 <ul class="list-unstyled">
