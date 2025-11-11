@@ -33,7 +33,7 @@ class LeaveCreditsImport implements ToModel, WithStartRow, SkipsEmptyRows
 
         if($this->isVlSl) {
             return new EmployeeLeaveCard([
-                'employee_no'    => $row[0],
+                'employee_no'    => is_null($this->employee_no) ? $row[0] : $this->employee_no,
                 'year'           => $row[1] ?? '',
                 'period'         => $row[2] ?? '',
                 'particulars'    => $row[3] ?? '',

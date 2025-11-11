@@ -36,6 +36,9 @@
         <li class="nav-item" role="presentation">
             <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'account']) }}" class="{{in_array('information', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'account' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'account' ? 'true' : 'false'}}">IX. Employee Account</a>
         </li>
+        <li class="nav-item" role="presentation">
+            <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'history-leave-card']) }}" class="{{in_array('history-leave-card', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'history-leave-card' ? 'active' : ''}}" id="pills-history-leave-card-tab" role="tab" aria-controls="pills-history-leave-card" aria-selected="{{$form == 'history-leave-card' ? 'true' : 'false'}}">X. Leave Card</a>
+        </li>
     </ul>
     <div class="tab-content" id="pills-tabContent">
         @php
@@ -51,9 +54,11 @@
                 'other-works' => 'admin.hris.profile.other-works',
                 'skills' => 'admin.hris.profile.skills',
                 'account' => 'admin.hris.profile.account',
+                'history-leave-card' => 'admin.hris.profile.emp-history-leave-card',
             ];
 
             $view = $viewForms[$form];
+            //dd($view);  
         @endphp
         <hr class="pt-2">
         <div style="width: fit-content; margin: auto !important;" class="px-5 py-2 text-white bg-info text-uppercase fw-bold text-center my-4 mb-5">Note: Please save your updated data before leaving the current tab.</div>

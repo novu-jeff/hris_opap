@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             // OtherDeductionsSeeder::class,
             JobPostSeeder::class,
             PositionSeeder::class,
-            EmployeeTestUserSeeder::class,
+           // EmployeeTestUserSeeder::class,
 
         ]);
         

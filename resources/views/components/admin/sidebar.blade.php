@@ -94,9 +94,9 @@
                                     <li><a class="dropdown-item" href="{{route('ess.approval-profile.index', )}}">Employee Profile Approval</a></li>
                                 @endcan
                         
-                                @can('read request-status')
+                                {{--@can('read request-status')
                                     <li><a class="dropdown-item" href="{{route('ess.request-status')}}">Request Status</a></li>
-                                @endcan
+                                @endcan--}}
                             </ul>
                         </li>
                         <!-- REPORTS -->
@@ -194,7 +194,10 @@
                                         <li><a class="dropdown-item" href="{{ route('other-earnings.index') }}">Earnings</a></li>
                                         @endcan
                                         @can('read other-deductions')
-                                        <li><a class="dropdown-item" href="{{ route('other-deductions.index') }}">Deductions</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('other-deductions.index') }}">Deduction</a></li>
+                                        @endcan
+                                        @can('read other-deductions')
+                                        <li><a class="dropdown-item" href="{{ route('leave.import.index') }}">Import Leaves</a></li>
                                         @endcan
                                     </ul>
                                 </li>

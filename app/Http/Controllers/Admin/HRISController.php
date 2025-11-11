@@ -32,7 +32,7 @@ class HRISController extends Controller
             'information', 'account',
             'personal', 'education', 'family',
             'children', 'employment-history', 'civil-service',
-            'trainings', 'other-works', 'skills'
+            'trainings', 'other-works', 'skills', 'history-leave-card'
         ];
 
         if(!in_array( $form, $allowed)) {
