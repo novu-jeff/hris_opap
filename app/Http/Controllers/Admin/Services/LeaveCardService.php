@@ -472,5 +472,33 @@ class LeaveCardService extends Controller
         return $sortedRecords;
     }
 
+    public function updateLeaveCard(string $employee_no, array $records)
+    {
+        foreach ($records as $year => $recordGroup) {
+            foreach ($recordGroup['items'] as $item) {
+                EmployeeLeaveCard::updateOrCreate(
+                    [
+                        'employee_no' => $employee_no,
+                        'year' => $year,
+                        'period' => $item['period']
+                    ],
+                    [
+                        'particulars' => $item['particulars'] ?? '',
+                        'vl_earned' => $item['vl_earned'] ?? 0,
+                        'vl_aut_w_pay' => $item['vl_aut_w_pay'] ?? 0,
+                        'vl_bal' => $item['vl_bal'] ?? 0,
+                        'vl_aut_wo_pay' => $item['vl_aut_wo_pay'] ?? 0,
+                        'sl_earned' => $item['sl_earned'] ?? 0,
+                        'sl_aut_w_pay' => $item['sl_aut_w_pay'] ?? 0,
+                        'sl_bal' => $item['sl_bal'] ?? 0,
+                        'sl_aut_wo_pay' => $item['sl_aut_wo_pay'] ?? 0,
+                        'remarks' => $item['remarks'] ?? '',
+                    ]
+                );
+            }
+        }
+    }
+
+
 
 }

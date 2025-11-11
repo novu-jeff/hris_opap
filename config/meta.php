@@ -5,10 +5,10 @@ $provider = env('APP_PROVIDER');
 return [
     'blitzdev' => [
         'favicon' => '/img/favicon/blitzdev',
-        'company' => 'BlitzDev IT Consultancy',
-        'logo' => 'blitzdev.png',
-        'tagline' => 'Manage HR tasks with BlitzDev',
-        'client_logo' => 'symphony.png',
+        'company' => 'Novulutions Inc.',
+        'logo' => 'novulutions.png',
+        'tagline' => 'Transform It: Unifiy Your Data Silos',
+        'client_logo' => 'client-logo.png',
         'email' => 'contact@blitzdev.com.ph',
         'socials' => [
             'website' => '',
