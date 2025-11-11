@@ -25,12 +25,12 @@
             <select name="import_type" class="form-select" required>
                 <option value="">-- Select Type --</option>
                 <option value="vl_sl">Employee Leave Cards (VL/SL history)</option>
-                <option value="credits">Leave Credits (summary)</option>
+                <!--<option value="credits">Leave Credits (summary)</option>-->
             </select>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Employee No (optional)</label>
+            <label class="form-label">Employee No (required)</label>
             <input type="text" name="employee_no" class="form-control" placeholder="For single employee import only">
         </div>
 

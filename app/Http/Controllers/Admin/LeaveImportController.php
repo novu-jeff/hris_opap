@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\LeaveCreditsImport;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class LeaveImportController extends Controller
 {
@@ -32,7 +33,6 @@ class LeaveImportController extends Controller
             $file = $request->file('file');
             $importType = $request->input('import_type');
 
-            // Determine type of import
             $isVlSl = $importType === 'vl_sl';
             $employee_no = $request->input('employee_no');
             $leave_type_id = $request->input('leave_type_id');
@@ -42,10 +42,18 @@ class LeaveImportController extends Controller
                 $file
             );
 
-            return back()->with('success', 'Excel file imported successfully!');
-        } catch (\Exception $e) {
+            return back()->with('success', '✅ Excel file imported successfully!');
+
+        } catch (Exception $e) {
             Log::error('Leave import failed: ' . $e->getMessage());
-            return back()->with('error', 'Import failed: ' . $e->getMessage());
+
+            // ✅ Custom message for duplicate year
+            if (str_contains($e->getMessage(), 'already exists')) {
+                return back()->with('error', '⚠️ ' . $e->getMessage());
+            }
+
+            // ✅ General import failure
+            return back()->with('error', '❌ Import failed. Please check your file and try again.');
         }
     }
 }
