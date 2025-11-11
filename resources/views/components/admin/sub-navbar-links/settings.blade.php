@@ -120,6 +120,9 @@
                     @can('read other-deductions')
                         <li><a class="dropdown-item" href="{{route('other-deductions.index')}}">Deductions</a></li>
                     @endcan
+                       @can('read other-deductions')
+                        <li><a class="dropdown-item" href="{{ route('leave.import.index') }}">Import Leaves</a></li>
+                        @endcan
                 </ul>
             </li>
         @endcanany

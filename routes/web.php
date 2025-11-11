@@ -85,6 +85,7 @@ use App\Livewire\Employee\DailyTimeRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\SystemJobsController;
+use App\Http\Controllers\Admin\LeaveImportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -313,6 +314,9 @@ Route::prefix('admin')->group(function() {
             
             Route::get('scheduled-tasks', [SchedulerController::class, 'index'])
                 ->name('scheduler.index');
+
+            Route::get('/leave-import', [LeaveImportController::class, 'index'])->name('leave.import.index');
+            Route::post('/leave-import', [LeaveImportController::class, 'import'])->name('leave.import');   
 
             Route::resource('tranches', TranchesController::class)
                 ->names('tranches')
