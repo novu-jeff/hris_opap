@@ -61,7 +61,7 @@
             <div class="content mt-4">
                 {!!$view->content!!}
             </div>
-            @if(!is_null($view->attachments))
+            @if($view->attachments->isNotEmpty())
                 <hr>
                 <div class="attachments mt-4">
                     <h5>Downloadable Attachments</h5>
@@ -77,6 +77,21 @@
                     </ul>
                 </div>
             @endif
+            <p style="cursor: pointer; font-size: 14px;">
+                <span class="text-uppercase fw-bold text-muted">Seen By:</span> 
+                <span 
+                    class="text-capitalize seen-by-content" 
+                >
+                    @foreach(collect($seenBy) as $user)
+                        <span 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="{{ \Carbon\Carbon::parse($user['timestamp'])->format('F d, Y \a\t h:i A')}}">
+                            {{ $user['name'] }}
+                        </span>{{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </span>
+            </p>            
         </div>
         <div class="mt-5">
             <div class="float-start">
@@ -96,3 +111,39 @@
         </div>
     @endif
 </div>
+
+@section('script')
+    <script>
+        $(function () {
+            $('.seen-by-content').each(function () {
+                const $this = $(this);
+                const fullText = $this.text().trim();
+
+                if (fullText.length > 1000) {
+                    const shortText = fullText.substring(0, 1000) + '... ';
+                    
+                    const moreLink = $('<a href="#" class="see-more text-primary" style="font-size: 15px;">See more</a>');
+                    const lessLink = $('<a href="#" class="see-less text-primary" style="display:none; font-size: 15px;">See less</a>');
+
+                    // Store full and short text versions
+                    const shortSpan = $('<span class="short-text"></span>').text(shortText);
+                    const fullSpan = $('<span class="full-text" style="display:none;"></span>').text(fullText + ' ');
+
+                    $this.empty().append(shortSpan).append(moreLink).append(fullSpan).append(lessLink);
+
+                    $this.on('click', '.see-more', function (e) {
+                        e.preventDefault();
+                        $this.find('.short-text, .see-more').hide();
+                        $this.find('.full-text, .see-less').show();
+                    });
+
+                    $this.on('click', '.see-less', function (e) {
+                        e.preventDefault();
+                        $this.find('.full-text, .see-less').hide();
+                        $this.find('.short-text, .see-more').show();
+                    });
+                }
+            });
+        });
+    </script>
+@endsection

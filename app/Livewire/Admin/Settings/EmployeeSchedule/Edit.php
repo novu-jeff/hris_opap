@@ -139,29 +139,29 @@ class Edit extends Component
 
             try {
     
-                EmployeeSchedule::updateOrCreate(
-                    [
-                        'id' => $this->id,
-                    ],
-                    [
-                        'name' => $this->name, 
-                        'description' => $this->description,
-                        'monday' => $this->monday, 
-                        'monday_remarks' => $this->monday == false ? $this->monday_remarks : '', 
-                        'tuesday' => $this->tuesday, 
-                        'tuesday_remarks' => $this->tuesday == false ? $this->tuesday_remarks : '',
-                        'wednesday' => $this->wednesday, 
-                        'wednesday_remarks' => $this->wednesday == false ? $this->wednesday_remarks : '', 
-                        'thursday' => $this->thursday, 
-                        'thursday_remarks' => $this->thursday == false ? $this->thursday_remarks : '', 
-                        'friday' => $this->friday, 
-                        'friday_remarks' => $this->friday == false ? $this->friday_remarks : '',
-                        'saturday' => $this->saturday, 
-                        'saturday_remarks' => $this->saturday == false ? $this->saturday_remarks : '', 
-                        'sunday' => $this->sunday, 
-                        'sunday_remarks' => $this->sunday == false ? $this->sunday_remarks : ''
-                    ]
-                );
+                $schedule = EmployeeSchedule::find($this->id);
+                if (!$schedule) {
+                    $schedule = new EmployeeSchedule();
+                }
+
+                $schedule->name = $this->name;
+                $schedule->description = $this->description;
+                $schedule->monday = $this->monday;
+                $schedule->monday_remarks = $this->monday == false ? $this->monday_remarks : '';
+                $schedule->tuesday = $this->tuesday;
+                $schedule->tuesday_remarks = $this->tuesday == false ? $this->tuesday_remarks : '';
+                $schedule->wednesday = $this->wednesday;
+                $schedule->wednesday_remarks = $this->wednesday == false ? $this->wednesday_remarks : '';
+                $schedule->thursday = $this->thursday;
+                $schedule->thursday_remarks = $this->thursday == false ? $this->thursday_remarks : '';
+                $schedule->friday = $this->friday;
+                $schedule->friday_remarks = $this->friday == false ? $this->friday_remarks : '';
+                $schedule->saturday = $this->saturday;
+                $schedule->saturday_remarks = $this->saturday == false ? $this->saturday_remarks : '';
+                $schedule->sunday = $this->sunday;
+                $schedule->sunday_remarks = $this->sunday == false ? $this->sunday_remarks : '';
+
+                $schedule->save();
                 
     
                 DB::commit();

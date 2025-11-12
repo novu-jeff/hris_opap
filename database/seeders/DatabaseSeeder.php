@@ -18,46 +18,46 @@ class DatabaseSeeder extends Seeder
         $product = config('app.product');
 
         $this->call([
-            EmploymentTypesSeeder::class,
-            // PositionSeeder::class,
-            ViolationSeeder::class,
-            SkillListSeeder::class,   
-            LeaveTypesSeeder::class,
+
             CompanyBusinessTypeSeeder::class,
-            ShiftScheduleSeeder::class,
-            EmployeeScheduleSeeder::class,
             CompanyInformationSeeder::class,
             PermissionSeeder::class,
             RolesSeeder::class,
             AdminAccountSeeder::class,
+
+            RequirementSeeder::class,
+            InterviewSeeder::class,
+            FAQSeeder::class,
+            SkillListSeeder::class,   
+
+            ViolationSeeder::class,
+            LeaveTypesSeeder::class,
+            ShiftScheduleSeeder::class,
+            EmployeeScheduleSeeder::class,
             SchedulerDefaultSeeder::class,
             AnnouncementSeeder::class,
-            EmployeeTestUserSeeder::class,
             HolidaySeeder::class,
-            FAQSeeder::class,
-        ]);
-
-        if($product == 'testing' || $product == 'novu') {
-            $this->call([
-                RequirementSeeder::class,
-                InterviewSeeder::class,
-                JobPostSeeder::class,
-                AnnouncementSeeder::class,
-                ApplicantTestUserSeeder::class,
-                EmployeeTestUserSeeder::class
-            ]);
-        }
-
         
-        if($product == 'opap') {
+            EmploymentTypesSeeder::class,
+            BranchSeeder::class,
+            DepartmentSeeder::class,
+            SectionSeeder::class,
+            // OtherEarningsSeeder::class,
+            // OtherDeductionsSeeder::class,
+            JobPostSeeder::class,
+            PositionSeeder::class,
+           // EmployeeTestUserSeeder::class,
+
+        ]);
+        
+
+        if($product == 'government') {
             $this->call([
-                BranchSeeder::class,
-                DepartmentSeeder::class,
-                SectionSeeder::class,
-                OtherEarningsSeeder::class,
-                OtherDeductionsSeeder::class,
-                TimeEquivalentSeeder::class
+                TrancheSeeder::class,
+                TimeEquivalentSeeder::class,
+                JobPostSeeder::class,
             ]);
         }
+
     }
 }

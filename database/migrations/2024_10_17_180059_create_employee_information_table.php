@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('employee_information', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')
-                ->nullable();
             $table->string('employee_no')
                 ->nullable();
             $table->string('bsd_no')
@@ -28,6 +26,8 @@ return new class extends Migration
             $table->string('job_completion')
                 ->nullable()
                 ->constrained('positions');
+            $table->string('company_name')
+                ->nullable();
             $table->string('date_hired')
                 ->nullable();
             $table->foreignId('shift_id')
@@ -38,8 +38,6 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('employee_schedules')
                 ->onDelete('set null');
-            $table->string('date_resignation')
-                ->nullable();
             $table->foreignId('employment_type_id')
                 ->nullable()
                 ->constrained('employment_types')
@@ -57,9 +55,13 @@ return new class extends Migration
                     'e-wallet'
                 ])
                 ->nullable();
-            $table->float('monthly_rate')
+            $table->float('salary')
                 ->default(0)
                 ->nullable();
+            $table->enum('salary_type', [
+                'monthly',
+                'daily'
+            ])->default('monthly');
             $table->string('payroll_account_number')
                 ->nullable();
             $table->string('bank_account_no')
@@ -75,6 +77,10 @@ return new class extends Migration
                 ->nullable();
             $table->boolean('isDeleted')
                 ->default(false);
+            $table->boolean('isTransferingEmp')
+                ->default(false);
+            $table->string('date_resignation')
+                ->nullable();
             $table->timestamps();
         });
 
@@ -85,17 +91,16 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('applicant_users');
             $table->string('email_id')
-                ->nullable()
-                ->unique();
+                ->nullable();
             $table->string('email')
-                ->nullable()
-                ->unique();
+                ->nullable();
             $table->string('password')
                 ->nullable();
             $table->boolean('isLoggedIn')
                 ->default(false);
             $table->string('token')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_personal', function(Blueprint $table) {
@@ -126,6 +131,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('country')
                 ->nullable();
+            $table->string('birth_certificate')
+                ->nullable();
+            $table->string('marriage_certificate')
+                ->nullable();
 
             $table->string('present_address')
                 ->nullable(); 
@@ -149,7 +158,6 @@ return new class extends Migration
                 ->nullable(); 
             $table->string('blood_type')
                 ->nullable();
-
             $table->string('gsis_no')
                 ->nullable(); 
             $table->string('pagibig_no')
@@ -161,6 +169,7 @@ return new class extends Migration
             $table->string('tin_no')
                 ->nullable();
             $table->index(['firstname', 'lastname', 'employee_no']);
+            $table->timestamps();
         });
 
         Schema::create('employee_parents', function(Blueprint $table) {
@@ -183,7 +192,6 @@ return new class extends Migration
             $table->string('spouse_contact_no')
                 ->nullable();  
 
-
             $table->string('father_surname')
                 ->nullable();
             $table->string('father_firstname')
@@ -199,6 +207,7 @@ return new class extends Migration
                 ->nullable();
             $table->string('mother_middlename')
                 ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_children', function(Blueprint $table) {
@@ -213,10 +222,12 @@ return new class extends Migration
                 ->nullable();
             $table->string('birthdate')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_education', function(Blueprint $table) {
-
             $table->id();
             $table->string('employee_no');
             $table->string('level')
@@ -229,19 +240,31 @@ return new class extends Migration
                 ->nullable();
             $table->string('to_year')
                 ->nullable();
+            $table->string('highest_level')
+                ->nullable();
+            $table->string('year_graduated')
+                ->nullable();
+            $table->string('scholarship_honors')
+                ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_employment_history', function(Blueprint $table) {
-
             $table->id();
             $table->string('employee_no');
+            $table->string('from_year')
+                ->nullable();
+            $table->string('to_year')
+                ->nullable();
             $table->string('position')
                 ->nullable();
             $table->string('department')
                 ->nullable();
-            $table->string('company_name')
+            $table->string('monthly_salary')
                 ->nullable();
-            $table->float('monthly_salary')
+            $table->string('salary_pay_grade')
                 ->nullable();
             $table->string('employment_status')
                 ->nullable();
@@ -250,10 +273,9 @@ return new class extends Migration
                     'no'
                 ])
                 ->nullable();
-            $table->string('from_year')
+            $table->string('documents')
                 ->nullable();
-            $table->string('to_year')
-                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_civil_service', function(Blueprint $table) {
@@ -272,6 +294,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('date_validity')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_trainings', function(Blueprint $table) {
@@ -290,6 +315,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('sponsored_by')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
+
         });
 
         Schema::create('employee_other_works', function(Blueprint $table) {
@@ -297,8 +326,6 @@ return new class extends Migration
             $table->id();
             $table->string('employee_no');
             $table->string('organization')
-                ->nullable();
-            $table->string('address')
                 ->nullable();
             $table->string('date_from')
                 ->nullable();
@@ -308,6 +335,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('position')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_skills_hobbies', function(Blueprint $table) {
@@ -320,6 +350,9 @@ return new class extends Migration
                 ->nullable();
             $table->string('organization')
                 ->nullable();
+            $table->string('documents')
+                ->nullable();
+            $table->timestamps();
         });
 
         Schema::create('employee_leave', function(Blueprint $table) {
@@ -343,14 +376,10 @@ return new class extends Migration
                 ->nullable();
             $table->string('commutation')
                 ->nullable();
-            $table->string('from')
-                ->nullable();
-            $table->string('to')
-                ->nullable();
             $table->enum('status', [
                     'approved',
                     'disapproved',
-                    'pending'
+                    'pending',
                 ])->default('pending');
             $table->longText('remarks')
                 ->nullable();
@@ -362,19 +391,6 @@ return new class extends Migration
                 ->default(false);
             $table->timestamps();
         });
-
-        Schema::create('employee_deduction', function(Blueprint $table) {
-            $table->id();
-            $table->string('employee_no')
-                ->constrained('employee_information')
-                ->onDelete('cascade');
-            $table->foreignId('deduction_id')
-                ->constrained('other_deductions')
-                ->onDelete('cascade');
-            $table->float('amount');
-            $table->timestamps();
-        });
-
     }
 
     /**
@@ -382,8 +398,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-
-        Schema::dropIfExists('employee_deduction');
         Schema::dropIfExists('employee_leave');
         Schema::dropIfExists('employee_skills_hobbies');
         Schema::dropIfExists('employee_other_works');

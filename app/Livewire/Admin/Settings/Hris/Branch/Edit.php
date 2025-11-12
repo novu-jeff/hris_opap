@@ -50,11 +50,10 @@ class Edit extends Component
 
         try {
 
-            Branches::where('id', $this->id)
-                ->update([
-                    'name' => $this->fields['name'],
-                    'code' => $this->fields['code'],
-            ]);
+            $branch = Branches::find($this->id);
+            $branch->name = $this->fields['name'];
+            $branch->code = $this->fields['code'];
+            $branch->save();
 
             DB::commit();
 

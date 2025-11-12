@@ -1,13 +1,13 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Add Department (Program / Cluster)'
+    'title' => 'HRIS | Add Cluster'
 ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Add Department (Program / Cluster)</h1>
-            <p>Create new departments</p>
+            <h1>Add Cluster</h1>
+            <p>Create new cluster</p>
         </div>
         <div class="actions">
             <a href="{{route('department.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>

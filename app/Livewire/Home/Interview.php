@@ -40,7 +40,7 @@ class Interview extends Component
 
 
         if(!$record) {
-            return redirect()->route('home.profile.index');
+            return redirect()->route('home.profile');
         }
 
         $this->applicant_id = $record->id;
@@ -84,7 +84,7 @@ class Interview extends Component
             'tab' => 'interview',
             'accordion' => '',
         ]);
-        return redirect()->route('home.profile.index');
+        return redirect()->route('home.profile');
     }
 
     public function setActive(int $tab) {

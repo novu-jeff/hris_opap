@@ -81,7 +81,6 @@ if (!function_exists('relative_time_duration')) {
     }
 }
 
-
 if(!function_exists('see_more')) {
     function see_more($text, $lengthAllowed = null) {
         if($lengthAllowed != null && strlen($text) > $lengthAllowed) {
@@ -230,5 +229,70 @@ if(!function_exists('format_time')) {
         } catch (\Exception $e) {
             return $time;
         }
+    }
+}
+
+if (!function_exists('format_getFileName')) {
+    
+    function format_getFileName($path) {
+
+        $file = basename($path);
+        
+        return $file;
+    }
+}
+
+
+if (!function_exists('format_extension')) {
+
+    function format_extension($path) {
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        
+        switch (strtolower($extension)) {
+            case 'doc':
+            case 'docx':
+                return 'fa-solid fa-file-word'; 
+            case 'pdf':
+                return 'fa-solid fa-file-pdf'; 
+            case 'xls':
+            case 'xlsx':
+                return 'fa-solid fa-file-excel'; 
+            default:
+                return 'fa-solid fa-file'; 
+        }
+    }
+}
+
+if (!function_exists('formatTime')) {
+    function formatTime(int $mins): string {
+        $hours = intdiv($mins, 60);
+        $minutes = $mins % 60;
+
+        $parts = [];
+        if ($hours > 0) {
+            $parts[] = $hours . ' hr' . ($hours > 1 ? 's' : '');
+        }
+        if ($minutes > 0 || $hours === 0) {
+            $parts[] = $minutes . ' min' . ($minutes > 1 ? 's' : '');
+        }
+
+        return implode('  and ', $parts);
+    }
+
+}
+
+if (!function_exists('status_alert')) {
+    function status_alert($status)
+    {
+        $status = strtolower($status);
+
+        return match ($status) {
+            'pending'     => '<div style="width: 100% !important;" class="alert alert-warning text-uppercase fw-bold text-center mb-2 py-2 px-3">Pending</div>',
+            'approved', 'mentioned'    => '<div style="width: 100% !important;" class="alert alert-success text-uppercase fw-bold text-center mb-2 py-2 px-3">Approved</div>',
+            'disapproved' => '<div style="width: 100% !important;" class="alert alert-danger text-uppercase fw-bold text-center mb-2 py-2 px-3">Disapproved</div>',
+            'cancelled'   => '<div style="width: 100% !important;" class="alert alert-secondary text-uppercase fw-bold text-center mb-2 py-2 px-3">Cancelled</div>',
+            default       => '<div style="width: 100% !important;" class="alert alert-light text-uppercase fw-bold text-center mb-2 py-2 px-3">Unknown Status</div>',
+        };
     }
 }

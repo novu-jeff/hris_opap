@@ -2,7 +2,13 @@
 
 namespace App\Livewire\Employee;
 
+use App\Models\CompanyInformation;
 use App\Models\EmployeeAnnouncements;
+use App\Models\EmployeeAtro;
+use App\Models\EmployeeBusinessSlip;
+use App\Models\EmployeeLeave;
+use App\Models\EmployeeLeaveCard;
+use App\Models\EmployeeTimeAdjustments;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -10,30 +16,75 @@ class Dashboard extends Component
 {
 
     public $announcements;
+    public $companyInfo;
+    public $applications;
 
-    public bool $isAllowedLeave;
+    public bool $isForRCOnly;
 
     public function mount() {
         
         $this->loadRecords();
-
         $this->checkAllowed();
-
     }
 
     public function loadRecords() {
-        $this->announcements = EmployeeAnnouncements::latest()->take(10)->get();
+
+        $employee_no = Auth::user()->employee_no;
+
+        $this->announcements = EmployeeAnnouncements::where('isDeleted', false)
+            ->latest()
+            ->take(10)
+            ->get();
+        $this->companyInfo = $this->getCompanyInformation();
+        $this->applications = [
+            'leave' => [
+                'title' => 'Leave Application',
+                'count' => EmployeeLeave::where('employee_no', $employee_no)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.leave',
+            ],
+            'atro' => [
+                'title' => 'ATRO Application',
+                'count' => EmployeeAtro::where('employee_no', $employee_no)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.atro',
+            ],
+            'time_adjustments' => [
+                'title' => 'Time Adjustments',
+                'count' => EmployeeTimeAdjustments::where('employee_no', $employee_no)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.time-adjustments',
+            ],
+            'oba' => [
+                'title' => 'OB Application',
+                'count' => EmployeeBusinessSlip::where('employee_no', $employee_no)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.obs.index',
+            ]
+        ];
     }
 
     public function checkAllowed() {
+        
         $product = config('app.product');
 
-        if($product == 'opap') {
+        if($product == 'government') {
             if(Auth::user()->information->employment_type_id !== 1) {
-                return $this->isAllowedLeave = false;
+                return $this->isForRCOnly = false;
             }
-            return $this->isAllowedLeave = true;
-        }
+            return $this->isForRCOnly = true;
+        } 
+
+        return $this->isForRCOnly = true;
+    }
+
+    private function getCompanyInformation() {
+        $companyInfo = CompanyInformation::with('type')->first();
+        return $companyInfo;
     }
 
     public function render()

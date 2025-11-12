@@ -3,7 +3,7 @@
         <div class="card-header bg-transparent py-2 border-0">
             <div class="d-lg-flex justify-content-between align-items-center">  
                 <div class="logo">
-                    <img src="{{asset('img/logo.png')}}" alt="logo">
+                    <img src="{{ asset('/img/' . $provider['client_logo'])}}" style="position: relative; {{config('app.product') == 'government' ? 'left: -20px' : ''}}">
                 </div>
                 <ul class="nav nav-pills" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -15,10 +15,10 @@
                 </ul>   
             </div>                 
             <div class="note mt-4 mb-3">
-                By creating an account or signing in, you agree to Novulutions' HRIS Terms. You also acknowledge our Cookie and Privacy policies. Novulutions' HRIS will send you marketing messages, and you can opt out at any time by following the unsubscribe link in those messages or as described in our terms.
+                By creating an account or signing in, you agree to the {{$provider['company']}} HRIS Terms of Service and acknowledge our Cookie and Privacy Policies. This system is intended to securely manage your employment records, including personal information, job details, payroll, and other HR-related services, in accordance with our policies and applicable regulations.
             </div>                
         </div>
-        <hr class="my-2">
+        <hr class="my-2 mx-3">
         <div class="card-body">
             <div class="tab-content" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="pills-login" tabindex="0">
@@ -32,7 +32,7 @@
                         </div>
                         <div class="col-12 mb-3">
                             <label for="password" class="mb-2">Password <span class="text-danger">*</span></label>
-                            <input type="password" wire:model="password" id="password" class="form-control">
+                            <input type="password" wire:model="password" id="password" class="form-control" placeholder="Enter Password" autocomplete="off">
                             <div class="error-field">
                                 @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>

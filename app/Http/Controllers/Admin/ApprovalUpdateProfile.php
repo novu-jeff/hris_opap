@@ -18,7 +18,18 @@ class ApprovalUpdateProfile extends Controller
         return view('admin.ess.profile-approval.index');
     }
 
-    public function edit(string $employee_no) {
-        return view('admin.ess.profile-approval.edit', ['employee_no' => $employee_no]);
+    public function show(string $employee_no, string $form) {
+        
+        $allowed = [
+            'personal', 'education', 'family',
+            'children', 'employment-history', 'civil-service',
+            'trainings', 'other-works', 'skills'
+        ];
+
+        if(!in_array( $form, $allowed)) {
+            return redirect()->route('ess.approval-profile.index');
+        }
+
+        return view('admin.ess.profile-approval.show', ['employee_no' => $employee_no, 'form' => $form]);
     }
 }

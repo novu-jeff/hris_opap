@@ -214,7 +214,7 @@ class Index extends Component
         }
     }
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if($isNotify) {
 
@@ -265,8 +265,14 @@ class Index extends Component
     public function render()
     {
 
+        if($this->status == 'granted') {
+            $status = 'approved';
+        } else {
+            $status = $this->status;
+        }
+
         $model = EmployeeAtro::with('employment', 'employee')
-            ->where('status', $this->status)
+            ->where('status', $status)
             ->where('isDeleted', false);
 
         if ($this->search) {

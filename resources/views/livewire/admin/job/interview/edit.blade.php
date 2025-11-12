@@ -139,7 +139,6 @@
                                     <option value="explanatory">Explanatory</option>
                                     <option value="checkbox">Checkbox</option>
                                     <option value="radio">Radio</option>
-                                    <option value="file">File Upload</option>
                                 </select>      
                                 <div class="error-field">
                                     @error('type') <span class="text-danger">{{ $message }}</span> @enderror

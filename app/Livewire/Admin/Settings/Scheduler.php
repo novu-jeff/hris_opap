@@ -19,8 +19,6 @@ class Scheduler extends Component
         foreach($data as $field) {
             $this->fields[$field->schedule_name] = $field->interval;
         }
-
-
     }
 
     protected function rules() {

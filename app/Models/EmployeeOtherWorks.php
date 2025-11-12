@@ -13,11 +13,11 @@ class EmployeeOtherWorks extends Model
     protected $fillable = [
         'employee_no',
         'organization',
-        'address',
         'date_from',
         'date_to',
         'consumed_hours',
-        'position'
+        'position',
+        'documents'
     ];
 
 }

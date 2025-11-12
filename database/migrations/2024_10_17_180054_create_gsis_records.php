@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
 
-        Schema::create('gsis_billing', function (Blueprint $table) {
+        Schema::create('social_security', function (Blueprint $table) {
             $table->id();
             $table->string('remitting_agency');
             $table->string('office_code');
@@ -21,10 +21,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('gsis_billing_items', function (Blueprint $table) {
+        Schema::create('social_security_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('gsis_billing_id')
-                ->constrained('gsis_billing')
+            $table->foreignId('social_security_id')
+                ->constrained('social_security')
                 ->onDelete('cascade');
             $table->string('bp_no');
             $table->string('crn_no')
@@ -58,6 +58,7 @@ return new class extends Migration
             $table->float('mpl');
             $table->float('cpl');
             $table->float('gel');
+            $table->float('mpl_lite');
         });
     }
 
@@ -66,7 +67,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('gsis_billing_items');
-        Schema::dropIfExists('gsis_billing');
+        Schema::dropIfExists('social_security_items');
+        Schema::dropIfExists('social_security');
     }
 };

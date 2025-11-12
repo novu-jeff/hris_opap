@@ -28,15 +28,17 @@ class PermissionSeeder extends Seeder
             'ess' => [
                 'leave',
                 'obs',
-                'arto',
-                'request-log',
+                'atro',
+                'time-adjustments',
+                'payslip-request',
                 'announcements',
                 'employee-profile-approval',
-                'request-status',
+                'messages',
                 'faqs'
             ],
             'reports' => [
-                'dtr'
+                'dtr',
+                'bir-2316'
             ],
             'settings' => [
                 'company-information',
@@ -56,22 +58,23 @@ class PermissionSeeder extends Seeder
                 'leave-types',
                 'leave-credits',
                 'gsis-billing',
+                'employee-earnings',
                 'employee-deductions',
                 'other-earnings',
                 'other-deductions',
                 'shift-schedule',
                 'employee-schedule',
                 'holidays',
-                'payroll-period',
-                'payroll-configuration',
             ],
             'employee' => [
                 'apply-leave',
                 'clock-in-out',
+                'remaining-credit',
                 'apply-atro',
-                'apply-request-timelog',
+                'apply-time-adjustments',
                 'payslip',
-                'employee-request-status',
+                'employee-payslip-request',
+                'employee-messages',
                 'apply-obs',
                 'employee-dtr',
                 'my-directory',
@@ -85,12 +88,9 @@ class PermissionSeeder extends Seeder
             foreach ($actions as $action) {
                 $guardName = $module === 'employee' ? 'employee' : 'web';
 
-                // Check if the action should only be "read"
                 if (in_array($action, ['my-directory', 'my-team', 'employee-announcements', 'payslip'])) {
-                    // Only create "read" permission for these actions
                     $this->createPermission($module, "read $action", $guardName);
                 } else {
-                    // Create both "read" and "write" permissions for the rest
                     $this->createPermission($module, "read $action", $guardName);
                     $this->createPermission($module, "write $action", $guardName);
                 }

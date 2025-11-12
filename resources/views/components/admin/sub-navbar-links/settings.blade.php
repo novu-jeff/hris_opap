@@ -13,6 +13,9 @@
         @can('read tranches')
             <li><a class="dropdown-item" href="{{route('tranches.index')}}">Tranches</a></li>
         @endcan
+        @can('read holidays')
+            <li><a class="dropdown-item" href="{{route('holiday.index')}}">Holiday</a></li>
+        @endcan
         @canany([
             'read branches',
             'read departments',
@@ -24,11 +27,11 @@
                 </a>
                 <ul class="dropdown-menu">
                     @can('read branches')
-                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Branches</a></li>
+                        <li><a class="dropdown-item" href="{{route('branch.index')}}">Central / Field Office</a></li>
                     @endcan
 
                     @can('read departments')
-                        <li><a class="dropdown-item" href="{{route('department.index')}}">Departments</a></li>
+                        <li><a class="dropdown-item" href="{{route('department.index')}}">Clusters</a></li>
                     @endcan
 
                     @can('read sections')
@@ -91,9 +94,9 @@
                     {{-- @can('read bank-information')
                         <li><a class="dropdown-item" href="{{route('bank-information.index')}}">Bank Information</a></li>
                     @endcan --}}
-                    {{-- @can('read employment-type')
+                    @can('read employment-type')
                         <li><a class="dropdown-item" href="{{route('employment-type.index')}}">Employment Type</a></li>
-                    @endcan --}}
+                    @endcan
                     @can('read positions')
                         <li><a class="dropdown-item" href="{{route('position.index')}}">Positions</a></li>
                     @endcan
@@ -117,6 +120,9 @@
                     @can('read other-deductions')
                         <li><a class="dropdown-item" href="{{route('other-deductions.index')}}">Deductions</a></li>
                     @endcan
+                       @can('read other-deductions')
+                        <li><a class="dropdown-item" href="{{ route('leave.import.index') }}">Import Leaves</a></li>
+                        @endcan
                 </ul>
             </li>
         @endcanany
@@ -138,27 +144,6 @@
                 </ul>
             </li>
         @endcanany
-        @canany([
-            'read holidays',
-            'read payroll-period',
-            'read payroll-configuration',
-        ])
-            <li class="nav-item dropstart">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Payroll
-                </a>
-                <ul class="dropdown-menu">
-                    @can('read holidays')
-                        <li><a class="dropdown-item" href="{{ route('holiday.index') }}">Holidays</a></li>
-                    @endcan
-                    @can('read payroll-periond')
-                        <li><a class="dropdown-item" href="#">Payroll Period</a></li>
-                    @endcan
-                    @can('read payroll-configuration')
-                        <li><a class="dropdown-item" href="#">Payroll Configuration</a></li>
-                    @endcan
-                </ul>
-            </li>
-        @endcanany
+        <li><a class="dropdown-item" href="{{route('system.jobs')}}">System Jobs</a></li>
     </ul>
 </li>

@@ -10,7 +10,9 @@ use Livewire\Component;
 class Create extends Component
 {
 
-    public array $fields;
+    public array $fields = [
+        'is_salary' => true,
+    ];
 
     public function save() {
         
@@ -30,9 +32,20 @@ class Create extends Component
 
         try {
 
-            EmployementTypes::create([
+            $employmentType = EmployementTypes::create([
                 'code' => $this->fields['code'],
                 'name' => $this->fields['name'],
+            ]);
+
+            DB::table('employment_type_settings')->insert([
+                'employment_type_id' => $employmentType->id,
+                'is_salary' => true,
+                'is_ot_pay' => $this->fields['is_ot_pay'] ?? false,
+                'is_clothing_allowance' => $this->fields['is_clothing_allowance'] ?? false,
+                'is_mid_year' => $this->fields['is_mid_year'] ?? false,
+                'is_year_end' => $this->fields['is_year_end'] ?? false,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             DB::commit();
@@ -64,6 +77,11 @@ class Create extends Component
         return [
             'fields.code' => 'required|unique:employment_types,code',
             'fields.name' => 'required|unique:employment_types,name',
+            'fields.is_salary' => 'required|boolean',
+            'fields.is_ot_pay' => 'nullable|boolean',
+            'fields.is_clothing_allowance' => 'nullable|boolean',
+            'fields.is_mid_year' => 'nullable|boolean',
+            'fields.is_year_end' => 'nullable|boolean'
         ];
     }
 

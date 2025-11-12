@@ -18,7 +18,7 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
 
-    public function remove(bool $isNotify = true, int $id = null) {
+    public function remove(bool $isNotify = true, ? int $id = null) {
 
         if($isNotify) {
 

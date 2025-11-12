@@ -2,8 +2,9 @@
 
 namespace App\Livewire\Admin\Timekeeping;
 
+use App\Services\DailyTimeRecordService;
 use App\Models\EmployeeAUT;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeTimelogs;
 use App\Models\ShiftSchedule;
@@ -34,13 +35,14 @@ class CorrectionApply extends Component
         }
     
         $logs = $this->getLogs($this->bsd_no, $this->date);
-            
-        if (!empty($logs) && isset($logs[0])) {
-            $records = $logs[0]['logs'] ?? [];
-            $this->clockin = isset($records[0]['time']) ? Carbon::parse($records[0]['time'])->format('H:i') : null;
-            $this->breakout = isset($records[1]['time']) ? Carbon::parse($records[1]['time'])->format('H:i') : null;
-            $this->breakin = isset($records[2]['time']) ? Carbon::parse($records[2]['time'])->format('H:i') : null;
-            $this->clockout = isset($records[3]['time']) ? Carbon::parse($records[3]['time'])->format('H:i') : null;  // Corrected this line
+
+        if (!empty($logs)) {
+
+            $formatTime = fn($value) => !empty($value) ? Carbon::parse($value)->format('H:i') : null;
+            $this->clockin = $formatTime($logs['clock_in'] ?? null);
+            $this->breakout = $formatTime($logs['lunch_in'] ?? null);
+            $this->breakin = $formatTime($logs['lunch_out'] ?? null);
+            $this->clockout = $formatTime($logs['clock_out'] ?? null);
 
         } else {
             $this->clockin = $this->breakout = $this->breakin = $this->clockout = null;
@@ -48,50 +50,19 @@ class CorrectionApply extends Component
         
     }
 
-    private function getLogs(int $bsd_no = null, string $date) {
+    private function getLogs(? string $bsd_no = null, string $date) {
 
-        $timestamp = Carbon::create($date)->format('d/m/Y');
+        $timestamp = Carbon::create($date)->format('Y-m-d');
         
-        $query = EmployeeTimelogs::where('logdatetime', 'LIKE', "{$timestamp}%");
+        $logService = new DailyTimeRecordService;
                 
-        if (!is_null($bsd_no)) {
-            $query->where('bsd_no', $bsd_no);
-        }
-    
-        $records = $query->get();
-    
-        return $records->groupBy(function ($record) {
-            return Carbon::createFromFormat('d/m/Y H:i', $record->logdatetime)->format('d/m/Y') . '|' . ($record->bsd_no ?? 'undefined');
-        })->map(function ($logs, $key) {
-            [$date, $bsd_no] = explode('|', $key);
-    
-            return [
-                'date' => $date,
-                'bsd_no' => $bsd_no,
-                'origin' => $logs->first()->origin,
-                'logs' => $this->processLogs($logs)
-            ];
-        })->values();
-    }
-    
-    /**
-     * Process logs to merge IN/OUT timestamps.
-     */
-    private function processLogs($logs)
-    {
-        return $logs->mapToGroups(function ($log) {
-            $logTime = Carbon::createFromFormat('d/m/Y H:i', $log->logdatetime);
-            return [
-                $logTime->format('H') => [
-                    'time' => $logTime->format('H:i'),
-                    'captured_location' => $log->captured_location,
-                    'captured_image' => $log->captured_image,
-                    'accomplishment' => $log->accomplishment
-                ]
-            ];
-        })->collapse()->values()->all();
-    }
+        $logs = $logService->getLogs($timestamp);
 
+        $logs = $logs[$timestamp][$bsd_no] ?? null;
+
+        return $logs ? $logs : [];
+    }
+    
     protected function rules()
     {
         return [
@@ -126,15 +97,12 @@ class CorrectionApply extends Component
         
         $shift = EmployeeInformation::select('shift_id')->where('bsd_no', $this->bsd_no)->first();
     
-        // Check if shift_id is null
         if (is_null($shift) || is_null($shift->shift_id)) {
             return null;
         }
     
-        // Find the shift schedule record
         $record = ShiftSchedule::find($shift->shift_id);
     
-        // Check if the record is null
         if (is_null($record)) {
             return null;
         }
@@ -173,7 +141,6 @@ class CorrectionApply extends Component
         
         $firstLog = Carbon::parse($logs[0]);
 
-        // for late
         if ($firstLog->greaterThan($latestIn)) {
                 
             $lateMins = $firstLog->diffInMinutes($latestIn);
@@ -183,7 +150,6 @@ class CorrectionApply extends Component
             ];
         }
 
-        // for undertime
         $firstLog = Carbon::parse($logs[0]);
         $secondLog = Carbon::parse($logs[1]);
 
@@ -199,12 +165,12 @@ class CorrectionApply extends Component
 
         if ($outLog->lessThan($expectedOut) || $outLog->equalTo($expectedOut)) {
             $undertimeMinutes = $expectedOut->diffInMinutes($outLog);
-            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes; // Accumulate undertime
+            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes;
         }
         
         if (!$secondLog->between($breakTimeStart, $breakTimeEnd)) {
             $undertimeMinutes = $breakTimeStart->diffInMinutes($secondLog);
-            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes; // Accumulate undertime
+            $aut['undertime'] = ($aut['undertime'] ?? 0) + $undertimeMinutes;
         }
         
 
@@ -212,12 +178,12 @@ class CorrectionApply extends Component
 
     }
 
-    public function save(bool $isNotify = true) {
-
+    public function save(bool $isNotify = true)
+    {
         if (Gate::denies('write correction-timelogs')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -230,86 +196,95 @@ class CorrectionApply extends Component
             $this->dispatch('showConfirmation', [
                 'title' => 'Are you sure to continue?',
                 'message' => 'The action cannot be undone or reverted!',
-                'action' => 'save'
+                'action' => 'save',
             ]);
-        } else {
+            return;
+        }
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            try {
+        try {
+            $dateOnly = Carbon::create($this->date)->format('Y-m-d');
+            $external = config('app.external_timelogs');
 
-                $timestamp = Carbon::create($this->date)->format('d/m/Y');
+            $logs = [
+                $this->clockin,
+                $this->breakout,
+                $this->breakin,
+                $this->clockout
+            ];
 
-                $logs = [
-                    $this->clockin,
-                    $this->breakout,
-                    $this->breakin,
-                    $this->clockout
-                ];
+            $aut = $this->computeAut($logs);
 
-                $aut = $this->computeAut($logs);
+            $logTimes = [
+                'clockin'  => ['time' => $this->clockin, 'type' => 0],
+                'breakout' => ['time' => $this->breakout, 'type' => 1],
+                'breakin'  => ['time' => $this->breakin, 'type' => 0],
+                'clockout' => ['time' => $this->clockout, 'type' => 1],
+            ];
 
-                $logTimes = [
-                    'clockin'  => ['time' => $this->clockin, 'type' => 0], // IN
-                    'breakout' => ['time' => $this->breakout, 'type' => 1], // OUT
-                    'breakin'  => ['time' => $this->breakin, 'type' => 0], // IN
-                    'clockout' => ['time' => $this->clockout, 'type' => 1], // OUT
-                ];
-                
-                // Delete existing records for the same timestamp
-                EmployeeTimelogs::where('bsd_no', $this->bsd_no)
-                    ->where('logdatetime', 'LIKE', "{$timestamp}%")
-                    ->delete();
-                
-                // Re-insert the new records
-                foreach ($logTimes as $key => $log) {
-                    if (!empty($log['time'])) {
-                        EmployeeTimelogs::create([
-                            'bsd_no'      => $this->bsd_no,
-                            'logdatetime' => $timestamp . ' ' . $log['time'],
-                            'origin'      => 'biometrics',
-                            'isindtr'     => '',
-                            'type'        => $log['type'], 
-                            'ismanual'    => 1,
+            // Delete old records for the date
+            EmployeeTimelogs::where('employee_id', $this->bsd_no)
+                ->where('timestamp', 'LIKE', "{$dateOnly}%")
+                ->delete();
+
+            // Re-insert updated time logs
+            foreach ($logTimes as $log) {
+                if (!empty($log['time'])) {
+                    $timestampFull = "{$this->date} {$log['time']}:00";
+
+                    $data = [
+                        'employee_id' => $this->bsd_no,
+                        'timestamp' => $timestampFull,
+                        'status1' => $log['type'],
+                    ];
+
+                    if ($external) {
+                        $data = array_merge($data, [
+                            'sn' => 'RUU5242500021',
+                            'table' => 'ATTLOG',
+                            'stamp' => '9999',
                         ]);
+                    } else {
+                        $data['status'] = $log['type'];
                     }
+
+                    EmployeeTimelogs::create($data);
                 }
-                
-
-                EmployeeAUT::updateOrCreate(
-                    [
-                        'date' => $timestamp,
-                        'bsd_no' => $this->bsd_no,
-                    ],
-                    [
-                        'lates' => $aut['late'] ?? 0,
-                        'undertime' => $aut['undertime'] ?? 0,
-                        'absences' => $aut['absences'] ?? 0,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ]
-                );
-
-                DB::commit();
-
-                $this->dispatch('alert', [
-                    'status' => 'success',
-                    'title' => 'Success!', 
-                    'showAlert' => true,
-                    'message' => 'Correction has been applied to BSD # ' . $this->bsd_no
-                ]);
-
-            } catch (\Exception $e) {
-
-                DB::rollBack();
-
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops',
-                    'message' => 'Error: ' . $e->getMessage()
-                ]);
             }
+
+            // Save AUT record
+            EmployeeAUT::updateOrCreate(
+                [
+                    'date' => $dateOnly,
+                    'bsd_no' => $this->bsd_no,
+                ],
+                [
+                    'lates' => $aut['late'] ?? 0,
+                    'undertime' => $aut['undertime'] ?? 0,
+                    'absences' => $aut['absences'] ?? 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            DB::commit();
+
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Success!',
+                'showAlert' => true,
+                'message' => 'Correction has been applied to BSD # ' . $this->bsd_no,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops',
+                'message' => 'Error: ' . $e->getMessage(),
+            ]);
         }
     }
 

@@ -70,11 +70,11 @@ class Edit extends Component
 
         try {
             
-            Role::find($this->id)->update([
-                'name' => $this->name,
-                'guard_name' => 'web',
-                'description' => $this->description
-            ]);
+            $role = Role::find($this->id);
+            $role->name = $this->name;
+            $role->guard_name = 'web';
+            $role->description = $this->description;
+            $role->save();
             
             DB::commit();
 

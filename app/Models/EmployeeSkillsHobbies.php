@@ -14,7 +14,8 @@ class EmployeeSkillsHobbies extends Model
         'employee_no',
         'name',
         'recognition',
-        'organization'
+        'organization',
+        'documents'
     ];
 
 }

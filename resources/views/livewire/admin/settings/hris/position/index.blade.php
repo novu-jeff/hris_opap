@@ -28,6 +28,8 @@
                     <tr>
                         <th>Name</th>
                         <th>Salary Grade</th>
+                        <th>Eligible</th>
+                        <th>W/Tax</th>
                         <th style="max-width: 200px;">Action</th>
                     </tr>
                 </thead>                
@@ -36,6 +38,8 @@
                         <tr data-id="{{$record->id}}">
                             <td>{{$record->name}}</td>
                             <td>{{$record->salary_grade}}</td>
+                            <td>{{$record->employment_type->name ?? ''}}</td>
+                            <td>{{$record->w_tax ?? ''}}</td>
                             <td>
                                 <a href="{{route('position.edit', ['position' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>

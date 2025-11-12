@@ -25,7 +25,8 @@ class Team extends Component
             return redirect()->route('employee.dashboard');
         }
 
-        $records = EmployeeInformation::with('section.department', 'section.branch', 'positions', 'personal', 'account')->get();
+        $records = EmployeeInformation::with('section.department', 'section.branch', 'positions', 'personal', 'account')
+            ->get();
 
         $groupedRecords = [
             'branch' => [
@@ -40,7 +41,7 @@ class Team extends Component
                 'section_id' => null,
                 'section_name' => 'Unassigned Section',
             ],
-            'positions' => []
+            'positions' => [],
         ];
         
         // Initialize branch, department, and section details using the first record as a reference.
@@ -52,7 +53,7 @@ class Team extends Component
             ];
             $groupedRecords['department'] = [
                 'department_id' => $firstRecord->section->department_id ?? null,
-                'department_name' => $firstRecord->section->department->name ?? 'Unassigned Department',
+                'department_name' => $firstRecord->section->department->description ?? 'Unassigned Department',
             ];
             $groupedRecords['section'] = [
                 'section_id' => $firstRecord->section->id ?? null,
@@ -91,7 +92,6 @@ class Team extends Component
         
         // Assign grouped records to the component property.
         $this->records = $groupedRecords;
-
     }
 
     public function render()

@@ -84,7 +84,7 @@ class Edit extends Component
 
         $this->validate([
             'question' => 'required|string|max:255',
-            'type' => 'required|string|in:simple,explanatory,checkbox,radio,file',
+            'type' => 'required|string|in:simple,explanatory,checkbox,radio',
             'options' => 'required_if:type,checkbox,radio|array',
             'options.*' => 'required|string|max:255'
         ],[
@@ -143,10 +143,10 @@ class Edit extends Component
 
         try {
 
-            Interview::where('id', $this->id)->update([
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
+            $interview = Interview::find($this->id);
+            $interview->name = $this->name;
+            $interview->description = $this->description;
+            $interview->save();
 
             
             InterviewItems::where('interview_id', $this->id)->delete();
