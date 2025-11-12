@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Event;
 
 class OtherEarnings extends Model
 {
@@ -13,17 +14,11 @@ class OtherEarnings extends Model
     protected $fillable = [
         'code',
         'name',
-        'amount_basis',
+        'amount_type',
         'amount',
-        'frequency_basis',
-        'frequency',
-        'eligible',
+        'first_term',
+        'second_term',
         'isTaxable',
-        'forcasted',
-        'duration',
-        'count',
-        'context',
-        'date'
     ];
 
 }

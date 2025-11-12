@@ -38,17 +38,17 @@ class Show extends Component
             'timekeeping' => ['timelogs', 'correction-timelogs'],
             'payroll' => [],
             'ess' => [
-                'leave', 'obs', 'arto', 'request-log', 'announcements', 
-                'employee-profile-approval', 'request-status', 'faqs'],
-            'reports' => ['dtr'],
+                'leave', 'obs', 'atro', 'time-adjustments', 'payslip-request', 'announcements', 
+                'employee-profile-approval', 'messages', 'faqs'],
+            'reports' => ['dtr', 'bir-2316'],
             'settings' => [
                 'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
-                'leave-types', 'leave-credits', 'gsis-billing', 'employee-deductions', 'other-earnings', 'other-deductions',
+                'leave-types', 'leave-credits', 'gsis-billing', 'employee-earnings', 'employee-deductions', 'other-earnings', 'other-deductions',
                 'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
             ],
             'employee' => [
-                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-request-status',
+                'apply-leave', 'clock-in-out', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-payslip-request', 'employee-messages',
                 'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
             ]
         ];
@@ -57,7 +57,7 @@ class Show extends Component
             // Show only 'employee' permissions
             $this->permissions = [
                 'employee' => [
-                    'apply-leave', 'clock-in-out', 'apply-atro', 'apply-request-timelog', 'payslip', 'employee-request-status',
+                    'apply-leave', 'clock-in-out', 'remaining-credit', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-messages',
                     'apply-obs', 'employee-dtr', 'my-directory', 'my-team', 'employee-announcements', 'my-profile',
                 ]
             ];

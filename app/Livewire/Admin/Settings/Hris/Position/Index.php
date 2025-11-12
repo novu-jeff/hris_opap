@@ -73,7 +73,7 @@ class Index extends Component
     public function render()
     {
 
-        $model = Positions::query();
+        $model = Positions::with('employment_type');
 
         if ($this->search) {
 
@@ -81,10 +81,9 @@ class Index extends Component
 
             $records = $model->where('code', 'like', '%' . $this->search . '%')
                 ->orWhere('name', 'like', '%' . $this->search . '%')
-                ->orWhere('salary_grade', 'like', '%' . $this->search . '%');
-        }
+                ->orWhere('salary_grade', 'like', '%' . $this->search . '%');        }
         
-        $records = $model->latest()->paginate($this->entries);
+        $records = $model->paginate($this->entries);
 
         return view('livewire.admin.settings.hris.position.index', [
             'records' => $records

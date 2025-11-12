@@ -174,8 +174,10 @@ class Create extends Component
                 'action' => 'save'
             ]);
         } else {
-            try {
 
+            $this->validate();
+
+            try {
 
                 $mobileEarliestClockin = $this->work_setup === 'hybrid' ? $this->mobile_earliest_clockin : null;
                 $mobileLatestClockin = $this->work_setup === 'hybrid' ? $this->mobile_latest_clockin : null;

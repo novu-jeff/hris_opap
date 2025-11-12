@@ -17,6 +17,7 @@ class EmployeeCivilService extends Model
         'date_exam',
         'place_exam',
         'license_no',
-        'date_validity'
+        'date_validity',
+        'documents'
     ];
 }

@@ -155,10 +155,10 @@ class Edit extends Component
 
         try {
            
-            Tranche::where('id', $this->id)->update([
-                'name' => $this->name,
-                'eligible' => $this->eligible
-            ]);            
+            $tranche = Tranche::findOrFail($this->id);
+            $tranche->name = $this->name;
+            $tranche->eligible = $this->eligible;
+            $tranche->save();
 
             TrancheItems::where('tranche_id', $this->id)
                 ->delete();

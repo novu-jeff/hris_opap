@@ -88,7 +88,7 @@
                                 <div class="card-body pt-1 pb-4">
                                     <div class="d-flex justify-content-between">
                                         <button type="button" class="btn btn-outline-primary text-uppercase px-4 py-3" wire:click="add_item">Add Requirement</button>
-                                        <button type="submit" class="btn btn-primary text-uppercase px-5 py-3" wire:click="save">Submit</button>
+                                        <button type="submit" class="btn btn-primary text-uppercase px-5 py-3" wire:click="save">Save</button>
                                     </div>
                                 </div>
                             </div>

@@ -13,7 +13,7 @@
 }
 
 .section-title h1 {
-  font-size: 2em;
+  font-size: 25px;
   font-weight: 600;
   text-transform: uppercase;
   color: #252525;
@@ -93,10 +93,6 @@
           }
         }
 
-        .navbar-brand img {
-          width: 120px;
-        }
-
         .profile-img {
             width: 40px; 
             height: 40px; 
@@ -105,6 +101,10 @@
             background-color: $light;
             object-fit: cover;
             border: 2px solid $primary;
+        }
+
+        .name {
+          
         }
   
         .drop-button {
@@ -139,9 +139,12 @@
         align-items: center;
       }
 
-      .logo img {
-        width: 120px;
-        height: 120px;
+      .logo {
+        img {
+          height: 100px;
+            object-fit: cover;
+            width: auto;
+        }
       }
 
       .logo-phrase {

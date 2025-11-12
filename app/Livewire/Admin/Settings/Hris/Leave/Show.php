@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -23,6 +24,7 @@ class Show extends Component
     use WithPagination;
     use WithFileUploads;
 
+    public $employee_no;
     public $selected_id;
     public $id;
     public $entries = 10;
@@ -36,6 +38,7 @@ class Show extends Component
     public $has_leave_card = [];
     public $importFile;
     public $isVlSL;
+    public $currentMonth;
 
     public $leaveName;
     protected $listeners = ['resetCredits'];
@@ -52,9 +55,10 @@ class Show extends Component
         $employees = EmployeeInformation::with(['personal'])
             ->where('employment_type_id', 1)
             ->get();
-    
+
         $leaveType = LeaveType::where('id', $this->id)
             ->first();
+
         $leaveTypes = strtolower($leaveType->code);
 
         $this->leaveName = $leaveType->name;
@@ -63,19 +67,20 @@ class Show extends Component
         $currentYear = Carbon::now()->year;
         $currentMonthYear = Carbon::now()->format('Y-m');
 
-        
+        $this->currentMonth = $currentMonthYear;
+
         $this->vl_credits = [];
         $this->sl_credits = [];
         $this->total_vl_credits = [];
         $this->total_sl_credits = [];
         $this->as_of = [];
-    
+
         if($this->id == 1 || $this->id == 2) {
             foreach ($employees as $employee) {
 
                 $currentleaveCredits = EmployeeLeaveCard::where('employee_no', $employee['employee_no'])
                     ->where('year', $currentYear)
-                    ->orderBy('year', 'asc') 
+                    ->orderBy('year', 'asc')
                     ->get();
 
                 $currentMonthCredits = $currentleaveCredits->filter(function ($item) use ($currentMonth) {
@@ -83,7 +88,7 @@ class Show extends Component
                 })->first();
 
                 $leaveTotalCredits = $currentleaveCredits->last();
-                    
+
                 $leaveTotalCreditsVL = $leaveTotalCredits ? $leaveTotalCredits->vl_bal ?? 0 : 0;
                 $leaveTotalCreditsSL = $leaveTotalCredits ? $leaveTotalCredits->sl_bal ?? 0 : 0;
 
@@ -112,7 +117,7 @@ class Show extends Component
         }
 
     }
-    
+
     protected function rules(bool $isVlSL, string $employee_no)
     {
 
@@ -120,7 +125,11 @@ class Show extends Component
             return [
                 "vl_credits.$employee_no" => 'required|numeric|gt:0',
                 "sl_credits.$employee_no" => 'required|numeric|gt:0',
-                "as_of.$employee_no" => 'required',
+                    "as_of.$employee_no" => [
+                    'required',
+                    'date_format:Y-m',
+                    'before_or_equal:' . $this->currentMonth,
+                ],
             ];
         } else {
             return [
@@ -130,14 +139,14 @@ class Show extends Component
         }
 
     }
-    
+
     protected function messages(string $employee_no)
     {
         return [
             "vl_credits.$employee_no.required" => '*required',
             "vl_credits.$employee_no.numeric" => '*number only',
             "vl_credits.$employee_no.gt" => '*must be greater than 0',
-    
+
             "sl_credits.$employee_no.required" => '*required',
             "sl_credits.$employee_no.numeric" => '*number only',
             "sl_credits.$employee_no.gt" => '*must be greater than 0',
@@ -145,23 +154,23 @@ class Show extends Component
             "credits.$employee_no.required" => '*required',
             "credits.$employee_no.numeric" => '*number only',
             "credits.$employee_no.gt" => '*must be greater than 0',
-    
+
             "as_of.$employee_no.required" => '*required',
         ];
     }
 
-    public function resetCredits(bool $isNotify = true, string $employee_no = null) {
+    public function resetCredits(bool $isNotify = true, ?string $employee_no = null) {
 
         if (Gate::denies('write leave-credits')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
         }
-        
+
         if($isNotify) {
 
             $title = 'Are you sure to continue?';
@@ -176,8 +185,8 @@ class Show extends Component
             ]);
 
         } else {
-               
-        
+
+
             // Retrieve the EmployeeLeaveCard records
             $leaveCard = EmployeeLeaveCard::where('employee_no', $this->selected_id);
 
@@ -199,34 +208,33 @@ class Show extends Component
                     $card->{'remarks'} = '';
                     $card->save();
                 });
-        
+
 
                 foreach ([1, 2] as $leave_id) {
                     $record = LeaveCredits::where('employee_no', $this->selected_id)
-                        ->where('leave_type_id', $leave_id) 
+                        ->where('leave_type_id', $leave_id)
                         ->first();
-                
+
                     if ($record) {
-                        $record->update([
-                            'credits' => 0,
-                            'as_of' => '', 
-                        ]);
+                        $record->credits = 0;
+                        $record->as_of = '';
+                        $record->save();
                     }
                 }
-                
-        
+
+
                 // Check if the last leave card has empty 'vl_bal' and 'sl_bal' fields
                 $lastLeaveCard = $leaveCardData->last();
-        
+
                 // Only delete if the last card has empty values for 'vl_bal' and 'sl_bal'
                 if (empty($lastLeaveCard->vl_bal) && empty($lastLeaveCard->sl_bal)) {
                     // Deleting only the last leave card if conditions are met
                     $leaveCard->delete();
                 }
-        
+
                 // Reload records
                 $this->loadRecords();
-        
+
                 // Dispatch success alert
                 $this->dispatch('alert', [
                     'status' => 'success',
@@ -243,9 +251,9 @@ class Show extends Component
                 ]);
             }
         }
-                  
+
     }
-    
+
     public function save(string $employee_no)
     {
 
@@ -258,31 +266,30 @@ class Show extends Component
             ]);
             return;
         }
-    
+
         $isVlSL = $this->id == 1 || $this->id == 2 ? true : false;
 
         $this->validate($this->rules($isVlSL, $employee_no), $this->messages($employee_no));
-    
-        try {
 
+        try {
 
             DB::beginTransaction();
 
             if($this->id == 1 || $this->id == 2) {
-                
+
                 $vl_credits = $this->vl_credits[$employee_no];
 
                 if (!is_null($vl_credits)) {
-                    LeaveCredits::updateOrCreate(
+                    $leaveCredit = LeaveCredits::firstOrNew(
                         [
                             'employee_no' => $employee_no,
                             'leave_type_id' => 1,
-                        ],
-                        [
-                            'credits' => $vl_credits,
-                            'as_of' => $this->as_of[$employee_no] ?? null,
                         ]
                     );
+
+                    $leaveCredit->credits = $vl_credits;
+                    $leaveCredit->as_of = $this->as_of[$employee_no] ?? null;
+                    $leaveCredit->save();
 
                     $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employee_no)
                         ->where('year', Carbon::now()->year)
@@ -306,16 +313,16 @@ class Show extends Component
 
                 if (!is_null($sl_credits)) {
 
-                    LeaveCredits::updateOrCreate(
+                    $leaveCredit = LeaveCredits::firstOrNew(
                         [
                             'employee_no' => $employee_no,
                             'leave_type_id' => 2,
-                        ],
-                        [
-                            'credits' => $sl_credits,
-                            'as_of' => $this->as_of[$employee_no] ?? null,
                         ]
                     );
+
+                    $leaveCredit->credits = $sl_credits;
+                    $leaveCredit->as_of = $this->as_of[$employee_no] ?? null;
+                    $leaveCredit->save();
 
                     $leaveCardExists = EmployeeLeaveCard::where('employee_no', $employee_no)
                         ->where('year', Carbon::now()->year)
@@ -342,16 +349,16 @@ class Show extends Component
 
                 if (!is_null($credits)) {
 
-                    LeaveCredits::updateOrCreate(
+                    $leaveCredit = LeaveCredits::firstOrNew(
                         [
                             'employee_no' => $employee_no,
                             'leave_type_id' => $this->id,
-                        ],
-                        [
-                            'credits' => $credits,
-                            'as_of' => $this->as_of[$employee_no],
                         ]
                     );
+
+                    $leaveCredit->credits = $credits;
+                    $leaveCredit->as_of = $this->as_of[$employee_no];
+                    $leaveCredit->save();
 
                 }
 
@@ -360,7 +367,7 @@ class Show extends Component
             DB::commit();
 
             $this->loadRecords();
-    
+
             $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Saved!',
@@ -370,7 +377,7 @@ class Show extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Error!',
@@ -396,8 +403,6 @@ class Show extends Component
             return;
         }
 
-
-
         $this->validate([
             'importFile' => 'required|mimes:csv',
         ], [
@@ -406,10 +411,10 @@ class Show extends Component
         ]);
 
         try {
-            
+
             $path = $this->importFile->store('temp');
             $fullPath = storage_path("app/{$path}");
-            
+
             // Extract the header row
             $headings = (new HeadingRowImport())->toArray($fullPath);
 
@@ -420,25 +425,25 @@ class Show extends Component
             $employee_nos = array_filter(array_map(fn($row) => $row[0] ?? null, $employee_nos));
             $employee_nos = array_values(array_unique($employee_nos));
 
-            $headerRow = array_values($headings[0][0] ?? []); // Ensure we access the first row correctly
-            
+            $headerRow = array_values($headings[0][0] ?? []);
+
             if($this->isVlSL) {
                 $requiredHeaders = [
-                    'employee_no', 'year', 'period', 'particulars', 
-                    'vl_earned', 'vl_aut_w_pay', 'vl_bal', 'vl_aut_wo_pay', 
-                    'sl_earned', 'sl_aut_w_pay', 'sl_bal', 'sl_aut_wo_pay', 
+                    'employee_no', 'year', 'period', 'particulars',
+                    'vl_earned', 'vl_aut_w_pay', 'vl_bal', 'vl_aut_wo_pay',
+                    'sl_earned', 'sl_aut_w_pay', 'sl_bal', 'sl_aut_wo_pay',
                     'remarks'
                 ];
             } else {
-                
+
                 $requiredHeaders = [
                     'employee_no', 'credits', 'as_of'
                 ];
-                
+
             }
 
             $missingHeaders = array_diff($requiredHeaders, $headerRow);
-            
+
             if (!empty($missingHeaders)) {
                 $this->dispatch('alert', [
                     'status' => 'info',
@@ -446,6 +451,7 @@ class Show extends Component
                     'showAlert' => true,
                     'message' => 'You are importing an invalid file!',
                 ]);
+
                 return;
             }
 
@@ -481,14 +487,15 @@ class Show extends Component
         }
 
     }
-    
+
     public function render()
     {
+
         $model = EmployeeInformation::with(['personal'])
             ->where('employment_type_id', 1);
-    
+
         if ($this->search) {
-            $this->resetPage(); 
+            $this->resetPage();
             $model->where(function ($query) {
                 $query->where('employee_no', 'like', '%' . $this->search . '%')
                 ->orWhereHas('personal', function ($subQuery) {
@@ -496,9 +503,9 @@ class Show extends Component
                 });
             });
         }
-    
+
         $records = $model->paginate($this->entries);
-    
+
         return view('livewire.admin.settings.hris.leave.show', [
             'records' => $records,
         ]);

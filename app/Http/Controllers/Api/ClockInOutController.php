@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +24,7 @@ class ClockInOutController extends Controller
 
         $user_id = Auth::user()->employee_id;
 
-        $records = EmployeeClockInOut::where('employee_id', $user_id)->get();
+        $records = EmployeeTimelogs::where('employee_id', $user_id)->get();
 
         return response([
             'status' => 'success',
@@ -90,7 +90,7 @@ class ClockInOutController extends Controller
      
          // Fetch existing clock-in/out record for today
          Log::info('Checking for existing clock-in/out record.');
-         $existingRecord = EmployeeClockInOut::where('employee_id', $user_id)
+         $existingRecord = EmployeeTimelogs::where('employee_id', $user_id)
              ->whereDate('created_at', $today)
              ->first();
      
@@ -110,7 +110,7 @@ class ClockInOutController extends Controller
              $timestamp = Carbon::now();
              Log::info('Clocking in.', ['timestamp' => $timestamp]);
      
-             EmployeeClockInOut::create([
+             EmployeeTimelogs::create([
                  'employee_id' => $user_id,
                  'clock_in' => $timestamp,
                  'captured_image_clockin' => $imageName,

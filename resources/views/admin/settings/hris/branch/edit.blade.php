@@ -1,12 +1,12 @@
 @extends('layouts.admin', [
-    'title' => 'HRIS | Edit Branch'
+    'title' => 'HRIS | Update Central / Field Office'
     ])
 
 @section('content')
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
-            <h1>Edit Branch Information</h1>
+            <h1>Update Central / Field Office Information</h1>
             <p>Modify or update</p>
         </div>
         <div class="actions">

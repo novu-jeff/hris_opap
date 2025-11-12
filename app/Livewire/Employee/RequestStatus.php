@@ -86,49 +86,60 @@ class RequestStatus extends Component
 
     }
 
-    public function updated($propertyName) {
-        if ($propertyName === 'attachments' && isset($this->attachments)) {
-            
-            $this->preview_attachments = [];
-    
-            foreach ($this->attachments as $attachment) {
-
-                if ($attachment instanceof \Illuminate\Http\UploadedFile) {
-                    $extension = strtolower($attachment->getClientOriginalExtension());
-    
-                    if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                        $this->preview_attachments[] = [
-                            'type' => 'image',
-                            'url' => $attachment->temporaryUrl(),
-                        ];
-                    } elseif ($extension === 'pdf') {
-                        $filename = $attachment->store('public/temp');
-                        $url = Storage::url($filename);
-    
-                        $this->preview_attachments[] = [
-                            'type' => 'pdf',
-                            'url' => $url,
-                        ];
-                    } 
-                } else {
-                    $this->validate();
-                }
+    public function updated($propertyName)
+    {
+        try {
+            $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($propertyName === 'attachments') {
+                $this->addError('attachments', $e->validator->errors()->first('attachments'));
             }
+            return;
+        }
+
+        if ($propertyName === 'attachments') {
+            $this->preview_attachments = collect($this->attachments)
+                ->filter(fn($attachment) => $attachment instanceof \Illuminate\Http\UploadedFile)
+                ->map(fn($attachment) => $this->processAttachmentPreview($attachment))
+                ->values()
+                ->toArray();
         }
     }
 
-    public function rules() {
+    private function processAttachmentPreview($attachment)
+    {
+        $extension = strtolower($attachment->getClientOriginalExtension());
+
+        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+            return ['type' => 'image', 'url' => $attachment->temporaryUrl()];
+        }
+
+        if (in_array($extension, ['pdf', 'xls', 'xlsx', 'doc', 'docs', 'docx'])) {
+            $filename = $attachment->store('public/temp');
+            return ['type' => 'file', 'url' => Storage::url($filename)];
+        }
+
+        return null;
+    }
+
+    public function rules()
+    {
         return [
-            'message' => 'required_without:attachments', 
-            'attachments' => 'required_without:message|array',
-            'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf|max:2048',
+            'message' => 'required_without:attachments',
+            'attachments' => 'required_without:message|array|max:5',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,xlsx,xls,doc,docs,docx|max:5120',
         ];
     }
 
-    public function messages() {
+    public function messages()
+    {
         return [
-            'message.required_without' => 'Message is Required',
-            'attachments.required_without' => 'Attachment is Required'
+            'message.required_without' => 'Message is required when no attachments are provided.',
+            'attachments.required_without' => 'At least one attachment is required when no message is provided.',
+            'attachments.max' => 'You can upload a maximum of 5 files.',
+            'attachments.*.file' => 'Each attachment must be a valid file.',
+            'attachments.*.mimes' => 'Only JPG, JPEG, PNG, GIF, and PDF files are allowed.',
+            'attachments.*.max' => 'Each file must not exceed 2 MB.',
         ];
     }
 
@@ -185,7 +196,7 @@ class RequestStatus extends Component
 
         $sender_name = $this->user->firstname . ' ' . $this->user->lastname  . '(employee)';
         $user = EmployeeAccount::find($this->user->id);
-        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('ess.request-status', ['employee_no' => $this->user->employee_no]), 'admin'));
+        $user?->notify(new Notifications('message', $sender_name . ' sent you a message.', route('ess.messages', ['employee_no' => $this->user->employee_no]), 'admin'));
 
         foreach ($this->attachments as $index => $attachment) {
 
@@ -212,6 +223,12 @@ class RequestStatus extends Component
         $this->loadRecords();
         $this->dispatch('showLatest');
 
+    }
+
+    public function remove(int $index) {
+        unset($this->preview_attachments[$index]);
+        unset($this->attachments[$index]);
+        $this->preview_attachments = array_values($this->preview_attachments);
     }
 
     public function render()

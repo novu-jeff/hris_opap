@@ -54,7 +54,7 @@
                         </div>
                         
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="break_out">Break Out <span class="text-danger">*</span></label>
+                            <label class="mb-2" for="break_out">Lunch Out <span class="text-danger">*</span></label>
                             <input type="time" wire:model="break_out" id="break_out" class="form-control">
                             <div class="error-field">
                                 @error('break_out') <span class="text-danger">{{ $message }}</span> @enderror
@@ -62,7 +62,7 @@
                         </div>
                         
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="break_in">Break In <span class="text-danger">*</span></label>
+                            <label class="mb-2" for="break_in">Lunch In <span class="text-danger">*</span></label>
                             <input type="time" wire:model="break_in" id="break_in" class="form-control">
                             <div class="error-field">
                                 @error('break_in') <span class="text-danger">{{ $message }}</span> @enderror

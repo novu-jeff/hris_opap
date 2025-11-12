@@ -2,9 +2,16 @@
 
 namespace App\Livewire\Admin\Ess\ProfileApproval;
 
-use App\Models\EmployeeAccount;
+use App\Models\EmployeePersonal;
+use App\Models\EmployeeUpdateChildren;
+use App\Models\EmployeeUpdateCivilService;
+use App\Models\EmployeeUpdateEducation;
+use App\Models\EmployeeUpdateEmploymentHistory;
+use App\Models\EmployeeUpdateOtherWorks;
+use App\Models\EmployeeUpdateParents;
 use App\Models\EmployeeUpdatePersonal;
-use App\Notifications\Notifications;
+use App\Models\EmployeeUpdateSkillsHobbies;
+use App\Models\EmployeeUpdateTrainings;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,107 +26,78 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     protected $listeners = ['remove'];
-
-    public function remove(bool $isNotify = true, string $employee_no = null) {
-
-        if (Gate::denies('write employee-profile-approval')) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Access Denied!', 
-                'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.',
-            ]);
-
-            return;
-        }
-    
-        if ($isNotify) {
-
-            $this->selected_id = $employee_no;
-    
-            $this->dispatch('showConfirmation', [
-                'title' => 'Are you sure to continue?',
-                'message' => 'Please be informed that you are about to delete this employee profile update application <b>' . strtoupper($employee_no) . '</b>. Once this action is processed, it cannot be undone or reversed!',
-                'action' => 'remove',
-            ]);
-    
-            return;
-        }
-    
-        // Fetch the employee record
-        $record = EmployeeUpdatePersonal::with([
-            'education', 
-            'parents', 
-            'children', 
-            'employment_history', 
-            'civil_service', 
-            'trainings', 
-            'others', 
-            'skills', 
-        ])->where('employee_no', $this->selected_id)->first();
-    
-        if (!$record) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!',
-                'isRemoveRowDT' => false,
-                'message' => 'Error: Employee record does not exist!',
-            ]);
-        }
-    
-        try {
-            // Delete related records
-            $relatedRelations = [
-                'education', 'parents', 
-                'children', 'employment_history', 'civil_service', 
-                'trainings', 'others', 'skills'
-            ];
-    
-            foreach ($relatedRelations as $relation) {
-                if ($record->$relation) {
-                    $record->$relation()->delete();
-                }
-            }
-    
-            // Delete the main employee record
-            $record->delete();
-        
-            $this->dispatch('alert', [
-                'status' => 'success',
-                'title' => 'Success!',
-                'id' => $this->selected_id,
-                'isRemoveRowDT' => true,
-                'message' => 'Profile update has been removed.',
-            ]);
-
-        } catch (\Exception $e) {
-            // Handle any errors during deletion
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Error!',
-                'isRemoveRowDT' => false,
-                'message' => 'An error occurred while deleting the record: ' . $e->getMessage(),
-            ]);
-        }
-    }
     
     public function render()
     {
+        $models = [
+            'personal' => EmployeeUpdatePersonal::class,
+            'family' => EmployeeUpdateParents::class,
+            'children' => EmployeeUpdateChildren::class,
+            'education' => EmployeeUpdateEducation::class,
+            'employment-history' => EmployeeUpdateEmploymentHistory::class,
+            'civil-service' => EmployeeUpdateCivilService::class,
+            'trainings' => EmployeeUpdateTrainings::class,
+            'other-works' => EmployeeUpdateOtherWorks::class,
+            'skills' => EmployeeUpdateSkillsHobbies::class,
+        ];
 
-        $model = EmployeeUpdatePersonal::query();
-        
-        if ($this->search) {
-            $this->resetPage(); 
-            $records = $model->where('employee_no', 'like', '%' . $this->search . '%')
-                ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+        $data = collect();
+
+        foreach ($models as $type => $model) {
+            $records = $model::select('employee_no', 'updated_at')->get();
+
+            foreach ($records as $record) {
+                $data->push([
+                    'type' => strtolower($type),
+                    'employee_no' => $record->employee_no,
+                    'updated_at' => $record->updated_at,
+                ]);
+            }
         }
 
-        $records = $model->paginate($this->entries);
+        $grouped = $data->groupBy('employee_no')->map(function ($items, $employee_no) {
+            $types = $items->pluck('type')->unique();
+            $personal = EmployeePersonal::where('employee_no', $employee_no)->first();
+
+            return [
+                'employee_no' => $employee_no,
+                'type' => $types->first(), 
+                'types' => str_replace('-', ' ', $types->implode(', ')),
+                'name' => $personal
+                    ? trim("{$personal->firstname} {$personal->middlename} {$personal->lastname}")
+                    : 'N/A',
+                'date_applied' => optional($items->sortByDesc('updated_at')->first()['updated_at'])->format('M d, Y'),
+            ];
+        })->values();
+
+        if ($this->search) {
+            $search = strtolower($this->search);
+            $grouped = $grouped->filter(function ($item) use ($search) {
+                return str_contains(strtolower($item['employee_no']), $search) ||
+                    str_contains(strtolower($item['name']), $search);
+            })->values();
+        }
+
+        $grouped = $grouped->map(function ($item, $index) {
+            $item['id'] = $index + 1;
+            return $item;
+        });
+
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $perPage = $this->entries;
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $grouped->forPage($currentPage, $perPage)->values(),
+            $grouped->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
 
         return view('livewire.admin.ess.profile-approval.index', [
-            'records' => $records
+            'records' => $paginated,
         ]);
     }
+
+
+
 }

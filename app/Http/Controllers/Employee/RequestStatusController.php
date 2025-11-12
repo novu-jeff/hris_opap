@@ -9,14 +9,14 @@ class RequestStatusController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read employee-request-status')->only('index');
+        $this->middleware('permission:read employee-messages')->only('index');
     }
 
     public function index() {
         return view('employee.request-status', [
             'action' => 'index',
             'title' => 'ESS | Request Status',
-            'header' => 'Request Status | Talk HR',
+            'header' => 'Contact Us | Talk HR',
             'sub' => 'Request any status or message any concerns.'
         ]);
     }

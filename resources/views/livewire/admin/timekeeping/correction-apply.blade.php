@@ -16,14 +16,14 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-4">
-                            <label class="mb-2">Break Out <span class="text-danger">*</span></label>
+                            <label class="mb-2">Lunch Out <span class="text-danger">*</span></label>
                             <input type="time" wire:model="breakout" id="breakout" class="form-control">
                             <div class="error-field">
                                 @error('breakout') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-3 mb-4">
-                            <label class="mb-2">Break In <span class="text-danger">*</span></label>
+                            <label class="mb-2">Lunch In <span class="text-danger">*</span></label>
                             <input type="time" wire:model="breakin" id="breakin" class="form-control">
                             <div class="error-field">
                                 @error('breakin') <span class="text-danger">{{ $message }}</span> @enderror

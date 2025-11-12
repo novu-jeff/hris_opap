@@ -13,9 +13,7 @@ class OtherDeductions extends Model
     protected $fillable = [
         'code',
         'name',
-        'frequency',
-        'eligible',
-        'origin'
+        'amount'
     ];
 
 }

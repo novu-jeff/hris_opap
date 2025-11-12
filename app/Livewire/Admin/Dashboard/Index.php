@@ -3,19 +3,23 @@
 namespace App\Livewire\Admin\Dashboard;
 
 use App\Http\Controllers\Admin\Settings\HRIS\EmploymentTypeController;
+use App\Models\CompanyInformation;
 use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
-use App\Models\EmployeeClockInOut;
+use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeeLeave;
 use App\Models\EmployementTypes;
-use App\Models\GSISBilling;
+use App\Models\SocialSecurityBilling;
 use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
+use Faker\Provider\ar_EG\Company;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class Index extends Component
@@ -23,8 +27,12 @@ class Index extends Component
 
     public $product;
     public $stats;
+    public $now;
+    public $trails;
+    public $companyInfo;
 
     public function mount() {
+        $this->now = Carbon::now();
         $this->loadRecords();
     }
 
@@ -48,6 +56,7 @@ class Index extends Component
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
 
+        
         $obsCounts = EmployeeBusinessSlip::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
@@ -59,11 +68,13 @@ class Index extends Component
         $earnings = OtherEarnings::all();
         $deductions = OtherDeductions::all();
 
-        $gsis_billing = GSISBilling::with('items')
+        $social_security = SocialSecurityBilling::with('items')
             ->orderBy('billing_month', 'desc')
             ->first();
 
-        $clockinout = EmployeeClockInOut::whereDate('created_at', Carbon::today())->get();
+        $clockinout = EmployeeTimelogs::whereDate('created_at', Carbon::today())->get();
+        
+        $this->companyInfo = $this->getCompanyInformation();
 
         $this->stats = [
             'recruitment' => [
@@ -72,7 +83,7 @@ class Index extends Component
                 'placement' => $recruitmentCounts['placement'] ?? 0,
                 'onboarding' => $recruitmentCounts['onboarding'] ?? 0,
                 'hired' => $recruitmentCounts['hired'] ?? 0,
-                'rejected' => $recruitmentCounts['rejected'] ?? 0
+                'rejected' => $recruitmentCounts['disapproved'] ?? 0
             ],
             'employee' => $employeeCounts,
             'clockinout' => [
@@ -82,25 +93,61 @@ class Index extends Component
             ],
             'leave' => [
                 'pending' => $leaveCounts['pending'] ?? 0,
-                'granted' => $leaveCounts['granted'] ?? 0,
-                'rejected' => $leaveCounts['rejected'] ?? 0,
+                'granted' => $leaveCounts['approved'] ?? 0,
+                'rejected' => $leaveCounts['disapproved'] ?? 0,
             ],
             'obs' => [
                 'pending' => $obsCounts['pending'] ?? 0,
-                'granted' => $obsCounts['granted'] ?? 0,
-                'rejected' => $obsCounts['rejected'] ?? 0,
+                'granted' => $obsCounts['approved'] ?? 0,
+                'rejected' => $obsCounts['disapproved'] ?? 0,
             ],
             'atro' => [
                 'pending' => $atroCounts['pending'] ?? 0,
-                'granted' => $atroCounts['granted'] ?? 0,
-                'rejected' => $atroCounts['rejected'] ?? 0,
+                'granted' => $atroCounts['approved'] ?? 0,
+                'rejected' => $atroCounts['disapproved'] ?? 0,
             ],
             'earnings' => $earnings,
             'deductions' => $deductions,
-            'gsis_billing' => $gsis_billing ? $gsis_billing->toArray() : [],
+            'social_security' => $social_security ? $social_security->toArray() : [],
         ];
+        
+        $this->getTrails();
     }
    
+
+    private function getTrails() {
+        $directory = storage_path('logs/trails');
+        
+        if (!File::exists($directory)) {
+            $this->trails = [];
+            return;
+        }
+
+        $files = File::files($directory);
+
+        $this->trails = collect($files)->sortByDesc(function ($file) {
+            return $file->getFilename();
+        })->map(function ($file) {
+            return $file->getFilename();
+        })->toArray();
+    }
+
+    private function getCompanyInformation() {
+        $companyInfo = CompanyInformation::with('type')->first();
+        return $companyInfo;
+    }
+
+    public function download(string $log) {
+        $directory = storage_path('logs/trails');
+        $filePath = $directory . DIRECTORY_SEPARATOR . $log;
+
+        if (!File::exists($filePath)) {
+            session()->flash('error', 'Log file does not exist.');
+            return;
+        }
+
+        return response()->download($filePath);
+    }
 
     public function render()
     {

@@ -4,22 +4,27 @@ namespace App\Livewire\Admin\Hris;
 
 use App\Http\Controllers\Admin\Services\EmployeeUploadService;
 use App\Imports\EmployeeImports;
+use App\Models\EmployeeAccount;
 use App\Models\EmployeeInformation;
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeSchedule;
 use App\Models\EmployeeUpdatePersonal;
 use App\Models\EmployementTypes;
-use App\Models\Message;
 use App\Models\ShiftSchedule;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Bus\Batch;
+use App\Notifications\Notifications;
+use App\Jobs\EmployeeUpload;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 class Index extends Component
 {
@@ -41,11 +46,15 @@ class Index extends Component
     public $roles;
     public $shift_id;
     public $schedule_id;
+    public $employmentTypes;
+    public $selectedType;
+    public $actionBy;
+    public $isTransferingEmp;
 
     public bool $lazy = true;
 
-    protected $listeners = ['remove', 'loading'];
-    
+    protected $listeners = ['remove', 'unlock', 'restore', 'loading', 'loadRecords'];
+
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';
@@ -59,9 +68,21 @@ class Index extends Component
     }
 
     public function loadRecords() {
+        $this->actionBy = Auth::user();
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
         $this->roles = EmployementTypes::all();
+        $this->employmentTypes = EmployementTypes::all();
+
+        if(session('dispatch') == 'isTransfering') {
+            $this->dispatch('alert', [
+                'status' => 'info',
+                'title' => 'Please be informed', 
+                'showAlert' => true,
+                'message' => 'This employee account is currently undergoing data migration to the newly assigned employee number. The process will be completed shortly. Thank you for your patience and understanding.',
+            ]);
+        }
+
     }
 
     public function close_upload_employee() {
@@ -79,7 +100,7 @@ class Index extends Component
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -89,7 +110,7 @@ class Index extends Component
         if ($this->file) {
 
             $this->upload_preview;
-            
+
             $file = $this->file;
 
             if ($file instanceof \Illuminate\Http\UploadedFile) {
@@ -100,7 +121,7 @@ class Index extends Component
 
                         $files = Storage::files('public/temp/files');
 
-                        Storage::delete($files); 
+                        Storage::delete($files);
 
                         $fileName = uniqid() . '.' . $extension;
 
@@ -126,39 +147,33 @@ class Index extends Component
 
     }
 
-    public function upload_file() {
-
+    public function upload_file()
+    {
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
         }
 
-        $this->isUploading = 'true';
-    
-        DB::beginTransaction();
-    
+        $this->isUploading = true;
+
         try {
-            // Correct file path using the Storage facade
             $relativePath = str_replace(asset('storage/'), '', $this->upload_preview);
             $absolutePath = storage_path('app/public/' . $relativePath);
-    
-            // Check if the file exists in the storage
+
             if (!Storage::exists('public/' . $relativePath)) {
                 throw new \Exception('File does not exist in storage.');
             }
-    
-            // Load the Excel file and get sheet names
+
             $spreadsheet = IOFactory::load($absolutePath);
-            $sheetNames = $spreadsheet->getSheetNames(); // Get sheet names
-    
-            // Load the Excel file to an array
+            $sheetNames = $spreadsheet->getSheetNames();
+
             $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
-    
+
             $this->validateUploaded($spreadsheet, $sheetNames);
 
             $schedules = [
@@ -166,154 +181,79 @@ class Index extends Component
                 'schedule' => $this->schedule_id
             ];
 
-            $results = [];
+            $jobs = [];
 
             foreach ($sheetsData as $index => $sheet) {
-                // Remove the first row as it contains labels
-                $sheet = array_slice($sheet, 1);
-            
-                // Filter out empty rows
-                $sheet = array_filter($sheet, function ($row) {
-                    return isset($row[0]) && !empty($row[0]) && 
-                           !empty(array_filter($row, fn($value) => $value !== null && $value !== ''));
-                });
-            
-                // Reset array keys
-                $sheet = array_values($sheet);
-            
-                // Get sheet name for processing logic
                 $sheetName = $sheetNames[$index];
-            
-                $service = new EmployeeUploadService;
-            
-                // Process each sheet based on its name
-                $result = match ($sheetName) {
-                    'Employee Information' => $service->uploadEmployeeInformation($sheet, $schedules),
-                    'Family Background' => $service->uploadFamilyBackground($sheet),
-                    'Children' => $service->uploadChildren($sheet),
-                    'Education' => $service->uploadEducation($sheet),
-                    'Employment History' => $service->uploadEmploymentHistory($sheet),
-                    'Civil Service' => $service->uploadCivilService($sheet),
-                    'Trainings' => $service->uploadTrainings($sheet),
-                    'Other Works' => $service->uploadOtherWorks($sheet),
-                    'Skills' => $service->uploadSkills($sheet),
-                    default => null
-                };
-            
-                // After processing, check if the sheet is "Employee Information"
-                if ($sheetName === 'Employee Information') {
-                    // Check if 'employee_information' exists in the result and store relevant data
-                    if (isset($result['employee_information'])) {
-                        $results['Employee Information'] = [
-                            'inserted' => $result['employee_information']['inserted'],
-                            'updated' => $result['employee_information']['updated']
-                        ];
-                        // Remove 'employee_information' from the result
-                        unset($result['employee_information']);
-                    }
-            
-                    // Separate the Employee Personal data from the result
-                    if (isset($result['employee_personal'])) {
-                        $results['Employee Personal'] = [
-                            'inserted' => $result['employee_personal']['inserted'],
-                            'updated' => $result['employee_personal']['updated']
-                        ];
-                        // Remove 'employee_personal' from the result
-                        unset($result['employee_personal']);
-                    }
-                } else {
-                    // For other sheets, store them normally
-                    $results[$sheetName] = $result;
+
+                $sheet = array_slice($sheet, 1);
+                $sheet = array_filter($sheet, fn($row) =>
+                    isset($row[0]) && !empty($row[0]) &&
+                    !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
+                );
+                $sheet = array_values($sheet);
+
+                $chunks = array_chunk($sheet, 100);
+
+                foreach ($chunks as $chunk) {
+                    $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
                 }
             }
             
-            // Define a list of sheet names to exclude from the result message
-            $excludeSheets = ['Options']; // Add any other sheet names to exclude here
-            
-            // Iterate through each section in the results
-            foreach ($results as $section => $data) {
-                // Skip sections listed in $excludeSheets
-                if (in_array($section, $excludeSheets)) {
-                    continue;
-                }
+            if(!empty($jobs)) {
+                Bus::batch($jobs)
+                    ->withOption('actionBy', [
+                        'id' => $this->actionBy->id,
+                        'name' => $this->actionBy->name
+                    ])
+                    ->name('Employee Uploading')
+                    ->catch(function (Batch $batch, \Throwable $e) {
+                        \Log::error('Error: ' . $e->getMessage());
+                        $this->actionBy?->notify(new Notifications(
+                            'error',
+                            'An error occurred during the uploading of employee informations.',
+                            route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
+                    ->then(function (Batch $batch) { 
+                        $this->actionBy?->notify(new Notifications(
+                            'success',
+                            'The uploading of employee informations has been successful.',
+                            route('system.jobs', ['id' => $batch->id]),
+                            'admin'
+                        ));
+                    })
+                    ->dispatch();
 
-                $insertedCount = isset($data['inserted']['total']) ? $data['inserted']['total'] : 0;
-                $updatedCount = isset($data['updated']['total']) ? $data['updated']['total'] : 0;
-            
-                // Start the message for each section
-                $message = "$section was added (" . (isset($data['inserted']['total']) ? $data['inserted']['total'] : 0) . ") records or updated (" . (isset($data['updated']['total']) ? $data['updated']['total'] : 0) . ") records";
-            
-                // Check if 'inserted' is an array and has 'data'
-                if (isset($data['inserted']) && is_array($data['inserted']) && isset($data['inserted']['data']) && is_array($data['inserted']['data']) && !empty($data['inserted']['data'])) {
-                    $insertedData = array_map(function ($item) {
-                        $employeeNo = $item['employee_no'] ?? null;
-                
-                        if ($employeeNo) {
-                            $employee = EmployeePersonal::where('employee_no', $employeeNo)->first();
-                            $name = $employee ? $employee->firstname . ' ' . $employee->lastname : 'No name';
-                        } else {
-                            $name = 'No employee number';
-                        }
-                
-                        return [
-                            'employee_no' => $employeeNo,
-                            'name' => $name,
-                            'message' => "Employee  {$employeeNo} - {$name}"
-                        ];
-                    }, $data['inserted']['data']);
-                } else {
-                    $insertedData = []; // No records updated
-                }                
-            
-                // Check if 'updated' is an array and has 'data'
-                if (isset($data['updated']) && is_array($data['updated']) && isset($data['updated']['data']) && is_array($data['updated']['data']) && !empty($data['updated']['data'])) {
-                    $updatedData = array_map(function ($item) {
-                        // Check if 'employee_no' and 'name' exist before trying to access them
-                        $employeeNo = $item['employee_no'] ?? 'No employee number';
-                        $name = $item['name'] ?? 'No name';
-                        return [
-                            'employee_no' => $employeeNo,
-                            'name' => $name,
-                            'message' => "Employee # {$employeeNo} - {$name}",
-                        ];
-                    }, $data['updated']['data']);
-                } else {
-                    $updatedData = []; // No records updated
-                }
-            
-                // Store the data in the resultMessage array for later rendering
-                $resultMessage[] = [
-                    'section' => $section,
-                    'insertedList' => $insertedData,
-                    'updatedList' => $updatedData,
-                    'insertedCount' => $insertedCount, 
-                    'updatedCount' => $updatedCount,  
-                ];
-            
-                $this->resultMessage = $resultMessage;
-            }            
-                  
-            DB::commit();
-    
-            $this->dispatch('hideModal', [
-                'modal' => 'upload_employee'
-            ]);
 
-            $this->dispatch('showModal', [
-                'modal' => 'alert_employee'
-            ]);
+                $this->dispatch('hideModal', [
+                    'modal' => 'upload_employee'
+                ]);
 
-            $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
+                $this->dispatch('alert', [
+                    'status' => 'info',
+                    'title' => 'Please be informed',
+                    'showAlert' => true,
+                    'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
+                ]);
 
-            $this->loadRecords();
+                $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
+                $this->loadRecords();
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops',
+                    'message' => 'No jobs were processed'
+                ]);
+
+            }
 
         } catch (\Exception $e) {
-            
-            DB::rollBack();
-    
+
             logger()->error('Error uploading file: ' . $e->getMessage());
-    
-            // Dispatch error message to frontend
+
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Oops!',
@@ -322,75 +262,120 @@ class Index extends Component
                 'message' => 'Error: ' . $e->getMessage(),
             ]);
         } finally {
-            // Ensure `isUploading` is set to false
             $this->isUploading = false;
         }
     }
 
     public function validateUploaded($spreadsheet, $sheetNames) {
 
+        $product = env('APP_PRODUCT');
+
+        if($product == 'government') {
+            $emp_info_req = [
+                'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
+                'address', 'email', 'sex', 'civil status', 'birthday', 'age',
+                'gsis id', 'pagibig id', 'philhealth id', 'tin id', 'bank account no.',
+                'date hired', 'job category', 'position', 'unit', 'monthly salary'
+            ];
+            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units'];
+        } else {
+            $emp_info_req = [
+                'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
+                'address', 'email', 'sex', 'civil status', 'birthday', 'age',
+                'pagibig id', 'sss id', 'philhealth id', 'tin id', 'bank account no.',
+                'company', 'date hired', 'job category', 'position', 'department',
+                'monthly salary'
+            ];
+            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
+        }
+
         $expectedSheets = [
-            'employee information' => ['employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename', 'address', 'sex', 'civil status', 'birthday', 'age', 'gsis no (bp no.)', 'pagibig id', 'sss id', 'phic id', 'tin id', 'bank account no.', 'date hired', 'position', 'monthly salary', 'job category', 'email'],
-            'family background' => ['employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename', 'spouse suffix', 'spouse occupation', 'spouse business name', 'spouse business address', 'spouse contact no', 'father surname', 'father firstname', 'father middlename', 'father suffix', 'mother surname', 'mother firstname', 'mother middlename'],
-            'children' => ['employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'],
-            'education' => ['employee no.', 'level', 'school name', 'course', 'from year', 'to year'],
-            'employment history' => ['employee no.', 'position', 'department', 'company name', 'monthly salary', 'employment status', 'is government?', 'from year', 'to year'],
-            'civil service' => ['employee no.', 'certification', 'rating', 'date exam', 'place exam', 'license no', 'date validity'],
-            'trainings' => ['employee no.', 'type', 'name', 'date from', 'date to', 'consumed hours', 'sponsored by'],
-            'other works' => ['employee no.', 'organization', 'address', 'date from', 'date to', 'consumed hours', 'position'],
-            'skills' => ['employee no.', 'skill / hobbies name', 'recognition', 'organization'],
-            'options' => ['job categories', 'bool', 'civil status', 'sex', 'departments']
+            'employee information' => $emp_info_req,
+            'family background' => [
+                'employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename',
+                'spouse suffix', 'spouse occupation', 'spouse business name',
+                'spouse business address', 'spouse contact no.', "father's surname",
+                "father's firstname", "father's middlename", "father's suffix",
+                "mother's surname", "mother's firstname", "mother's middlename"
+            ],
+            'children' => [
+                'employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'
+            ],
+            'education' => [
+                'employee no.', 'level', 'school name', 'course', 'from year', 'to year'
+            ],
+            'employment history' => [
+                'employee no.', 'position', 'department', 'company name', 
+                'monthly salary', 'employment status', 'is government?', 
+                'from year', 'to year'
+            ],
+            'civil service' => [
+                'employee no.', 'certification', 'rating', 'date exam', 'place exam', 
+                'license no', 'date validity'
+            ],
+            'trainings' => [
+                'employee no.', 'type', 'name', 'date from', 'date to', 
+                'consumed hours', 'sponsored by'
+            ],
+            'other works' => [
+                'employee no.', 'organization', 'address', 'date from', 
+                'date to', 'consumed hours', 'position'
+            ],
+            'skills' => [
+                'employee no.', 'skill / hobbies name', 
+                'recognition', 'organization'
+            ],
+            'options' => $opt_req
         ];
-    
+
         foreach ($sheetNames as $sheetName) {
-    
-            $sheetNameLower = strtolower($sheetName);  
-    
+
+            $sheetNameLower = strtolower($sheetName);
+
             if (array_key_exists($sheetNameLower, $expectedSheets)) {
                 $sheetData = $spreadsheet->getSheetByName($sheetName)->toArray();
-                
-                // Remove null values from each row without removing the entire row
-                $sheetData = array_map(function($row) {
-                    return array_filter($row, function($value) {
-                        return $value !== null;  // Keep only non-null values
+
+                $sheetData = array_map(function ($row) {
+                    return array_filter($row, function ($value) {
+                        return $value !== null;  
                     });
                 }, $sheetData);
-            
-                // Check if the sheet data has rows and extract the first row for header
+
                 if (empty($sheetData)) {
                     throw new \Exception("Sheet '{$sheetName}' is empty.");
                 }
-            
+
                 $header = $sheetData[0];
-            
-                // Trim spaces and convert the header values to lowercase for comparison
-                $headerLower = array_map(function($item) {
-                    return strtolower(trim($item)); // Remove leading/trailing spaces and convert to lowercase
+
+                $headerLower = array_map(function ($item) {
+                    return strtolower(trim($item));
                 }, $header);
-            
-                // Ensure the expected header also has trimmed values
+
                 $expectedHeader = array_map('strtolower', array_map('trim', $expectedSheets[$sheetNameLower]));
-            
-                if ($headerLower !== $expectedHeader) {
-                    Log::error("Invalid header in sheet '{$sheetName}'. Expected: " . implode(', ', $expectedHeader) . ". Found: " . implode(', ', $headerLower));
-                    throw new \Exception("Uploaded file contains invalid format");
+
+                $missingHeaders = array_diff($expectedHeader, $headerLower);
+
+                if (!empty($missingHeaders)) {
+                    $missingList = implode(', ', $missingHeaders);
+                    Log::error("Sheet '{$sheetName}' is missing required headers: {$missingList}");
+                    throw new \Exception("Missing column(s): {$missingList} at sheet {$sheetName}");
                 }
             } else {
                 Log::error("Unexpected sheet '{$sheetName}' found in the file.");
                 throw new \Exception("Uploaded file contains invalid format");
             }
-            
         }
-    
+
+
         return true;
     }
-    
-    public function remove(bool $isNotify = true, string $employee_no = null) {
+
+    public function remove(bool $isNotify = true, ? string $employee_no = null) {
 
         if (Gate::denies('write hris')) {
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Access Denied!', 
+                'title' => 'Access Denied!',
                 'showAlert' => true,
                 'message' => 'You do not have permission to perform this action.',
             ]);
@@ -413,9 +398,9 @@ class Index extends Component
         }  else {
 
             $record = EmployeeInformation::where('employee_no', $this->selected_id)->first();
-                
+
             if($record) {
-                
+
                 $record->isDeleted = true;
                 $record->save();
 
@@ -425,49 +410,182 @@ class Index extends Component
 
                 $this->dispatch('alert', [
                     'status' => 'success',
-                    'title' => 'Success!', 
+                    'title' => 'Success!',
                     'id' => $this->selected_id,
                     'isRemoveRowDT' => true,
-                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' was deleted successfully.' 
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' was deleted successfully.'
                 ]);
 
             } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
                     'status' => 'error',
-                    'title' => 'Oops!', 
+                    'title' => 'Oops!',
                     'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists' 
+                    'message' => 'Error: ID does not exists'
                 ]);
             }
         }
     }
 
+    public function unlock(bool $isNotify = true, ? string $employee_no = null) {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!',
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that this account has been locked due to multiple login attempts. Are you sure to unlock account  <b>' . strtoupper($employee_no) . '?</b>. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'unlock';
+
+            $this->selected_id = $employee_no;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeAccount::where('employee_no', $this->selected_id)->first();
+
+            if($record) {
+
+                $record->isLocked = false;
+                $record->login_attempts = 0;
+                $record->save();
+
+                $this->loadRecords();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!',
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been unlocked.'
+                ]);
+
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists'
+                ]);
+            }
+        }
+    }
+
+    public function restore(bool $isNotify = true, ? string $employee_no = null) {
+
+        if (Gate::denies('write hris')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!',
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
+
+        if($isNotify) {
+
+            $title = 'Are you sure to continue?';
+            $message = 'Please be informed that this archived account will be restored. Once this action is completed, it cannot be undone or reversed!';
+            $action = 'restore';
+
+            $this->selected_id = $employee_no;
+            $this->dispatch('showConfirmation', [
+                'title' => $title,
+                'message' => $message,
+                'action' => $action
+            ]);
+
+        }  else {
+
+            $record = EmployeeInformation::where('employee_no', $this->selected_id)
+                ->first();
+
+            if($record) {
+
+                $record->isDeleted = false;
+                $record->save();
+
+                $this->loadRecords();
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Success!',
+                    'id' => $this->selected_id,
+                    'isRemoveRowDT' => true,
+                    'message' => 'Employee ' . strtoupper($this->selected_id) . ' account has been restored.'
+                ]);
+
+            } else {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'isRemoveRowDT' => false,
+                    'message' => 'Error: ID does not exists'
+                ]);
+            }
+        }
+    }
+
+    public function changeEmployeeNo($employee_no) {
+        $this->dispatch('showModal', [
+            'modal' => 'change_employee_no',
+        ]);
+
+        $this->dispatch('setEmployeeNo', employee_no: $employee_no);
+
+    }
+
     public function render()
     {
-        
-        $model = EmployeeInformation::with('personal')
-            ->where('isDeleted', false);
+        $query = EmployeeInformation::with('account', 'personal');
 
-        if ($this->search) {
+        if ($this->selectedType !== null) {
+            if ($this->selectedType === 'unassigned') {
+                $query->whereNull('employment_type_id')
+                    ->where('isDeleted', false);
+            } else if($this->selectedType === 'archived') {
+                $query->where('isDeleted', true);
+            } else {
+                $query->where('employment_type_id', $this->selectedType)
+                    ->where('isDeleted', false);
+            }
+        } else {
+             $query->where('isDeleted', false);
+        }
 
-            $this->resetPage(); 
+        if (!empty($this->search)) {
+            $this->resetPage();
 
-            $employees = $model->where(function ($query) {
-                $query->where('employee_no', 'like', '%' . $this->search . '%')
+            $query->where(function ($q) {
+                $q->where('employee_no', 'like', '%' . $this->search . '%')
                 ->orWhereHas('personal', function ($subQuery) {
                     $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
                 });
             });
-        } else {
-            $employees = $model;
         }
 
-        $employees = $employees->latest()->paginate($this->entries);
+        $employees = $query->latest()->paginate($this->entries);
 
         return view('livewire.admin.hris.index', [
             'employees' => $employees
         ]);
     }
+
 
 }

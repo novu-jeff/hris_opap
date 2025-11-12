@@ -49,7 +49,7 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{route('ess.request-status', ['employee_no' => $record->employee_no])}}" class="btn btn-primary mx-1">
+                            <a href="{{route('ess.messages', ['employee_no' => $record->employee_no])}}" class="btn btn-primary mx-1">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </a>
                         </td>

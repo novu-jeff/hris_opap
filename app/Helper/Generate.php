@@ -49,7 +49,7 @@ class Generate {
     }
 
     public function email(string $employee_no, string $firstname, string $lastname) {
-        $suffix = trim(env('COMPANY_DOMAIN'));
+        $suffix = trim(env('EMAIL_ID_SUFFIX', 'hris.com'));
         $emailPrefix = strtolower(trim(str_replace(' ', '.', "{$firstname}.{$lastname}")));
         
         // Start with the basic format

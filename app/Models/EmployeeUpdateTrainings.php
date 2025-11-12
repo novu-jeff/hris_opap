@@ -19,7 +19,7 @@ class EmployeeUpdateTrainings extends Model
         'date_to',
         'consumed_hours',
         'sponsored_by',
+        'documents'
     ];
 
-    public $timestamps = false;
 }

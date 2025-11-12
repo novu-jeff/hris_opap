@@ -17,7 +17,11 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    'provider' => env('APP_PROVIDER'),
     'product' => env('APP_PRODUCT'),
+    'external_timelogs' => env('TIMELOGS_EXTERNAL'),
+    'allow_upload_timelogs' => env('ALLOW_UPLOAD_TIMELOGS'),
+    'bsd_emp_identical' => env('BSD_EMP_IDENTICAL'),
 
     /*
     |--------------------------------------------------------------------------
@@ -186,5 +190,6 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
+
 
 ];

@@ -5,7 +5,7 @@ namespace App\Imports;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
-class GSISBillingImports implements ToCollection
+class SocialSecurityBillingImports implements ToCollection
 {
     /**
     * @param Collection $collection

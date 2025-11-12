@@ -44,12 +44,12 @@ class NewEmployee extends Component
 
         try {
 
-            EmployeeAccount::where('employee_no', $this->employee_no)->update([
-                'password' => Hash::make($this->password),
-                'isNew' => false,
-                'isToUpdatePassword' => false,
-                'last_password_updated' => Carbon::now(),
-            ]);
+            $employeeAccount = EmployeeAccount::where('employee_no', $this->employee_no)->firstOrFail();
+            $employeeAccount->password = Hash::make($this->password);
+            $employeeAccount->isNew = false;
+            $employeeAccount->isToUpdatePassword = false;
+            $employeeAccount->last_password_updated = Carbon::now();
+            $employeeAccount->save();
 
             return $this->dispatch('alert', [
                 'showAlert' => true,
