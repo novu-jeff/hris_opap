@@ -89,14 +89,14 @@
     .dtr-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 
     .dtr-table th, .dtr-table td {
         border: 1px solid black;
         text-align: center;
-        padding: 5px;
-        font-size: 12px; 
+        padding: 4px;
+        font-size: 11px; 
     }
 
     .dtr-summary {
@@ -194,22 +194,19 @@
 }
 
 /* --- Fix two copies width --- */
-.dtr-copy {
-    width: 48% !important;
-    max-width: 100% !important;
-}
+
 
    .print-wrapper {
     display: flex;
     width: 100%;
     justify-content: space-between;
-    gap: 20px;
-    padding: 20px;
+    gap: 0;
+    padding: 10px;
     flex-wrap: nowrap;
 }
 
 .dtr-copy {
-    width: 46%;
+    width: 48%;
     max-width: 100%;
     padding: 5px;
 }
@@ -222,10 +219,10 @@
         border-collapse: collapse;
         margin-top: 10px;
     }
-    .dtr-table, .dtr-table th, .dtr-table td {
+    .p-dtr-table, .p-dtr-table th, .p-dtr-table td {
         border: 1px solid #000;
         font-size: 12px;
-        padding: 2px;
+        padding: 0px;
         text-align: center;
     }
     .info-table td {
@@ -242,12 +239,18 @@
     @media print {
     .print-wrapper {
         padding: 0;
-        gap: 10px;
+        gap: 0;
     }
 
     .dtr-copy {
         page-break-inside: avoid;
     }
+
+    .td-small {
+        width: 10px;
+    }
+
+
 }
 
 .print-area-hidden {
@@ -271,6 +274,18 @@
         left: 0;
         width: 100%;
     }
+}
+
+@media print {
+    .p-dtr-table th,
+    .p-dtr-table td {
+        border-right: 1px solid #000 !important;
+        border-left: 1px solid #000 !important;
+        border-top: 1px solid #000 !important;
+        border-bottom: 1px solid #000 !important;
+    }
+
+   
 }
 
 
@@ -360,7 +375,7 @@
     </div>
       <div id="print-section" class="print-wrapper print-area-hidden">
          @if($logs)
-        @include('livewire.admin.reports.daily-time-record.employee.print-dtr')
+        @include('livewire.admin.reports.daily-time-record.employee.print-dtr-table')
          @else
             <div class="alert alert-danger" role="alert">
                 @if (!empty($errors))
