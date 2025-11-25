@@ -65,33 +65,68 @@ class Clock extends Component
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
     }
 
-    public function getLocation($lng, $lat, $isToHide = false)
-    {
-        $accessToken = env('MAPBOX_API');
+   public function getLocation($lng, $lat, $isToHide = false)
+{
+    // Log coordinates received from JS
+    \Log::info('GPS Location Received:', ['lng' => $lng, 'lat' => $lat, 'isToHide' => $isToHide]);
+
+    $this->isToHide = $isToHide;
+    $accessToken = env('MAPBOX_API');
+    $this->gps_location = null; // default
+
+    // Default fallback place string
+    $fallbackPlace = "Lat: {$lat}, Lng: {$lng}";
+
+    try {
         $url = "https://api.mapbox.com/geocoding/v5/mapbox.places/{$lng},{$lat}.json";
-
-        $this->isToHide = $isToHide;
-
         $response = Http::get($url, ['access_token' => $accessToken]);
 
         if ($response->successful()) {
             $decoded = $response->json();
-            $gps_location = $decoded['features'][0] ?? null;
-            $this->gps_location = $gps_location ? [
-                'place' => $gps_location['place_name'] ?? '',
-                'coordinates' => ['lng' => $lng, 'lat' => $lat]
-            ] : null;
+            \Log::info('Mapbox response:', $decoded);
 
-            $this->dispatch('loadMap', [
+            $feature = $decoded['features'][0] ?? null;
+            $placeName = $feature['place_name'] ?? $fallbackPlace;
+
+            $this->gps_location = [
+                'place' => $placeName,
+                'coordinates' => [
+                    'lng' => $lng,
+                    'lat' => $lat
+                ]
+            ];
+
+            // Dispatch map to JS
+           $this->dispatch('loadMap', [
                 'token' => $accessToken,
                 'lng' => $lng,
                 'lat' => $lat,
                 'place' =>  $gps_location['place_name'] ?? null
             ]);
         } else {
-            $this->gps_location = null;
+            // Mapbox failed — fallback to coordinates
+            $this->gps_location = [
+                'place' => $fallbackPlace,
+                'coordinates' => [
+                    'lng' => $lng,
+                    'lat' => $lat
+                ]
+            ];
+            \Log::warning('Mapbox API request failed', ['status' => $response->status()]);
         }
+    } catch (\Exception $e) {
+        // Network or other errors — fallback to coordinates
+        $this->gps_location = [
+            'place' => $fallbackPlace,
+            'coordinates' => [
+                'lng' => $lng,
+                'lat' => $lat
+            ]
+        ];
+        \Log::error('Mapbox API exception: ' . $e->getMessage());
     }
+}
+
 
     public function showLogs()
     {

@@ -23,7 +23,7 @@
     }
 
     .print-container .dtr:nth-of-type(2) {
-        display: none;
+        display: block;
     }
 
     .dtr {
@@ -58,6 +58,13 @@
         left: 30px;
         height: 70px;
     }
+
+    .dtr-copy img {
+    position: static !important;
+    display: block;
+    margin: 0 auto 10px auto;
+    height: 70px !important;
+}
 
     @media(max-width: 993px ) {
         .dtr-header img {
@@ -179,6 +186,93 @@
         align-items: center;
     }
 
+/* --- FIX Bootstrap container blocking two-column print --- */
+#print-section .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* --- Fix two copies width --- */
+.dtr-copy {
+    width: 48% !important;
+    max-width: 100% !important;
+}
+
+   .print-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: nowrap;
+}
+
+.dtr-copy {
+    width: 46%;
+    max-width: 100%;
+    padding: 5px;
+}
+    .center {
+        text-align: center;
+        font-weight: bold;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .dtr-table, .dtr-table th, .dtr-table td {
+        border: 1px solid #000;
+        font-size: 12px;
+        padding: 2px;
+        text-align: center;
+    }
+    .info-table td {
+        border: none;
+        padding: 3px;
+        text-align: left;
+    }
+    .certify {  
+        font-size: 13px;
+        margin-top: 15px;
+        text-align: justify;
+    }
+
+    @media print {
+    .print-wrapper {
+        padding: 0;
+        gap: 10px;
+    }
+
+    .dtr-copy {
+        page-break-inside: avoid;
+    }
+}
+
+.print-area-hidden {
+    visibility: hidden;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    #print-section, #print-section * {
+        visibility: visible !important;
+    }
+
+    #print-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
 
 </style>
 @endsection
@@ -224,7 +318,12 @@
                             <input type="month" wire:change="changeMonth('date')" wire:model="monthDate" class="form-control">
                         </div>
                     </div>
-                    <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
+                   
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="printDTR()">
+                            🖨️ Print DTR
+                        </button>
+                    </div>
                 </div>
             @endif
         </div>
@@ -241,11 +340,10 @@
                     </div>
                 </div>
             @endif
-            <div class="print-container mt-4">
+            <div class="print-container mt-4 ssss">
                  @php
                     $isAdmin = false;
                 @endphp
-                @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
                 @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
             </div>
         @else
@@ -259,5 +357,29 @@
                 @endif
             </div>
         @endif
-    </div>    
+    </div>
+      <div id="print-section" class="print-wrapper print-area-hidden">
+         @if($logs)
+        @include('livewire.admin.reports.daily-time-record.employee.print-dtr')
+         @else
+            <div class="alert alert-danger" role="alert">
+                @if (!empty($errors))
+                    <ul class="m-0">
+                        @foreach ($errors as $error)
+                            <li class="text-uppercase">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @endif
+    </div>  
 </div>
+
+<script>
+function printDTR() {
+    
+    window.print();
+
+   
+}
+</script>

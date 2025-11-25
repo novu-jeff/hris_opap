@@ -60,6 +60,7 @@ class Show extends Component
             $this->logs = [
                 'employee_account' => [
                     'bsd_no' => $bio_id,
+                    'employee_no' => $data->personal->employee_no,
                     'firstname' => $data->personal->firstname,
                     'middlename' => $data->personal->middlename,
                     'lastname' => $data->personal->lastname,

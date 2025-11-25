@@ -35,6 +35,8 @@ class DailyTimeRecordService {
     public function getDailyTimeRecord($employee_no, $dateInput)
     {
         try {
+
+           
             # Case 1: Date Range Input (array with 2 elements)
             if (is_array($dateInput) && count($dateInput) === 2) {
                 $startDate = Carbon::parse($dateInput[0])->startOfDay()->toDateTimeString();
@@ -59,9 +61,10 @@ class DailyTimeRecordService {
 
         $logs = EmployeeTimelogs::where('employee_id', $bsd_no)
             ->whereBetween('timestamp', [$startDate, $endDate])
-            ->whereDate('timestamp', '!=', $today)
             ->orderBy('timestamp')
             ->get();
+
+       
 
         $employee = EmployeePersonal::where('employee_no', $employee_no)
             ->first()
@@ -101,7 +104,9 @@ class DailyTimeRecordService {
      */
     private function computeDTR($employee_no, $logs, $dateInput) 
     {
+      
         try {
+          
             # Parse date input to get start and end date
             if (is_array($dateInput) && count($dateInput) === 2) {
                 $startDate = Carbon::parse($dateInput[0])->startOfDay();
@@ -116,10 +121,12 @@ class DailyTimeRecordService {
                 abort(400, 'Invalid date input. Provide MM-YYYY or an array with two dates.');
             }
         } catch (\Exception $e) {
+          
             # Catch parsing errors
             abort(400, 'Invalid date input format. ' . $e->getMessage());
         }
 
+        // dd($logs);
         # Get today's date
         $today = Carbon::today();
         $formattedLogs = [];
@@ -130,6 +137,13 @@ class DailyTimeRecordService {
 
         # weekly schedule only on first log
         $firstScheduleId = collect($logs)->first()['schedule_id'] ?? null;
+
+       
+//dd($logs);
+        $firstLog = reset($logs); // Always gets FIRST element regardless of keys
+        $firstScheduleId = $firstLog['schedule_id'] ?? 1;
+      //  dd($firstScheduleId);
+        
 
         $employeeSchedule = $this->getShiftScheduleById($firstScheduleId);
 
@@ -337,7 +351,7 @@ class DailyTimeRecordService {
                         ->first();
 
         if (!$employee_shift) {
-            throw new Exception("No shift schedule assigned", 1);
+            throw new \Exception("No shift schedule assigned", 1);
         }
 
         return $employee_shift;

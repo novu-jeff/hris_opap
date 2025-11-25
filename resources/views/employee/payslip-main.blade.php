@@ -13,7 +13,7 @@
                 Cutt Off Period: 
             </div>
             <div class="value">
-                {{ collect(explode(' to ', '2025-06-01 to 2025-06-18'))
+                {{ collect(explode(' to ', $payslip['payroll']['cut_off_period']))
                     ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
                     ->implode(' to ') }}
             </div>
@@ -123,6 +123,14 @@
         <div class="d-flex align-items-start">
             <div class="label">Cir375-ECQ:</div>
             <div class="value">PHP {{ number_format($payslip['cir375_cir449'] , 2)}}</div>
+        </div>
+         <div class="d-flex align-items-start">
+            <div class="label">SSS:</div>
+            <div class="value">PHP {{ number_format($payslip['sss'] , 2)}}</div>
+        </div>
+         <div class="d-flex align-items-start">
+            <div class="label">PAGIBIG:</div>
+            <div class="value">PHP {{ number_format($payslip['pagibig'] , 2)}}</div>
         </div>
         <div class="d-flex align-items-start">
             <div class="label">BIR Withholding TAX:</div>
