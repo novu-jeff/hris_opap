@@ -106,27 +106,38 @@ export function initializeClockFace() {
         }
 
         function startLocate() {
-            if (!('geolocation' in navigator)) return console.error('Geolocation not supported.');
+            if (!('geolocation' in navigator)) {
+                console.error('Geolocation not supported.');
+                Swal.fire("Error", "Your device does not support GPS.", "error");
+                return;
+            }
 
             watchId = navigator.geolocation.watchPosition(
                 ({ coords }) => {
-                    console.log('Geolocation coords received:', coords);
-                    const { latitude: lat, longitude: lng } = coords;
+                    console.log("GPS OK", coords);
 
-                    latitude = lat;
-                    longitude = lng;
+                    latitude = coords.latitude;
+                    longitude = coords.longitude;
 
-                    // Dispatch to Livewire (PHP)
-                    Livewire.dispatch('getLocation', [lng, lat, false]);
+                    Livewire.dispatch('getLocation', [longitude, latitude, false]);
                 },
                 error => {
-                    console.error('Geolocation error code:', error.code, error.message);
-                    alert(`Location error: ${error.message}`);
+                    console.error("GPS ERROR", error);
+
+                    let msg = "";
+                    switch (error.code) {
+                        case 1: msg = "Location permission denied."; break;
+                        case 2: msg = "Location unavailable."; break;
+                        case 3: msg = "Location request timed out."; break;
+                        default: msg = error.message;
+                    }
+
+                    Swal.fire("Location Error", msg, "error");
                 },
                 {
                     enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 10000
+                    timeout: 30000,  // allow more time
+                    maximumAge: 0
                 }
             );
         }
