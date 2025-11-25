@@ -59,12 +59,12 @@
                         @foreach($group['records'] as $record)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $record->personal->philhealth_no }}</td>
-                                <td>{{ $record->personal->lastname }}</td>
+                                <td>{{ $record->personal->philhealth_no ?? 'N/A' }}</td>
+                                <td>{{ $record->personal->lastname ?? 'N/A'}}</td>
                                 <td>{{ $record->personal->suffix ?? 'N/A' }}</td>
-                                <td>{{ $record->personal->firstname }}</td>
-                                <td>{{ $record->personal->middlename }}</td>
-                                <td>{{ $record->personal->birthday }}</td>
+                                <td>{{ $record->personal->firstname ?? 'N/A'}}</td>
+                                <td>{{ $record->personal->middlename ?? 'N/A' }}</td>
+                                <td>{{ $record->personal->birthday ?? 'N/A'}}</td>
                                 <td>₱ {{ number_format($record->salary, 2) }}</td>
                                 <td>₱{{ $record->employee_share }}</td>
                                 <td>₱{{ $record->employer_share }}</td>
