@@ -54,7 +54,9 @@ class PayrollController extends Controller
         $employmentTypeInput = strtolower($request->input('employment_type', $defaultEmploymentType));
         $typeInput = strtolower($request->input('type', $defaultActions));
 
+
         if (!array_key_exists($employmentTypeInput, $options)) {
+           // dd('here');
             return redirect()->route('payroll.index', [
                 'employment_type' => $defaultEmploymentType,
                 'type' => $defaultActions,
@@ -64,6 +66,7 @@ class PayrollController extends Controller
         $validSubTypes = array_keys($options[$employmentTypeInput]['sub']);
 
         if (!in_array($typeInput, $validSubTypes)) {
+          //  dd('here2');
             $firstType = $validSubTypes[0] ?? $defaultActions;
 
             return redirect()->route('payroll.index', [
@@ -86,6 +89,7 @@ class PayrollController extends Controller
         $model = $service->getProcess($type)['models']['parent'];
 
         $payroll = $model::find($id);
+      
         
         if(!$payroll) {
             return redirect()->route('payroll.index');
