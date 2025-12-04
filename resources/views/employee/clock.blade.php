@@ -3,6 +3,7 @@
 ])
 
 @section('content')
+<div class="main-content flex-grow-1 p-4">
 <div class="container pb-5">
     <div class="mt-5 d-lg-flex justify-content-between align-items-start">
         <div class="section-title">
@@ -21,5 +22,6 @@
         <small class="text-uppercase fw-bold">Note: Please make sure to enable your browser's camera</small>
         @livewire('employee.clock')
     </div>
+</div>
 </div>
 @endsection

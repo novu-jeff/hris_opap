@@ -4,10 +4,14 @@
 <div class="dtr-copy">
 
      <div class="center">
-        @if($product == 'government')
-        <div>
-            <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
-        </div>
+         @if($product == 'government')
+            <div>
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}" style="width: 80px; height: auto;">            
+            </div>
+        @else
+            <div>
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}" style="width: 80px; height: auto;"> 
+            </div>
         @endif
         <div>
             <h5>DAILY TIME RECORD</h1>
@@ -19,7 +23,7 @@
      <table class="info-table">
             <tr><td style="text-align: left"><strong>Name:</strong></td><td style="text-align: left">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</td></tr>
             <tr><td style="text-align: left"><strong>Position:</strong></td><td style="text-align: left" class="underline"> {{ $logs['employee_account']['position'] }}</td></tr>
-             <tr><td style="text-align: left"><strong>Official Time: </strong></td><td style="text-align: left" class="underline">{{$officialTime}}</td></tr>
+             <tr><td style="text-align: left"><strong>Official Time: </strong></td><td style="text-align: left; text-transform: capitalize;" class="underline">{{ $officialTime['shift_duration'] ?? 'Flexible' }}</td></tr>
             <tr><td style="text-align: left"><strong>Office/Department:</strong></td><td style="text-align: left" class="underline"> {{ $logs['employee_account']['section'] }}</td></tr>
         </table>
 

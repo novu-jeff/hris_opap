@@ -4,9 +4,13 @@
     </div>
     <div class="dtr-header ms-5 d-flex justify-content-center gap-4">
         @if($product == 'government')
-        <div>
-            <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
-        </div>
+            <div>
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
+            </div>
+        @else
+            <div>
+                <img src="{{ asset('/img/' . $provider['client_logo']) }}"> 
+            </div>
         @endif
         <div>
             <h1>DAILY TIME RECORD</h1>
@@ -18,7 +22,7 @@
     <div class="dtr-info">
         <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</div></div>
         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['position'] }}</div></div>
-        <div>Official Time: <div style="margin-left: 10px;" class="underline">{{$officialTime}}</div></div>
+        <div>Official Time: <div style="margin-left: 10px; text-transform: capitalize;" class="underline">{{ $officialTime['shift_duration'] ?? 'flexible' }}</div></div>
         <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section'] }}</div></div>
     </div>
     <table class="dtr-table">
