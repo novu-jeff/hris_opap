@@ -79,6 +79,7 @@ class Apply extends Component
         $employees = EmployeeInformation::with('personal')
             ->where('employee_no', '!=', $this->employee_no)
             ->where('isDeleted', false)
+            ->whereHas('personal')   // ← only employees WITH personal record
             ->get();
 
         $this->OtherEmployees = $employees;

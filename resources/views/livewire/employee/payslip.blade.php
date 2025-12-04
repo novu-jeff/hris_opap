@@ -16,9 +16,9 @@
                         </button>
                         
                         <div class="mx-3" id="cuttOffPeriod">
-                            {{ \Carbon\Carbon::parse($payroll->payroll_date)->format('F d, Y') }}
+                            {{ \Carbon\Carbon::parse($currentPeriod->payroll_date)->format('F d, Y') }}
                         </div>
-                        
+                                                
                         <button 
                             class="btn btn-sm btn-outline-primary" 
                             wire:click="changePeriod('control', '1')"

@@ -226,17 +226,29 @@
                 </thead>
                 <tbody>
                     @forelse($employees as $key => $item)
+                  
                         <tr data-id="{{$item->employee_no}}">
                             <td class="text-center">
                                 @php
                                     $fullname = optional($item->personal)->firstname && optional($item->personal)->lastname
                                         ? $item->personal->firstname . ' ' . $item->personal->lastname
                                         : null;
+
+                                    // Profile path
+                                    $profile = $item->personal->profile ?? null; 
+                                    //dd($profile);
+                                    $hasProfile = $profile && Storage::disk('public')->exists($profile);   
                                 @endphp
 
                                 @if(!$item->isTransferingEmp)
-                                    <img style="width: 50px; height: 50px;"
-                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname ?? 'UK') }}">
+                                     @if($hasProfile)
+                                        <img src="{{ asset('storage/' . $profile) }}"
+                                            alt="Profile"
+                                            style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                    @else
+                                        <img src="https://ui-avatars.com/api/?background=005668&color=ffffff&bold=true&name={{ urlencode($fullname ?: 'Unknown') }}"
+                                            style="width: 50px; height: 50px; border-radius: 50%;">
+                                    @endif
                                 @else
                                     <span class="text-muted fst-italic">Loading...</span>
                                 @endif

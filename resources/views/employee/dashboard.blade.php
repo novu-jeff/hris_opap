@@ -3,7 +3,9 @@
 ])
 
 @section('content')
+
 <div class="container pb-5">
     @livewire('employee.dashboard')
 </div>
+
 @endsection

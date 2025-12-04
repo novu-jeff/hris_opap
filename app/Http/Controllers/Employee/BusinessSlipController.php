@@ -16,8 +16,8 @@ class BusinessSlipController extends Controller
     {
         return view('employee.business-slip', [
             'action' => 'view',
-            'title' => 'ESS | Business Slip Applications',
-            'header' => 'Manage Business Applications',
+            'title' => 'ESS | Official Business Slip Applications',
+            'header' => 'Manage Official Business Applications',
             'sub' => 'Track and monitor your OB applications.'
         ]);
     }
@@ -26,8 +26,8 @@ class BusinessSlipController extends Controller
     {
         return view('employee.business-slip', [
             'action' => 'create',
-            'title' => 'Apply Business Slip',
-            'header' => 'Business Slip Application',
+            'title' => 'Apply Official Business Slip',
+            'header' => 'Official Business Slip Application',
             'sub' => 'By proceeding, you\'ll be able to apply for a business application.'
         ]);
 

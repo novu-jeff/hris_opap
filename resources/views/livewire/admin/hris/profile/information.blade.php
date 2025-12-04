@@ -9,13 +9,27 @@
                     <div class="col-12 mb-5">
                         <div class="row">
                             <div class="col-12 col-md-6">
-                                <img style="width: 180px; height: 180px;" 
-                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(
-                                        (empty($records['employee_personal']['firstname']) && empty($records['employee_personal']['lastname']))
-                                            ? '!'
-                                            : $records['employee_personal']['firstname'] . ' ' . $records['employee_personal']['lastname']
-                                    ) }}" 
-                                    style="width: 50px; height: 50px; border-radius: 50%; font-weight: bold;">
+                                @php
+                                $personal = $records['employee_personal'];
+
+                                $fullname = trim(($personal['firstname'] ?? '') . ' ' . ($personal['lastname'] ?? ''));
+
+                                // Normalize profile (null if missing or file does not exist)
+                                $profile = $personal['profile'] ?? null;
+                                if ($profile && !Storage::disk('public')->exists($profile)) {
+                                    $profile = null;
+                                }
+                            @endphp
+                              @if($profile)
+        {{-- Show Uploaded Profile --}}
+                                    <img src="{{ asset('storage/' . $profile) }}"
+                                        alt="Profile"
+                                        style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px;">
+                                @else
+                                    {{-- Fallback Avatar --}}
+                                    <img src="https://ui-avatars.com/api/?background=005668&color=ffffff&bold=true&name={{ urlencode($fullname ?: '!') }}"
+                                        style="width: 180px; height: 180px; border-radius: 8px;">
+                                @endif
                             </div>
                         </div>
                     </div>  
