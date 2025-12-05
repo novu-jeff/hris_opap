@@ -33,6 +33,7 @@ class Show extends Component
     public $employee_no;
     public $tabsHasChanges;
     protected $listeners = ['approved', 'disapproved'];
+    public $profile;
 
     public function mount() {
         $this->tabsHasChanges = $this->getTabsHasChanges();
@@ -211,10 +212,31 @@ class Show extends Component
     }
 
     public function updatePersonalData($employee_no) {
-
+     //   dd(123);
         $personal = EmployeePersonal::where('employee_no', $employee_no)->first();
         $account = EmployeeAccount::where('employee_no', $employee_no)->first();
         $update = EmployeeUpdatePersonal::where('employee_no', $employee_no)->first();
+
+         // ---- HANDLE PROFILE PICTURE ----
+        if ($this->profile) {
+
+            // employee folder
+            $folder = "public/employees/{$employee_no}";
+
+            // create folder if not exists
+            if (!is_dir(storage_path("app/{$folder}"))) {
+                mkdir(storage_path("app/{$folder}"), 0777, true);
+            }
+
+            // store the uploaded file
+            $storedPath = $this->profile->storeAs(
+                $folder,
+                'profile.' . $this->profile->extension()
+            );
+
+            // save to database
+            $personal->profile = str_replace('public', 'storage', $storedPath);
+        }
 
         if ($personal && $update && $account) {
             $fields = [

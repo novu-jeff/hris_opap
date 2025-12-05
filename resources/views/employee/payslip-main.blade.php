@@ -1,175 +1,276 @@
-<div class="inner-content">
-    <div class="header d-flex justify-content-center gap-3 align-items-center text-center px-5">
-        <div class="logo">
-                <img style="width: 100px !important;" src="{{ asset('/img/' . $provider['client_logo']) }}">            
-        </div>    
-        <div class="header-text">
-            Office of the Presidential Adviser on Peace, Reconciliation and Unity PAYROLL PAYMENT SLIP
-        </div>
-    </div>  
-    <div class="info">
-        <div class="d-flex align-items-start">
-            <div class="label">
-                Cutt Off Period: 
-            </div>
-            <div class="value">
-                {{ collect(explode(' to ', $payslip['payroll']['cut_off_period']))
-                    ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
-                    ->implode(' to ') }}
-            </div>
-        </div>  
+<div class="payslip-wrapper">
+    {{-- Protected Payslip --}}
+    <div class="payslip-container" id="payslipProtected">
 
-        <div class="d-flex align-items-start">
-            <div class="label">
-                Payroll Date: 
+        <div class="inner-content">
+            {{-- HEADER --}}
+            <div class="header d-flex justify-content-center gap-3 align-items-center text-center px-5">
+                <div class="logo">
+                    <img style="width: 100px !important;" src="{{ asset('/img/' . $provider['client_logo']) }}">            
+                </div>    
+                <div class="header-text fw-bold text-center">
+                    Office of the Presidential Adviser on Peace, Reconciliation and Unity <br>
+                    PAYROLL PAYMENT SLIP
+                </div>
             </div>
-            <div class="value">
-                {{ \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y') }}
+
+            {{-- EMPLOYEE INFO --}}
+            <div class="info border-section p-3 mt-3">
+                @foreach([
+                    'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
+                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
+                        ->implode(' to '),
+                    'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),
+                    'Employee\'s Name' => $payslip['name'],
+                    'Position' => $payslip['position'],
+                    'Unit' => $payslip['information']['section']['name'],
+                ] as $label => $value)
+                    <div class="d-flex align-items-start border-bottom py-1">
+                        <div class="label fw-bold">{{ $label }}:</div>
+                        <div class="value ms-2">{{ $value }}</div>
+                    </div>
+                @endforeach
             </div>
-        </div>  
-        <div class="d-flex align-items-start">
-            <div class="label">
-                Employee's Name:
+
+            {{-- EARNINGS --}}
+            <div class="info border-section p-3 mt-3">
+                <div class="tle px-2 fw-bold">*** Earnings ***</div>
+                <div class="d-flex align-items-start border-bottom py-1">
+                    <div class="label">Monthly Basic Salary:</div>
+                    <div class="value ms-2">PHP {{ number_format($payslip['basic_salary'], 2) }}</div>
+                </div>
+                <div class="d-flex align-items-start border-bottom py-1">
+                    <div class="label">Personnel Economic Relief Allowance:</div>
+                    <div class="value ms-2">PHP {{ number_format($payslip['pera'], 2)}}</div>
+                </div>
+                <div class="d-flex align-items-start border-bottom py-1">
+                    <div class="label">Overtime:</div>
+                    <div class="value ms-2">PHP 0.00</div>
+                </div>
             </div>
-            <div class="value">
-                {{$payslip['name']}}
+
+            {{-- DEDUCTIONS --}}
+            <div class="info border-section p-3 mt-3">
+                <div class="tle px-2 fw-bold">*** Deductions ***</div>
+                
+                @foreach([
+                    'GSIS Contribution' => $payslip['rlip'],
+                    'PAG-IBIG Contribution' => $payslip['hdmf'],
+                    'Phil Health Contribution' => $payslip['philhealth'],
+                    'GSIS Emergency Loan' => $payslip['emergency_loan'],
+                    'GSIS Conso Loan' => $payslip['consoloan'],
+                    'GSIS Education Assistance Loan' => 0,
+                    'GSIS Policy Loan' => 0,
+                    'GSIS MPL' => $payslip['mpl'],
+                    'GSIS MPL Lite' => $payslip['mplstlms'],
+                    'GSIS CPL' => $payslip['cpl'],
+                    'HDMF Calamity Loan' => $payslip['hdmf'],
+                    'HDMF MP2' => $payslip['mp2'],
+                    'HDMF MP3' => 0,
+                    'Cir375-ECQ' => $payslip['cir375_cir449'],
+                    'SSS' => $payslip['sss'],
+                    'PAGIBIG' => $payslip['pagibig'],
+                    'BIR Withholding TAX' => $payslip['w_tax'],
+                    'Lates / Undertime / Absences' => $payslip['aut'],
+                    'Total Deductions' => $payslip['total_deductions'],
+                ] as $label => $value)
+                    <div class="d-flex align-items-start border-bottom py-1">
+                        <div class="label">{{ $label }}:</div>
+                        <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
+                    </div>
+                @endforeach
             </div>
-        </div>  
-        <div class="d-flex align-items-start">
-            <div class="label">
-                Position:
+
+            {{-- NET PAY --}}
+            <div class="info border-section p-3 mt-3">
+                <div class="tle px-2 fw-bold">*** Net Pay ***</div>
+                @foreach([
+                    'Net Amount' => $payslip['net_amount'],
+                    'DBP' => $payslip['dbp'],
+                    'Unlad Kawani' => $payslip['kawani'],
+                    'Amount Due (15)' => $payslip['salary'],
+                    'Amount Due (28)' => $payslip['salary'],
+                ] as $label => $value)
+                    <div class="d-flex align-items-start border-bottom py-1">
+                        <div class="label">{{ $label }}:</div>
+                        <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
+                    </div>
+                @endforeach
             </div>
-            <div class="value">
-                {{$payslip['position']}}
+
+            {{-- ISSUED BY --}}
+            <div class="info border-section p-3 mt-3 text-center">
+                <div>Issued by: <span class="text-decoration-underline">____________________</span></div>
+                <div>___________________________</div>
             </div>
-        </div>  
-        <div class="d-flex align-items-start">
-            <div class="label">
-                Unit:
-            </div>
-            <div class="value">
-                {{$payslip['information']['section']['name']}}
-            </div>
-        </div>  
-    </div>
-    <div class="info">
-        <div class="tle px-2">*** Earnings ***</div>
-        <div class="d-flex align-items-start">
-            <div class="label">Monthly Basic Salary:</div>
-            <div class="value">PHP {{ number_format($payslip['basic_salary'], 2) }}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">Personnel Economic Relief Allowance:</div>
-            <div class="value">PHP {{ number_Format($payslip['pera'], 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">Overtime:</div>
-            <div class="value">PHP 0.00</div>
-        </div>
-        
-        <div class="tle px-2">*** Deductions ***</div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS Contribution:</div>
-            <div class="value">PHP {{  number_format($payslip['rlip'] , 2) }} </div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">PAG-IBIG Contribution:</div>
-            <div class="value">PHP {{  number_format($payslip['hdmf'] , 2) }}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">Phil Health Contribution:</div>
-            <div class="value">PHP {{  number_format($payslip['philhealth'] , 2) }}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS Emergency Loan:</div>
-            <div class="value">PHP {{ number_format($payslip['emergency_loan'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS Conso Loan:</div>
-            <div class="value">PHP {{ number_format($payslip['consoloan'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS Education Assistance Loan:</div>
-            <div class="value">PHP 0.00</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS Policy Loan:</div>
-            <div class="value">PHP 0.00</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS MPL:</div>
-            <div class="value">PHP {{ number_format($payslip['mpl'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS MPL Lite:</div>
-            <div class="value">PHP {{ number_format($payslip['mplstlms'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">GSIS CPL:</div>
-            <div class="value">PHP {{ number_format($payslip['cpl'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">HDMF Calamity Loan:</div>
-            <div class="value">PHP {{ number_format($payslip['hdmf'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">HDMF MP2:</div>
-            <div class="value">PHP {{ number_format($payslip['mp2'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">HDMF MP3:</div>
-            <div class="value">PHP 0.00</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">Cir375-ECQ:</div>
-            <div class="value">PHP {{ number_format($payslip['cir375_cir449'] , 2)}}</div>
-        </div>
-         <div class="d-flex align-items-start">
-            <div class="label">SSS:</div>
-            <div class="value">PHP {{ number_format($payslip['sss'] , 2)}}</div>
-        </div>
-         <div class="d-flex align-items-start">
-            <div class="label">PAGIBIG:</div>
-            <div class="value">PHP {{ number_format($payslip['pagibig'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">BIR Withholding TAX:</div>
-            <div class="value">PHP {{ number_format($payslip['w_tax'] , 2)}}</div>
-        </div>
-        <div class="d-flex align-items-start">
-            <div class="label">Lates / Undertime / Absences:</div>
-            <div class="value">PHP {{ number_format($payslip['aut'] , 2)}}</div>
-        </div>    
-        <div class="d-flex align-items-start">
-            <div class="label">Total Deductions</div>
-            <div class="value">PHP {{ number_format($payslip['total_deductions'] , 2)}}</div>
-        </div>    
-        <div class="tle px-2">*** Net Pay ***</div>
-        <div class="d-flex align-items-start">
-            <div class="label">Net Amount:</div>
-            <div class="value">PHP {{ number_format($payslip['net_amount'] , 2)}}</div>
-        </div>  
-        <div class="d-flex align-items-start">
-            <div class="label">DBP:</div>
-            <div class="value">PHP {{ number_format($payslip['dbp'] , 2)}}</div>
-        </div>          
-        <div class="d-flex align-items-start">
-            <div class="label">Unlad Kawani:</div>
-            <div class="value">PHP {{ number_format($payslip['kawani'] , 2)}}</div>
-        </div>    
-        <div class="d-flex align-items-start">
-            <div class="label">Amount Due (15):</div>
-            <div class="value">PHP {{ number_format($payslip['salary'] , 2)}}</div>
-        </div>  
-        <div class="d-flex align-items-start">
-            <div class="label">Amount Due (28):</div>
-            <div class="value">PHP {{ number_format($payslip['salary'] , 2)}}</div>
-        </div>  
-    </div>
-    <div class="info">
-        <div class="text-center pt-2">
-            <div>Issued by : <span class="text-decoration-underline">____________________</span></div>
-            <div>___________________________</div>
+
         </div>
     </div>
-</div>   
+
+    {{-- SECURITY OVERLAYS --}}
+    <div class="payslip-overlay"></div>
+
+    {{-- Watermark 1 (center diagonal) --}}
+    <div class="payslip-watermark">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+
+    {{-- Watermark 2 (bottom-right) --}}
+    <div class="payslip-watermark-bottom">CONFIDENTIAL</div>
+</div>
+
+
+<style>
+/* Wrapper */
+.payslip-wrapper {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+/* Container */
+.payslip-container {
+    position: relative;
+    z-index: 5;
+    background: #fff;
+    padding: 20px;
+    border: 2px solid #333;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+/* Section borders */
+.border-section {
+    border: 1px solid #333;
+    border-radius: 5px;
+}
+
+/* Row bottom lines */
+.border-bottom {
+    border-bottom: 1px dashed #999;
+}
+
+/* Overlay */
+.payslip-overlay {
+    position: absolute;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.03) 0,
+        rgba(255,255,255,0.03) 2px,
+        transparent 2px,
+        transparent 5px
+    );
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Watermark 1 (center diagonal) */
+.payslip-watermark {
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 60px;
+    font-weight: 900;
+    color: rgba(255,0,0,0.15);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Watermark 2 (bottom-right) */
+.payslip-watermark-bottom {
+    position: absolute;
+    bottom: 365px;
+    right: 15px;
+    font-size: 25px;
+    font-weight: 700;
+    color: rgba(255,0,0,0.1);
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Blur effect */
+.payslip-container.blur {
+    filter: blur(25px);
+    transition: filter 0.3s;
+}
+
+/* Overlay only covers payslip */
+.payslip-overlay,
+.payslip-watermark,
+.payslip-watermark-bottom {
+    position: absolute;
+    pointer-events: none; /* IMPORTANT: allows clicks to pass through */
+    z-index: 10; /* above payslip but below page elements like chatbox */
+}
+
+/* Payslip container */
+.payslip-container {
+    position: relative;
+    z-index: 5;
+}
+
+/* Prevent printing */
+@media print {
+    body * { display: none !important; }
+}
+</style>
+
+
+<script>
+const payslip = document.getElementById('payslipProtected');
+
+// Disable Ctrl/Cmd + P
+document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        alert("Printing is disabled on this page.");
+    }
+});
+
+// Disable right-click and selection
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('selectstart', e => e.preventDefault());
+
+
+
+// Blur on PrintScreen
+document.addEventListener('keyup', e => {
+    if (e.key === "PrintScreen") {
+        payslip.classList.add('blur');
+        setTimeout(() => payslip.classList.remove('blur'), 1200);
+    }
+});
+
+// Only blur when the entire window loses focus (user switches tab or minimizes)
+/*window.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        payslip.classList.add('blur');
+    } else {
+        payslip.classList.remove('blur');
+    }
+});*/
+
+// Blur when tab loses focus
+window.addEventListener('blur', () => payslip.classList.add('blur'));
+window.addEventListener('focus', () => payslip.classList.remove('blur'));
+
+// Detect DevTools
+let devtoolsOpen = false;
+setInterval(() => {
+    const start = performance.now();
+    debugger;
+    if (performance.now() - start > 100) {
+        if (!devtoolsOpen) {
+            devtoolsOpen = true;
+            payslip.classList.add('blur');
+        }
+    } else {
+        if (devtoolsOpen) {
+            devtoolsOpen = false;
+            payslip.classList.remove('blur');
+        }
+    }
+}, 300);
+</script>

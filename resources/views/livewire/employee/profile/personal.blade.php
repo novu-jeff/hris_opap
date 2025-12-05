@@ -1,4 +1,4 @@
-<form wire:submit.prevent="save" wire:target="save">
+<form wire:submit.prevent="save" wire:target="save" enctype="multipart/form-data">
     <div class="accordion" id="accordionTabPersonal">
         <div class="accordion-item mb-4">
             <h2 class="accordion-header">
@@ -9,6 +9,25 @@
             <div id="flush-personal" class="accordion-collapse collapse show">
                 <div class="accordion-body">
                     <div class="row">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="mb-2" for="profile">Profile Photo</label>
+                            <input type="file" wire:model="records.profile" id="profile" class="form-control" accept="image/*">
+                             <!-- Note for max upload size -->
+                            <small class="text-muted d-block mt-1">Maximum file size: 1MB</small>
+                            <div class="error-field">
+                                @error('records.profile') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Show preview if file selected -->
+                            @if(isset($records['profile']) && is_string($records['profile']))
+                                <img src="{{ asset('storage/' . $records['profile']) }}" alt="Profile Photo" class="mt-2" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                            @elseif($records['profile'] instanceof \Livewire\TemporaryUploadedFile)
+                                <img src="{{ $records['profile']->temporaryUrl() }}" alt="Profile Preview" class="mt-2" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                            @endif
+                        </div>
+                    </div>
+                    <div class="row">
+                        
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="lastname">Surname</label>
                             <input type="text" wire:model="records.lastname" id="lastname" class="form-control text-uppercase">

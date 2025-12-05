@@ -106,4 +106,14 @@ class EmployeeInformation extends Model
         return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
     }
 
+    public function shift()
+    {
+        return $this->belongsTo(ShiftSchedule::class, 'shift_id');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo(ShiftSchedule::class, 'schedule_id');
+    }
+
 }
