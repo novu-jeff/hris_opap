@@ -165,7 +165,7 @@
 
         printWindow.document.write('</head><body>');
         
-        printWindow.document.write('<div class="dtr-container">');
+        printWindow.document.write('<div class="dtr-container test-class">');
         
         printWindow.document.write(elements[0].outerHTML);
 
