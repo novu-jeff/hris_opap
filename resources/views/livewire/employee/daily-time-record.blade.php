@@ -23,12 +23,12 @@
     }
 
     .print-container .dtr:nth-of-type(2) {
-        display: none;
+        display: block;
     }
 
     .dtr {
         width: 800px;
-        margin: 50px auto;
+        margin: 10px 0 50px 0;
         padding: 10mm 5mm;
         box-sizing: border-box;
         border: 1px solid rgb(178, 178, 178);
@@ -59,6 +59,13 @@
         height: 70px;
     }
 
+    .dtr-copy img {
+    position: static !important;
+    display: block;
+    margin: 0 auto 10px auto;
+    height: 70px !important;
+}
+
     @media(max-width: 993px ) {
         .dtr-header img {
             left: 0;
@@ -82,14 +89,14 @@
     .dtr-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 
     .dtr-table th, .dtr-table td {
         border: 1px solid black;
         text-align: center;
-        padding: 5px;
-        font-size: 12px; 
+        padding: 4px;
+        font-size: 11px; 
     }
 
     .dtr-summary {
@@ -142,9 +149,11 @@
         text-align: left;
     }
     .dtr-summary-item {
-        font-size: 14px;
-        font-weight: 400;
+        font-size: 13px;
+        font-weight: 600 ;
         margin-bottom: 0px !important;
+        text-transform: uppercase;
+        color: #000000c5;
     }
 
     .signature {
@@ -176,7 +185,8 @@
         display: flex;
         align-items: center;
     }
-    /* --- FIX Bootstrap container blocking two-column print --- */
+
+/* --- FIX Bootstrap container blocking two-column print --- */
 #print-section .container {
     max-width: 100% !important;
     width: 100% !important;

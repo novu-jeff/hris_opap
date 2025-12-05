@@ -992,28 +992,45 @@ class DailyTimeRecordService {
      * @return void
      */
     private function assignTimestamps(&$record, $timestamps) {
+
+       // dd()
+
+        //dd($timestamps[3]->format('h:i A'));
+
+
         if ($timestamps->count() >= 4) {
+           // dd('here2');
             $record['clock_in'] = $timestamps[0]->format('h:i A');
-            $record['lunch_in'] = $timestamps[1]->format('h:i A');
-            $record['lunch_out'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
+            $record['lunch_out'] = $timestamps[1]->format('h:i A');
+            $record['lunch_in'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
             $record['clock_out'] = $timestamps[$timestamps->count() - 1]->format('h:i A');
         } elseif ($timestamps->count() === 2) {
+          //  dd('here3');
             # Special case: exactly two logs
             $record['clock_in'] = $timestamps[0]->format('h:i A');
             $record['clock_out'] = $timestamps[1]->format('h:i A');
         } elseif($timestamps->count() == 1) {
+           // dd('here4');
             $record['clock_in'] = $timestamps[0]->format('h:i A');
         } else {
+        //  dd('here');
             # Fallback: assign based on time ranges
+           // dd($timestamps);
             foreach ($timestamps as $ts) {
+               // dd($ts->format('h:i A'));   
                 $hour = (int) $ts->format('H');
+              //  dd($hour);
                 if (!isset($record['clock_in']) && $hour >= 5 && $hour <= 9) {
+                   // dd('here5');
                     $record['clock_in'] = $ts->format('h:i A');
-                } elseif (!isset($record['lunch_in']) && $hour >= 11 && $hour <= 12) {
-                    $record['lunch_in'] = $ts->format('h:i A');
-                } elseif (!isset($record['lunch_out']) && $hour >= 12 && $hour <= 13) {
+                } elseif (!isset($record['lunch_out']) && $hour >= 11 && $hour <= 12) {
+                    //dd('here6');
                     $record['lunch_out'] = $ts->format('h:i A');
+                } elseif (!isset($record['lunch_in']) && $hour >= 12 && $hour <= 13) {
+                   // dd('here7');
+                    $record['lunch_in'] = $ts->format('h:i A');
                 } elseif (!isset($record['clock_out']) && $hour >= 15 && $hour <= 18) {
+                   // dd('here8');
                     $record['clock_out'] = $ts->format('h:i A');
                 }
             }

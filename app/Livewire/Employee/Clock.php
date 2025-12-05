@@ -130,7 +130,7 @@ class Clock extends Component
 
     public function showLogs()
     {
-        $this->logs = $this->getLogs();
+       $this->logs = $this->getLogs();
         $this->dispatch('showModal', ['modal' => 'logs_modal']);
     }
 

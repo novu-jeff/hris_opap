@@ -1,15 +1,20 @@
 <?php
 
+
+
 namespace App\Livewire\Employee;
 
 use App\Notifications\Notifications;
 use App\Models\EmployeePayslipRequest;
 use App\Models\EmployeeAccount;
 use App\Models\SalaryItemsPayroll;
+use App\Models\SalaryPayroll;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class Payslip extends Component
 {
@@ -20,6 +25,7 @@ class Payslip extends Component
     public $payslip;
     public $error;
     public $requestStatus;
+    public $currentPeriod;
     protected $listeners = ['request'];
 
     public function mount() {
@@ -31,19 +37,27 @@ class Payslip extends Component
         $this->employee_no = Auth::user()->employee_no;
         $this->employee_id = Auth::user()->id;
 
+        // Load LATEST approved payroll for this employee
         $payroll = SalaryItemsPayroll::with('information.section', 'payroll')
             ->where('employee_no', $this->employee_no)
             ->whereHas('payroll', function($query) {
-                return $query->where('status', 'approved');
+                $query->where('status', 'approved');
             })
+            ->orderBy(
+                SalaryPayroll::select('payroll_date')
+                    ->whereColumn('payroll_salary.id', 'payroll_salary_items.payroll_id'),
+                'desc'
+            )
             ->first();
 
-        if(!$payroll) {
-            return $this->error = 'No Payslip Found';
+        if (!$payroll) {
+            $this->error = 'No Payslip Found';
+            return;
         }
 
-        $this->payroll = $payroll;
-        $this->payslip = $payroll;
+        $this->payroll = $payroll;                 // Salary items
+        $this->payslip = $payroll;                 // Salary items
+        $this->currentPeriod = $payroll->payroll;  // Payroll header
 
         $this->checkRequest();
 
@@ -56,7 +70,37 @@ class Payslip extends Component
         $this->requestStatus = $payroll_request->status ?? null;
     }
 
+   
+
     public function download()
+    {
+        $this->checkRequest();
+
+        if ($this->requestStatus == 'approved') {
+
+            $payroll_date = Carbon::parse($this->payroll->payroll_date)->format('F d, Y');
+            $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
+
+            $pdf = Pdf::loadView('employee.payslip-pdf', [
+                'payslip' => $this->payroll
+            ]);
+
+            return response()->streamDownload(
+                fn() => print($pdf->output()),
+                $filename
+            );
+        }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Oops!',
+            'message' => 'Your request is not yet approved. You have no permission to download this payslip.',
+        ]);
+    }
+
+
+    public function downloadBK()
     {
         $this->checkRequest();
 
@@ -80,8 +124,61 @@ class Payslip extends Component
 
     }
 
+    public function changePeriod($control, $direction)
+    {
+        $currentDate = $this->currentPeriod->payroll_date;
+        $employeeNo = $this->employee_no;
 
-    public function changePeriod($control, $direction) {
+        $query = SalaryItemsPayroll::with('information.section', 'payroll')
+            ->where('employee_no', $employeeNo)
+            ->whereHas('payroll', function ($q) {
+                $q->where('status', 'approved');
+            });
+
+        // Previous period
+        if ($direction == '-1') {
+            $query->whereHas('payroll', fn($q) =>
+                $q->where('payroll_date', '<', $currentDate)
+            )
+            ->orderBy(
+                SalaryPayroll::select('payroll_date')
+                    ->whereColumn('payroll_salary.id', 'payroll_salary_items.payroll_id'),
+                'desc'
+            );
+        }
+
+        // Next period
+        if ($direction == '1') {
+            $query->whereHas('payroll', fn($q) =>
+                $q->where('payroll_date', '>', $currentDate)
+            )
+            ->orderBy(
+                SalaryPayroll::select('payroll_date')
+                    ->whereColumn('payroll_salary.id', 'payroll_salary_items.payroll_id'),
+                'asc'
+            );
+        }
+
+        $next = $query->first();
+
+        if (!$next) {
+            $this->error = 'No more payroll records in this direction.';
+            return;
+        }
+
+        // Update displayed data
+        $this->payroll = $next;
+        $this->payslip = $next;
+        $this->currentPeriod = $next->payroll;
+
+        $this->checkRequest();
+    }
+
+
+
+
+
+    public function changePeriodBK($control, $direction) {
         
         $currentDate = $this->payroll->payroll->payroll_date ?? null;
         $employeeNo = $this->employee_no;
