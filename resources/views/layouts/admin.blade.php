@@ -154,10 +154,16 @@
 
     <div id="admin-app">
         @include('components.admin.navbar')
-        @include('components.admin.sub-navbar')
+      {{-- @include('components.admin.sub-navbar') --}}
+
+        {{-- INSERT SIDEBAR HERE --}}
+       @include('components.admin.sidebar-desk')
         <main>
-            <div class="content">
-                @yield('content')
+            <div class="container">
+                {{--@include('components.admin.breadcrumb')--}}
+                <div class="content">
+                    @yield('content')
+                </div>
             </div>
         </main>
         <div class="footer mt-5 py-4">
@@ -203,6 +209,129 @@
     document.addEventListener("livewire:load", () => {
         console.log("Scrolled to bottomsss");
     });
+
+
+    
+
+     document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('adminSidebar');
+
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+
+        
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+    const sidebar = document.getElementById("adminSidebar");
+    const currentUrl = window.location.href;
+
+    const menuGroups = document.querySelectorAll("#adminSidebar .menu-group");
+    const menuGroupTitles = document.querySelectorAll("#adminSidebar .menu-group-title");
+    const submenuLinks = document.querySelectorAll("#adminSidebar .submenu-item");
+
+    /* -----------------------------
+       1. AUTO EXPAND ACTIVE MENU GROUP
+    --------------------------------*/
+    submenuLinks.forEach(link => {
+        if (currentUrl.includes(link.href)) {
+            const group = link.closest(".menu-group");
+            group?.classList.add("active");
+        }
+    });
+
+    /* -----------------------------
+       2. ACCORDION BEHAVIOR
+    --------------------------------*/
+    menuGroupTitles.forEach(title => {
+        title.addEventListener("click", function () {
+            const parent = this.parentElement;
+
+            // Toggle current
+            parent.classList.toggle("active");
+
+            // Close others
+            menuGroups.forEach(group => {
+                if (group !== parent) {
+                    group.classList.remove("active");
+                }
+            });
+
+            // Scroll to top when opened
+            sidebar.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    });
+
+    /* -----------------------------
+       3. AUTO-SCROLL ON ANY MENU CLICK
+    --------------------------------*/
+   
+});
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const sidebars = document.getElementById("adminSidebar");
+
+        // Find currently active menu group
+        const activeGroup = document.querySelector(".menu-group.active");
+
+        if (activeGroup) {
+            // Scroll sidebar to the active menu group
+            console.log("Scrolling to active menu group");
+            sidebars.scrollTo({
+                top: activeGroup.offsetTop - 20, // small padding
+                behavior: "smooth"
+            });
+        }
+
+        document.querySelectorAll(".menu-group-title").forEach(title => {
+            title.addEventListener("click", function () {
+                const parent = this.parentElement;
+
+                if (parent.classList.contains("active")) {
+                    sidebars.scrollTo({
+                        top: parent.offsetTop - 80,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('adminSidebar');
+
+    sidebar.addEventListener('mouseenter', () => {
+        // When mouse is over the sidebar, listen to arrow keys
+        window.addEventListener('keydown', handleArrowScroll);
+    });
+
+    sidebar.addEventListener('mouseleave', () => {
+        // Stop listening when mouse leaves
+        window.removeEventListener('keydown', handleArrowScroll);
+    });
+
+    function handleArrowScroll(e) {
+        const scrollAmount = 50; // px per arrow press
+
+        if (e.key === 'ArrowDown') {
+            sidebar.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+            e.preventDefault(); // prevent page scroll
+        } else if (e.key === 'ArrowUp') {
+            sidebar.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+            e.preventDefault(); // prevent page scroll
+        }
+    }
+});
+
+  
 
 </script>
 </body>

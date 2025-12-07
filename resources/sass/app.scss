@@ -415,3 +415,12 @@ input[type="radio"]:disabled:not(:checked) {
     }
 }
 
+.modal-dialog.custom-modal {
+    max-width: 996px; 
+    margin: 1.75rem auto; 
+    margin-left: 289px; /* Width of your sidebar */
+}  
+
+
+
+

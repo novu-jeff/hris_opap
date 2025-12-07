@@ -592,6 +592,7 @@ main {
     .employee-sidebar {
         left: -260px;
         transition: .3s;
+        top: 55px;
     }
     .employee-sidebar.active {
         left: 0;
