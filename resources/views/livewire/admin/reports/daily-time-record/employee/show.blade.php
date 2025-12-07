@@ -285,6 +285,75 @@
         border-bottom: 1px solid #000 !important;
     }
 
+     /* force two equal columns */
+    .dtr-copy {
+        width: 48% !important;
+        display: inline-block !important;
+        vertical-align: top !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* keep remarks column visible & fixed width */
+    th.remarks-col,
+    td.remarks-col {
+        min-width: 70px !important;
+        max-width: 70px !important;
+        width: 70px !important;
+        display: table-cell !important;
+        visibility: visible !important;
+        white-space: normal !important;
+    }
+
+    /* prevent bootstrap and flex from squeezing tables */
+    .p-dtr-table {
+        table-layout: fixed !important;
+    }
+
+    /* force page to scale the content instead of cutting it */
+    body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        transform: scale(0.83);        /* ← adjust until everything fits */
+        transform-origin: top left;
+    }
+
+    /* wrapper resets so scaling works full width */
+    .print-wrapper {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* each DTR copy */
+    .dtr-copy {
+        width: 49% !important;             /* slightly wider than before */
+        min-width: 49% !important;
+        max-width: 49% !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* force remarks column size */
+    .remarks-col {
+        width: 70px !important;
+        min-width: 70px !important;
+        max-width: 70px !important;
+        white-space: normal !important;
+    }
+
+    /* prevent table from collapsing */
+    .p-dtr-table {
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+    }
+
+    .p-dtr-table th,
+    .p-dtr-table td {
+        padding: 2px !important;
+        font-size: 11px !important;
+    }
+
    
 }
 
@@ -297,11 +366,7 @@
             <div class="section-title">
                 <h1>Daily Time Record <span  class="text-primary">{{ $employee_no }}</span></h1>
             </div>
-            <div class="action">
-                <div class="d-md-flex gap-3">
-                    <a href="{{route('reports.dtr')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-                </div>
-            </div>
+           
         </div>
         <div class="mt-3">
             @if($logs)

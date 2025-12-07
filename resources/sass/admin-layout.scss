@@ -148,6 +148,8 @@
         width: 100%;
         position: relative;
         padding: 0px;
+        margin-top: 40px;
+        margin-left: 137px;
         .navbar {
             max-height: 100%;
         }
@@ -583,3 +585,231 @@
 .child-row td {
   text-align: left !important;
 }
+
+// sidebar styles
+
+/*#admin-app .content {
+    margin-left: 260px;
+}*/
+
+/*#adminSidebar {
+    width: 260px;
+    background: #fff;
+    border-right: 1px solid #eee;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding-top: 80px;
+    overflow-y: auto;
+    z-index: 999;
+    
+}*/
+
+#adminSidebar {
+     position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #1e293b;
+    color: #fff;
+    padding: 15px 0;
+    overflow-y: auto;
+    overflow-x: hidden;       /* hide horizontal scroll */
+    z-index: 2000;
+    scroll-behavior: smooth; /* optional smooth scroll */
+}
+
+#adminSidebar .sidebar-header {
+    text-align: center;
+    padding: 10px 15px;
+}
+
+#adminSidebar.sidebar-header .company-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-transform: uppercase;
+    color: #fff;
+    }
+
+#adminSidebar .sidebar-logo {
+    width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+#adminSidebar  .sidebar-menu {
+  width: 250px;
+  background: #ffffff;
+  padding: 10px;
+  display: flex;
+    flex-direction: column;
+    gap: 5px;
+      padding-bottom: 20px; 
+}
+
+
+
+#adminSidebar .sidebar-menu .menu-item {
+    display: block;
+    padding: 12px 20px;
+    color: #1e293b;
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+
+.list-item {
+  list-style: none;
+}
+.submenu {
+  margin-left: 20px;
+}
+
+#adminSidebar .sidebar-menu .menu-item i {
+    width: 22px;
+}
+
+
+#adminSidebar .menu-item:hover {
+    border-left: 4px solid #007bff;
+    background: #334155;
+    color: #fff;
+}
+
+#adminSidebar .menu-group {
+    border-bottom: 1px solid #e2e8f0;
+    height: auto;
+}
+
+#adminSidebar .menu-group-title {
+    display: block;
+    padding: 12px 20px;
+    color: #1e293b;
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+
+
+.sidebar-header .company-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+#adminSidebar .submenu-items .submenu-item {
+    display: block;
+    padding: 6px 20px 0px 40px;  /* match top/bottom, add left indent */
+    font-size: 13px;                /* match menu-item font-size */
+    color: #666;
+    text-decoration: none;
+    transition: 0.3s;
+    border-bottom: 1px solid #334155;
+}
+
+#adminSidebar .submenu-item:hover {
+    background: #334155;
+    color: #fff;
+}
+
+/* Smooth transition for submenu */
+#adminSidebar .submenu-items {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+/* When active (clicked), expand submenu */
+#adminSidebar .menu-group.active .submenu-items {
+    max-height: 700px;
+}
+
+/* Hover effect for menu group title */
+#adminSidebar .menu-group-title:hover {
+     border-left: 4px solid #007bff;
+    background: #334155;
+    color: #fff;
+}
+
+#adminSidebar .active .menu-group-title{
+    background: #334155;
+    color: #fff;
+}
+
+#adminSidebar .submenu-subtitle {
+    display: block;
+    padding: 12px 20px;
+    color: #1e293b;
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.3s;
+    height: 0px;
+}
+
+.menu-group .submenu-items {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.menu-group.active .submenu-items {
+    max-height: 500px; /* adjust if needed */
+}
+
+.menu-group-title.active,
+.menu-group.active .menu-group-title {
+    color: #0d6efd;     /* highlight color */
+    font-weight: bold;
+}
+
+@media(max-width: 992px) {
+    #adminSidebar {
+        left: -260px;
+        transition: .3s;
+        top:55px;
+    }
+    #adminSidebar.active {
+        left: 0;
+    }
+    .sidebar-toggle {
+        display: block;
+    }
+    #admin-app .content {
+        margin-left: -21px;
+        
+    }
+    main {
+        margin-left: 0;
+        overflow: visible !important;
+    }
+    #admin-app main {
+        margin-left: 0;
+        overflow: visible !important;
+        margin-top: 0 !important;
+    }
+
+    .navbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0;
+        right: 0;
+        z-index: 5000 !important;
+    }
+    body {
+        padding-top: 70px !important;
+        overflow-x: hidden;
+    }
+
+ 
+}
+
+
+

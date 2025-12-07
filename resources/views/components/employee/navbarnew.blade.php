@@ -22,14 +22,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
     <div class="container-fluid px-4">
-        <!-- BRAND LOGO -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('employee.dashboard') }}">
-            <img src="{{ asset('/img/' . $provider['client_logo']) }}" alt="Company Logo" style="height: 50px;">
-            @if (config('app.product') === 'government')
-                <img src="{{asset('img/bagong-pilipinas.png')}}" alt="Gov Logo" style="height: 50px;">
-            @endif
-        </a>
-
+       
         <!-- TOGGLE BUTTON -->
         <button class="navbar-toggler" id="sidebarToggle">
             <span class="navbar-toggler-icon"></span>
