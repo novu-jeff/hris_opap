@@ -1,6 +1,6 @@
 <div>
     <div class="modal fade" id="alert_employee" wire:ignore.self data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog custom-modal modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Upload Reports</h1>
@@ -59,7 +59,7 @@
     </div>
 
     <div class="modal fade" wire:ignore.self id="upload_employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog custom-modal modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Add Employee</h1>
