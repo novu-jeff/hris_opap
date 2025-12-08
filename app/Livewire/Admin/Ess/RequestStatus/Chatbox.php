@@ -30,14 +30,14 @@ class Chatbox extends Component
     public function mount()
     {
         $this->selected($this->employee_no);
-        $this->dispatch('showLatest');
+        $this->dispatch('refreshMessages');
     }
 
     public function selected(string $employee_no)
     {
         $this->selected_id = $employee_no;
         $this->loadRecords($employee_no);
-        $this->dispatch('showLatest');
+        $this->dispatch('refreshMessages');
     }
 
     public function loadRecords( ? string $employee_no = null)
@@ -65,6 +65,8 @@ class Chatbox extends Component
         ];
 
         $this->isFirstTime($user->employee_no);
+        // ✅ Dispatch browser event so JS can scroll
+        $this->dispatch('refreshMessages'); // already in your component
     }
 
     public function updated($propertyName)
@@ -176,7 +178,7 @@ class Chatbox extends Component
 
         $this->reset('message', 'preview_attachments', 'attachments');
         $this->loadRecords($this->selected_id);
-        $this->dispatch('showLatest');
+        $this->dispatch('refreshMessages');
     }
 
     private function storeAttachment($attachment, $messageId, $index)

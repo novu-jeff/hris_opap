@@ -59,9 +59,12 @@
                         @foreach($group['records'] as $record)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td class="text-start">{{ $record->personal->sss_no }}</td>
+                                <td class="text-start">{{ $record->personal->sss_no ?? 'N/A'}}</td>
                                 <td class="text-start">
-                                    {{ trim("{$record->personal->suffix} {$record->personal->firstname} {$record->personal->middlename} {$record->personal->lastname}") }}
+                                     {{ trim(($record->personal?->suffix ?? 'N/A') . ' ' .
+            ($record->personal?->firstname ?? '') . ' ' .
+            ($record->personal?->middlename ?? '') . ' ' .
+            ($record->personal?->lastname ?? '')) }}
                                 </td>
                                 <td class="text-start">₱ {{ $record->employee_share }}</td>
                                 <td class="text-start">₱ {{ $record->employer_share }}</td>

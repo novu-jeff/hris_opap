@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Employee\Leave;
 
+use App\Http\Controllers\Admin\Services\LeaveCardService;
+use App\Models\EmployeeInformation;
+
 use App\Models\EmployeeLeave;
 use App\Models\EmployeeLeaveCard;
 use App\Models\Holiday;
@@ -12,6 +15,9 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\EmployeeAtro;
+use App\Models\EmployeeBusinessSlip;
+use App\Models\LeaveType;
 
 class Index extends Component
 {
@@ -21,10 +27,35 @@ class Index extends Component
     public $selected_id;
     public $user_id;
     protected $listeners = ['remove', 'cancel'];
+    public $applications;
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $status = 'all';
+
+    public $currentMonth; 
+    public $leaveBalances;
+
+    public $id;
+    public $employee_no;
+    public $action;
+    public $leaverecords;
+
+    public $period = [];
+    public $particulars = [];
+    public $vl_earned = [];
+    public $vl_aut_w_pay = [];
+    public $vl_bal = [];
+    public $vl_aut_wo_pay = [];
+    public $sl_earned = [];
+    public $sl_aut_w_pay = [];
+    public $sl_bal = [];
+    public $sl_aut_wo_pay = [];
+    public $remarks = [];
+    public $vl_total_bal = [];
+    public $sl_total_bal = [];
+    public $total_bal = [];
+    public $activeYear;
 
     public function mount() {
         $user_id = Auth::user()->employee_no;
@@ -34,6 +65,11 @@ class Index extends Component
         }
 
         $this->user_id = $user_id;
+
+        $this->getEmployeeLeaveCardBalances();
+        $this->getLeaveCredits();
+
+        
     }
 
     public function download(int $leave_id) {
@@ -200,6 +236,104 @@ class Index extends Component
         return $leaveCardBalance;
     }
 
+    private function getEmployeeLeaveCardBalances() {
+
+         $this->employee_no = Auth::user()->employee_no;
+
+        $employee = EmployeeInformation::where('employee_no', $this->employee_no)->first();
+
+        if (!$employee) {
+            return redirect()->route('employee.dashboard');
+        }
+
+        $leaveCardService = new LeaveCardService;
+
+        $sortedRecords = $leaveCardService->getLeaveCard($this->employee_no);
+
+        $this->leaverecords = $sortedRecords;
+
+        $this->activeYear = array_key_last($sortedRecords->toArray());
+
+        // Reset arrays
+        $this->period = [];
+        $this->particulars = [];
+        $this->vl_earned = [];
+        $this->vl_aut_w_pay = [];
+        $this->vl_bal = [];
+        $this->vl_aut_wo_pay = [];
+        $this->sl_earned = [];
+        $this->sl_aut_w_pay = [];
+        $this->sl_bal = [];
+        $this->sl_aut_wo_pay = [];
+        $this->remarks = [];
+        $this->vl_total_bal = [];
+        $this->sl_total_bal = [];
+
+        foreach ($sortedRecords as $year => $recordData) {
+            $this->total_bal[$year] = $recordData['previous_bal'];
+            foreach ($recordData['items'] as $record) {
+                $this->particulars[$year][] =  $record['particulars'];
+                $this->period[$year][] = $record['period'];
+                $this->vl_earned[$year][] = $record['vl_earned'] ?? 0;
+                $this->vl_aut_w_pay[$year][] = $record['vl_aut_w_pay'] ?? 0;
+                $this->vl_bal[$year][] = $record['vl_bal'] ?? 0;
+                $this->vl_aut_wo_pay[$year][] = $record['vl_aut_wo_pay'] ?? 0;
+                $this->sl_earned[$year][] = $record['sl_earned'] ?? 0;
+                $this->sl_aut_w_pay[$year][] = $record['sl_aut_w_pay'] ?? 0;
+                $this->sl_bal[$year][] = $record['sl_bal'] ?? 0;
+                $this->sl_aut_wo_pay[$year][] = $record['sl_aut_wo_pay'] ?? 0;
+                $this->remarks[$year][] = $record['remarks'] ?? '';
+            }
+        }
+
+    }
+
+    private function getLeaveCredits() {
+        
+        /**
+         * -----------------------------
+         * CURRENT MONTH LEAVE CARD
+         * -----------------------------
+         */
+         $employee_no = Auth::user()->employee_no;
+        $this->currentMonth = strtoupper(now()->format('F')); 
+        $year = now()->year;
+
+         $this->dtrDate = Carbon::parse($this->currentMonth . ' ' . $year);
+
+        $this->currentMonthCard = EmployeeLeaveCard::where('employee_no', $employee_no)
+            ->where('year', $year)
+            ->where('period', $this->currentMonth)
+            ->first();
+
+        /**
+         * -----------------------------
+         * ONLY VL AND SL LEAVE TYPES WITH BALANCES
+         * -----------------------------
+         */
+        $leaveTypes = LeaveType::whereIn('code', ['VL', 'SL'])->get();
+
+        $this->leaveBalances = $leaveTypes->map(function ($type) {
+            $balance = 0;
+
+            if ($this->currentMonthCard) {
+                $balance = match($type->code) {
+                    'VL' => $this->currentMonthCard->vl_bal,
+                    'SL' => $this->currentMonthCard->sl_bal,
+                    default => 0,
+                };
+            }
+
+            return [
+                'code'    => $type->code,
+                'name'    => $type->name,
+                'balance' => $balance,
+            ];
+        });
+
+    }
+       
+
     public function remove(bool $isNotify = true, int $id = null) {
 
         if($isNotify) {
@@ -298,8 +432,41 @@ class Index extends Component
 
         $records = $query->latest()->paginate($this->entries);
 
+        $this->applications = [
+            'leave' => [
+                'title' => 'Leave Application',
+                'count' => EmployeeLeave::where('employee_no', $this->user_id)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.leave',
+            ],
+            'atro' => [
+                'title' => 'ATRO Application',
+                'count' => EmployeeAtro::where('employee_no', $this->user_id)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.atro',
+            ],
+            /*'time_adjustments' => [
+                'title' => 'Time Adjustments',
+                'count' => EmployeeTimeAdjustments::where('employee_no', $employee_no)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.time-adjustments',
+            ],*/
+            'oba' => [
+                'title' => 'OB Application',
+                'count' => EmployeeBusinessSlip::where('employee_no', $this->user_id)
+                    ->where('status', 'pending')
+                    ->count(),
+                'route' => 'employee.obs.index',
+            ]
+        ];
+
         return view('livewire.employee.leave.index', [
-            'records' => $records
+            'records' => $records,
+            'applications' => $this->applications,
+            'leaveBalances' =>  $this->leaveBalances
         ]);
     }
 

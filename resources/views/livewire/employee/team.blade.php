@@ -1,5 +1,4 @@
 <div wire:poll>
-    
     <div class="text-uppercase">
         <h5 class="mb-2 fw-bold">OPAPRU Central Office: <span class="ms-1 text-decoration-underline">{{ $records['branch']['branch_name'] }}</span></h5>
         <h5 class="mb-2 fw-bold">Department: <span class="ms-1 text-decoration-underline">{{ $records['department']['department_name'] }}</span></h5>
@@ -19,14 +18,23 @@
                         <div class="col-12 col-md-6 mb-4">
                             <div class="d-md-flex align-items-center gap-3">
                                 <div>
-                                    <img style="width: 60px; height: 100px;"
-                                        src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}">              
+                                    @php
+                                        $profile = $employee['personal']['profile'] ?? null;
+                                    @endphp
+
+                                    @if($profile && file_exists(public_path('storage/' . $profile)))
+                                        <img src="{{ asset('storage/' . $profile) }}" 
+                                             alt="Profile Photo" 
+                                             style="width: 60px; height: 100px; object-fit: cover; border-radius: 5px;">
+                                    @else
+                                        <img src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}" 
+                                             alt="Avatar" 
+                                             style="width: 60px; height: 100px; object-fit: cover; border-radius: 5px;">
+                                    @endif
                                 </div>
                                 <ul class="list-unstyled mb-0 fs-6">
-                                    {{-- <li>Employee No: <strong>{{ $employee['employee_no'] }}</strong></li> --}}
-                                    {{-- <li>Biometrics ID: <strong>{{ $employee['bsd_no'] }}</strong></li> --}}
                                     <li>Full Name: <strong>{{ ucwords($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}</strong></li>
-                                    <li>Email: <strong>{{ !is_null($employee['account']['email']) ? $employee['account']['email'] : (!is_null($employee['account']['email_id']) ? $employee['account']['email_id'] : '') }}</strong></li>
+                                    <li>Email: <strong>{{ $employee['account']['email'] ?? $employee['account']['email_id'] ?? '' }}</strong></li>
                                 </ul>
                             </div>
                         </div>

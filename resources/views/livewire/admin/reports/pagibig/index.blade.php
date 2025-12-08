@@ -54,11 +54,11 @@
                 <tbody>
                     @foreach($group['records'] as $employee)
                         <tr>
-                            <td class="text-start">{{ $employee->personal->pagibig_no }}</td>
-                            <td class="text-start">{{ $employee->employee_no }}</td>
-                            <td class="text-start">{{ $employee->personal->lastname }}</td>
-                            <td class="text-start">{{ $employee->personal->firstname }}</td>
-                            <td class="text-start">{{ $employee->personal->middlename }}</td>
+                            <td class="text-start">{{ $employee->personal->pagibig_no  ?? 'N/A' }}</td>
+                            <td class="text-start">{{ $employee->employee_no ?? ''   }}</td>
+                            <td class="text-start">{{ $employee->personal->lastname ?? '' }}</td>
+                            <td class="text-start">{{ $employee->personal->firstname ?? '' }}</td>
+                            <td class="text-start">{{ $employee->personal->middlename ?? '' }}</td>
                             <td>{{ number_format($employee->employee_share, 2) }}</td>
                             <td>{{ number_format($employee->employer_share, 2) }}</td>
                             <td>{{ number_format($employee->total, 2) }}</td>

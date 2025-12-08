@@ -3,6 +3,7 @@
 ])
 
 @section('content')
+<div class="main-content flex-grow-1 p-4">
 <div class="container mt-4">
     <h1>Upload Leave Data (XLSX)</h1>
 
@@ -42,4 +43,5 @@
         <button class="btn btn-primary">Upload and Import</button>
     </form>
 </div>
+<div class="main-content flex-grow-1 p-4">
 @endsection

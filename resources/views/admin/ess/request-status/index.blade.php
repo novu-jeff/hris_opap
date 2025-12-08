@@ -3,16 +3,12 @@
 ])
 
 @section('content')
+<div class="main-content flex-grow-1 p-4">
 <div class="container pb-5">
     <div class="d-lg-flex justify-content-between align-items-center mt-5 mb-4">
         <div class="section-title">
             <h1>{{$header}}</h1>
             <p>{{$sub}}</p>
-        </div>
-        <div class="action">
-            @if ($action === 'send')
-                <a href="{{route('ess.messages')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-            @endif
         </div>
     </div>
     <div class="mt-3">
@@ -24,5 +20,6 @@
             ])
         @endif
     </div>
+</div>
 </div>
 @endsection
