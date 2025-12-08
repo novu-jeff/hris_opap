@@ -29,8 +29,11 @@
                                                                 <div>
                                                                     {{ $section['section_name'] }} 
                                                                 </div>
+                                                                @php 
+                                                                    $empCount = !empty($section['employees']) ? count($section['employees']) : 0;
+                                                                @endphp
                                                                 <div class="text-muted">
-                                                                    ({{ count($section['employees']) }} Employee{{ count($section['employees']) > 1 ? 's' : '' }})
+                                                                    {{ $empCount }} Employee{{ $empCount > 1 ? 's' : '' }}
                                                                 </div>
                                                             </div>
                                                         </button>
@@ -38,22 +41,28 @@
                                                     <div id="collapseSection{{ $section['section_id'] }}" class="accordion-collapse collapse {{ $recordIndex === 0 ? 'show' : '' }}" aria-labelledby="headingSection{{ $section['section_id'] }}" data-bs-parent="#collapseDepartment{{ $department['department_id'] }}">
                                                         <div class="accordion-body">
                                                             <div class="row">
-                                                                @foreach ($section['employees'] as $employee)
+                                                               @if (!empty($section['employees']))
+                                                                    @foreach ($section['employees'] as $employee)
                                                                     {{-- Employee Card --}}
                                                                     <div class="col-12 col-md-6 mb-4">
                                                                         <div class="d-lg-flex align-items-center justify-content-center justify-content-lg-start gap-3">
                                                                             <div class="mb-3 mb-lg-0">
+                                                                                @php
+    $fname = data_get($employee, 'personal.firstname', 'Unknown');
+    $lname = data_get($employee, 'personal.lastname', '');
+@endphp
                                                                                 <img style="width: 80px; height: 80px;"
-                                                                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}">              
+     src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fname . ' ' . $lname) }}">
                                                                             </div>
                                                                             <ul class="list-unstyled mb-0">
                                                                                 <li>Employee No: <strong>{{ $employee['employee_no'] }}</strong></li>
-                                                                                <li>Full Name: <strong>{{ ucwords($employee['personal']['firstname'] . ' ' . $employee['personal']['lastname']) }}</strong></li>
-                                                                                <li>Email: <strong>{{ $employee['account']['email'] }}</strong></li>
+                                                                                <li>Full Name: <strong>{{ ucwords($fname . ' ' . $lname) }}</strong></li>
+                                                                                <li>Email: <strong>{{ data_get($employee, 'account.email', 'N/A') }}</strong></li>
                                                                             </ul>
                                                                         </div>
                                                                     </div>
                                                                 @endforeach
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     </div>

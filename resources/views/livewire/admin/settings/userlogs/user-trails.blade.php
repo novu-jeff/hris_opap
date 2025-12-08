@@ -25,9 +25,7 @@
                                 <button wire:click="viewLog('{{ $trail['filename'] }}')" class="btn btn-primary btn-sm">
                                     View
                                 </button>
-                                <button wire:click="downloadLog('{{ $trail['filename'] }}')" class="btn btn-success btn-sm">
-                                    Download
-                                </button>
+                               
                             </td>
                         </tr>
                     @endforeach
