@@ -14,7 +14,7 @@
      
     </div>
     <div class="mt-3">
-        @livewire('admin.settings.userlogs.usertrails')
+        @livewire('admin.settings.userlogs.user-trails')
     </div>
 </div>
 </div>
