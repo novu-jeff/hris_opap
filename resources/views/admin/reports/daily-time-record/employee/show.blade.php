@@ -3,8 +3,10 @@
 ])
 
 @section('content')
+<div class="main-content flex-grow-1 p-4">
 <div class="pb-5">
     @livewire('admin.reports.daily-time-record.employee.show', ['employee_no' => $employee_no, 'month' => $month, 'year' => $year])
+</div>
 </div>
 @endsection
 
@@ -165,7 +167,7 @@
 
         printWindow.document.write('</head><body>');
         
-        printWindow.document.write('<div class="dtr-container">');
+        printWindow.document.write('<div class="dtr-container test-class">');
         
         printWindow.document.write(elements[0].outerHTML);
 

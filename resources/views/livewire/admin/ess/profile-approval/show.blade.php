@@ -45,6 +45,7 @@
                     ];
 
                     $view = $viewForms[$form];
+                   // dd($view);
                 @endphp
                 <hr class="pt-2">
                 <div class="mt-4">

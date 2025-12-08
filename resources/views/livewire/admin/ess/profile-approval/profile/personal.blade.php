@@ -8,6 +8,56 @@
                     </button>
                 </h2>
                 <div id="flush-personal" class="accordion-collapse collapse show">
+                    {{-- PROFILE PHOTO PREVIEW --}}
+                    @if(isset($records['profile']))
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-uppercase mb-3">Profile Photo</h5>
+
+                        <div class="d-flex align-items-center gap-4">
+
+                            {{-- OLD PHOTO --}}
+                            <div class="text-center">
+                                <p class="mb-1 fw-semibold">Old</p>
+                                @if(!empty($records['profile']['old']))
+                                    <img src="{{ asset('storage/' . $records['profile']['old']) }}"
+                                        class="rounded border"
+                                        style="width:120px; height:120px; object-fit:cover;">
+                                @else
+                                    <div class="border rounded d-flex justify-content-center align-items-center"
+                                        style="width:120px; height:120px; background:#f8f9fa;">
+                                        <span class="text-muted small">No Image</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- NEW PHOTO --}}
+                            <div class="text-center">
+                                <p class="mb-1 fw-semibold">New</p>
+
+                                {{-- If new is Livewire temporary upload --}}
+                                @if($records['profile']['new'] instanceof \Livewire\TemporaryUploadedFile)
+                                    <img src="{{ $records['profile']['new']->temporaryUrl() }}"
+                                        class="rounded border border-danger border-3"
+                                        style="width:120px; height:120px; object-fit:cover;">
+                                
+                                {{-- If new is already stored (string) --}}
+                                @elseif(is_string($records['profile']['new']))
+                                    <img src="{{ asset('storage/' . $records['profile']['new']) }}"
+                                        class="rounded border border-danger border-3"
+                                        style="width:120px; height:120px; object-fit:cover;">
+                                
+                                @else
+                                    <div class="border rounded d-flex justify-content-center align-items-center"
+                                        style="width:120px; height:120px; background:#f8f9fa;">
+                                        <span class="text-muted small">No Image</span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <hr class="mt-4">
+                    </div>
+                    @endif
                     <div class="accordion-body">
                         <div class="row">
                             <div class="col-12 col-md-3 mb-3">

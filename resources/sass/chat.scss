@@ -314,7 +314,7 @@ a.add img {
 .msg-body ul li:not(.active).reply:before {
     display: block;
     clear: both;
-    content: '';
+    /*content: '';*/
     position: absolute;
     bottom: 32px;
     right: -1px;
