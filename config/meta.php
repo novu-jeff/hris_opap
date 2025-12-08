@@ -7,7 +7,7 @@ return [
         'favicon' => '/img/favicon/blitzdev',
         'company' => 'Novulutions Inc.',
         'logo' => 'novulutions.png',
-        'tagline' => 'Transform It: Unifiy Your Data Silos',
+        'tagline' => 'Transform It: Unify Your Data Silos',
         'client_logo' => 'client-logo.png',
         'email' => 'contact@blitzdev.com.ph',
         'socials' => [
@@ -35,7 +35,7 @@ return [
         'favicon' => '/img/favicon/novulutions',
         'company' => 'Novulutions Inc.',
         'logo' => 'novulutions.png',
-        'tagline' => 'Transform It: Unifiy Your Data Silos',
+        'tagline' => 'Transform It: Unify Your Data Silos',
         'client_logo' => 'client-logo.png',
         'email' => 'contact@novulutions.com',
         'socials' => [
