@@ -356,7 +356,7 @@ table {
 
 .sidebar-menu {
   width: 250px;
-  background: #f8f9fa;
+  background: #ffffff;
   padding: 10px;
 }
 .list-item {
@@ -517,3 +517,128 @@ table {
 .approved      { background-color: #6dbfb8; }
 .holiday       { background-color: #8A0303; }
 .unavailable   { background-color: #777; }
+
+.employee-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #1e293b;
+    color: #fff;
+    padding: 15px 0;
+    overflow-y: auto;
+    z-index: 2000;
+}
+
+.sidebar-header {
+    text-align: center;
+    padding: 10px 15px;
+}
+
+.sidebar-logo {
+    width: 70px;
+    margin-bottom: 5px;
+}
+
+.sidebar-menu .menu-item {
+    display: block;
+    padding: 12px 20px;
+    color: #1e293b;
+    font-size: 15px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.sidebar-menu .menu-item i {
+    width: 22px;
+}
+
+.sidebar-menu .menu-item:hover {
+    background: #334155;
+    color: #fff;
+}
+
+.clock-button {
+    background: #0f766e !important;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.clock-button:hover {
+    background: #115e59 !important;
+}
+
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #1e293b;
+    padding: 10px 12px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    z-index: 3000;
+}
+
+main {
+    margin-left: 137px;
+    margin-top: 96px;
+}
+
+@media(max-width: 992px) {
+    .employee-sidebar {
+        left: -260px;
+        transition: .3s;
+        top: 55px;
+    }
+    .employee-sidebar.active {
+        left: 0;
+    }
+    .sidebar-toggle {
+        display: block;
+    }
+    main {
+        margin-left: 0;
+    }
+}
+
+#floatingClockBtn {
+    position: fixed;
+   /* top: 0px; /* adjust below navbar */
+    right: 20px; /* distance from right */
+    z-index: 1000;
+}
+
+#floatingClockBtn .btn {
+    padding: 12px 18px;
+    font-size: 16px;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+#floatingClockBtn .btn:hover {
+    transform: translateY(-2px);
+    background-color: #115e59; /* darker green on hover */
+}
+
+.sidebar-header .company-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-transform: uppercase;
+    color: #fff;
+    }
+
+.modal-dialog.custom-modal {
+    max-width: 996px; 
+    margin: 1.75rem auto; 
+    margin-left: 289px; /* Width of your sidebar */
+}    
+

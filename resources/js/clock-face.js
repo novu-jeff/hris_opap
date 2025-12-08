@@ -23,10 +23,18 @@ export function initializeClockFace() {
         startLocate();
         startCamera();
 
-        Livewire.on('loadMap', ([{ token, lng, lat, place: eventPlace }]) => {
+        // -----------------------------
+        // Livewire Listeners
+        // -----------------------------
+        Livewire.on('loadMap', (data) => {
+            // data is the object dispatched from PHP: { lng, lat, place, token }
+            console.log('Livewire loadMap data:', data);
+            const { lng, lat, place: eventPlace, token } = data;
+
             longitude = lng;
             latitude = lat;
             place = eventPlace;
+
             setupMap(token, [lng, lat]);
         });
 
@@ -41,10 +49,14 @@ export function initializeClockFace() {
             if (!captureElement) return console.error('Camera element not found.');
 
             const imageData = await captureSnapshot(captureElement);
-            if (status === 'Done') return showAlert('Please be informed', 'You\'ve completed today’s work.');
 
+            if (status === 'Done') return showAlert('Please be informed', 'You\'ve completed today’s work.');
             if (!isFaceDetected) return showAlert('No Face Detected', 'Please ensure your face is visible to the camera.');
-            if (!place) return showAlert('No Location Detected', 'Please enable your location or GPS.');
+            
+            // ✅ Check actual latitude and longitude
+            if (latitude === null || longitude === null) {
+                return showAlert('No Location Detected', 'Please enable your GPS/location services.');
+            }
 
             if (imageData) {
                 $clockPreview.attr('src', imageData);
@@ -53,23 +65,6 @@ export function initializeClockFace() {
                 stopLocate();
             }
         });
-
-        $(document).on('click', '.clock-process-forced', async () => {
-            if (!captureElement) return console.error('Camera element not found.');
-
-            const imageData = await captureSnapshot(captureElement);
-
-            if (!isFaceDetected) return showAlert('No Face Detected', 'Please ensure your face is visible to the camera.');
-            if (!place) return showAlert('No Location Detected', 'Please enable your location or GPS.');
-
-            if (imageData) {
-                $clockPreview.attr('src', imageData);
-                showCountdownModal(imageData, isFaceDetected, true); 
-                stopCamera();
-                stopLocate();
-            }
-        });
-
 
         $(document).on('click', '.retakeButton', () => {
             startCamera();
@@ -110,17 +105,40 @@ export function initializeClockFace() {
             Livewire.dispatch('imageCaptured', [imageData, faceStatus, forced]);
         }
 
-
         function startLocate() {
-            if (!('geolocation' in navigator)) return console.error('Geolocation not supported.');
+            if (!('geolocation' in navigator)) {
+                console.error('Geolocation not supported.');
+                Swal.fire("Error", "Your device does not support GPS.", "error");
+                return;
+            }
 
             watchId = navigator.geolocation.watchPosition(
                 ({ coords }) => {
-                    const { latitude: lat, longitude: lng } = coords;
-                    Livewire.dispatch('getLocation', { lat, lng });
+                    console.log("GPS OK", coords);
+
+                    latitude = coords.latitude;
+                    longitude = coords.longitude;
+
+                    Livewire.dispatch('getLocation', [longitude, latitude, false]);
                 },
-                error => console.error('Geolocation error:', error),
-                { enableHighAccuracy: true, timeout: 50000, maximumAge: 0 }
+                error => {
+                    console.error("GPS ERROR", error);
+
+                    let msg = "";
+                    switch (error.code) {
+                        case 1: msg = "Location permission denied."; break;
+                        case 2: msg = "Location unavailable."; break;
+                        case 3: msg = "Location request timed out."; break;
+                        default: msg = error.message;
+                    }
+
+                    Swal.fire("Location Error", msg, "error");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 30000,  // allow more time
+                    maximumAge: 0
+                }
             );
         }
 
@@ -128,7 +146,7 @@ export function initializeClockFace() {
             if (watchId !== null && 'geolocation' in navigator) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
-                Livewire.dispatch('getLocation', { lat: latitude, lng: longitude, isToHide: true });
+                Livewire.dispatch('getLocation', [longitude, latitude, true]);
             }
         }
 
@@ -192,7 +210,6 @@ export function initializeClockFace() {
             detect();
         }
 
-        // Set canvas size when video metadata is loaded
         $video.on('loadedmetadata', () => {
             canvas.width = $video[0].videoWidth;
             canvas.height = $video[0].videoHeight;

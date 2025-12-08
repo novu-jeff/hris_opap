@@ -30,21 +30,19 @@ class PayrollJob implements ShouldQueue
 
     public function handle()
     {
+        \Log::info('Processing payroll items', [
+        'payroll_id' => $this->payroll->id,
+        'employees_count' => count($this->employees)
+        ]);
 
         $service = app(PayrollService::class);
 
-        $payroll = $this->payroll;
-        $employees = $this->employees;
-        $type = $this->type;
-
-        $process = $service->getProcess($type);
-
+        $process = $service->getProcess($this->type);
         $serviceInstance = app($process['service']);
 
-        $data = $serviceInstance->computePayroll($payroll, $employees, $type);
+        $data = $serviceInstance->computePayroll($this->payroll, $this->employees, $this->type);
 
         foreach ($data as $item) {
-
             $process['models']['child']::updateOrCreate(
                 [
                     'payroll_id'  => $item['payroll_id'],
@@ -53,10 +51,9 @@ class PayrollJob implements ShouldQueue
                 $item
             );
         }
-
     }
 
     public function failed(Throwable $exception) {
-        \Log::info('Error: ' . $exception->getMessage());
+        \Log::info('Error Processing Info: ' . $exception->getMessage());
     }
 }

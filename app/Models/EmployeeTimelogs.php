@@ -14,6 +14,7 @@ class EmployeeTimelogs extends Model
         parent::__construct($attributes);
 
         $external = config('app.external_timelogs');
+       // dd( $external );
 
         $this->setConnection($external ? 'mysql2' : 'mysql');
 

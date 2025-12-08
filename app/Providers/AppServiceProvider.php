@@ -7,6 +7,9 @@ use App\Services\DailyTimeRecordService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use App\Models\CompanyInformation;
+
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,9 +28,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
+        
         view()->share('product', config('app.product'));
-        view()->share('provider', config('meta')[env('APP_PROVIDER')]);
+        $providerKey = config('app.provider');
+        $metaConfig = config('meta');
+
+        view()->share('provider', $metaConfig[$providerKey] ?? null);
+
+
+        $companyInfo = CompanyInformation::first(); // or where(...)
+
+        view()->share('companyInfo', $companyInfo);
 
         
         $except = [

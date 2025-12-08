@@ -43,6 +43,7 @@
                 </thead>                
                 <tbody>
                     @forelse($records as $record)
+               
                         <tr data-id="{{$record->id}}">
                             <td>#{{format_id($record->id, 6)}}</td>
                             <td>{{\Carbon\Carbon::parse($record->date)->format('F d, Y')}}</td>
@@ -72,7 +73,7 @@
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
-                                @if($record->status == 'granted')
+                                @if($record->status == 'approved')
                                      <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
                                         <i class="fa-solid fa-download"></i>
                                     </a>

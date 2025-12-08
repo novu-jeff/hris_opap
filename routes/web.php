@@ -111,7 +111,7 @@ Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])
         ->name('home.login');
     Route::post('/', [HomeLoginController::class, 'store'])
-        ->name('home.login');
+        ->name('home.login.store');
 });
 
 Route::any('logout', [HomeLoginController::class, 'logout'])
@@ -393,6 +393,9 @@ Route::prefix('admin')->group(function() {
 
             Route::resource('user-access', RoleController::class)
                 ->names('users.access');
+
+            Route::get('/user-trails', [App\Http\Controllers\TrailController::class, 'index'])
+    ->name('user.trails');    
             
             Route::prefix('payroll')->group( function() {
                 Route::resource('/holidays', HolidayController::class)->only('create', 'index', 'edit')

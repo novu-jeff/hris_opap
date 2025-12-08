@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeInformation;
 use App\Models\CompanyInformation;
 use App\Services\DailyTimeRecordService;
+use App\Models\ShiftSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -44,9 +45,19 @@ class Show extends Component
         $this->initializeService();
 
         try {
+
+            $employeeShift = ShiftSchedule::first(); // replace with employee-specific shift if needed
+//dd($employeeShift->shift_duration );
+
+
+            $this->officialTime = [
+                'current_time' => Carbon::now()->format('h:i A'),
+                'shift_duration' => $employeeShift->shift_duration ?? 'N/A',
+            ];
+
             $this->dtrDate = Carbon::parse($month . ' ' . $year);
             $this->monthDate = $this->dtrDate->format('Y-m');
-            $this->officialTime = Carbon::now()->format('h:i A');
+           // $this->officialTime = Carbon::now()->format('h:i A');
             $this->employee_no = $employee_no;
 
             $data = $this->getEmployeeInfo($employee_no);
@@ -60,6 +71,7 @@ class Show extends Component
             $this->logs = [
                 'employee_account' => [
                     'bsd_no' => $bio_id,
+                    'employee_no' => $data->personal->employee_no,
                     'firstname' => $data->personal->firstname,
                     'middlename' => $data->personal->middlename,
                     'lastname' => $data->personal->lastname,
