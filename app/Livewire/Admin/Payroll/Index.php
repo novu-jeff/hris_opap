@@ -28,6 +28,8 @@ class Index extends Component
     public $status = '';
     public $employmentTypes;
 
+    public $lockedEmploymentTypeId;
+
     public $dynamicFormFields;
     public $selectedForPayroll;
 
@@ -291,13 +293,134 @@ class Index extends Component
     public function createPayroll()
     {
         $type = $this->type;
+
+        // Get employment type ID based on selected type
+        $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
+            ->value('id');
+
+        $payrollService = app(PayrollService::class);
+
+        // -------------------------------
+        //  FIRST CLICK — SHOW EMPLOYEES
+        // -------------------------------
+        if ($this->isToCreate === false) {
+
+            if (empty($employmentTypeId)) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status'    => 'error',
+                    'title'     => 'Oops',
+                    'message'   => 'Employment type is required to fetch employees.'
+                ]);
+            }
+
+            // 🔒 LOCK EMPLOYMENT TYPE ID FOR NEXT STEP
+            $this->lockedEmploymentTypeId = $employmentTypeId;
+
+            // Retrieve employees
+            $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
+
+           // dd('here');
+         //   dd($this->employeesChecked);
+
+            // Move UI to "Eligible / Ineligible" screen
+            $this->isToCreate = true;
+
+            return;
+        }
+
+        // -------------------------------
+        //  SECOND CLICK — CREATE PAYROLL
+        // -------------------------------
+
+        // Ensure eligible employees exist
+        if (empty($this->employeesChecked['eligible']['items'])) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status'    => 'error',
+                'title'     => 'Oops',
+                'message'   => 'No employees found for this payroll.'
+            ]);
+        }
+
+        // Reuse locked ID (prevents Livewire re-render issues)
+        $employmentTypeId = $this->lockedEmploymentTypeId;
+
+        // Validate form fields
+        $this->validate();
+
+        // Map data per payroll type
+        $map = [
+            'salary' => [
+                'payroll_date'    => $this->payroll_date,
+                'cut_off_period'  => $this->cut_off_period,
+                'has_deductions'  => $this->has_deductions,
+                'employment_type' => $employmentTypeId,
+            ],
+            'clothing_allowance' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+            ],
+            'mid_year' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+                'type'            => 'mid_year',
+            ],
+            'year_end' => [
+                'payroll_date'    => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+                'type'            => 'year_end',
+            ],
+            'ot_pay' => [
+                'ot_period'       => $this->ot_period,
+                'employment_type' => $employmentTypeId,
+            ],
+        ];
+        //dd($map[$type]);        
+
+        $process = $payrollService->getProcess($type);
+        $data    = $map[$type];
+
+       // dd($process['service']);
+
+        // Validate with service rules
+        $service   = app($process['service']);
+        $rules     = $service->rules($data);
+        $validator = Validator::make($data, $rules);
+
+        if ($validator->fails()) {
+            Log::info($validator->errors());
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        //dd($data);
+
+        // Create payroll record
+        $payroll = $service->createPayroll($data);
+
+        // Start queue batch processing
+        $this->dispatch('start-job-dispatch', [
+            'payroll_id'      => $payroll->id,
+            'employment_type' => $payroll->employment_type,
+            'type'            => $type,
+        ]);
+
+        // Close modal
+        $this->dispatch('hideModal', ['modal' => 'newPayroll']);
+    }
+
+
+    public function createPayrollBK()
+    {
+        $type = $this->type;
         $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
         $payrollService = app(PayrollService::class);
 
 
         $this->validate();
 
-        if (!$this->isToCreate) {
+        //if (!$this->isToCreate) {
+        if ($this->isToCreate === false) {
             if (empty($employmentTypeId)) {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
@@ -307,6 +430,9 @@ class Index extends Component
                 ]); 
             }
             
+             // 🔒 LOCK EMPLOYMENT TYPE ID FOR NEXT STEP
+            $this->lockedEmploymentTypeId = $employmentTypeId;
+
             $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
             $this->isToCreate = true;
             return;
@@ -390,8 +516,11 @@ class Index extends Component
         $service = app(PayrollService::class);
         $process = $service->getProcess($type);
         $serviceInstance = app($process['service']);
+       
 
         $process = $serviceInstance->generateChunks($payroll_id, $employmentType, $type);
+
+     
         
         $status = $process['status'];
 
@@ -491,6 +620,24 @@ class Index extends Component
 
         return;
     }
+
+    public function filterStatus(string $status)
+    {
+        $this->status = $status;
+    }
+
+    public function showPendingPayroll()
+    {
+        // Set status filter to 'pending'
+        $this->status = 'pending';
+    }
+
+    public function showApprovedPayroll()
+    {
+        // Set status filter to 'approved'
+        $this->status = 'approved';
+    }
+
     
     public function render()
     {

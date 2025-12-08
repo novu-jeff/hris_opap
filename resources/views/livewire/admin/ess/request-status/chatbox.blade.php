@@ -1,171 +1,136 @@
-<div class="modal-dialog-scrollable" wire:click="makeSeen">
-    <div class="modal-content">
-        @if(!is_null($selected_id))
+<div id="chatboxWindow">
+<div class="chatbox d-flex flex-column" style="height: 100%;">
 
-            @php
-                $fullname = $records['user']['personal']->firstname . ' ' . $records['user']['personal']->lastname;
-            @endphp
-            <div class="msg-head">
-                <div class="row px-5">
-                    <div class="col-8">
-                        <div class="d-flex align-items-center">
-                            <span class="chat-icon"><img class="img-fluid" src="https://mehedihtml.com/chatbox/assets/img/arroleftt.svg" alt="image title"></span>
-                            <td class="text-center">
-                                <img style="width: 50px; height: 50px;"
-                                    src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($fullname) }}">              
-                            </td>
-                            <div class="flex-grow-1 ms-3">
-                                <h3>{{ (isset($records['user']) ? ucwords($fullname) : '')}}</h3>
-                                <p>{{ (isset($records['user']) ? strtoupper($records['user']['positions']->name ?? 'Employee') : '')}}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    @if(!is_null($selected_id))
+        @php
+            $user = $records['user'] ?? null;
+            $fullname = $user ? $user['personal']->firstname . ' ' . $user['personal']->lastname : 'Unknown User';
+            $profilePhoto = $user && !empty($user['personal']->profile)
+                            ? asset(Storage::url($user['personal']->profile))
+                            : 'https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name=' . urlencode($fullname);
+        @endphp
+
+        <!-- Chat Header -->
+        <div class="msg-head px-4 py-2 border-bottom d-flex align-items-center gap-2">
+            <span class="chat-icon">
+                
+            </span>
+            <img src="{{ $profilePhoto }}" alt="Profile Photo" style="width:50px; height:50px; object-fit:cover; border-radius:50%;">
+            <div class="flex-grow-1 ms-2">
+                <h6 class="mb-0">{{ ucwords($fullname) }}</h6>
+                <small>{{ strtoupper($user['positions']->name ?? 'Employee') }}</small>
             </div>
-            
-            <div class="modal-body" wire:click="makeSeen">
-                <div class="msg-body" wire:poll='loadRecords("{{$selected_id}}")' wire:poll.keep-alive>
-                    <ul>
-                        @if(isset($records['messages']))
-                            @foreach ($records['messages'] as $message)
-                                @if (!empty($message['message']) || !$message['attachments']->isEmpty())
-                                    <li class="{{ $message['from_role'] === 'admin' ? 'reply' : 'sender' }} {{ !$message['attachments']->isEmpty() ? 'active' : '' }}">
-                                        @if (!empty($message['message']))
-                                            <p>{{ $message['message'] }}</p>
-                                            @if($message['from_role'] != 'admin')
-                                                <span class="time">{{ relative_time($message['created_at']) }}</span>
-                                            @else
-                                                @if($message['isSeen'])
-                                                    <span class="time">Seen at {{ format_date($message['created_at'], 'day_date_time_string') }}</span>
-                                                @else
-                                                    <span class="time">{{ relative_time($message['created_at']) }}</span>
-                                                @endif
+        </div>
 
-                                            @endif
+        <!-- Messages -->
+      <div class="modal-body msg-body" id="messagesContainer" wire:poll.3s="loadRecords">
+            <ul class="list-unstyled mb-0">
+                @foreach ($records['messages'] ?? [] as $message)
+                    @if (!empty($message['message']) || !$message['attachments']->isEmpty())
+                        <li class="{{ $message['from_role'] === 'admin' ? 'reply' : 'sender' }} mb-2">
+                            @if(!empty($message['message']))
+                                <p>{{ $message['message'] }}</p>
+                                <small class="text-muted">
+                                    @if($message['from_role'] != 'admin')
+                                        @if($message['isSeen'])
+                                            Seen at {{ format_date($message['created_at'], 'day_date_time_string') }}
+                                        @else
+                                            {{ relative_time($message['created_at']) }}
                                         @endif
-                                        
-                                        @if (!empty($message['attachments']))
-                                            <div class="attachments mt-2">
-                                                @foreach ($message['attachments'] as $attachment)
-                                                    @php
-                                                        $filePath = Storage::url('public/messages/' . $attachment['attachment']);
-                                                        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-                                                    @endphp
-                                
-                                                    @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
-                                                        <img src="{{ $filePath }}" alt="Image Attachment" class="img-fluid mt-2" style="max-width: 200px; height: auto; object-fit: cover;">
-                                                    
-                                                    @elseif (in_array($extension, ['doc', 'docs', 'docx', 'xls', 'xlsx', 'pdf']))
-                                                        <p>
-                                                            <a wire:click="download({{ $message['id'] }}, {{ $attachment->id }})" href="javascript:void(0)" class="nav-link d-flex align-items-center gap-2">
-                                                                <i class="fa-solid fa-download"></i>
-                                                                {{$attachment['original']}}
-                                                            </a>
-                                                        </p>
-                                                    @endif
-                                                    @if (empty($message['message']))
-                                                        @if($message['from_role'] != 'admin')
-                                                            <span class="time">{{ relative_time($message['created_at']) }}</span>
-                                                        @else
+                                    @else
+                                        {{ relative_time($message['created_at']) }}
+                                    @endif
+                                </small>
+                            @endif
 
-                                                            @if($message['isSeen'])
-                                                                <span class="time">Seen at {{ format_date($message['created_at'], 'day_date_time_string') }}</span>
-                                                            @else
-                                                                <span class="time">{{ relative_time($message['created_at']) }}</span>
-                                                            @endif
+                            @if(!empty($message['attachments']))
+                                <div class="attachments mt-2">
+                                    @foreach ($message['attachments'] as $attachment)
+                                        @php
+                                            $filePath = Storage::url('public/messages/' . $attachment['attachment']);
+                                            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                                        @endphp
 
-                                                        @endif
-                                                    @endif
-                                                @endforeach
-                                            </div>
+                                        @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
+                                            <img src="{{ $filePath }}" class="img-fluid mt-2" style="max-width:200px; object-fit:cover;">
+                                        @elseif (in_array($extension, ['doc','docs','docx','xls','xlsx','pdf']))
+                                            <p>
+                                                <a wire:click="download({{ $message['id'] }}, {{ $attachment->id }})" href="javascript:void(0)" class="d-flex align-items-center gap-2">
+                                                    <i class="fa-solid fa-download"></i> {{$attachment['original']}}
+                                                </a>
+                                            </p>
                                         @endif
-                                    </li>
-                                @endif
-                            @endforeach
-                        @endif
-                    </ul>
-                </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </li>
+                    @endif
+                @endforeach
+            </ul>
+        </div>
+
+        <!-- Send Box -->
+        <!-- DO NOT RE-RENDER BELOW -->
+            <div class="send-box" wire:ignore>
+                <textarea
+                    id="message"
+                    class="form-control"
+                    placeholder="Type something..."
+                ></textarea>
+
+                <button class="btn btn-primary" type="button" wire:click="send">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
             </div>
 
-            <div class="send-box w-100" wire:click="makeSeen">
-                <form wire:submit.prevent="send" wire:target="send" class="mb-0 ">
-                    <div class="d-lg-flex gap-3">
-                        <div class="form-group w-100">
-                            <label for="message" class="visually-hidden">Message</label>
-                            <textarea
-                                wire:model.defer="message"
-                                id="message"
-                                cols="30"
-                                rows="1"
-                                class="w-100 form-control @error('message') invalid-feed @enderror"
-                                placeholder="Type something..."
-                            ></textarea>
-                        </div>
-                        <div>
-                            <button type="submit" class="btn btn-primary send w-100">
-                                <span wire:loading.remove wire:target="send">
-                                    <i class="fa fa-paper-plane" aria-hidden="true"></i>
-                                    Send
-                                </span>
-                                <span wire:loading wire:target="send">
-                                    <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </form>                
-                <div class="error-field mt-2">
-                    @error('message') <span class="text-danger">{{ $message }}</span> @enderror
-                    @error('attachments') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-                <div class="send-btns mt-4">
-                    <div class="attach">
-                        <div class="button-wrapper">
-                            <span class="label text-uppercase fw-bold">Upload attachments</span>
-                            <input type="file" wire:model.live="attachments" multiple id="upload" class="upload-box" placeholder="Upload File" aria-label="Upload File">
-                        </div>
-                        <div>
-                            <small class="text-muted fw-bold text-uppercase">Note: Maximum of 5 files allowed, with each file no larger than 5 MB.</small>
-                        </div>
-                        @if (isset($preview_attachments))
-                            {{-- Image Grid --}}
-                            <div class="attachment-grid mt-4">
-                                @foreach($preview_attachments as $index => $attachment)
-                                    @if ($attachment['type'] === 'image')
-                                        <div class="attachment-item">
-                                            <img src="{{ $attachment['url'] }}" class="img-fluid" alt="Preview Image" style="height: 100%; width: 100%; object-fit: scale-down;">
-                                            <button type="button" class="btn btn-sm btn-danger" wire:click="remove({{$index}})">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        
-                            {{-- File List --}}
-                            <div class="attachment-files">
-                                @foreach($preview_attachments as $index => $attachment)
-                                    @if ($attachment['type'] === 'file')
-                                        <div class="mb-2 d-flex align-items-center gap-2">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <i class="{{ format_extension($attachment['url']) }}"></i> 
-                                                {{ format_getFileName($attachment['url']) }}
-                                                <div>
-                                                    <button type="button" class="btn btn-sm btn-danger" wire:click="remove({{$index}})">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @else
 
-        @endif
-    </div>
+    @endif
 </div>
+</div>
+<script>
+    document.querySelector('.send-box button').addEventListener('click', function () {
+        @this.set('message', document.getElementById('message').value);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sendBtn = document.querySelector('.send-box button');
+        const textarea = document.getElementById('message');
+        const container = document.getElementById('messagesContainer');
+        const chatbox = document.getElementById('chatboxWindow');
+console.log("Messages container:", container.scrollHeight);
+        if (sendBtn) {
+            sendBtn.addEventListener('click', function () {
+                console.log("Scrolled to bottom after sending message");
+               
+                if (chatbox.style.display === "none" || chatbox.style.display === "") {
+                    console.log("Showing  chatbox");
+                    chatbox.style.display = "block";
+
+                        // Scroll to the bottom after a short delay (for Livewire rendering)
+                        setTimeout(() => {
+                            const messagesContainer = chatbox.querySelector('#messagesContainer'); // replace with actual message container class/id
+                            if(messagesContainer){
+                                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                            }
+                        }, 100); // 100ms delay to ensure messages are rendered
+                    } else {
+                        chatbox.style.display = "none";
+                    }
+
+
+                @this.set('message', textarea.value);
+
+                // Clear textarea IMMEDIATELY
+                textarea.value = '';
+            });
+        }
+
+ 
+    
+    });
+
+
+</script>
+
+
+

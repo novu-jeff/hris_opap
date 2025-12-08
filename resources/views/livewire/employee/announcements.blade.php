@@ -1,3 +1,5 @@
+
+
 <div class="announcements" >
     @if(is_null($record_id))
         <div class="row mb-4 mt-5">
@@ -111,6 +113,7 @@
         </div>
     @endif
 </div>
+
 
 @section('script')
     <script>

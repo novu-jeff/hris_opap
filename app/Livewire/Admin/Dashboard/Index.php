@@ -76,6 +76,12 @@ class Index extends Component
         
         $this->companyInfo = $this->getCompanyInformation();
 
+        $payrollCounts = DB::table('payroll_salary')
+                ->groupBy('status')
+                ->select('status', DB::raw('count(*) as total'))
+                ->pluck('total', 'status')
+                ->toArray();
+
         $this->stats = [
             'recruitment' => [
                 'pending' => $recruitmentCounts['pending'] ?? 0,
@@ -109,6 +115,10 @@ class Index extends Component
             'earnings' => $earnings,
             'deductions' => $deductions,
             'social_security' => $social_security ? $social_security->toArray() : [],
+            'payroll' => [
+                'approved' => $payrollCounts['approved'] ?? 0,
+                'pending'  => $payrollCounts['pending'] ?? 0,
+            ],
         ];
         
         $this->getTrails();
@@ -125,11 +135,12 @@ class Index extends Component
 
         $files = File::files($directory);
 
-        $this->trails = collect($files)->sortByDesc(function ($file) {
-            return $file->getFilename();
-        })->map(function ($file) {
-            return $file->getFilename();
-        })->toArray();
+        
+        $this->trails = collect($files)
+            ->sortByDesc(fn($file) => $file->getFilename())
+            ->take(5) // ⬅️ limit to 5
+            ->map(fn($file) => $file->getFilename())
+            ->toArray();
     }
 
     private function getCompanyInformation() {

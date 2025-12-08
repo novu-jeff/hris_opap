@@ -1,7 +1,7 @@
 <div>
-    
+
     <div class="modal fade" wire:ignore.self id="showModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog custom-modal modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">View Request Timelog</h1>
@@ -27,22 +27,22 @@
                         
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2" for="clock_in">Clock In</label>
-                            <input type="time" id="clock_in" class="form-control restricted" value="{{ isset($view_records) && $view_records->clock_in ? $view_records->clock_in : '' }}" readonly>
+                            <input type="time" id="clock_in" class="form-control restricted" value="{{ $view_records?->clock_in ? \Carbon\Carbon::parse($view_records->clock_in)->format('H:i') : '' }}" readonly>
                         </div>
                         
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2" for="break_out">Lunch Out</label>
-                            <input type="time" id="break_out" class="form-control restricted" value="{{ isset($view_records) && $view_records->break_out ? $view_records->break_out : '' }}" readonly>
+                            <input type="time" id="break_out" class="form-control restricted" value="{{ $view_records?->break_out ? \Carbon\Carbon::parse($view_records->break_out)->format('H:i') : '' }}" readonly>
                         </div>
                         
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2" for="break_in">Lunch In</label>
-                            <input type="time" id="break_in" class="form-control restricted" value="{{ isset($view_records) && $view_records->break_in ? $view_records->break_in : '' }}" readonly>
+                            <input type="time" id="break_in" class="form-control restricted" value="{{ $view_records?->break_in ? \Carbon\Carbon::parse($view_records->break_in)->format('H:i') : '' }}" readonly>
                         </div>
                         
                         <div class="col-12 col-md-3 mb-4">
                             <label class="mb-2" for="clock_out">Clock Out</label>
-                            <input type="time" id="clock_out" class="form-control restricted" value="{{ isset($view_records) && $view_records->clock_out ? $view_records->clock_out : '' }}" readonly>
+                            <input type="time" id="clock_out" class="form-control restricted" value="{{ $view_records?->clock_out ? \Carbon\Carbon::parse($view_records->clock_out)->format('H:i') : '' }}" readonly>
                         </div>
                         
                         <div class="col-12 col-md-12 mb-4">

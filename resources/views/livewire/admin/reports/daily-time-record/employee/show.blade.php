@@ -23,7 +23,7 @@
     }
 
     .print-container .dtr:nth-of-type(2) {
-        display: none;
+        display: block;
     }
 
     .dtr {
@@ -59,6 +59,13 @@
         height: 70px;
     }
 
+    .dtr-copy img {
+    position: static !important;
+    display: block;
+    margin: 0 auto 10px auto;
+    height: 70px !important;
+}
+
     @media(max-width: 993px ) {
         .dtr-header img {
             left: 0;
@@ -82,14 +89,14 @@
     .dtr-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 
     .dtr-table th, .dtr-table td {
         border: 1px solid black;
         text-align: center;
-        padding: 5px;
-        font-size: 12px; 
+        padding: 4px;
+        font-size: 11px; 
     }
 
     .dtr-summary {
@@ -179,6 +186,177 @@
         align-items: center;
     }
 
+/* --- FIX Bootstrap container blocking two-column print --- */
+#print-section .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* --- Fix two copies width --- */
+
+
+   .print-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+    padding: 10px;
+    flex-wrap: nowrap;
+}
+
+.dtr-copy {
+    width: 48%;
+    max-width: 100%;
+    padding: 5px;
+}
+    .center {
+        text-align: center;
+        font-weight: bold;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .p-dtr-table, .p-dtr-table th, .p-dtr-table td {
+        border: 1px solid #000;
+        font-size: 12px;
+        padding: 0px;
+        text-align: center;
+    }
+    .info-table td {
+        border: none;
+        padding: 3px;
+        text-align: left;
+    }
+    .certify {  
+        font-size: 13px;
+        margin-top: 15px;
+        text-align: justify;
+    }
+
+    @media print {
+    .print-wrapper {
+        padding: 0;
+        gap: 0;
+    }
+
+    .dtr-copy {
+        page-break-inside: avoid;
+    }
+
+    .td-small {
+        width: 10px;
+    }
+
+
+}
+
+.print-area-hidden {
+    visibility: hidden;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    #print-section, #print-section * {
+        visibility: visible !important;
+    }
+
+    #print-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
+@media print {
+    .p-dtr-table th,
+    .p-dtr-table td {
+        border-right: 1px solid #000 !important;
+        border-left: 1px solid #000 !important;
+        border-top: 1px solid #000 !important;
+        border-bottom: 1px solid #000 !important;
+    }
+
+     /* force two equal columns */
+    .dtr-copy {
+        width: 48% !important;
+        display: inline-block !important;
+        vertical-align: top !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* keep remarks column visible & fixed width */
+    th.remarks-col,
+    td.remarks-col {
+        min-width: 70px !important;
+        max-width: 70px !important;
+        width: 70px !important;
+        display: table-cell !important;
+        visibility: visible !important;
+        white-space: normal !important;
+    }
+
+    /* prevent bootstrap and flex from squeezing tables */
+    .p-dtr-table {
+        table-layout: fixed !important;
+    }
+
+    /* force page to scale the content instead of cutting it */
+    body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        transform: scale(0.83);        /* ← adjust until everything fits */
+        transform-origin: top left;
+    }
+
+    /* wrapper resets so scaling works full width */
+    .print-wrapper {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* each DTR copy */
+    .dtr-copy {
+        width: 49% !important;             /* slightly wider than before */
+        min-width: 49% !important;
+        max-width: 49% !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* force remarks column size */
+    .remarks-col {
+        width: 70px !important;
+        min-width: 70px !important;
+        max-width: 70px !important;
+        white-space: normal !important;
+    }
+
+    /* prevent table from collapsing */
+    .p-dtr-table {
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+    }
+
+    .p-dtr-table th,
+    .p-dtr-table td {
+        padding: 2px !important;
+        font-size: 11px !important;
+    }
+
+   
+}
+
 
 </style>
 @endsection
@@ -188,11 +366,7 @@
             <div class="section-title">
                 <h1>Daily Time Record <span  class="text-primary">{{ $employee_no }}</span></h1>
             </div>
-            <div class="action">
-                <div class="d-md-flex gap-3">
-                    <a href="{{route('reports.dtr')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-                </div>
-            </div>
+           
         </div>
         <div class="mt-3">
             @if($logs)
@@ -224,7 +398,12 @@
                             <input type="month" wire:change="changeMonth('date')" wire:model="monthDate" class="form-control">
                         </div>
                     </div>
-                    <button class="btn btn-success save-as-pdf"><i class="fa-solid fa-print"></i></button>
+                   
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="printDTR()">
+                            🖨️ Print DTR
+                        </button>
+                    </div>
                 </div>
             @endif
         </div>
@@ -241,11 +420,10 @@
                     </div>
                 </div>
             @endif
-            <div class="print-container mt-4">
+            <div class="print-container mt-4 ssss">
                  @php
                     $isAdmin = false;
                 @endphp
-                @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
                 @include('livewire.admin.reports.daily-time-record.employee.dtr-table')
             </div>
         @else
@@ -259,5 +437,29 @@
                 @endif
             </div>
         @endif
-    </div>    
+    </div>
+      <div id="print-section" class="print-wrapper print-area-hidden">
+         @if($logs)
+        @include('livewire.admin.reports.daily-time-record.employee.print-dtr-table')
+         @else
+            <div class="alert alert-danger" role="alert">
+                @if (!empty($errors))
+                    <ul class="m-0">
+                        @foreach ($errors as $error)
+                            <li class="text-uppercase">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @endif
+    </div>  
 </div>
+
+<script>
+function printDTR() {
+    
+    window.print();
+
+   
+}
+</script>

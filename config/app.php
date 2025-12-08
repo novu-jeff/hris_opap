@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+     'name' => env('APP_NAME', 'Laravel'),
     'provider' => env('APP_PROVIDER'),
     'product' => env('APP_PRODUCT'),
     'external_timelogs' => env('TIMELOGS_EXTERNAL'),
