@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         
         view()->share('product', config('app.product'));
-        $providerKey = config('app.provider_key');
+        $providerKey = config('app.provider');
         $metaConfig = config('meta');
 
         view()->share('provider', $metaConfig[$providerKey] ?? null);
