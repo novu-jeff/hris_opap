@@ -125,11 +125,12 @@ class Index extends Component
 
         $files = File::files($directory);
 
-        $this->trails = collect($files)->sortByDesc(function ($file) {
-            return $file->getFilename();
-        })->map(function ($file) {
-            return $file->getFilename();
-        })->toArray();
+        
+        $this->trails = collect($files)
+            ->sortByDesc(fn($file) => $file->getFilename())
+            ->take(5) // ⬅️ limit to 5
+            ->map(fn($file) => $file->getFilename())
+            ->toArray();
     }
 
     private function getCompanyInformation() {
