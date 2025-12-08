@@ -36,7 +36,7 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $this->view_records = EmployeeBusinessSlip::with('employment.section', 'employment.section.branch', 'employment.section.department', 'employee', 'employment.positions')
+        $this->view_records = EmployeeBusinessSlip::with('employment.section', 'employment.section.branch', 'employment.section.department', 'employee', 'employment.positions','employee.personal')
             ->where('id', $id)
             ->first();
     }

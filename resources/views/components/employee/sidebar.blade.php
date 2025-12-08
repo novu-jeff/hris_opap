@@ -16,8 +16,12 @@
             <i class="fa-solid fa-bullhorn"></i> Announcements
         </a>
 
-           <a href="{{ route('employee.dtr') }}" class="menu-item">
+        <a href="{{ route('employee.dtr') }}" class="menu-item">
             <i class="fa-solid fa-file-lines"></i> Daily Time Record
+        </a>
+
+        <a href="{{ route('employee.time-adjustments') }}" class="menu-item">
+            <i class="fa-solid fa-clock-rotate-left"></i> Time Adjustments
         </a>
         <a href="{{ route('employee.payslip') }}" class="menu-item">
             <i class="fa-solid fa-money-check-dollar"></i> Payslip
@@ -54,9 +58,9 @@
             <i class="fa-solid fa-envelope"></i> Contact HR
         </a>
 
-      <!--  <a href="{{ route('employee.profile', ['form' => 'profile']) }}" class="menu-item">
-            <i class="fa-solid fa-user"></i> My Profile
-        </a>-->
+       <a href="{{ route('employee.directory') }}" class="menu-item">
+            <i class="fa-solid fa-table-cells-large"></i> Directory
+        </a>
         <a href="{{ route('employee.tutorial') }}" class="menu-item">
             <i class="fa-solid fa-graduation-cap"></i> Tutorials
         </a>

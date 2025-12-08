@@ -112,16 +112,18 @@ class Index extends Component
             $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i:s');
             $date = Carbon::parse($record->date)->format('Y-m-d');
 
+           // dd($clock_in_am, $clock_out_am, $clock_in_pm, $clock_out_pm, $date );
+
             $rawTimestamps = [
                 'clock_in' => [
                     'timestamp' => $clock_in_am,
                     'type' => 0,
                 ],
-                'lunch_in' => [
+                'lunch_out' => [
                     'timestamp' => $clock_out_am,
                     'type' => 1,
                 ],
-                'lunch_out' => [
+                'lunch_in' => [
                     'timestamp' => $clock_in_pm,
                     'type' => 0,
                 ],
@@ -130,6 +132,8 @@ class Index extends Component
                     'type' => 1,
                 ]
             ];
+
+          //  dd($rawTimestamps);
             
             $logs = collect($rawTimestamps)->map(function ($time) use ($date, $record) {
                 $timestamp = "$date {$time['timestamp']}";
@@ -138,17 +142,23 @@ class Index extends Component
                     'sn' => 'RUU5242500021',
                     'table' => 'ATTLOG',
                     'stamp' => '9999',
-                    'employee_id' => $record->employee->bsd_no,
+                    'employee_id' => $record->employee->employee_no,
                     'timestamp' => $timestamp,
                     'status1' => $time['type'],
                 ];
             })->sortBy('timestamp')->values()->all();
             
-            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->bsd_no)
+            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->employee_no)
                 ->where('timestamp', 'LIKE', "{$date}%")
                 ->orderBy('timestamp', 'asc')
                 ->get();
-            
+
+          /*  $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->bsd_no)
+                ->where('timestamp', 'LIKE', "{$date}%")
+                ->orderBy('timestamp', 'asc')
+                ->get();*/
+              
+           // dd($logs, $existingLogs, $rawTimestamps );
             foreach ($logs as $key => $log) {
                 if (isset($existingLogs[$key])) {
                     $existingLogs[$key]->timestamp = $log['timestamp'];
@@ -156,6 +166,7 @@ class Index extends Component
                     $existingLogs[$key]->captured_location = '';
                     $existingLogs[$key]->save();
                 } else {
+                  
                     EmployeeTimelogs::create($log);
                 }
             }            

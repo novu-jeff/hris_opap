@@ -8,7 +8,7 @@ class DirectoryController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('permission:read my-directory')->only('index');
+       // $this->middleware('permission:read my-directory')->only('index');
     }
 
     public function index() {

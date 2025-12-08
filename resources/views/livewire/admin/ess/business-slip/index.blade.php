@@ -14,7 +14,7 @@
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="employee_name">Employee Name</label>
-                            <input type="text" id="employee_name" class="form-control restricted" value="{{ isset($view_records) ? $view_records->employee->firstname . ' ' . $view_records->employee->lastname : '' }}" readonly>
+                            <input type="text" id="employee_name" class="form-control restricted" value="{{ $view_records?->employee?->personal ? ($view_records->employee->personal->firstname . ' ' . $view_records->employee->personal->lastname) : '' }}" readonly>
                         </div>
                         <div class="col-12 col-md-4 mb-4">
                             <label class="mb-2" for="date_filed">Date Filed</label>

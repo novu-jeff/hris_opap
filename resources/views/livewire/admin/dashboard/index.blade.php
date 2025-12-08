@@ -225,6 +225,28 @@
                         </div>
                         <div class="col-12 mb-3">
                             <div class="card">
+                                <div class="card-header bg-primary text-white px-4">
+                                    <h5 class="my-2 text-uppercase fw-bold">Payroll Summary</h5>
+                                </div>
+                                <div class="card-body px-4">
+                                    <div class="row">
+                                        <div class="col-12 mb-3 col-md-6">
+                                                <div class="mb-0 alert alert-info w-100 text-uppercase fw-bold">Approved: {{$stats['payroll']['approved']}}</div>
+                                           
+                                        </div>
+                                        <div class="col-12 mb-3 col-md-6">
+                                                <div class="mb-0 alert alert-warning w-100 text-uppercase fw-bold">Pending: {{$stats['payroll']['pending']}}</div>
+                                         
+                                        </div>
+                                        
+                                        
+                                    </div>
+                                  
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="card">
                                 <div class="card-header bg-primary text-white px-4 d-flex justify-content-between">
                                     @if(!empty($stats['social_security']['billing_month']))
                                         <h5 class="my-2 text-uppercase fw-bold">

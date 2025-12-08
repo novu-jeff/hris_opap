@@ -13,13 +13,13 @@
         <div class="action">
             @if ($action === 'view')
                 <div class="d-md-flex gap-3 ">
-                    <a href="{{route('employee.dashboard')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    
                     @can('write apply-time-adjustments')
                         <a href="{{route('employee.time-adjustments.apply')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Apply Now</a>
                     @endcan
                 </div>
             @else
-                <a href="{{route('employee.time-adjustments')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                
             @endif
         </div>
     </div>

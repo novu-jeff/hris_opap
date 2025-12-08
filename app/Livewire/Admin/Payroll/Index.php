@@ -620,6 +620,24 @@ class Index extends Component
 
         return;
     }
+
+    public function filterStatus(string $status)
+    {
+        $this->status = $status;
+    }
+
+    public function showPendingPayroll()
+    {
+        // Set status filter to 'pending'
+        $this->status = 'pending';
+    }
+
+    public function showApprovedPayroll()
+    {
+        // Set status filter to 'approved'
+        $this->status = 'approved';
+    }
+
     
     public function render()
     {

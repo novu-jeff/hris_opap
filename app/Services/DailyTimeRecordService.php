@@ -999,10 +999,10 @@ class DailyTimeRecordService {
 
 
         if ($timestamps->count() >= 4) {
-           // dd('here2');
+           //dd($timestamps[$timestamps->count() - 2]->format('h:i A'));
             $record['clock_in'] = $timestamps[0]->format('h:i A');
-            $record['lunch_out'] = $timestamps[1]->format('h:i A');
-            $record['lunch_in'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
+            $record['lunch_in'] = $timestamps[1]->format('h:i A');
+            $record['lunch_out'] = $timestamps[$timestamps->count() - 2]->format('h:i A');
             $record['clock_out'] = $timestamps[$timestamps->count() - 1]->format('h:i A');
         } elseif ($timestamps->count() === 2) {
           //  dd('here3');
