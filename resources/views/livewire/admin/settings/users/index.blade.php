@@ -276,10 +276,10 @@
                                     <tr data-id="{{$record->id}}">
                                         <td class="text-center">
                                             <img style="width: 50px; height: 50px;"
-                                                src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode($record->personal->firstname . ' ' . $record->personal->lastname) }}">              
+     src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(optional($record->personal)->firstname . ' ' . optional($record->personal)->lastname) }}">              
                                         </td>
-                                        <td>{{$record->personal->firstname . ' ' . $record->personal->lastname}}</td>
-                                        <td>{{$record->account->email}}</td>
+                                        <td>{{ optional($record->personal)->firstname . ' ' . optional($record->personal)->lastname }}</td>
+                                        <td>{{ optional($record->account)->email ?? 'No email' }}</td>
                                         @if($type === 'employees')
                                             <td>{{$record->date_hired}}</td>
                                         @endif

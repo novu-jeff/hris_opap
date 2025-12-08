@@ -215,6 +215,11 @@
                     <a href="{{ route('users.index', ['type' => 'applicants']) }}" class="submenu-item">
                         <i class="fa-solid fa-users"></i> Users</a>
                     @endcan
+                    @can('read users')
+                    <a href="{{ route('user.trails') }}" class="submenu-item">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Users Audit Trail Logs
+                    </a>
+                    @endcan
                     @can('read roles')
                     <a href="{{ route('users.access.index') }}" class="submenu-item">
                         <i class="fa-solid fa-shield-halved"></i> Roles</a>
