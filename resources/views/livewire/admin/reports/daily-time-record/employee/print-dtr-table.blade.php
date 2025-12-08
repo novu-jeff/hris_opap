@@ -36,7 +36,7 @@
                 <th colspan="2">PM</th>
                 <th colspan="2">OVERTIME</th>
                 <th colspan="2">AUT</th>
-                <th style="width: 50px;">Remark</th>
+               <th class="remarks-col">Remark</th>
             </tr>
             <tr>
                 <th></th>
@@ -160,7 +160,7 @@
                         @endif
                     </td>
                     
-                    <td style="width: 50px; !important" class="td-small">
+                   <td class="remarks-col">
                         @if(isset($day['remarks']) && is_array($day['remarks']))
                             @foreach($day['remarks'] as $index => $remark)
                                 <small>{{ $remark }}</small>
