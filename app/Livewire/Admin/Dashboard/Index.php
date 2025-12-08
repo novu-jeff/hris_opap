@@ -76,6 +76,12 @@ class Index extends Component
         
         $this->companyInfo = $this->getCompanyInformation();
 
+        $payrollCounts = DB::table('payroll_salary')
+                ->groupBy('status')
+                ->select('status', DB::raw('count(*) as total'))
+                ->pluck('total', 'status')
+                ->toArray();
+
         $this->stats = [
             'recruitment' => [
                 'pending' => $recruitmentCounts['pending'] ?? 0,
@@ -109,6 +115,10 @@ class Index extends Component
             'earnings' => $earnings,
             'deductions' => $deductions,
             'social_security' => $social_security ? $social_security->toArray() : [],
+            'payroll' => [
+                'approved' => $payrollCounts['approved'] ?? 0,
+                'pending'  => $payrollCounts['pending'] ?? 0,
+            ],
         ];
         
         $this->getTrails();

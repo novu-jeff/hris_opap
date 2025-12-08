@@ -132,14 +132,14 @@
                                 <div>
                                     <div class="text-center">
                                         <div>
-                                            <input type="file" wire:model="fields.account.resume" id="resume">
+                                            <input type="file" wire:model="fields.account.resumes" id="resume" accept=".pdf,.doc,.docx">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="droparea-preview"></div>
                             <div class="error-field">
-                                @error('fields.account.resume') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('fields.account.resumes') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">

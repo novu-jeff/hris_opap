@@ -17,6 +17,12 @@ class Register extends Component
     public string $activeTab = 'personal';
     public $fields = [];
 
+    public $resume;
+
+    protected $rules = [
+        'resume' => 'required|file|mimes:pdf,doc,docx|max:2048',
+    ];
+
     public function setActiveTab(string $tab) {
         $this->activeTab = $tab;
     }
@@ -33,7 +39,7 @@ class Register extends Component
             'fields.personal.address' => 'required',
             'fields.personal.province' => 'required',
             'fields.personal.city' => 'required',
-            'fields.account.resume' => 'required|mimes:doc,docx,pdf',
+            'fields.account.resumes' => 'required|mimes:doc,docx,pdf',
             'fields.account.email' => 'required|email|unique:applicant_users,email',
             'fields.account.password' => 'required|min:8|same:fields.account.confirm_password',
             'fields.account.confirm_password' => 'required|min:8'
@@ -60,8 +66,8 @@ class Register extends Component
             'fields.personal.address.required' => 'Address is required.',
             'fields.personal.province.required' => 'Province is required.',
             'fields.personal.city.required' => 'City is required.',
-            'fields.account.resume.required' => 'Please upload your resume.',
-            'fields.account.resume.mimes' => 'Resume must be a file of type: doc, docx, pdf.',
+            'fields.account.resumes.required' => 'Please upload your resume.',
+            'fields.account.resumes.mimes' => 'Resume must be a file of type: doc, docx, pdf.',
             'fields.account.email.required' => 'Email address is required.',
             'fields.account.email.email' => 'Email address must be a valid email.',
             'fields.account.email.unique' => 'Email address is already registered.',
@@ -82,7 +88,7 @@ class Register extends Component
 
             $this->validate();
 
-            $file = $this->fields['account']['resume'];
+            $file = $this->fields['account']['resumes'];
             $extension = $file->getClientOriginalExtension(); 
             $filename = 'applicant_resume_' . time() . '.' . $extension;
 
@@ -148,6 +154,14 @@ class Register extends Component
     
         }
     }
+
+    public function updatedFieldsAccountResumes()
+{
+    $this->validateOnly('fields.account.resumes', [
+        'fields.account.resumes' => 'mimes:doc,docx,pdf'
+    ]);
+}
+
 
     public function render()
     {
