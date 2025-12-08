@@ -16,8 +16,8 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
-    'provider' => env('APP_PROVIDER', 'novulutions'),
+     'name' => env('APP_NAME', 'Laravel'),
+    'provider' => env('APP_PROVIDER'),
     'product' => env('APP_PRODUCT'),
     'external_timelogs' => env('TIMELOGS_EXTERNAL'),
     'allow_upload_timelogs' => env('ALLOW_UPLOAD_TIMELOGS'),
