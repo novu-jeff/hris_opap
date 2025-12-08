@@ -111,7 +111,7 @@ Route::prefix('login')->group(function() {
     Route::get('/', [HomeLoginController::class, 'index'])
         ->name('home.login');
     Route::post('/', [HomeLoginController::class, 'store'])
-        ->name('home.login');
+        ->name('home.login.store');
 });
 
 Route::any('logout', [HomeLoginController::class, 'logout'])

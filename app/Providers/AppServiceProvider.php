@@ -30,7 +30,11 @@ class AppServiceProvider extends ServiceProvider
     {
         
         view()->share('product', config('app.product'));
-        view()->share('provider', config('meta')[env('APP_PROVIDER')]);
+        $providerKey = config('app.provider_key');
+        $metaConfig = config('meta');
+
+        view()->share('provider', $metaConfig[$providerKey] ?? null);
+
 
         $companyInfo = CompanyInformation::first(); // or where(...)
 
