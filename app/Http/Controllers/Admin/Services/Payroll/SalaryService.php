@@ -137,9 +137,14 @@ class SalaryService extends Controller {
         $jobs = [];
 
         
-
+//dd($chunks );
         foreach ($chunks as $chunk) {
-            $jobs[] = new PayrollJob($chunk, $payroll, 'salary');
+           // dd('set');
+            $jobs[] = new PayrollJob(
+                                    $chunk,          // already an array
+                                    $payroll->id,    // pass only ID
+                                    'salary'
+                                );
         }
 
         $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
@@ -340,6 +345,7 @@ class SalaryService extends Controller {
         }
 
     }
+    
 
 
 }

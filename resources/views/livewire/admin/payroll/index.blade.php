@@ -30,7 +30,7 @@
         </div>
     </div>
     <div wire:ignore.self class="modal fade" data-bs-backdrop="static" id="newPayroll" tabindex="-1" aria-labelledby="newPayrollLabel" aria-hidden="true">
-        <div class="modal-dialog {{ $isToCreate ? 'modal-lg' : '' }} {{ $activeTab == 'ineligible' ? 'modal-xl' : ''  }}">
+        <div class="modal-dialog {{ $isToCreate ? 'modal-lg' : '' }} {{ $activeTab == 'ineligible' ? '' : ''  }}">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-uppercase fw-medium fw-bold" id="newPayrollLabel">Create Payroll</h5>
@@ -217,9 +217,9 @@
                             </div>
                             
                             <div class="d-flex justify-content-between mt-5 pb-3">
-                                <button class="btn btn-outline-primary px-5 py-3 text-uppercase" type="button" wire:click="go_back">
+                                <!--<button class="btn btn-outline-primary px-5 py-3 text-uppercase" type="button" wire:click="go_back">
                                     Go Back
-                                </button>
+                                </button>-->
                                 <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" type="submit">
                                     <span wire:loading.remove wire:target="createPayroll">Create</span>
                                     <span wire:loading wire:target="createPayroll">

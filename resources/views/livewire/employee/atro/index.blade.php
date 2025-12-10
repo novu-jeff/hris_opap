@@ -53,20 +53,20 @@
                             </td>  
                             <td>
                                 @if ($record->status == 'cancelled')
-                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1" title="Delete File">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @endif
                                 @if($record->status == 'mentioned')
-                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1" title="Download file">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
                                 @endif
                                 @if($record->status == 'pending')
-                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                    <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1" title="Download file">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
-                                    <a href="{{route('employee.atro.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1">
+                                    <a href="{{route('employee.atro.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1" title="Edit file">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
                                     <button wire:click="cancel(true, {{$record->id}})" class="btn btn-danger mx-1">
@@ -74,15 +74,15 @@
                                     </button>
                                 @endif
                                 @if($record->status == 'approved')
-                                     <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1">
+                                     <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1" title="Download File">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
-                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1" title="Delete File">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @endif      
                                 @if($record->status == 'disapproved')
-                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1" title="Delete File">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @endif

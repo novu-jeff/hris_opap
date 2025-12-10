@@ -44,7 +44,7 @@
                                 @error('fields.end_time') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-12 col-md-12 mb-3" wire:ignore>
+                       {{-- <div class="col-12 col-md-12 mb-3" wire:ignore>
                             <label for="relative-emp" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
                             <select class="form-select multi-select" multiple wire:model="fields.employees">
                                 @foreach($OtherEmployees as $employee)
@@ -56,7 +56,7 @@
                             <div class="error-field select2-error">
                                 
                             </div>
-                        </div>
+                        </div>--}}
                         <div class="col-12 col-md-12 mb-3">
                             <label for="justification" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
                             <textarea 
