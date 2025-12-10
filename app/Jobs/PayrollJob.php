@@ -44,6 +44,8 @@ class PayrollJob implements ShouldQueue
     $process = $service->getProcess($this->type);
     $instance = app($process['service']);
 
+   // dd($payroll);
+
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
 
     foreach ($data as $item) {

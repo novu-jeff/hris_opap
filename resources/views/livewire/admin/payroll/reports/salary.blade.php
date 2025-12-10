@@ -33,7 +33,7 @@
                     <th>ID</th>
                     <th>Cut Off Period</th>
                     <th>Payroll Date</th>
-                    <th>Has Deductions</th>
+                  <!--  <th>Has Deductions</th>-->
                     <th>Status</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
@@ -52,11 +52,11 @@
                             {{ $startDate }} - {{ $endDate }}
                         </td>
                         <td>{{\Carbon\Carbon::parse($record->payroll_date)->format('F d, Y')}}</td>
-                        <td>
+                       <!-- <td>
                             <div class="alert {{ $record->hasDeductions ? 'alert-danger' : 'alert-primary' }} mb-0 py-2 px-3 text-uppercase fw-bold text-center">
                                 {{ $record->hasDeductions ? 'yes' : 'no' }}
                             </div>
-                        </td>
+                        </td>-->
                         <td> <div class="alert {{ $record->status === 'approved' ? 'alert-success' : 'alert-danger' }} 
         mb-0 py-2 px-3 text-uppercase fw-bold text-center">
         {{ $record->status }}
@@ -66,9 +66,13 @@
                                 <a href="{{route('payroll.process', ['type' => $type, 'payroll_id' => $record->id])}}" title="View Payroll" class="btn btn-primary">
                                     <i class="fa fa-eye"></i>
                                 </a>
-                                <button class="btn btn-info" title="Regenerate Payroll" wire:click="regeneratePayroll('{{$record->id}}')">
-                                    <i class="fa-solid fa-arrows-rotate fa-spin"></i>
-                                </button>
+                                @if($record->status !== 'approved')
+                                    <button class="btn btn-info" title="Regenerate Payroll"
+                                        wire:click="regeneratePayroll('{{$record->id}}')">
+                                        <i class="fa-solid fa-arrows-rotate fa-spin"></i>
+                                    </button>
+                                @endif
+
                                 <button class="btn btn-danger" title="Delete Payroll" wire:click="removePayroll('true', '{{$record->id}}')">
                                     <i class="fa fa-trash"></i>
                                 </button>

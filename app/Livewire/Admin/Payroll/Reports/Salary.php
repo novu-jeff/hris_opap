@@ -102,8 +102,20 @@ class Salary extends Component
                 'message' => $message,
                 'action' => $action,
             ]);
+
+            
+
         } else {
             $this->deletePayroll($this->payroll_id);
+
+            // ✅ Dispatch success AFTER deletion
+        $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Success!',
+            'id' => $this->payroll_id,
+            'isRemoveRowDT' => true,
+            'message' => 'Payroll #' . strtoupper($this->payroll_id) . ' has been successfully removed.'
+        ]);
         }
     }
 

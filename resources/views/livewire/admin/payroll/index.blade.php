@@ -101,7 +101,7 @@
                                             </select>
                                             @break
                                         @case('checkbox')
-                                            <div class="form-check">
+                                          <!--  <div class="form-check">
                                                 <input 
                                                     type="checkbox" 
                                                     id="{{ $fieldKey }}" 
@@ -114,7 +114,7 @@
                                                 <label class="form-check-label" for="{{ $fieldKey }}">
                                                     {{ $field['label'] ?? ucfirst(str_replace('_', ' ', $fieldKey)) }}
                                                 </label>
-                                            </div>
+                                            </div>-->
                                         @break
                                     @endswitch
 
@@ -127,7 +127,7 @@
                             @endforeach
 
                             <div class="d-flex justify-content-end mt-5 pb-2">
-                                <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" type="submit">
+                                <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" type="submit" >
                                     <span wire:loading.remove wire:target="createPayroll">Next</span>
                                     <span wire:loading wire:target="createPayroll">
                                         Please Wait <i class="fa-solid fa-spinner fa-spin"></i>
