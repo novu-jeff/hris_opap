@@ -393,9 +393,13 @@
                 </div>
               
                 <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-secondary" onclick="printDTR()">
+                       <!-- <button type="button" class="btn btn-secondary" onclick="printDTR()">
                             🖨️ Print DTR
-                        </button>
+                        </button>-->
+                        <button class="btn btn-primary save-as-pdf ms-2">
+         🖨️ Print DTR
+    </button>
+                    </div>
                     </div>
             </div>
             @php
@@ -414,21 +418,7 @@
             </div>
         @endif
     </div>
-     <div id="print-section" class="print-wrapper print-area-hidden">
-         @if($logs)
-        @include('livewire.admin.reports.daily-time-record.employee.print-dtr-table')
-         @else
-            <div class="alert alert-danger" role="alert">
-                @if (!empty($errors))
-                    <ul class="m-0">
-                        @foreach ($errors as $error)
-                            <li class="text-uppercase">{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-        @endif
-    </div>  
+    
 </div>
 <script>
 function printDTR() {

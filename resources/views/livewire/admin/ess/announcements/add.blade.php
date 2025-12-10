@@ -9,7 +9,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12 mb-4">
-                            <label class="mb-2" for="banner">Banner Image <span class="text-danger">*</span></label>
+                            <label class="mb-2" for="banner">Banner Image <span class="text-danger"></span></label>
                             <input type="file" wire:model="banner" id="banner" class="form-control">
                             @if (isset($preview_banner))
                                 <iframe src="{{ $preview_banner}}" width="100%" height="500px" class="mt-3"></iframe>                                                    

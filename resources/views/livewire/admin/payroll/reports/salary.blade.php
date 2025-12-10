@@ -57,16 +57,19 @@
                                 {{ $record->hasDeductions ? 'yes' : 'no' }}
                             </div>
                         </td>
-                        <td>{{$record->status}}</td>
+                        <td> <div class="alert {{ $record->status === 'approved' ? 'alert-success' : 'alert-danger' }} 
+        mb-0 py-2 px-3 text-uppercase fw-bold text-center">
+        {{ $record->status }}
+                            </div></td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <a href="{{route('payroll.process', ['type' => $type, 'payroll_id' => $record->id])}}" class="btn btn-primary">
+                                <a href="{{route('payroll.process', ['type' => $type, 'payroll_id' => $record->id])}}" title="View Payroll" class="btn btn-primary">
                                     <i class="fa fa-eye"></i>
                                 </a>
                                 <button class="btn btn-info" title="Regenerate Payroll" wire:click="regeneratePayroll('{{$record->id}}')">
                                     <i class="fa-solid fa-arrows-rotate fa-spin"></i>
                                 </button>
-                                <button class="btn btn-danger" wire:click="removePayroll('true', '{{$record->id}}')">
+                                <button class="btn btn-danger" title="Delete Payroll" wire:click="removePayroll('true', '{{$record->id}}')">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>

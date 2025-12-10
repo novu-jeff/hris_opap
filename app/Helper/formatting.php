@@ -48,6 +48,46 @@ if (!function_exists('relative_time_duration')) {
     function relative_time_duration(string $date)
     {
 
+        if (!$date) {
+            return 'N/A';
+        }
+
+        $date = Carbon::parse($date);
+        $now  = Carbon::now();
+
+        // If hire date is in the future
+        if ($date->greaterThan($now)) {
+            return 'not started yet';
+        }
+
+        $diff = $date->diff($now);
+
+        $years  = $diff->y;
+        $months = $diff->m;
+        $days   = $diff->d;
+
+        $parts = [];
+
+        if ($years > 0) {
+            $parts[] = $years . ' year' . ($years > 1 ? 's' : '');
+        }
+
+        if ($months > 0) {
+            $parts[] = $months . ' month' . ($months > 1 ? 's' : '');
+        }
+
+        if ($days > 0) {
+            $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
+        }
+
+        return count($parts) ? implode(', ', $parts) : 'less than a day'; 
+    }
+}
+
+/*
+function relative_time_duration(string $date)
+    {
+
         $date = format_date($date, 'carbon_date');  
         // Parse the given date and get the current date
         $date = Carbon::parse($date);  
@@ -59,6 +99,7 @@ if (!function_exists('relative_time_duration')) {
         $dateAfterYearsAndMonths = $date->copy()->addYears($diffInYears)->addMonths($diffInMonths);
         $diffInDays = $now->diffInDays($dateAfterYearsAndMonths);
 
+       // dd( $diffInYears, $diffInMonths, $diffInDays, $dateAfterYearsAndMonths);
         $output = '';
 
         // Append years to the output if any
@@ -79,7 +120,8 @@ if (!function_exists('relative_time_duration')) {
         // Return the output or fallback to 'less than a day' if the time difference is negligible
         return $output ?: 'less than a day'; 
     }
-}
+
+*/
 
 if(!function_exists('see_more')) {
     function see_more($text, $lengthAllowed = null) {

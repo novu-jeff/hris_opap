@@ -42,10 +42,14 @@ class Chatbox extends Component
 
     public function loadRecords( ? string $employee_no = null)
     {
-        
+        //dd($employee_no);
+        $employee_no = $employee_no ?? $this->selected_id;
+
         $user = EmployeeInformation::with(['personal', 'positions'])
-            ->when($employee_no, fn($query) => $query->where('employee_no', $employee_no))
+            ->where('employee_no', $employee_no)
             ->first();
+
+         //  dd($user);
 
         if (!$user) {
             return redirect()->route('ess.request-status');
@@ -148,7 +152,7 @@ class Chatbox extends Component
                 ]);
             }
 
-            $this->loadRecords();
+            $this->loadRecords($id);
         }
     }
 

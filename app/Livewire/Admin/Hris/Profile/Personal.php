@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Personal extends Component
 {
+    use WithFileUploads;
     public $employee_id;
     public $employee_no;
     public array $countries;
@@ -25,6 +27,9 @@ class Personal extends Component
     public bool $hasMarriageCert = false;
     public $originalData;
     public $records;
+
+    public $birth_certificate;
+    public $marriage_certificate;
 
     protected $listeners = ['save'];
 
@@ -87,7 +92,7 @@ class Personal extends Component
 
     protected function formatRecords($data) {
 
-
+   
         if(!empty($data->birth_certificate)) {
             $this->hasBirthCert = true;
         } 
@@ -126,6 +131,9 @@ class Personal extends Component
             'records.sex' => 'nullable|in:male,female',
             'records.citizenship_type' => 'nullable|required_with:records.citizenship',
             'records.country' => 'required_if:records.citizenship,dual_citizenship',
+
+            'birth_certificate' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'marriage_certificate' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
 
             'records.mobile_number' => 'nullable|regex:/^09\d{9}$/',
             'records.email' => [
@@ -236,8 +244,13 @@ class Personal extends Component
 
         try {
 
+            $payload = $this->records;
+
+            $payload['birth_certificate'] = $this->birth_certificate;
+            $payload['marriage_certificate'] = $this->marriage_certificate;
+
             $process = new HRISProcessingService;
-            $process->save(false, $id, $id, 'personal', $this->records);
+            $process->save(false, $id, $id, 'personal', $payload);
 
             DB::commit();
 

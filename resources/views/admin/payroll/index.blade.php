@@ -23,7 +23,7 @@
             </li>
         </ul>
 
-        @if(isset($options[$employment_type]))
+       {{-- @if(isset($options[$employment_type]))
             <ul class="nav nav-pills mb-3" id="action-type-tab" role="tablist">
                 <li class="nav-item d-flex text-uppercase fw-bold" role="presentation">
                     @foreach($options[$employment_type]['sub'] as $subKey => $subName)
@@ -35,7 +35,7 @@
                     @endforeach
                 </li>
             </ul>
-        @endif
+        @endif--}}
     </div>
     <div class="mt-3">
         @livewire('admin.payroll.index', ['employment_type' => $employment_type, 'type' => $type])

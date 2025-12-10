@@ -110,11 +110,10 @@
     {{-- SECURITY OVERLAYS --}}
     <div class="payslip-overlay"></div>
 
-    {{-- Watermark 1 (center diagonal) --}}
-    <div class="payslip-watermark">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-
-    {{-- Watermark 2 (bottom-right) --}}
-    <div class="payslip-watermark-bottom">CONFIDENTIAL</div>
+    <div class="payslip-watermark-diagonal-1">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+    <div class="payslip-watermark-diagonal-2">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-3">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-center-large">CONFIDENTIAL</div>
 </div>
 
 
@@ -209,6 +208,65 @@
 .payslip-container {
     position: relative;
     z-index: 5;
+}
+
+/* Diagonal watermark #1 */
+.payslip-watermark-diagonal-1,
+.payslip-watermark-diagonal-2,
+.payslip-watermark-diagonal-3    {
+    position: absolute;
+    font-size: 60px;
+    font-weight: 900;
+    color: rgba(255, 0, 0, 0.08);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Diagonal #1: top-left to bottom-right */
+.payslip-watermark-diagonal-1 {
+    top: 20%;
+    left: -10%;
+    transform: rotate(-25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-2 {
+    bottom: 20%;
+    left: 0%;
+    transform: rotate(25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-3 {
+    bottom: 10%;
+    left: 0%;
+    transform: rotate(15deg);
+}
+
+/* Large center watermark */
+.payslip-watermark-center-large {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(255, 0, 0, 0.05);
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+}
+
+/* Keep previous bottom-right watermark */
+.payslip-watermark-bottom {
+    bottom: 15px;
+    right: 15px;
+    font-size: 25px;
+    font-weight: 700;
+    color: rgba(255, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 20;
 }
 
 /* Prevent printing */

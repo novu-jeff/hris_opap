@@ -122,10 +122,17 @@
                         </div>
                         <div class="col-12 col-md-4 mb-3">
                             <label class="mb-2" for="birth_certificate">Birth Certificate - (img/pdf)</label>
-                            <input type="file" name="birth_certificate" id="birth_certificate" class="form-control">
+                             <input type="file" wire:model="birth_certificate" class="form-control">
                             <div class="error-field">
                                 @error('records.birth_certificate') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
+                            @if ($birth_certificate)
+                                <small>Selected: {{ $birth_certificate->getClientOriginalName() }}</small>
+                            @endif
+
+                            @if ($hasBirthCert)
+                                <a href="{{ Storage::url($originalData->birth_certificate) }}" target="_blank">View existing</a>
+                            @endif
                         </div>
                         @if($isMarried)
                             <div class="col-12 col-md-4 mb-3">
