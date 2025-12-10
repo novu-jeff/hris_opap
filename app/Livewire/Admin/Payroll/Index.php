@@ -53,6 +53,9 @@ class Index extends Component
     public string $batchStatusMessage = 'Please Wait...';
     public $actionBy;
 
+    public $cutoff_period = null;
+    public $period_date = null;
+
     protected $listeners = ['createPayroll', 'dispatchPayrollJobs', 'cancelPayroll', 'removePayroll'];
 
     public function mount()
@@ -649,6 +652,11 @@ class Index extends Component
     {
         // Set status filter to 'approved'
         $this->status = 'approved';
+    }
+
+    public function getCanProceedProperty()
+    {
+        return !empty($this->cut_off_period) && !empty($this->payroll_date);
     }
 
     
