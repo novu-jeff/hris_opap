@@ -34,9 +34,15 @@ class EmployeeInformation extends Model
     ];
     
 
-    public function section() {
+   /* public function section() {
         return $this->hasOne(Sections::class, 'id', 'section_id');
-    }
+    }*/
+
+     // ✅ Correct relationship: belongsTo, because employee has section_id
+    public function section() {
+        return $this->belongsTo(Sections::class, 'section_id', 'id')
+                    ->with('branch', 'department');
+    }   
 
     public function branch() {
         return $this->hasOne(Branches::class, 'id', 'branch_id');
@@ -86,8 +92,12 @@ class EmployeeInformation extends Model
         return $this->hasMany(EmployeeSkillsHobbies::class, 'employee_no', 'employee_no');
     }
 
-    public function positions() {
+    /*public function positions() {
         return $this->hasOne(Positions::class, 'id', 'position_id');
+    }*/
+    
+    public function positions() {
+        return $this->belongsTo(Positions::class, 'position_id', 'id');
     }
 
     public function leave_credits() {

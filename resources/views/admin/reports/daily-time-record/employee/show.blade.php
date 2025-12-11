@@ -16,173 +16,149 @@
 
 
 <script>
-    $(document).on('click', '.save-as-pdf', function() {
+$(document).on('click', '.save-as-pdf', function() {
 
-        var elements = $('.dtr');  
-        var printWindow = window.open('', '_blank', 'width=800,height=600');
+    var original = $('.dtr').first();  
+    if (original.length === 0) {
+        alert("No DTR found.");
+        return;
+    }
 
-        printWindow.document.write('<html><head><title>{{$employee_no . ' | DTR'}}</title>');
-        
-        printWindow.document.write('<style>');
-        printWindow.document.write(`
+    // CLONE DTR
+    var copy = original.clone();
 
-        .underline {
-                text-decoration: underline;
+    // 🔥 FIX LOGO FOR BOTH ORIGINAL & COPY
+    [original, copy].forEach(function(section) {
+        section.find('img').each(function() {
+            var src = $(this).attr('src');
+            if (src && !src.startsWith('http')) {
+                $(this).attr('src', window.location.origin + src);
             }
+        });
+    });
 
-            .dtr {
-                max-width: 100%;
-                width: 100%;
+    var printWindow = window.open('', '_blank', 'width=900,height=700');
+
+    printWindow.document.write('<html><head><title>{{$employee_no . " | DTR"}}</title>');
+
+    printWindow.document.write(`
+        <style>
+            body {
                 margin: 0;
-                padding: 10mm 5mm;
-                box-sizing: border-box;
-                border: 1px solid rgb(178, 178, 178);
-                background-color: #fff;
-                border-radius: 12px;
-                position: relative;
-                font-size: 8px;
+                padding: 10px;
+                font-family: Arial, sans-serif;
             }
-
+            
+             .dtr-header img {
+                width: 80px;   /* CHANGE SIZE HERE */
+                height: auto;
+            }
+            
             .dtr-header {
                 position: relative;
                 text-align: center;
                 margin-bottom: 20px;
             }
 
-            .dtr-header img {
-                position: absolute;
-                top: -10px;
-                left: 30px;
-                height: 70px;
-            }
-
-            @media(max-width: 993px) {
-                .dtr-header img {
-                    left: 0;
-                }
-            }
-
-            .dtr-header h1 {
-                font-size: 10px;
-                margin: 5px 0;
-            }
-
             .dtr-info {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr); /* Create two equal columns */
-                gap: 10px; /* Space between grid items */
                 margin-bottom: 20px;
-                font-size: 8px;
-
-                div {
-                    margin: 0 !important;
-                }
-
+                font-size: 14px;
             }
 
-            .dtr-info div {
-                margin-bottom: 0; /* Remove margin between divs */
+            .underline {
+                min-width: 300px;
+                width: fit-content;
+                border-bottom: 1px solid black;
+                padding: 0 10px 0 20px;
+                display: inline-flex;
+                align-items: end;
+            }
+            
+
+            .dtr-container {
+                display: grid;
+                grid-template-columns: 50% 50%;
+                gap: 10px;
+                width: 100%;
             }
 
+            .dtr {
+                padding: 10mm 5mm;
+                border: 1px solid #999;
+                border-radius: 10px;
+                background: white;
+                font-size: 9px;
+                page-break-inside: avoid;
+            }
 
             .dtr-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 8px;
             }
 
             .dtr-table th, .dtr-table td {
-                border: 1px solid rgb(178, 178, 178);
+                border: 1px solid #555;
+                padding: 3px;
+                font-size: 8px;
                 text-align: center;
-                padding: 5px;
             }
 
             .dtr-summary {
-                margin-top: 20px;
-                font-size: 8px;
-            }
-
-            .dtr-summary td {
-                text-align: left;
-            }
-
-            .dtr-summary .signature {
-                margin-top: 20px;
                 text-align: center;
-                font-size: 8px;
-            }
-
-            .remarks {
                 margin-top: 20px;
-                font-size: 8px;
             }
-
-            .shaded-box {
-                position: absolute;
-                top: 0;
-                right: 0;
-                padding: 5px;
-            }
-
-            /* Print-specific styles */
-            @media print {
-                /* Create a 2-column grid layout for the two .dtr elements */
-                .dtr-container {
-                    display: grid;
-                    grid-template-columns: 48% 48%; /* Two columns, each 48% width */
-                    gap: 4%; /* Space between the two elements */
-                    margin: 0 auto;
-                    page-break-before: always;
-                }
-
-                .dtr {
-                    width: 100%;
-                    padding: 5mm 3mm; /* Adjust padding for print */
-                }
-
-                .dtr-header img {
-                    height: 50px;
-                }
-
-                .dtr-table th, .dtr-table td {
-                    font-size: 8px;
-                    padding: 2px;
-                }
-
-                .btn-correction {
-                    display: none;
-                }
-
-                @page {
-                    margin: 10mm;
-                }
-            }
-
+            .dtr-summary h5 {
+                text-transform: uppercase;
+                font-weight: bold;
+                margin: 30px 0 30px 0;
+            }  
             .dtr-summary-container {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
+                width: 90%;
+                margin: auto;
+                display: grid
+            ;
+                grid-template-columns: repeat(3, minmax(200px, 1fr));
+                text-align: left;
+            } 
+            
+            .dtr-summary-item {
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 0px !important;
+                text-transform: uppercase;
+                color: #000000c5;
             }
-        `);
-        printWindow.document.write('</style>');
 
-        printWindow.document.write('</head><body>');
-        
-        printWindow.document.write('<div class="dtr-container test-class">');
-        
-        printWindow.document.write(elements[0].outerHTML);
-
-        if (elements.length > 1) {
-            printWindow.document.write(elements[1].outerHTML);
+        .text-uppercase {
+            text-transform: uppercase !important;
         }
 
-        printWindow.document.write('</div>'); 
-        printWindow.document.write('</body></html>');
+            @page {
+                size: A4 landscape;
+                margin: 8mm;
+            }
+        </style>
+    `);
 
-        printWindow.document.close(); 
-        printWindow.print();  
-        printWindow.close(); 
-    });
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<div class="dtr-container">');
 
+    // LEFT copy
+    printWindow.document.write(original.prop('outerHTML'));
+
+    // RIGHT copy
+    printWindow.document.write(copy.prop('outerHTML'));
+
+    printWindow.document.write('</div></body></html>');
+
+    printWindow.document.close();
+
+    // Wait for images to load before printing
+    printWindow.onload = function () {
+        printWindow.print();
+        setTimeout(() => printWindow.close(), 500);
+    };
+});
 </script>
   
 @endsection

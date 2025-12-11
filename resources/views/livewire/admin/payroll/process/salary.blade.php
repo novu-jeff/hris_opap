@@ -1,12 +1,6 @@
 <div>
     <div class="action mb-4">
-        <div class="d-md-flex justify-content-end gap-3">
-            <a href="{{route('payroll.index', [
-                'type' => $type,
-                'employment_type' => $employment_type
-            ])}}" 
-            class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
-        </div>
+        
     </div>
     <hr class="mt-0">
     <div class="text-uppercase fw-bold">
