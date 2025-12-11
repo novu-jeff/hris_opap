@@ -11,7 +11,7 @@
                     <div class="row">
                         <div class="col-12 col-md-4 mb-3">
                             <label class="mb-2" for="profile">Profile Photo</label>
-                            <input type="file" wire:model="records.profile" id="profile" class="form-control" accept="image/*">
+                            <input type="file" wire:model="records.profile" id="profile" class="form-control">
                              <!-- Note for max upload size -->
                             <small class="text-muted d-block mt-1">Maximum file size: 1MB</small>
                             <div class="error-field">
@@ -143,7 +143,7 @@
                             <label class="mb-2" for="birth_certificate">Birth Certificate - (img/pdf)</label>
                             <input type="file" name="birth_certificate" id="birth_certificate" class="form-control">
                             <div class="error-field">
-                                @error('records.birth_certificate') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('birth_certificate') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         @if($isMarried)

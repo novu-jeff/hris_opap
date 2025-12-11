@@ -15,6 +15,8 @@ use Livewire\WithFileUploads;
 
 class Clock extends Component
 {
+
+
     use WithFileUploads;
 
     public $bsd_emp_identical;
@@ -30,7 +32,7 @@ class Clock extends Component
     public $accomplishment;
     public $logs = [];
     public $manipulate_timestamp = '07:00';
-    public $accomplishmentFile;
+    public $upload_accomplishment;
 
     protected $listeners = [
         'getLocation',
@@ -40,15 +42,16 @@ class Clock extends Component
     ];
 
     protected $rules = [
-        'accomplishmentFile' => 'required|mimes:pdf,doc,docx',
+        'upload_accomplishment' => 'required|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // 2MB max
     ];
 
     protected $validationAttributes = [
-        'accomplishmentFile' => 'accomplishment report',
     ];
 
     public function mount(): void
     {
+
+       
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $this->employee_no = Auth::user()->employee_no;
 
@@ -70,6 +73,8 @@ class Clock extends Component
 
     public function loadRecords()
     {
+
+      
         $this->employee_no = Auth::user()->employee_no;
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
     }
@@ -319,44 +324,53 @@ class Clock extends Component
         $this->isForcedOut = $isForcedOut;
     }
 
-    public function saveAccomplishment()
+    public function updatedUploadAccomplishment()
     {
-         $this->resetErrorBag();
-        $this->resetValidation();
-
-            $this->validate([
-                'accomplishmentFile' => 'required|mimes:pdf,doc,docx',
-            ]);
         
-        if (!$this->accomplishmentFile) {
-            $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Missing File',
-                'message' => 'Please upload an accomplishment report.',
-            ]);
-            return;
-        }
-
-        $file = $this->accomplishmentFile;
-        $ext = strtolower($file->getClientOriginalExtension());
-
-        if (!in_array($ext, ['doc', 'docx', 'pdf'])) {
-            $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Invalid File',
-                'message' => 'Only DOC, DOCX, and PDF are allowed.',
-            ]);
-            return;
-        }
-
-        $fileName = $this->employee_no . '_' . time() . '.' . $ext;
-        $file->storeAs('accomplishments', $fileName, 'public');
-        $this->accomplishment = $fileName;
-
-        $this->triggerClock();
+        $this->validateOnly('upload_accomplishment');
     }
+
+
+    public function saveAccomplishment()
+{
+    
+
+    $this->resetErrorBag();
+
+
+
+    // Safety check
+    if (!$this->upload_accomplishment) {
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Missing File',
+            'message' => 'Please upload an accomplishment report.',
+        ]);
+        return;
+    }
+
+    // Store the file
+    $file = $this->upload_accomplishment;
+    $fileName = $this->employee_no . '_' . time() . '.' . $file->getClientOriginalExtension();
+    $file->storeAs('accomplishments', $fileName, 'public');
+
+    // Save the filename to DB or property
+    $this->accomplishment = $fileName;
+
+    // Optional: reset the property after upload if you want to allow re-upload
+    $this->upload_accomplishment = null;
+
+    // Trigger clock or next step
+    $this->triggerClock();
+
+    $this->dispatch('alert', [
+        'showAlert' => true,
+        'status' => 'success',
+        'title' => 'Success',
+        'message' => 'Accomplishment report uploaded successfully.',
+    ]);
+}
 
     public function render()
     {

@@ -63,6 +63,8 @@ class Apply extends Component
                 'start_time' => $start_time,
                 'end_time' => $end_time,
                 'justification' => $records->justification,
+                'disapproval_note' => $records->disapproval_note,
+                'status' => $records->status,
                 'employees' => $records->relative->pluck('employee_no')->toArray(),
             ];
 

@@ -85,6 +85,9 @@
                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1" title="Delete File">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
+                                     <a href="{{route('employee.atro.edit', ['id' => $record->id])}}" class="btn btn-primary mx-1" title="View File">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
                                 @endif
                             </td>
                         </tr>

@@ -295,8 +295,40 @@ class Index extends Component
 
     public function createPayroll()
     {
-
+        
+       
         $type = $this->type;
+        // Validate cut-off period format -----------------------------
+        if (!$this->isOneMonthCutoff($this->cut_off_period)) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Invalid Cut-Off Period',
+                'message' => 'The cut-off period must be exactly 1 full month.'
+            ]);
+        }
+
+
+         // Validate that payroll date / cut-off period are provided
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end') && empty($this->payroll_date)) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => 'Missing Date',
+            'message'   => 'Payroll date is required.'
+        ]);
+    }
+
+    if ($type === 'salary' && empty($this->cut_off_period)) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => 'Missing Cut-Off Period',
+            'message'   => 'Cut-off period is required.'
+        ]);
+    }
+
+       
 
     // Get employment type ID
     $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
@@ -328,24 +360,7 @@ class Index extends Component
     // SECOND CLICK — VALIDATION
     // -------------------------------
 
-    // Validate that payroll date / cut-off period are provided
-    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end') && empty($this->payroll_date)) {
-        return $this->dispatch('alert', [
-            'showAlert' => true,
-            'status'    => 'error',
-            'title'     => 'Missing Date',
-            'message'   => 'Payroll date is required.'
-        ]);
-    }
-
-    if ($type === 'salary' && empty($this->cut_off_period)) {
-        return $this->dispatch('alert', [
-            'showAlert' => true,
-            'status'    => 'error',
-            'title'     => 'Missing Cut-Off Period',
-            'message'   => 'Cut-off period is required.'
-        ]);
-    }
+   
 
     // Ensure eligible employees exist
     if (empty($this->employeesChecked['eligible']['items'])) {
@@ -409,7 +424,23 @@ class Index extends Component
             throw new \Illuminate\Validation\ValidationException($validator);
         }
 
-      //  dd($data);
+      // ------------------------------------------------------
+        // DUPLICATE PAYROLL CHECK
+        // ------------------------------------------------------
+        $exists = SalaryPayroll::where('employment_type', $employmentTypeId)
+            ->where('cut_off_period', $this->cut_off_period)
+            ->where('payroll_date', $this->payroll_date)
+            ->exists();
+
+        if ($exists) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status'    => 'error',
+                'title'     => 'Duplicate Payroll',
+                'message'   => 'This payroll already exists for the same cut-off period and payroll date.'
+            ]);
+        }
+
 
         // Create payroll record
         $payroll = $service->createPayroll($data);
@@ -658,6 +689,41 @@ class Index extends Component
     {
         return !empty($this->cut_off_period) && !empty($this->payroll_date);
     }
+
+    private function isOneMonthCutoff($cutoff)
+    {
+        // Must match: "2025-12-01 to 2025-12-31"
+        if (!preg_match('/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/', $cutoff)) {
+            return false;
+        }
+
+        [$start, $end] = explode(' to ', $cutoff);
+
+        try {
+            $startDate = \Carbon\Carbon::parse($start);
+            $endDate   = \Carbon\Carbon::parse($end);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        // Must be the same month & same year
+        if ($startDate->format('Y-m') !== $endDate->format('Y-m')) {
+            return false;
+        }
+
+        // Start must be the **first day of the month**
+        if ($startDate->day !== 1) {
+            return false;
+        }
+
+        // End must be the **last day of the month**
+        if ($endDate->day !== $endDate->daysInMonth) {
+            return false;
+        }
+
+        return true;
+    }
+
 
     
     public function render()
