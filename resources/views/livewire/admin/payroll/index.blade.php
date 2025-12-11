@@ -101,7 +101,7 @@
                                             </select>
                                             @break
                                         @case('checkbox')
-                                          <!--  <div class="form-check">
+                                            <div class="form-check">
                                                 <input 
                                                     type="checkbox" 
                                                     id="{{ $fieldKey }}" 
@@ -114,7 +114,7 @@
                                                 <label class="form-check-label" for="{{ $fieldKey }}">
                                                     {{ $field['label'] ?? ucfirst(str_replace('_', ' ', $fieldKey)) }}
                                                 </label>
-                                            </div>-->
+                                            </div>
                                         @break
                                     @endswitch
 

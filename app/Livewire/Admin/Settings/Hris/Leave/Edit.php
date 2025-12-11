@@ -123,6 +123,7 @@ class Edit extends Component
 
     public function render()
     {
+       
         return view('livewire.admin.settings.hris.leave.edit');
     }
 }

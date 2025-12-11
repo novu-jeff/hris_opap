@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Employee;
 
+
+use App\Models\EmployeeAtro;
 use App\Http\Controllers\Controller;
 
 class ATROController extends Controller
@@ -33,12 +35,27 @@ class ATROController extends Controller
     }
 
     public function edit(int $id) {
+        $record = EmployeeAtro::findOrFail($id);
+
+       
+        if($record->status == 'pending'){
+            $action = 'Edit';
+        }
+
+        if($record->status == 'disapproved'){
+            $action = 'View';
+        }
+
+
         return view('employee.atro', [
             'id' => $id,
             'action' => 'edit',
-            'title' => 'ESS | Authority to render overtime',
-            'header' => 'Edit Authority to render overtime ',
+            'status' => $record->status,   // ⬅ added here
+            'title' => ''.$action .' | Authority to render overtime',
+            'header' => ''.$action .' Authority to render overtime',
             'sub' => ''
         ]);
     }
+
+    
 }

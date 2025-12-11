@@ -137,7 +137,7 @@ class SalaryService extends Controller {
         $jobs = [];
 
         
-//dd($chunks );
+
         foreach ($chunks as $chunk) {
            // dd('set');
             $jobs[] = new PayrollJob(
@@ -209,6 +209,8 @@ class SalaryService extends Controller {
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
                 $gross = round($basic_salary + $pera, 2);
 
+              //  dd($hasDeductions, $social_security->consoloan );
+
                 // Deductions (based on flag)
                 $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                 $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
@@ -271,6 +273,8 @@ class SalaryService extends Controller {
             return $data;
 
         } else {
+
+          
 
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;

@@ -22,6 +22,7 @@ class Index extends Component
     public $dateSelected;
     public $officeSelected;
     public $offices;
+    public $disapproval_note;
     public $activeTab = 'pending';
     protected $listeners = ['remove', 'disapproved', 'approved'];
 
@@ -59,7 +60,7 @@ class Index extends Component
     }
 
     public function download() {
-    
+  
         // Fetch leave record with employee details
         $records = EmployeeAtro::with('employee.personal', 'employee.section', 'employee.positions')
             ->whereHas('employee.section', function($query) {
@@ -78,14 +79,23 @@ class Index extends Component
             ]);
         }
 
+     
+
         $earliestStartTime = Carbon::parse(collect($records)->min('start_time'))->format('g:i A');
         $latestEndTime = Carbon::parse(collect($records)->max('end_time'))->format('g:i A');
     
-        $currentDate = Carbon::now()->format('m-d-y');
-
         // Template file path
         $template = public_path('templates/forms/HRMS-PD Form 05.docx');
-        $outputPath = public_path('outputs/HRMS-PD FORM 05 | ' . $currentDate . ' .docx');
+
+        $currentDate = Carbon::now()->format('m-d-y');
+        $outputPath = public_path('outputs/HRMS-PD FORM 05 | ' . $currentDate . '.docx');
+
+        // Ensure the outputs directory exists
+        $dir = public_path('outputs');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
     
         // Check if template file exists
         if (!file_exists($template)) {
@@ -107,11 +117,27 @@ class Index extends Component
             
             $templateProcessor = new TemplateProcessor($template);
 
-            $templateProcessor->setValue('requesting_unit', $records[0]->employee->section->name);
+            // Use the first record for general info
+            $firstRecord = $records[0];
+
+            $templateProcessor->setValue('requesting_unit', $firstRecord->employee->section->name);
+
+            // Date Requested from employee_atro.date
+            $templateProcessor->setValue('date_requested', Carbon::parse($firstRecord->date)->format('F d, Y'));
+
+            // Justification from employee_atro.justification
+            $templateProcessor->setValue('justification', $firstRecord->justification ?? 'N/A');
+
+            // Names of all employees in this batch
+            $names = [];
+            foreach($records as $record) {
+                $names[] = $record->employee->personal->firstname . ' ' . $record->employee->personal->lastname;
+            }
+            $templateProcessor->setValue('names', implode("\n", $names));
             $templateProcessor->setValue('date', Carbon::parse($this->dateSelected)->format('F d, Y'));
             $templateProcessor->setValue('time', $earliestStartTime . ' - ' . $latestEndTime);
 
-            $templateProcessor->setValue('names', implode("\n", $names));
+           
 
             $templateProcessor->saveAs($outputPath);
 
@@ -157,8 +183,11 @@ class Index extends Component
                 ->where('status', 'pending')
                 ->first();
 
+            
+
             $record->status = 'disapproved';
             $record->action_by_id = Auth::user()->id;
+            $record->disapproval_note = $this->disapproval_note; // save the note
             $record->save();
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
