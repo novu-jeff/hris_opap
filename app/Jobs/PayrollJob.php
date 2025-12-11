@@ -31,10 +31,10 @@ class PayrollJob implements ShouldQueue
 
     public function handle()
 {
-   // dd('sae');
+  //dd('PayrollJob HANDLE RUNNING', $this->payrollId);
     $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
 
-    \Log::info('Processing payroll items', [
+    \Log::info('Processing payroll itemsss', [
         'payroll_id' => $this->payrollId,
         'employees_count' => count($this->employees)
     ]);
@@ -44,7 +44,7 @@ class PayrollJob implements ShouldQueue
     $process = $service->getProcess($this->type);
     $instance = app($process['service']);
 
-   // dd($payroll);
+  //  dd($payroll);
 
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
 

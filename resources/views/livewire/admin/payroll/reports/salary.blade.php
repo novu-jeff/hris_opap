@@ -33,7 +33,7 @@
                     <th>ID</th>
                     <th>Cut Off Period</th>
                     <th>Payroll Date</th>
-                  <!--  <th>Has Deductions</th>-->
+                   <th>Has Deductions</th>
                     <th>Status</th>
                     <th style="max-width: 200px;">Action</th>
                 </tr>
@@ -52,11 +52,11 @@
                             {{ $startDate }} - {{ $endDate }}
                         </td>
                         <td>{{\Carbon\Carbon::parse($record->payroll_date)->format('F d, Y')}}</td>
-                       <!-- <td>
+                        <td>
                             <div class="alert {{ $record->hasDeductions ? 'alert-danger' : 'alert-primary' }} mb-0 py-2 px-3 text-uppercase fw-bold text-center">
                                 {{ $record->hasDeductions ? 'yes' : 'no' }}
                             </div>
-                        </td>-->
+                        </td>
                         <td> <div class="alert {{ $record->status === 'approved' ? 'alert-success' : 'alert-danger' }} 
         mb-0 py-2 px-3 text-uppercase fw-bold text-center">
         {{ $record->status }}

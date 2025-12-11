@@ -148,8 +148,9 @@
                  @endif
             </div>    
         </div>
-         @endcanany
+         @endcanany 
 
+        {{-- @can('read settings')   --}}
         <!-- Settings -->
         <div class="menu-group">
             <p class="menu-group-title"><i class="fa-solid fa-cogs"></i> Settings</p>
@@ -272,7 +273,7 @@
 
             </div>
         </div>
-
+      {{-- @endcan --}}  
     </div>
 
 </div>

@@ -248,18 +248,18 @@
                         {{-- Accomplishment file input --}}
                         <div class="mb-3">
                             <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
-                            <input type="file" wire:model="accomplishmentFile" id="accomplishmentFile" class="form-control">
-                            @error('accomplishmentFile') 
+                            <input type="file" wire:model="upload_accomplishment" id="accomplishmentFile" class="form-control"  >
+                            @error('upload_accomplishment') 
                                 <span class="text-danger">{{ $message }}</span> 
                             @enderror
 
                             {{-- Temporary preview link --}}
-                            @if($accomplishmentFile)
+                            @if($upload_accomplishment)
                                 <p class="mt-2">
                                     Selected File: 
-                                    <a href="{{ $accomplishmentFile->temporaryUrl() }}" target="_blank">
-                                        {{ $accomplishmentFile->getClientOriginalName() }}
-                                    </a>
+                                    
+                                      <strong>{{ $upload_accomplishment->getClientOriginalName() }}</strong>
+                                  
                                 </p>
                             @endif
                         </div>

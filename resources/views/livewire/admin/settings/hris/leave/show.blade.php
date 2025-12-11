@@ -43,7 +43,8 @@
                         @forelse($records as $record)
                             <tr>
                                 <td style="vertical-align: top; padding-top: 22px;">{{ $record->employee_no }}</td>
-                                <td style="vertical-align: top; padding-top: 22px;">{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
+                                <td style="vertical-align: top; padding-top: 22px;">{{ optional($record->personal)->firstname . ' ' . optional($record->personal)->lastname }}
+</td>
                                 @if($this->id == 1 || $this->id == 2)
                                     <td style="vertical-align: top; padding-top: 12px;">
                                         <input
