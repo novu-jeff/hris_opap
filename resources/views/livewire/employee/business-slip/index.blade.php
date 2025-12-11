@@ -52,7 +52,7 @@
                             </td>  
                             <td>
                                 @if ($record->status == 'cancelled')
-                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                     <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1" title="Delete Officcial Business">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @endif

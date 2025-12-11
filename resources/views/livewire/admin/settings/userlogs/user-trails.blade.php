@@ -22,8 +22,8 @@
                             <td>{{ $trail['size'] }}</td>
                             <td>{{ $trail['updated_at'] }}</td>
                             <td>
-                                <button wire:click="viewLog('{{ $trail['filename'] }}')" class="btn btn-primary btn-sm">
-                                    View
+                                <button wire:click="viewLog('{{ $trail['filename'] }}')" class="btn btn-primary btn-sm" title="Download user logs">
+                                    Download
                                 </button>
                                
                             </td>

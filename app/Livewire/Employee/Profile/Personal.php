@@ -142,7 +142,6 @@ class Personal extends Component
             'records.sex' => 'nullable|in:male,female',
             'records.citizenship_type' => 'nullable|required_with:records.citizenship',
             'records.country' => 'required_if:records.citizenship,dual_citizenship',
-            'records.profile' => 'nullable|image|max:5120', // max 1MB
             'records.mobile_number' => 'nullable|regex:/^09\d{9}$/',
             'records.email' => [
                 'required',
