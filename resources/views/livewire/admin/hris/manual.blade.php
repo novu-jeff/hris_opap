@@ -28,7 +28,7 @@
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="service_duration">Service Duration</label>
+                        <label class="mb-2" for="service_duration">Service Duration   </label>
                         <input type="text" wire:model="records.employee_information.service_duration" id="records.employee_information.service_duration" class="form-control restricted" readonly>
                         <div class="error-field">
                             @error('records.employee_information.service_duration') <span class="text-danger">{{ $message }}</span> @enderror

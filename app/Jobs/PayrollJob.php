@@ -20,38 +20,41 @@ class PayrollJob implements ShouldQueue
     protected $employees;
     protected $payroll;
     protected $type;
+    protected $payrollId;
 
-    public function __construct($employees, $payroll, $type)
-    {
-        $this->employees = $employees;
-        $this->payroll = $payroll;
-        $this->type = $type;
-    }
+   public function __construct(array $employees, int $payrollId, string $type)
+{
+    $this->employees = $employees;
+    $this->payrollId = $payrollId;
+    $this->type = $type;
+}
 
     public function handle()
-    {
-        \Log::info('Processing payroll items', [
-        'payroll_id' => $this->payroll->id,
+{
+   // dd('sae');
+    $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
+
+    \Log::info('Processing payroll items', [
+        'payroll_id' => $this->payrollId,
         'employees_count' => count($this->employees)
-        ]);
+    ]);
 
-        $service = app(PayrollService::class);
+    $service = app(PayrollService::class);
 
-        $process = $service->getProcess($this->type);
-        $serviceInstance = app($process['service']);
+    $process = $service->getProcess($this->type);
+    $instance = app($process['service']);
 
-        $data = $serviceInstance->computePayroll($this->payroll, $this->employees, $this->type);
+   // dd($payroll);
 
-        foreach ($data as $item) {
-            $process['models']['child']::updateOrCreate(
-                [
-                    'payroll_id'  => $item['payroll_id'],
-                    'employee_no' => $item['employee_no'],
-                ],
-                $item
-            );
-        }
+    $data = $instance->computePayroll($payroll, $this->employees, $this->type);
+
+    foreach ($data as $item) {
+        $process['models']['child']::updateOrCreate([
+            'payroll_id'  => $item['payroll_id'],
+            'employee_no' => $item['employee_no'],
+        ], $item);
     }
+}
 
     public function failed(Throwable $exception) {
         \Log::info('Error Processing Info: ' . $exception->getMessage());

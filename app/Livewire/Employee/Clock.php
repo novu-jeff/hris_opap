@@ -30,12 +30,21 @@ class Clock extends Component
     public $accomplishment;
     public $logs = [];
     public $manipulate_timestamp = '07:00';
+    public $accomplishmentFile;
 
     protected $listeners = [
         'getLocation',
         'imageCaptured',
         'triggerClockForced',
         'saveAccomplishment'
+    ];
+
+    protected $rules = [
+        'accomplishmentFile' => 'required|mimes:pdf,doc,docx',
+    ];
+
+    protected $validationAttributes = [
+        'accomplishmentFile' => 'accomplishment report',
     ];
 
     public function mount(): void
@@ -312,7 +321,14 @@ class Clock extends Component
 
     public function saveAccomplishment()
     {
-        if (!$this->accomplishment) {
+         $this->resetErrorBag();
+        $this->resetValidation();
+
+            $this->validate([
+                'accomplishmentFile' => 'required|mimes:pdf,doc,docx',
+            ]);
+        
+        if (!$this->accomplishmentFile) {
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -322,7 +338,7 @@ class Clock extends Component
             return;
         }
 
-        $file = $this->accomplishment;
+        $file = $this->accomplishmentFile;
         $ext = strtolower($file->getClientOriginalExtension());
 
         if (!in_array($ext, ['doc', 'docx', 'pdf'])) {

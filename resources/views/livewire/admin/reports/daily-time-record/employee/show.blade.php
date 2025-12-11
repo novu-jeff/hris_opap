@@ -400,9 +400,12 @@
                     </div>
                    
                     <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-secondary" onclick="printDTR()">
+                        <!--<button type="button" class="btn btn-secondary" onclick="printDTR()">
                             🖨️ Print DTR
-                        </button>
+                        </button>-->
+                        <button class="btn btn-primary save-as-pdf ms-2">
+       🖨️ Print DTR
+    </button>
                     </div>
                 </div>
             @endif

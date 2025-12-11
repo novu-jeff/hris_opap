@@ -227,48 +227,66 @@
         </div>
     </div>
 
+
+
     <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
-                <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
 
-                    <div class="modal-header border-0 pt-2 pb-0">
-                        <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
+                <div class="modal-header border-0 pt-2 pb-0">
+                    <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
+                </div>
+
+                <div class="modal-body">
+                    {{-- Captured image preview --}}
+                    <div class="mb-3" wire:ignore>
+                        <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
                     </div>
 
-                    <div class="modal-body">
-                        <div class="mb-3" wire:ignore>
-                            <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
+                    @if($entry === 3 || $isForcedOut)
+                        {{-- Accomplishment file input --}}
+                        <div class="mb-3">
+                            <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
+                            <input type="file" wire:model="accomplishmentFile" id="accomplishmentFile" class="form-control">
+                            @error('accomplishmentFile') 
+                                <span class="text-danger">{{ $message }}</span> 
+                            @enderror
+
+                            {{-- Temporary preview link --}}
+                            @if($accomplishmentFile)
+                                <p class="mt-2">
+                                    Selected File: 
+                                    <a href="{{ $accomplishmentFile->temporaryUrl() }}" target="_blank">
+                                        {{ $accomplishmentFile->getClientOriginalName() }}
+                                    </a>
+                                </p>
+                            @endif
                         </div>
+                    @endif
+                </div>
 
-                        @if($entry === 3 || $isForcedOut)
-                            <div class="mb-3">
-                                <label for="accomplishment" class="text-start">Accomplishment Report</label>
-                                <input type="file" wire:model="accomplishment" name="accomplishment" id="accomplishment" class="form-control">
-                                @error('accomplishment') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
-                    </div>
+                <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
+                    <button type="button" class="retakeButton btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
+                        Retake
+                    </button>
 
-                    <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
-                        <button type="button" class="retakeButton btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
-                            Retake
-                        </button>
-                        <button type="submit"
-                            class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
-                            wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
-                            wire:loading.attr="disabled">
-                            <span>Proceed</span>
-                            <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
-                                <i class="fa-solid fa-spinner fa-spin"></i>
-                            </span>
-                        </button>
-                    </div>
+                    <button type="submit"
+                        class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
+                        wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
+                        wire:loading.attr="disabled">
+                        <span>Proceed</span>
+                        <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
 
-                </form>
-            </div>
+            </form>
         </div>
     </div>
+</div>
+
 </div>
 
 <script type="module">

@@ -210,7 +210,7 @@
             </div>
             <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
                 <label for="search" class="form-label mb-0">Search:</label>
-                <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
+                <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search by Employee No. or Name">
             </div>
         </div>
         <div class="table-responsive mt-3">

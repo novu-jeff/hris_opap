@@ -53,6 +53,9 @@ class Index extends Component
     public string $batchStatusMessage = 'Please Wait...';
     public $actionBy;
 
+    public $cutoff_period = null;
+    public $period_date = null;
+
     protected $listeners = ['createPayroll', 'dispatchPayrollJobs', 'cancelPayroll', 'removePayroll'];
 
     public function mount()
@@ -292,62 +295,73 @@ class Index extends Component
 
     public function createPayroll()
     {
+
         $type = $this->type;
 
-        // Get employment type ID based on selected type
-        $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
-            ->value('id');
+    // Get employment type ID
+    $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
+        ->value('id');
 
-        $payrollService = app(PayrollService::class);
+    $payrollService = app(PayrollService::class);
 
-        // -------------------------------
-        //  FIRST CLICK — SHOW EMPLOYEES
-        // -------------------------------
-        if ($this->isToCreate === false) {
-
-            if (empty($employmentTypeId)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status'    => 'error',
-                    'title'     => 'Oops',
-                    'message'   => 'Employment type is required to fetch employees.'
-                ]);
-            }
-
-            // 🔒 LOCK EMPLOYMENT TYPE ID FOR NEXT STEP
-            $this->lockedEmploymentTypeId = $employmentTypeId;
-
-            // Retrieve employees
-            $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
-
-           // dd('here');
-         //   dd($this->employeesChecked);
-
-            // Move UI to "Eligible / Ineligible" screen
-            $this->isToCreate = true;
-
-            return;
-        }
-
-        // -------------------------------
-        //  SECOND CLICK — CREATE PAYROLL
-        // -------------------------------
-
-        // Ensure eligible employees exist
-        if (empty($this->employeesChecked['eligible']['items'])) {
+    // -------------------------------
+    // FIRST CLICK — SHOW EMPLOYEES
+    // -------------------------------
+    if ($this->isToCreate === false) {
+        if (empty($employmentTypeId)) {
             return $this->dispatch('alert', [
                 'showAlert' => true,
                 'status'    => 'error',
                 'title'     => 'Oops',
-                'message'   => 'No employees found for this payroll.'
+                'message'   => 'Employment type is required to fetch employees.'
             ]);
         }
 
-        // Reuse locked ID (prevents Livewire re-render issues)
-        $employmentTypeId = $this->lockedEmploymentTypeId;
+        $this->lockedEmploymentTypeId = $employmentTypeId;
+        $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
+        $this->isToCreate = true;
 
-        // Validate form fields
-        $this->validate();
+        return;
+    }
+
+    // -------------------------------
+    // SECOND CLICK — VALIDATION
+    // -------------------------------
+
+    // Validate that payroll date / cut-off period are provided
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end') && empty($this->payroll_date)) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => 'Missing Date',
+            'message'   => 'Payroll date is required.'
+        ]);
+    }
+
+    if ($type === 'salary' && empty($this->cut_off_period)) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => 'Missing Cut-Off Period',
+            'message'   => 'Cut-off period is required.'
+        ]);
+    }
+
+    // Ensure eligible employees exist
+    if (empty($this->employeesChecked['eligible']['items'])) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => 'Oops',
+            'message'   => 'No employees found for this payroll.'
+        ]);
+    }
+
+    // Lock employment type ID
+    $employmentTypeId = $this->lockedEmploymentTypeId;
+
+    // Validate other rules from dynamicFields
+    $this->validate();
 
         // Map data per payroll type
         $map = [
@@ -376,9 +390,11 @@ class Index extends Component
                 'employment_type' => $employmentTypeId,
             ],
         ];
-        //dd($map[$type]);        
+      //  dd($map[$type]);        
 
         $process = $payrollService->getProcess($type);
+
+       // dd( $process);
         $data    = $map[$type];
 
        // dd($process['service']);
@@ -393,7 +409,7 @@ class Index extends Component
             throw new \Illuminate\Validation\ValidationException($validator);
         }
 
-        //dd($data);
+      //  dd($data);
 
         // Create payroll record
         $payroll = $service->createPayroll($data);
@@ -636,6 +652,11 @@ class Index extends Component
     {
         // Set status filter to 'approved'
         $this->status = 'approved';
+    }
+
+    public function getCanProceedProperty()
+    {
+        return !empty($this->cut_off_period) && !empty($this->payroll_date);
     }
 
     

@@ -1,4 +1,4 @@
-<form wire:submit.prevent='register'>
+<form wire:submit.prevent='register' enctype="multipart/form-data">
     <div class="card shadow p-3">
         <div class="card-header bg-transparent py-2 border-0">
             <ul class="nav nav-pills" id="pills-tab" role="tablist">
@@ -127,19 +127,12 @@
                 <div class="tab-pane fade {{$activeTab == 'account' ? 'show active' : ''}}" id="pills-account" role="tabpanel" aria-labelledby="pills-account" tabindex="0">
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label for="droparea" class="mb-2">Attach Resume <span class="text-danger">*</span></label>
-                            <div class="droparea" id="chooseFile">
-                                <div>
-                                    <div class="text-center">
-                                        <div>
-                                            <input type="file" wire:model="fields.account.resumes" id="resume" accept=".pdf,.doc,.docx">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="droparea-preview"></div>
+                            <label for="resume" class="mb-2">Attach Resume <span class="text-danger">*</span></label>
+                            <input type="file" wire:model="resumeFile" id="resume" accept=".pdf,.doc,.docx" class="form-control">
                             <div class="error-field">
-                                @error('fields.account.resumes') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('resumeFile') 
+                                    <span class="text-danger">{{ $message }}</span> 
+                                @enderror
                             </div>
                         </div>
                         <div class="col-12 mb-3">
