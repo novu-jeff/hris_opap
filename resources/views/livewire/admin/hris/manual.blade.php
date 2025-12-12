@@ -15,7 +15,7 @@
                     </div>
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="biometrics_id">Biometrics ID</label>
-                        <input type="number" wire:model="records.employee_information.biometrics_id" id="records.employee_information.biometrics_id" class="form-control">
+                        <input type="number" min="0"  wire:model="records.employee_information.biometrics_id" id="records.employee_information.biometrics_id" class="form-control">
                         <div class="error-field">
                             @error('records.employee_information.biometrics_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>

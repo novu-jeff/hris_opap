@@ -90,68 +90,81 @@ class ChangeEmployeeNo extends Component
         
         try {
 
+            \Log::info("STEP 1: Starting migration");
             $newEmployeeNo = strtoupper($newEmployeeNo);
 
             $employeeModel = EmployeeInformation::where('employee_no', $oldEmployeeNo)->firstOrFail();
+
+             \Log::info("STEP 2: EmployeeInformation loaded");
             $employeeModel->employee_no = strtoupper($newEmployeeNo);
             $employeeModel->isTransferingEmp = true; 
             $employeeModel->save();
 
+            \Log::info("STEP 3: EmployeeInformation updated");
+
             $relations = [
-                \App\Models\EmployeeAccount::class,
-                \App\Models\EmployeePersonal::class,
-                \App\Models\EmployeeEducation::class,
-                \App\Models\EmployeeParents::class,
-                \App\Models\EmployeeChildren::class,
-                \App\Models\EmployeeEmploymentHistory::class,
-                \App\Models\EmployeeCivilService::class,
-                \App\Models\EmployeeTrainings::class,
-                \App\Models\EmployeeOtherWorks::class,
-                \App\Models\EmployeeSkillsHobbies::class,
-                \App\Models\LeaveCredits::class,
-                \App\Models\EmployeeLeave::class,
-                \App\Models\EmployeeLeaveDates::class,
-                \App\Models\EmployeeBusinessSlip::class,
-                \App\Models\EmployeeAtro::class,
-                \App\Models\EmployeeAtroRelative::class,
-                \App\Models\EmployeeTimelogs::class,
-                \App\Models\EmployeeDeductions::class,
-                \App\Models\EmployeeEarnings::class,
-                \App\Models\EmployeeLeaveCard::class,
-                \App\Models\EmployeeTimeAdjustments::class,
-                \App\Models\EmployeeUpdateChildren::class,
-                \App\Models\EmployeeUpdateCivilService::class,
-                \App\Models\EmployeeUpdateEducation::class,
-                \App\Models\EmployeeUpdateEmploymentHistory::class,
-                \App\Models\EmployeeUpdateOtherWorks::class,
-                \App\Models\EmployeeUpdateParents::class,
-                \App\Models\EmployeeUpdatePersonal::class,
-                \App\Models\EmployeeUpdateSkillsHobbies::class,
-                \App\Models\EmployeeUpdateTrainings::class,
+                \App\Models\EmployeeInformation::class => 'employee_no',
+                \App\Models\EmployeeAccount::class => 'employee_no',
+                \App\Models\EmployeePersonal::class => 'employee_no',
+                \App\Models\EmployeeEducation::class => 'employee_no',
+                \App\Models\EmployeeParents::class => 'employee_no',
+                \App\Models\EmployeeChildren::class => 'employee_no',
+                \App\Models\EmployeeEmploymentHistory::class => 'employee_no',
+                \App\Models\EmployeeCivilService::class => 'employee_no',
+                \App\Models\EmployeeTrainings::class => 'employee_no',
+                \App\Models\EmployeeOtherWorks::class => 'employee_no',
+                \App\Models\EmployeeSkillsHobbies::class => 'employee_no',
+                \App\Models\LeaveCredits::class => 'employee_no',
+                \App\Models\EmployeeLeave::class => 'employee_no',
+                \App\Models\EmployeeLeaveDates::class => 'employee_no',
+                \App\Models\EmployeeBusinessSlip::class => 'employee_no',
+                \App\Models\EmployeeAtro::class => 'employee_no',
+                \App\Models\EmployeeAtroRelative::class => 'employee_no',
+                \App\Models\EmployeeTimelogs::class => 'employee_id', // timelogs uses employee_id
+                \App\Models\EmployeeDeductions::class => 'employee_no',
+                \App\Models\EmployeeEarnings::class => 'employee_no',
+                \App\Models\EmployeeLeaveCard::class => 'employee_no',
+                \App\Models\EmployeeTimeAdjustments::class => 'employee_no',
+                \App\Models\EmployeeUpdateChildren::class => 'employee_no',
+                \App\Models\EmployeeUpdateCivilService::class => 'employee_no',
+                \App\Models\EmployeeUpdateEducation::class => 'employee_no',
+                \App\Models\EmployeeUpdateEmploymentHistory::class => 'employee_no',
+                \App\Models\EmployeeUpdateOtherWorks::class => 'employee_no',
+                \App\Models\EmployeeUpdateParents::class => 'employee_no',
+                \App\Models\EmployeeUpdatePersonal::class => 'employee_no',
+                \App\Models\EmployeeUpdateSkillsHobbies::class => 'employee_no',
+                \App\Models\EmployeeUpdateTrainings::class => 'employee_no',
             ];
 
+              \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
+
             $jobs = [];
-            
-            foreach ($relations as $model) {
-                $jobs[] = new ChangeEmployeeNoJob($model, $oldEmployeeNo, $newEmployeeNo);
+            foreach ($relations as $model => $column) {
+                $jobs[] = new ChangeEmployeeNoJob($model, $oldEmployeeNo, $newEmployeeNo, $column);
             }
 
+             \Log::info("STEP 5: Jobs created", ['count' => count($jobs)]);
+
             if (!empty($jobs)) {
+
+              
                 $batch = Bus::batch($jobs)
-                    ->withOption('actionBy', [
+                            ->withOption('actionBy', [
                         'id' => $this->actionBy->id,
                         'name' => $this->actionBy->name
                     ])
                     ->name('Migration: ' . $oldEmployeeNo . ' to ' . $newEmployeeNo)
                     ->catch(function (Batch $batch, \Throwable $e) {
+                        \Log::error("STEP 6: Batch catch hit: ".$e->getMessage());
                         $this->actionBy?->notify(new Notifications(
                             'error',
-                            'An error occurred during migration of employee.',
+                            'An errorsss occurred during migration of employee.',
                             route('system.jobs', ['id' => $batch->id]),
                             'admin'
                         ));
                     })
                     ->then(function (Batch $batch) { 
+                         \Log::info("STEP 7: Batch completed");
                         $this->actionBy?->notify(new Notifications(
                             'success',
                             'Migration of employee has been finished',
@@ -160,10 +173,12 @@ class ChangeEmployeeNo extends Component
                         ));
                     })
                     ->finally(function() use ($employeeModel) {
+                         \Log::info("STEP 8: Finally executing");
                         $employeeModel->isTransferingEmp = false;
                         $employeeModel->save();
                     })
                     ->dispatch();
+                    \Log::info("STEP 9: Batch dispatched");
             }
 
             $this->reset(['new_employee_no']);
@@ -182,7 +197,7 @@ class ChangeEmployeeNo extends Component
             return;
 
         } catch (\Exception $e) {
-
+               \Log::error('STEP X: ERROR → '.$e->getMessage());
             $this->reset(['new_employee_no']);
             $this->dispatch('hideModal', [
                 'modal' => 'change_employee_no'
@@ -194,7 +209,7 @@ class ChangeEmployeeNo extends Component
                 'status' => 'error',
                 'title' => 'Oops',
                 'showAlert' => true,
-                'message' => 'An error occured: ' . $e->getMessage(),
+                'message' => 'An error occureds: ' . $e->getMessage(),
             ]);
 
             return;

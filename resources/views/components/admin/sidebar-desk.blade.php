@@ -150,7 +150,13 @@
         </div>
          @endcanany 
 
-        {{-- @can('read settings')   --}}
+         <!-- HRIS -->
+        @canany([
+            'read company-information', 'read scheduler', 'read tranches', 'read holidays',
+            'read branches', 'read departments', 'read sections', 'read assessments', 'read requirements',
+            'read users', 'read roles', 'read bank-information', 'read employment-type', 'read positions',
+            'read violations', 'read leave-types', 'read gsis-billing', 'read other-earnings', 'read other-deductions'
+        ])
         <!-- Settings -->
         <div class="menu-group">
             <p class="menu-group-title"><i class="fa-solid fa-cogs"></i> Settings</p>
@@ -273,7 +279,7 @@
 
             </div>
         </div>
-      {{-- @endcan --}}  
+     @endcanany 
     </div>
 
 </div>
