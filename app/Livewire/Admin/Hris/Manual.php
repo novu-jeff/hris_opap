@@ -153,7 +153,9 @@ class Manual extends Component
             ],
             'records.employee_information.biometrics_id' => [
                 'required',
-                Rule::unique('employee_information', 'bsd_no')
+                'integer',
+                'min:0',
+                    Rule::unique('employee_information', 'bsd_no')
             ],
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
@@ -174,6 +176,8 @@ class Manual extends Component
             'records.employee_information.employee_no.unique' => 'The employee no is already taken.',
             'records.employee_information.biometrics_id.required' => 'The biometrics ID is required.',
             'records.employee_information.biometrics_id.unique' => 'The biometrics ID is already taken.',
+            'records.employee_information.biometrics_id.integer' => 'The biometrics ID must be a number.',
+            'records.employee_information.biometrics_id.min' => 'The biometrics ID cannot be negative.',
             'records.employee_information.type.in' => 'The selected employment type does not exists.',
             'records.employee_information.status.required' => 'The account status is required.',
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
@@ -270,6 +274,11 @@ class Manual extends Component
             'salary' => $data['salary'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);
+    }
+
+    public function updatedRecordsEmployeeInformationBiometricsId()
+    {
+        $this->validateOnly('records.employee_information.biometrics_id', $this->rules());
     }
 
     public function render()

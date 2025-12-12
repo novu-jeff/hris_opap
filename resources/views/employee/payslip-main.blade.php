@@ -113,6 +113,8 @@
     <div class="payslip-watermark-diagonal-1">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
     <div class="payslip-watermark-diagonal-2">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
 <div class="payslip-watermark-diagonal-3">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-4">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-5">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
 <div class="payslip-watermark-center-large">CONFIDENTIAL</div>
 </div>
 
@@ -213,10 +215,12 @@
 /* Diagonal watermark #1 */
 .payslip-watermark-diagonal-1,
 .payslip-watermark-diagonal-2,
-.payslip-watermark-diagonal-3    {
+.payslip-watermark-diagonal-3,
+.payslip-watermark-diagonal-4,
+.payslip-watermark-diagonal-5     {
     position: absolute;
-    font-size: 60px;
-    font-weight: 900;
+    font-size: 70px;
+    font-weight: 100;
     color: rgba(255, 0, 0, 0.08);
     white-space: nowrap;
     pointer-events: none;
@@ -225,23 +229,37 @@
 
 /* Diagonal #1: top-left to bottom-right */
 .payslip-watermark-diagonal-1 {
-    top: 20%;
-    left: -10%;
+    top: 25%;
+    left: -40%;
     transform: rotate(-25deg);
 }
 
 /* Diagonal #2: bottom-left to top-right */
 .payslip-watermark-diagonal-2 {
     bottom: 20%;
-    left: 0%;
+    left: -30%;
     transform: rotate(25deg);
 }
 
 /* Diagonal #2: bottom-left to top-right */
 .payslip-watermark-diagonal-3 {
     bottom: 10%;
-    left: 0%;
+    left: -40%;
     transform: rotate(15deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-4 {
+    top: 10%;
+    left: -40%;
+    transform: rotate(15deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-5 {
+    top: 27%;
+    left: -60%;
+    transform: rotate(25deg);
 }
 
 /* Large center watermark */
