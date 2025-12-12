@@ -23,7 +23,55 @@
             position: absolute;
             top: 40%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
+             transform: translate(-37%, -50%) rotate(-10deg);
+            font-size: 60px;
+            color: rgba(200, 200, 200, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Watermark */
+        .watermark1 {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+             transform: translate(-37%, -50%) rotate(-10deg);
+            font-size: 60px;
+            color: rgba(200, 200, 200, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Watermark */
+        .watermark2 {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+             transform: translate(-37%, -50%) rotate(-10deg);
+            font-size: 60px;
+            color: rgba(200, 200, 200, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Watermark */
+        .watermark3 {
+            position: absolute;
+            top: 73%;
+            left: 50%;
+            transform: translate(-37%, -50%) rotate(-10deg);
+            font-size: 60px;
+            color: rgba(200, 200, 200, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Watermark */
+        .watermark4 {
+            position: absolute;
+            top: 86%;
+            left: 50%;
+            transform: translate(-37%, -50%) rotate(-10deg);
             font-size: 60px;
             color: rgba(200, 200, 200, 0.2);
             z-index: 0;
@@ -87,6 +135,10 @@
 <body>
 <div class="inner-content">
     <div class="watermark">CONFIDENTIAL</div>
+    <div class="watermark1">CONFIDENTIAL</div>
+    <div class="watermark2">CONFIDENTIAL</div>
+    <div class="watermark3">CONFIDENTIAL</div>
+    <div class="watermark4">CONFIDENTIAL</div>
 
     <div class="header">
         <img src="{{ public_path('/img/' . $provider['client_logo']) }}" alt="Logo">
