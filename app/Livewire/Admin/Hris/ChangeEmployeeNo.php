@@ -22,7 +22,21 @@ class ChangeEmployeeNo extends Component
     public string $current_employee_no = '';
     public string $new_employee_no = '';
 
-    protected $listeners = ['setEmployeeNo', 'save'];
+    public int $progress = 0; // 0 - 100
+    public int $totalJobs = 0;
+    public int $completedJobs = 0;
+
+    public bool $isMigrating = false;
+
+    protected $listeners = ['setEmployeeNo', 'save', 'employeeMigrationProgress' => 'incrementProgress'];
+
+    public function incrementProgress()
+    {
+        $this->completedJobs++;
+        if ($this->totalJobs > 0) {
+            $this->progress = intval(($this->completedJobs / $this->totalJobs) * 100);
+        }
+    }
 
     public function mount() {
         $this->actionBy = Auth::user();
@@ -90,20 +104,24 @@ class ChangeEmployeeNo extends Component
         
         try {
 
-            \Log::info("STEP 1: Starting migration");
+             \Log::info("STEP 1: Starting migration");
+
             $newEmployeeNo = strtoupper($newEmployeeNo);
 
             $employeeModel = EmployeeInformation::where('employee_no', $oldEmployeeNo)->firstOrFail();
-
              \Log::info("STEP 2: EmployeeInformation loaded");
+
+            $this->current_employee_no = strtoupper($newEmployeeNo);
+            $this->isMigrating = true;
+
             $employeeModel->employee_no = strtoupper($newEmployeeNo);
             $employeeModel->isTransferingEmp = true; 
+
             $employeeModel->save();
 
-            \Log::info("STEP 3: EmployeeInformation updated");
+             \Log::info("STEP 3: EmployeeInformation updated");
 
             $relations = [
-                \App\Models\EmployeeInformation::class => 'employee_no',
                 \App\Models\EmployeeAccount::class => 'employee_no',
                 \App\Models\EmployeePersonal::class => 'employee_no',
                 \App\Models\EmployeeEducation::class => 'employee_no',
@@ -120,7 +138,7 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeBusinessSlip::class => 'employee_no',
                 \App\Models\EmployeeAtro::class => 'employee_no',
                 \App\Models\EmployeeAtroRelative::class => 'employee_no',
-                \App\Models\EmployeeTimelogs::class => 'employee_id', // timelogs uses employee_id
+                \App\Models\EmployeeTimelogs::class => 'employee_id',
                 \App\Models\EmployeeDeductions::class => 'employee_no',
                 \App\Models\EmployeeEarnings::class => 'employee_no',
                 \App\Models\EmployeeLeaveCard::class => 'employee_no',
@@ -135,36 +153,39 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeUpdateSkillsHobbies::class => 'employee_no',
                 \App\Models\EmployeeUpdateTrainings::class => 'employee_no',
             ];
-
-              \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
-
+             \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
             $jobs = [];
+            
             foreach ($relations as $model => $column) {
                 $jobs[] = new ChangeEmployeeNoJob($model, $oldEmployeeNo, $newEmployeeNo, $column);
             }
 
+            // store total jobs count
+            $this->totalJobs = count($jobs);
+            $this->completedJobs = 0;
+            $this->progress = 0;
+
              \Log::info("STEP 5: Jobs created", ['count' => count($jobs)]);
 
             if (!empty($jobs)) {
-
-              
                 $batch = Bus::batch($jobs)
-                            ->withOption('actionBy', [
+                    ->withOption('actionBy', [
                         'id' => $this->actionBy->id,
                         'name' => $this->actionBy->name
                     ])
                     ->name('Migration: ' . $oldEmployeeNo . ' to ' . $newEmployeeNo)
                     ->catch(function (Batch $batch, \Throwable $e) {
-                        \Log::error("STEP 6: Batch catch hit: ".$e->getMessage());
+                         \Log::error("STEP 6: Batch catch hit: ".$e->getMessage());
                         $this->actionBy?->notify(new Notifications(
                             'error',
-                            'An errorsss occurred during migration of employee.',
+                            'An error occurred during migration of employee.',
                             route('system.jobs', ['id' => $batch->id]),
                             'admin'
                         ));
                     })
                     ->then(function (Batch $batch) { 
-                         \Log::info("STEP 7: Batch completed");
+                        \Log::info("STEP 7: Batch completed");
+                        $this->progress = 100;
                         $this->actionBy?->notify(new Notifications(
                             'success',
                             'Migration of employee has been finished',
@@ -174,10 +195,17 @@ class ChangeEmployeeNo extends Component
                     })
                     ->finally(function() use ($employeeModel) {
                          \Log::info("STEP 8: Finally executing");
+                          $employeeModel->refresh();
                         $employeeModel->isTransferingEmp = false;
                         $employeeModel->save();
+
+                        $this->isMigrating = false;
+                        $this->progress = 100;
+                        $this->completedJobs = $this->totalJobs;
+
                     })
                     ->dispatch();
+
                     \Log::info("STEP 9: Batch dispatched");
             }
 
@@ -197,7 +225,7 @@ class ChangeEmployeeNo extends Component
             return;
 
         } catch (\Exception $e) {
-               \Log::error('STEP X: ERROR → '.$e->getMessage());
+
             $this->reset(['new_employee_no']);
             $this->dispatch('hideModal', [
                 'modal' => 'change_employee_no'
@@ -209,20 +237,46 @@ class ChangeEmployeeNo extends Component
                 'status' => 'error',
                 'title' => 'Oops',
                 'showAlert' => true,
-                'message' => 'An error occureds: ' . $e->getMessage(),
+                'message' => 'An error occured: ' . $e->getMessage(),
             ]);
 
             return;
         }
     }
 
-    
-    public function closeModal() 
+
+
+     public function closeModal()
     {
-        $this->reset(['current_employee_no', 'new_employee_no']);
-        $this->dispatch('hideModal', [
-            'modal' => 'change_employee_no'
-        ]);    
+        $this->reset(['current_employee_no', 'new_employee_no', 'isMigrating']);
+        $this->dispatch('hideModal', ['modal' => 'change_employee_no']);
+    }
+
+    public function checkMigrationStatus()
+    {
+            if (!$this->isMigrating || !$this->current_employee_no) {
+                return;
+            }
+
+            $employee = EmployeeInformation::where('employee_no', $this->current_employee_no)->first();
+
+            if (!$employee || $employee->isTransferingEmp) {
+                return; // still running
+            }
+
+            // ✅ FINISHED (RUNS ONCE)
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Completed',
+                'showAlert' => true,
+                'message' => 'Employee number migration completed successfully.',
+            ]);
+
+            $this->dispatch('loadRecords');
+
+            // 🛑 STOP POLLING
+            $this->isMigrating = false;
+            $this->reset('current_employee_no');
     }
 
     public function render()

@@ -1,4 +1,4 @@
-<div>
+<div @if($isMigrating) wire:poll.3s="checkMigrationStatus" @endif>
      <div class="modal fade" wire:ignore.self id="change_employee_no" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-scrollable">
             <div class="modal-content">
@@ -41,6 +41,24 @@
 
                         <!-- Step 2 -->
                         <div wire:ignore.self class="tab-pane pb-3 fade" id="change" role="tabpanel" aria-labelledby="change-tab">
+                            <!-- Progress bar goes here -->
+                            @if($isMigrating)
+                            <div class="mb-4">
+                                <label class="fw-bold text-uppercase">Migration Progress</label>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                        role="progressbar"
+                                        style="width: {{ $progress }}%"
+                                        aria-valuenow="{{ $progress }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100">
+                                        {{ $progress }}%
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            
                             <form wire:submit.prevent="save">
                                 <div class="mb-3 mt-3 d-flex align-items-center gap-1 justify-content-between">
                                     <div class="w-100">

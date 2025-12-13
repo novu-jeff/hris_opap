@@ -57,9 +57,11 @@ class PayrollService extends Controller {
                 $query->where('ei.employment_type_id', $employment_type)
                     ->orWhereNull('ei.employment_type_id'); // include missing type
             })
+            ->where('ei.status', 'active')    // only active employees
+            ->where('ei.isDeleted', 0)        // only not deleted
             ->get();
 
-        //    dd($results);
+         //  dd($results);
 
         $employees = [
             'eligible' => [
@@ -134,7 +136,7 @@ class PayrollService extends Controller {
             $employees[$status]['items'][] = $employeeData;
             $employees[$status]['count']++;
         }
-
+//dd($employees);
         return $employees;
     }
 
