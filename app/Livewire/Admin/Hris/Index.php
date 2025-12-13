@@ -402,6 +402,7 @@ class Index extends Component
             if($record) {
 
                 $record->isDeleted = true;
+                $record->status = 'inactive';
                 $record->save();
 
                 $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
@@ -518,6 +519,7 @@ class Index extends Component
             if($record) {
 
                 $record->isDeleted = false;
+                $record->status = 'active';
                 $record->save();
 
                 $this->loadRecords();

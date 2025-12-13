@@ -31,20 +31,31 @@ class PayrollJob implements ShouldQueue
 
     public function handle()
 {
-  //dd('PayrollJob HANDLE RUNNING', $this->payrollId);
+   \Log::info('PayrollJob handle() STARTED', [
+        'payroll_id' => $this->payrollId
+    ]);
     $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
 
-    \Log::info('Processing payroll itemsss', [
+
+   $service = app(PayrollService::class);
+$process = $service->getProcess($this->type);
+
+$instance = app($process['service']);
+
+// Check if computePayroll exists
+if (!method_exists($instance, 'computePayroll')) {
+    \Log::error('computePayroll method does not exist on instance', [
+        'instance_class' => get_class($instance),
+        'process' => $process
+    ]);
+    return; // or throw exception
+}
+
+
+  \Log::info('Processing payroll here', [
         'payroll_id' => $this->payrollId,
         'employees_count' => count($this->employees)
     ]);
-
-    $service = app(PayrollService::class);
-
-    $process = $service->getProcess($this->type);
-    $instance = app($process['service']);
-
-  //  dd($payroll);
 
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
 
