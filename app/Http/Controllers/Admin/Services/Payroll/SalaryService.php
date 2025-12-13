@@ -136,7 +136,7 @@ class SalaryService extends Controller {
 
         $jobs = [];
 
-        
+       // dd('hre');
 
         foreach ($chunks as $chunk) {
            // dd('set');
@@ -167,7 +167,16 @@ class SalaryService extends Controller {
 
     public function computePayroll($payroll, $employees, $type) {
 
+        \Log::info('Start computePayroll', [
+    'payroll_id' => $payroll->id,
+    'employees_count' => count($employees),
+    'type' => $type
+]);
+
         $hasDeductions = $payroll->hasDeductions ?? false;
+
+      
+
 
         if ($this->product == 'government') {
 
@@ -274,7 +283,12 @@ class SalaryService extends Controller {
 
         } else {
 
-          
+        \Log::info('Start computePayroll', [
+    'payroll_id' => $payroll->id,
+    'employees_count' => count($employees),
+    'type' => $type,
+    'deduc' => $hasDeductions
+]);        
 
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;
@@ -307,11 +321,11 @@ class SalaryService extends Controller {
                 
                 $aut = round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type)));
 
-                $sss = $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0;
-                $pagibig = $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0;
-                $philhealth = $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0;
+                $sss = $hasDeductions ? $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0 : 0;
+                $pagibig = $hasDeductions ? $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0 : 0;
+                $philhealth = $hasDeductions ? $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0 : 0;
 
-                $w_tax = $contribution_service->computeWithholdingTax($basic_salary);
+                $w_tax = $hasDeductions ? $contribution_service->computeWithholdingTax($basic_salary) : 0;
                 $other_loans = 0;
 
                 $gross_amount_earned = $basic_salary + $overtime + $holiday_pay + $allowances;
@@ -320,6 +334,39 @@ class SalaryService extends Controller {
                 
                 $bank_account = $employee['account_no'] ?? null;
                 $bank_name = $employee['bank'] ?? null;
+
+                Log::info('Payroll computation (NON-GOV)', [
+    'payroll_id' => $payroll->id,
+    'employee_no' => $employee_no,
+    'name' => $name,
+
+    // INPUTS
+    'basic_salary' => $basic_salary,
+    'salary_type' => $salary_type,
+    'cut_off_period' => $payroll->cut_off_period,
+    'dtr_summary' => $dtr_summary,
+
+    // EARNINGS
+    'overtime' => $overtime,
+    'holiday_pay' => $holiday_pay,
+    'allowances' => $allowances,
+    'gross_amount_earned' => $gross_amount_earned,
+
+    // DEDUCTIONS
+    'sss' => $sss,
+    'pagibig' => $pagibig,
+    'philhealth' => $philhealth,
+    'w_tax' => $w_tax,
+    'aut' => $aut,
+    'other_loans' => $other_loans,
+    'total_deductions' => $total_deductions,
+
+    // RESULT
+    'net_amount' => $net_amount,
+    'bank_account' => $bank_account,
+    'bank_name' => $bank_name,
+]);
+
 
                 $data[] = [
                     'payroll_id' => $payroll->id,

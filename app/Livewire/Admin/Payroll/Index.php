@@ -299,14 +299,14 @@ class Index extends Component
        
         $type = $this->type;
         // Validate cut-off period format -----------------------------
-        if (!$this->isOneMonthCutoff($this->cut_off_period)) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Invalid Cut-Off Period',
-                'message' => 'The cut-off period must be exactly 1 full month.'
-            ]);
-        }
+        // if (!$this->isOneMonthCutoff($this->cut_off_period)) {
+        //     return $this->dispatch('alert', [
+        //         'showAlert' => true,
+        //         'status' => 'error',
+        //         'title' => 'Invalid Cut-Off Period',
+        //         'message' => 'The cut-off period must be exactly 1 full month.'
+        //     ]);
+        // }
 
 
          // Validate that payroll date / cut-off period are provided
