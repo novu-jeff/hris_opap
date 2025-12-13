@@ -167,6 +167,8 @@ class Manual extends Component
             'records.employee_information.salary_type' => 'required|in:monthly,daily',    
             'records.employee_information.salary' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.shift_schedule' => 'required|exists:sections,id',
+            'records.employee_information.employee_schedule' => 'required|exists:sections,id',
         ];
     }
 
@@ -201,6 +203,8 @@ class Manual extends Component
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',
+            'records.employee_information.shift_schedule.required' => 'The shift schedule field is required.',
+            'records.employee_information.employee_schedule.required' => 'The days schedule field is required.',
         ];
     }
 
@@ -252,6 +256,7 @@ class Manual extends Component
                 'status' => 'error',
                 'title' => 'Error!',
                 'message' => $e->getMessage(),
+                // 'message' => 'zab cutie',
                 'showAlert' => true,
             ]);
         }

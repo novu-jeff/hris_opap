@@ -188,7 +188,7 @@
         @endcanany
 
           <!-- ================= SIDEBAR ================= -->
-        @include('components.employee.sidebar', ['companyInfo' => $companyInfo]) <!-- create a separate sidebar Blade -->
+        @include('components.employee.sidebar') <!-- create a separate sidebar Blade -->
         <main>
             <div class="container">
                 <div class="content">

@@ -40,6 +40,7 @@
     outline: 0;
     height: 100%;
 }
+
 .chat-area .modal-body {
     height: 500px;
     transition: all ease 0.3s;
@@ -94,7 +95,8 @@
     box-shadow: inherit;
 }
 
-.chatlist img, .msg-head img {
+.chatlist img,
+.msg-head img {
     border-radius: 50%;
 }
 
@@ -512,6 +514,7 @@ li.reply .time {
 
 .attachment-files {
     color: $primary;
+
     i {
         font-size: 20px;
         margin-bottom: 2px;
@@ -585,9 +588,9 @@ button:focus {
 
 @media(min-width: 0px) and (max-width: 992px) {
     .send-box {
-        textarea, button {
-            width: 100% !important;
-        }
+        // textarea, button {
+        //     width: 100% !important;
+        // }
 
         button {
             margin-top: 15px;

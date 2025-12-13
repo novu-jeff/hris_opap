@@ -14,14 +14,14 @@
                         </div>
                     </div>
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="biometrics_id">Biometrics ID</label>
+                        <label class="mb-2" for="biometrics_id">Biometrics ID <span class="text-danger">*</span></label>
                         <input type="number" min="0"  wire:model="records.employee_information.biometrics_id" id="records.employee_information.biometrics_id" class="form-control">
                         <div class="error-field">
                             @error('records.employee_information.biometrics_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="date_hired">Date Hired</label>
+                        <label class="mb-2" for="date_hired">Date Hired <span class="text-danger">*</span></label>
                         <input type="date" wire:change="select_change('date_hired')" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control" >
                         <div class="error-field">
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
@@ -148,7 +148,7 @@
                         </div>
                     @endif
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="shift_schedule">Shift Schedule</label>
+                        <label class="mb-2" for="shift_schedule">Shift Schedule <span class="text-danger">*</span></label>
                         <select wire:model="records.employee_information.shift_schedule" wire:change="select_change('section')" id="records.employee_information.shift_schedule" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($shiftSchedule as $shift)
@@ -160,7 +160,7 @@
                         </div>
                     </div> 
                     <div class="col-12 col-md-3 mb-3">
-                        <label class="mb-2" for="employee_schedule">Days Schedule</label>
+                        <label class="mb-2" for="employee_schedule">Days Schedule <span class="text-danger">*</span></label>
                         <select wire:model="records.employee_information.employee_schedule" wire:change="select_change('section')" id="records.employee_information.employee_schedule" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             @foreach ($employeeSchedule as $schedule)
