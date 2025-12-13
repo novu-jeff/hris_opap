@@ -62,7 +62,7 @@ class Index extends Component
         }
 
         $grouped = $data->groupBy('employee_no')->map(function ($items, $employee_no) {
-
+// dd( $items);
     $latest = $items->sortByDesc('updated_at')->first();
     $types = $items->pluck('type')->unique();
 
@@ -70,15 +70,21 @@ class Index extends Component
 
     return [
         'employee_no' => $employee_no,
-        'type' => $latest['type'], // ✔ this is for your button link
+        'type' => $latest['type'],
         'types' => str_replace('-', ' ', $types->implode(', ')),
         'name' => $personal
             ? trim("{$personal->firstname} {$personal->middlename} {$personal->lastname}")
             : 'N/A',
+
+        // IMPORTANT: store raw timestamp for sorting
+        'date_applied_raw' => $latest['updated_at'] ?? null,
+
+        // Display version only
         'date_applied' => $latest['updated_at']
-    ? \Carbon\Carbon::parse($latest['updated_at'])->format('M d, Y')
-    : 'N/A',
+            ? \Carbon\Carbon::parse($latest['updated_at'])->format('M d, Y')
+            : 'N/A',
     ];
+
 });
 
         if ($this->search) {
@@ -89,7 +95,9 @@ class Index extends Component
             })->values();
         }
 
-       $grouped = $grouped->sortByDesc('date_applied')->values(); 
+       $grouped = $grouped->sortByDesc('date_applied_raw')->values();
+
+    //    dd($grouped);
 
        $grouped = $grouped->values()->map(function ($item, $i) {
             $item['id'] = $i + 1;
