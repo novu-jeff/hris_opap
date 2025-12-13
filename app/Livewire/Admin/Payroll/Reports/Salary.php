@@ -21,6 +21,11 @@ class Salary extends Component
         $payroll = SalaryPayroll::findOrFail($payroll_id);
         $this->payroll_id = $payroll_id;
 
+        // 2️⃣ Delete existing payroll items for this payroll
+        \DB::table('payroll_salary_items')
+            ->where('payroll_id', $payroll->id)
+            ->delete();
+
         // 2️⃣ Get your PayrollService
         $service = app(\App\Http\Controllers\Admin\Services\PayrollService::class);
 
@@ -28,6 +33,8 @@ class Salary extends Component
         // getEmployees() returns eligible/ineligible arrays
      
         $employeesData = $service->getEmployees($payroll->employment_type, 'salary');
+
+        //dd($employeesData);
 
         // Only take eligible employees
         $employees = $employeesData['eligible']['items'] ?? [];
@@ -51,7 +58,7 @@ class Salary extends Component
                 'salary'       // payroll type
             );
         }
-
+   \Log::info("regenerate count jobs payroll", ['count' => count($jobs)]);
         // 6️⃣ Dispatch jobs as a batch
         $batch = \Illuminate\Support\Facades\Bus::batch($jobs)
             ->name('Regenerate Payroll #' . $payroll->id)
