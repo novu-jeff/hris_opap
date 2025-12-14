@@ -92,6 +92,11 @@ class EmployeeInformation extends Model
         return $this->hasMany(EmployeeSkillsHobbies::class, 'employee_no', 'employee_no');
     }
 
+    public function loans()
+    {
+        return $this->hasMany(Loan::class, 'employee_no');
+    }
+
     /*public function positions() {
         return $this->hasOne(Positions::class, 'id', 'position_id');
     }*/
