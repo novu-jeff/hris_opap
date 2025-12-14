@@ -49,7 +49,7 @@ class ATROController extends Controller
 
         return view('employee.atro', [
             'id' => $id,
-            'action' => 'edit',
+            'action' => $action,
             'status' => $record->status,   // ⬅ added here
             'title' => ''.$action .' | Authority to render overtime',
             'header' => ''.$action .' Authority to render overtime',

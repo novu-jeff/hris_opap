@@ -8,6 +8,48 @@
                 <hr class="mx-3">
                 <div class="card-body">
                     <div class="row mb-3">
+                        
+                         @if(($fields['status'] ?? null) === null)
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="date" 
+                                id="date" 
+                                class="form-control @error('fields.date') is-invalid @enderror" 
+                                 wire:model="fields.date"
+                                
+                            >
+                            <div class="error-field">
+                                @error('fields.date') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="text"
+                                id="start-time"
+                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror" 
+                                wire:model="fields.start_time"
+                            >
+                            <div class="error-field">
+                                @error('fields.start_time') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
+                            <input 
+                                type="text"
+                                id="end-time"
+                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror" 
+                                wire:model="fields.end_time"
+                            >
+                            <div class="error-field">
+                                @error('fields.end_time') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        @endif 
+                        
+
                          @if(($fields['status'] ?? null) === 'pending')
                         <div class="col-12 col-md-4 mb-3">
                             <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
@@ -89,6 +131,20 @@
                         <div class="col-12 col-md-12 mb-3">
                             <label for="justification" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
                            
+                            @if(($fields['status'] ?? null) === null)
+                            <textarea 
+                                rows="5" 
+                                placeholder="Write something..."
+                                id="justification" 
+                                class="form-control @error('fields.justification') is-invalid @enderror" 
+                                wire:model="fields.justification"
+                            ></textarea>
+                            <div class="error-field">
+                                @error('fields.justification') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                            @endif  
+
+
                            @if(($fields['status'] ?? null) === 'pending')
                             <textarea 
                                 rows="5" 
@@ -123,7 +179,7 @@
                     </div>  
                 </div>
                 <hr class="mx-3">
-                @if(($fields['status'] ?? null) === 'pending')
+                @if(($fields['status'] ?? null) === 'pending' || ($fields['status'] ?? null) === null)
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end gap-3">
                     <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
                         <span wire:loading.remove wire:target="save">Proceed <i class="fa-solid fa-arrow-right ms-2"></i></span>

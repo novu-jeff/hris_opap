@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\PayslipRequestController as ESSPayslipRequestController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
+use App\Http\Controllers\Admin\LoanController as ESSLoanController;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ESSFAQController;
 use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsController;
@@ -86,6 +87,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\SystemJobsController;
 use App\Http\Controllers\Admin\LeaveImportController;
+use App\Http\Controllers\Employee\LoanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -241,6 +243,9 @@ Route::prefix('admin')->group(function() {
                 
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
+
+            Route::get('loan', [ESSLoanController::class, 'index'])
+                ->name('ess.loan');    
 
             Route::get('payslip/request/download', [ESSPayslipRequestController::class, 'index'])
                 ->name('ess.payslip-request');
@@ -461,6 +466,16 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 ->name('employee.atro.apply');
             Route::get('edit/{id}', [EmployeeATROController::class, 'edit'])
                 ->name('employee.atro.edit');
+                
+        });
+
+         Route::prefix('loans')->group(function() {
+
+            Route::get('/', [LoanController::class, 'index'])
+                ->name('employee.loan');
+            Route::get('loan-application', [LoanController::class, 'create'])->name('employee.loan-application');
+            Route::get('{id}/edit', [LoanController::class, 'edit'])->name('employee.loan.edit');
+           
                 
         });
 
