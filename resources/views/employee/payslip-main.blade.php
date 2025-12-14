@@ -110,11 +110,11 @@
     {{-- SECURITY OVERLAYS --}}
     <div class="payslip-overlay"></div>
 
-    <div class="payslip-watermark-diagonal-1">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-    <div class="payslip-watermark-diagonal-2">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-3">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-4">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-5">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
+    <div class="payslip-watermark-diagonal-1">CONFIDENTIAL1 • {{$payslip['name']}} • DO NOT COPY</div>
+    <div class="payslip-watermark-diagonal-2">CONFIDENTIAL 2• {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-3">CONFIDENTIAL 3• {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-4">CONFIDENTIAL4 • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-5">CONFIDENTIAL5 • {{$payslip['name']}} • DO NOT COPY</div>
 <div class="payslip-watermark-center-large">CONFIDENTIAL</div>
 </div>
 
@@ -219,7 +219,7 @@
 .payslip-watermark-diagonal-4,
 .payslip-watermark-diagonal-5     {
     position: absolute;
-    font-size: 70px;
+    font-size: 40px;
     font-weight: 100;
     color: rgba(255, 0, 0, 0.08);
     white-space: nowrap;
@@ -231,13 +231,13 @@
 .payslip-watermark-diagonal-1 {
     top: 25%;
     left: -40%;
-    transform: rotate(-25deg);
+    transform: rotate(25deg);
 }
 
 /* Diagonal #2: bottom-left to top-right */
 .payslip-watermark-diagonal-2 {
-    bottom: 20%;
-    left: -30%;
+    bottom: 30%;
+    left: -40%;
     transform: rotate(25deg);
 }
 
@@ -245,27 +245,27 @@
 .payslip-watermark-diagonal-3 {
     bottom: 10%;
     left: -40%;
-    transform: rotate(15deg);
+    transform: rotate(25deg);
 }
 
 /* Diagonal #2: bottom-left to top-right */
 .payslip-watermark-diagonal-4 {
     top: 10%;
     left: -40%;
-    transform: rotate(15deg);
+    transform: rotate(25deg);
 }
 
 /* Diagonal #2: bottom-left to top-right */
 .payslip-watermark-diagonal-5 {
-    top: 27%;
-    left: -60%;
+    top: 40%;
+    left: -40%;
     transform: rotate(25deg);
 }
 
 /* Large center watermark */
 .payslip-watermark-center-large {
     position: absolute;
-    top: 50%;
+    top: 55%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 100px;
