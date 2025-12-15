@@ -141,7 +141,7 @@ class Index extends Component
     public function download($id)
     {
         $employee_no = $this->user_id;
-    
+   // dd($employee_no);
         $relative = EmployeeAtroRelative::with('atro')
             ->where('employee_no', $employee_no)
             ->first();
@@ -164,6 +164,15 @@ class Index extends Component
         }
     
         $templatePath = public_path('templates/forms/HRMS-PD Form 05.docx');
+
+        $currentDate = Carbon::now()->format('m-d-y');
+        $outputPath = public_path('outputs/HRMS-PD FORM 05 | ' . $currentDate . '.docx');
+
+        // Ensure the outputs directory exists
+        $dir = public_path('outputs');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
     
         if (!file_exists($templatePath)) {
             return $this->dispatch('alert', [
@@ -202,12 +211,16 @@ class Index extends Component
             $templateProcessor->setValue('names', $namesText);
     
             // Save edited file to temporary path
-            $tempFilename = 'temp_' . Str::random(10) . '.docx';
-            $tempPath = storage_path('app/public/' . $tempFilename);
+          //  $tempFilename = 'temp_' . Str::random(10) . '.docx';
+           // $tempPath = storage_path('app/public/' . $tempFilename);
+
+           $templateProcessor->saveAs($outputPath);
+
+            return response()->download($outputPath)->deleteFileAfterSend(true);
     
-            $templateProcessor->saveAs($tempPath);
+            //$templateProcessor->saveAs($tempPath);
     
-            return response()->download($tempPath, now()->format('Ymd_His') . '_ATRO.docx')->deleteFileAfterSend(true);
+            //return response()->download($tempPath, now()->format('Ymd_His') . '_ATRO.docx')->deleteFileAfterSend(true);
     
         } catch (\Exception $e) {
             return $this->dispatch('alert', [

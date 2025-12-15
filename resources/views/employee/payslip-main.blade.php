@@ -69,16 +69,38 @@
                     'HDMF MP3' => 0,
                     'Cir375-ECQ' => $payslip['cir375_cir449'],
                     'SSS' => $payslip['sss'],
+                    'Loan Deductions' => $payslip['other_loans'],
                     'PAGIBIG' => $payslip['pagibig'],
                     'BIR Withholding TAX' => $payslip['w_tax'],
                     'Lates / Undertime / Absences' => $payslip['aut'],
-                    'Total Deductions' => $payslip['total_deductions'],
                 ] as $label => $value)
                     <div class="d-flex align-items-start border-bottom py-1">
                         <div class="label">{{ $label }}:</div>
                         <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
                     </div>
                 @endforeach
+            </div>
+
+    @if($payslip->deductions->where('reference_type', 'loan')->count())
+
+        @foreach($payslip->deductions->where('reference_type', 'loan') as $deduction)
+            <div class="d-flex align-items-start border-bottom py-1">
+                <div class="label">
+                    {{ $deduction->loan->loanType->name ?? 'Loan Deduction' }}
+                </div>
+                <div class="value ms-2">
+                    PHP {{ number_format($deduction->amount, 2) }}
+                </div>
+            </div>
+        @endforeach
+    @endif
+
+
+            <div class="d-flex align-items-start border-bottom py-1 fw-bold">
+                <div class="label">Total Deductions:</div>
+                <div class="value ms-2">
+                    PHP {{ number_format($payslip['total_deductions'], 2) }}
+                </div>
             </div>
 
             {{-- NET PAY --}}
