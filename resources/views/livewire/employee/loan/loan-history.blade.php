@@ -1,3 +1,15 @@
+@php
+function statusBadge($status) {
+    return match($status) {
+        'pending' => 'bg-warning text-dark',
+        'approved' => 'bg-primary text-white',
+        'released' => 'bg-info text-dark',
+        'completed' => 'bg-success text-white',
+        'cancelled' => 'bg-danger text-white',
+        default => 'bg-secondary text-white',
+    };
+}
+@endphp
 <div class="card border-0 mt-3">
     <div class="card-body p-0">
 
@@ -56,7 +68,9 @@
                             <td>₱{{ number_format($record->balance, 2) }}</td>
 
                             @if($status === 'all')
-                                <td>{!! status_alert($record->status) !!}</td>
+                                <td><span class="badge {{ statusBadge($record->status) }}">
+                                    {{ ucfirst($record->status) }}
+                                </span></td>
                             @endif
 
                             <td class="text-center">

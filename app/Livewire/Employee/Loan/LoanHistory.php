@@ -16,6 +16,7 @@ class LoanHistory extends Component
     public $entries = 10;
     public $status = 'all';
     public $employee_no;
+    public $selected_id;
 
     protected $queryString = ['entries', 'status'];
 
@@ -54,19 +55,18 @@ class LoanHistory extends Component
             $title = 'Are you sure to continue?';
             $message = 'Are you sure you want to cancel this loan? This action cannot be undone.';
             $action = 'cancel';
-
-           // $this->selected_id = $loanId;
+//dd($loanId);
+           $this->selected_id = $loanId;
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
-                'action' => $action,
-                 'params' => [$loanId] // ✅ REQUIRED
+                'action' => $action
             ]);
 
         }  else {
 
             // Proceed with cancellation after confirmation
-            $loan = Loan::where('id', $loanId)
+            $loan = Loan::where('id', $this->selected_id)
                         ->where('employee_no', $this->employee_no)
                         ->firstOrFail();
 
@@ -83,6 +83,7 @@ class LoanHistory extends Component
 
             $this->dispatch('alert', [
                 'showAlert' => true,
+                'id' => $this->selected_id,
                 'status' => 'success',
                 'title' => 'Cancelled',
                 'message' => 'The loan has been cancelled successfully.'

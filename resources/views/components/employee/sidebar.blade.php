@@ -31,9 +31,9 @@
             <i class="fa-solid fa-umbrella-beach"></i> Leave Application
         </a>
 
-        <a href="{{ route('employee.loan') }}" class="menu-item">
+       <!-- <a href="{{ route('employee.loan') }}" class="menu-item">
             <i class="fa-solid fa-hand-holding-dollar"></i> Loan Application
-        </a>
+        </a>-->
         
       <!-- <a href="{{ route('employee.leave-card') }}" class="menu-item">
             <i class="fa-solid fa-id-card"></i> Leave Card
