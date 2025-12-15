@@ -78,63 +78,88 @@
     <!-- Loan Applications Table -->
     <div class="card border-0 mt-3">
         <div class="card-body p-0">
-            <div class="row mb-4">
-                <div class="col-md-6 d-flex align-items-center gap-2">
-                    <label for="entries" class="form-label mb-0">Show entries:</label>
-                    <select id="entries" wire:model.live="entries" class="form-select w-auto">
-                        @foreach([5,10,20,30,50,100] as $val)
-                            <option value="{{ $val }}">{{ $val }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
-                    <label for="search" class="form-label mb-0">Search:</label>
-                    <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search by name or employee no">
-                </div>
-            </div>
+             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a href="{{route('ess.loan', ['status' => 'pending'])}}" class="nav-link text-uppercase fw-medium {{$status === 'pending' ? 'active' : ''}}"  role="tab" aria-controls="pills-home" aria-selected="true">Pending</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="{{route('ess.loan', ['status' => 'approved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'approved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Approved</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="{{route('ess.loan', ['status' => 'disapproved'])}}" class="nav-link text-uppercase fw-medium {{$status === 'disapproved' ? 'active' : ''}}" role="tab" aria-controls="pills-profile" aria-selected="false">Disapproved</a>
+                </li>
+            </ul>
+            <div class="tab-content mt-5" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
+                    <div class="row mb-4">
+                        <div class="col-md-6 d-flex align-items-center gap-2">
+                            <label for="entries" class="form-label mb-0">Show entries:</label>
+                            <select id="entries" wire:model.live="entries" class="form-select w-auto">
+                                @foreach([5,10,20,30,50,100] as $val)
+                                    <option value="{{ $val }}">{{ $val }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                            <label for="search" class="form-label mb-0">Search:</label>
+                            <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search by name or employee no">
+                        </div>
+                    </div>
 
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered w-100">
-                    <thead>
-                        <tr>
-                            <th>Employee No.</th>
-                            <th>Employee Name</th>
-                            <th>Loan Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th style="max-width: 200px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($loans as $loan)
-                            <tr>
-                                <td>{{ $loan->employee_no }}</td>
-                                <td>{{ optional($loan->personal)->firstname ?? '-' }} {{ optional($loan->personal)->lastname ?? '-' }}</td>
-                                <td>{{ $loan->loanType->name ?? '-' }}</td>
-                                <td>₱{{ number_format($loan->principal_amount, 2) }}</td>
-                                <td>{{ strtoupper($loan->status) }}</td>
-                                <td>
-                                    <button wire:click="view({{ $loan->id }})" class="btn btn-primary btn-sm mx-1">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    @if($loan->status === 'pending')
-                                        <button wire:click="approve({{ $loan->id }})" class="btn btn-success btn-sm mx-1">Approve</button>
-                                        <button wire:click="disapprove({{ $loan->id }})" class="btn btn-danger btn-sm mx-1">Disapprove</button>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center fw-bold py-3">No loan applications found</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered w-100">
+                            <thead>
+                                <tr>
+                                    <th>Employee No.</th>
+                                    <th>Employee Name</th>
+                                    <th>Loan Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th style="max-width: 200px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($loans as $loan)
+                                    <tr>
+                                        <td>{{ $loan->employee_no }}</td>
+                                        <td>{{ optional($loan->personal)->firstname ?? '-' }} {{ optional($loan->personal)->lastname ?? '-' }}</td>
+                                        <td>{{ $loan->loanType->name ?? '-' }}</td>
+                                        <td>₱{{ number_format($loan->principal_amount, 2) }}</td>
+                                        <td><span class="badge
+                                                @if($loan->status === 'pending') bg-warning
+                                                @elseif($loan->status === 'approved') bg-success
+                                                @elseif($loan->status === 'disapproved') bg-danger
+                                                @elseif($loan->status === 'released') bg-info
+                                                @elseif($loan->status === 'completed') bg-primary
+                                                @else bg-secondary
+                                                @endif
+                                            ">
+                                                {{ strtoupper($loan->status) }}
+                                            </span></td>
+                                        <td>
+                                            <button wire:click="view({{ $loan->id }})" class="btn btn-primary btn-sm mx-1">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            @if($loan->status === 'pending')
+                                                <button wire:click="approve({{ $loan->id }})" class="btn btn-success btn-sm mx-1">Approve</button>
+                                                <button wire:click="disapprove({{ $loan->id }})" class="btn btn-danger btn-sm mx-1">Disapprove</button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center fw-bold py-3">No loan applications found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-            <div class="mt-4">
-                {{ $loans->links() }}
-            </div>
+                    <div class="mt-4">
+                        {{ $loans->links() }}
+                    </div>
+                </div>
+            </div>            
         </div>
     </div>
 </div>

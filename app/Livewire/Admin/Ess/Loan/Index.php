@@ -14,6 +14,8 @@ class Index extends Component
     public $disapproval_note = '';
     public $selected_id;
     public $employee_no;
+    public $search = '';  // Add this for search
+    public $entries = 10; // optional, for show entries dropdown
 
     public $viewLoan = null; // to store the selected loan for modal
 
@@ -21,6 +23,15 @@ class Index extends Component
 
     protected $paginationTheme = 'bootstrap';
     public $status = 'pending';
+
+    public function mount()
+    {
+        // validate status from URL
+       // dd($this->status);
+        if (!in_array($this->status, ['pending', 'approved', 'disapproved'])) {
+            $this->status = 'pending';
+        }
+    }
 
     public function approve(int $loanId)
     {
@@ -86,14 +97,35 @@ class Index extends Component
             ]);
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingEntries()
+    {
+        $this->resetPage();
+    }
+
     
 
    public function render()
-    {
-        return view('livewire.admin.ess.loan.index', [
-            'loans' => Loan::with(['loanType', 'personal']) // eager load personal info
-                ->where('status', $this->status)
-                ->paginate(10)
-        ]);
+{
+    $model = Loan::with(['loanType', 'personal'])
+        ->where('status', $this->status);
+
+    if ($this->search) {
+        $this->resetPage();
+
+        $model->where(function ($query) {
+            $query->where('employee_no', 'like', '%' . $this->search . '%');
+                
+        });
     }
+
+    $loans = $model->latest()->paginate($this->entries);
+
+    return view('livewire.admin.ess.loan.index', compact('loans'));
+}
+
 }
