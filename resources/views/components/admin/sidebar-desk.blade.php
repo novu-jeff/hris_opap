@@ -79,11 +79,11 @@
                 </a>
                 @endcan
 
-               {{--  @can('read leave')
+                 @can('read leave')
                 <a href="{{ route('ess.loan') }}" class="submenu-item">
                     <i class="fa-solid fa-hand-holding-dollar"></i> Loan Applications
                 </a>
-                @endcan--}}
+                @endcan
 
                 @can('read obs')
                 <a href="{{ route('ess.obs') }}" class="submenu-item">
