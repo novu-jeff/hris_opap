@@ -50,20 +50,12 @@ class LoanHistory extends Component
 
     public function CancelLoan(bool $isNotify = true, ? int $loanId = null)
     {
-         if($isNotify) {
-
-            $title = 'Are you sure to continue?';
-            $message = 'Are you sure you want to cancel this loan? This action cannot be undone.';
-            $action = 'cancel';
+       
 //dd($loanId);
            $this->selected_id = $loanId;
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
+      
 
-        }  else {
+       
 
             // Proceed with cancellation after confirmation
             $loan = Loan::where('id', $this->selected_id)
@@ -91,7 +83,7 @@ class LoanHistory extends Component
 
             // Refresh pagination to reflect changes
             $this->resetPage();
-        }    
+          
 
     }
 
