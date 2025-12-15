@@ -9,6 +9,8 @@ class Loan extends Model
 {
     use HasFactory;
 
+    protected $table = 'loans';
+
     protected $fillable = [
         'employee_no', 'loan_type_id', 'principal_amount', 'term_months',
         'monthly_amortization', 'balance', 'start_payroll_id', 'released_at',
@@ -20,6 +22,8 @@ class Loan extends Model
     {
         return $this->belongsTo(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
+
+  
 
     // Optional: link to EmployeeInformation
     public function information()

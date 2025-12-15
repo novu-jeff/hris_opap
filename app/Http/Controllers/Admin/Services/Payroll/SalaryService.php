@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Services\DailyTimeRecordService;
 use Illuminate\Support\Facades\Log;
+use App\Models\Loan;
 
 class SalaryService extends Controller {
 
@@ -167,11 +168,11 @@ class SalaryService extends Controller {
 
     public function computePayroll($payroll, $employees, $type) {
 
-        \Log::info('Start computePayroll', [
-    'payroll_id' => $payroll->id,
-    'employees_count' => count($employees),
-    'type' => $type
-]);
+                \Log::info('Start computePayroll', [
+            'payroll_id' => $payroll->id,
+            'employees_count' => count($employees),
+            'type' => $type
+        ]);
 
         $hasDeductions = $payroll->hasDeductions ?? false;
 
@@ -283,12 +284,12 @@ class SalaryService extends Controller {
 
         } else {
 
-        \Log::info('Start computePayroll', [
-    'payroll_id' => $payroll->id,
-    'employees_count' => count($employees),
-    'type' => $type,
-    'deduc' => $hasDeductions
-]);        
+                    \Log::info('Start computePayroll', [
+                'payroll_id' => $payroll->id,
+                'employees_count' => count($employees),
+                'type' => $type,
+                'deduc' => $hasDeductions
+            ]);        
 
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;
@@ -303,6 +304,38 @@ class SalaryService extends Controller {
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $basic_salary = round(floatval($employee['salary']), 2);
+
+
+                 // Fetch approved loans for this employee
+             $employeeLoans = Loan::where('employee_no', $employee_no)
+                ->where('status', 'approved')
+                ->where('balance', '>', 0) // only loans with remaining balance
+                ->get();
+
+                \Log::info('Employee loans fetched', [
+                    'employee_no' => $employee_no,
+                    'loans_count' => $employeeLoans->count(),
+                    'cut_period' => $payroll->cut_off_period,
+                    'loan_ids' => $employeeLoans->pluck('id')->toArray(),
+                ]);    
+
+                $loanDeductionsToInsert = [];
+                $other_loans = 0;
+
+                foreach ($employeeLoans as $loan) {
+                    $deductionAmount = $loan->monthly_amortization;
+                    $other_loans += $deductionAmount;
+
+                    $loanDeductionsToInsert[] = [
+                        'payroll_item_id' => 0, // updated later
+                        'reference_type' => 'loan',
+                        'reference_id' => $loan->id,
+                        'description' => 'Loan deduction: ' . ($loan->loanType->name ?? 'Loan'),
+                        'amount' => $deductionAmount,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
 
                 $salary_type = $employee['salary_type'];
 
@@ -326,7 +359,7 @@ class SalaryService extends Controller {
                 $philhealth = $hasDeductions ? $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0 : 0;
 
                 $w_tax = $hasDeductions ? $contribution_service->computeWithholdingTax($basic_salary) : 0;
-                $other_loans = 0;
+               // $other_loans = 0;
 
                 $gross_amount_earned = $basic_salary + $overtime + $holiday_pay + $allowances;
                 $total_deductions = $sss + $pagibig + $philhealth + $w_tax + $other_loans + $aut;
@@ -384,6 +417,7 @@ class SalaryService extends Controller {
                     'philhealth' => round($philhealth, 2),
                     'w_tax' => round($w_tax, 2),
                     'other_loans' => round($other_loans, 2),
+                    'loan_deductions' => $loanDeductionsToInsert,
                     'total_deductions' => round($total_deductions, 2),
                     'net_amount' => round($net_amount, 2),
                     'bank_account' => $bank_account,

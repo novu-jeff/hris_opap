@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Bus\Batchable;
 use App\Models\PayrollItems;
 use Throwable;
+use App\Models\Loan;
 
 class PayrollJob implements ShouldQueue
 {
@@ -60,10 +61,25 @@ if (!method_exists($instance, 'computePayroll')) {
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
 
     foreach ($data as $item) {
-        $process['models']['child']::updateOrCreate([
-            'payroll_id'  => $item['payroll_id'],
-            'employee_no' => $item['employee_no'],
-        ], $item);
+        $payrollItem = $process['models']['child']::updateOrCreate([
+                'payroll_id'  => $item['payroll_id'],
+                'employee_no' => $item['employee_no'],
+            ], $item);
+
+        if (!empty($item['loan_deductions'])) {
+            foreach ($item['loan_deductions'] as &$loanDeduction) {
+                $loanDeduction['payroll_item_id'] = $payrollItem->id;
+            }
+            DB::table('payroll_salary_deductions')->insert($item['loan_deductions']);
+        }
+
+        // Update loan table
+        foreach ($item['loan_deductions'] ?? [] as $ld) {
+            Loan::where('id', $ld['reference_id'])->update([
+                'balance' => DB::raw('balance - ' . $ld['amount']),
+                'last_posted_at' => now()
+            ]);
+        }
     }
 }
 

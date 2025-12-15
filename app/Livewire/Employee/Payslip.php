@@ -38,10 +38,10 @@ class Payslip extends Component
         $this->employee_id = Auth::user()->id;
 
         // Load LATEST approved payroll for this employee
-        $payroll = SalaryItemsPayroll::with('information.section', 'payroll')
+        $payroll = SalaryItemsPayroll::with('information.section', 'payroll','deductions.loan.loanType')
             ->where('employee_no', $this->employee_no)
             ->whereHas('payroll', function($query) {
-                $query->where('status', 'approved');
+                $query->where('status', 'approved');    
             })
             ->orderBy(
                 SalaryPayroll::select('payroll_date')
