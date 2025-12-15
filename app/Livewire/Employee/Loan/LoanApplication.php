@@ -81,6 +81,22 @@ class LoanApplication extends Component
      ========================= */
     public function save(bool $confirm = true)
 {
+    // Check existing pending loans
+    $pending = Loan::where('employee_no', $this->employee_no)
+        ->whereIn('status', ['pending', 'approved'])
+        ->exists();
+
+    if ($pending) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Oops',
+            'message' => 'You already have a pending or active loan.'
+        ]);
+    }
+
+
+
     $this->validate();
 
     if ($confirm) {
