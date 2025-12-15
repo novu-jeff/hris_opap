@@ -2,215 +2,130 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow p-4">
+
+                {{-- HEADER --}}
                 <div class="card-header bg-transparent border-0">
-                    <p class="text-muted mb-0 text-uppercase fst-italic">All <span class="text-danger">*</span> is required</p>
+                    <p class="text-muted mb-0 text-uppercase fst-italic">
+                        All <span class="text-danger">*</span> is required
+                    </p>
                 </div>
+
                 <hr class="mx-3">
+
+                {{-- BODY --}}
                 <div class="card-body">
                     <div class="row mb-3">
-                        
-                         @if(($fields['status'] ?? null) === null)
+
+                        {{-- DATE --}}
                         <div class="col-12 col-md-4 mb-3">
-                            <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="date" 
-                                id="date" 
-                                class="form-control @error('fields.date') is-invalid @enderror" 
-                                 wire:model="fields.date"
-                                
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            <input
+                                type="date"
+                                class="form-control @error('fields.date') is-invalid @enderror"
+                                wire:model="fields.date"
+                                @if(($fields['status'] ?? null) === 'disapproved') readonly @endif
                             >
-                            <div class="error-field">
-                                @error('fields.date') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
+                            @error('fields.date')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
+
+                        {{-- START TIME --}}
                         <div class="col-12 col-md-4 mb-3">
-                            <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
+                            <label class="form-label">Start Time <span class="text-danger">*</span></label>
+                            <input
                                 type="text"
-                                id="start-time"
-                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror" 
+                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror"
                                 wire:model="fields.start_time"
+                                @if(($fields['status'] ?? null) === 'disapproved') readonly @endif
                             >
-                            <div class="error-field">
-                                @error('fields.start_time') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
+                            @error('fields.start_time')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
+
+                        {{-- END TIME --}}
                         <div class="col-12 col-md-4 mb-3">
-                            <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
+                            <label class="form-label">End Time <span class="text-danger">*</span></label>
+                            <input
                                 type="text"
-                                id="end-time"
-                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror" 
+                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror"
                                 wire:model="fields.end_time"
+                                @if(($fields['status'] ?? null) === 'disapproved') readonly @endif
                             >
-                            <div class="error-field">
-                                @error('fields.end_time') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
+                            @error('fields.end_time')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
-                        @endif 
-                        
 
-                         @if(($fields['status'] ?? null) === 'pending')
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="date" 
-                                id="date" 
-                                class="form-control @error('fields.date') is-invalid @enderror" 
-                                 wire:model="fields.date"
-                                
-                            >
-                            <div class="error-field">
-                                @error('fields.date') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="text"
-                                id="start-time"
-                                class="timepicker form-control @error('fields.start_time') is-invalid @enderror" 
-                                wire:model="fields.start_time"
-                            >
-                            <div class="error-field">
-                                @error('fields.start_time') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="text"
-                                id="end-time"
-                                class="timepicker form-control @error('fields.end_time') is-invalid @enderror" 
-                                wire:model="fields.end_time"
-                            >
-                            <div class="error-field">
-                                @error('fields.end_time') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-                        @endif 
+                        {{-- JUSTIFICATION --}}
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Justification <span class="text-danger">*</span></label>
 
-                          @if(($fields['status'] ?? null) === 'disapproved')
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="date" class="form-label"> Date <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="text" 
-                                readonly
-                                class="form-control restricted" value="{{ $fields['date'] }}">
-                            
-                        </div>
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="start-time" class="form-label">Start Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="text"  
-                                readonly
-                                class=" form-control restricted" value="{{ format_time($fields['start_time']) }}" >
-                            
-                        </div>
-                        <div class="col-12 col-md-4 mb-3">
-                            <label for="end-time" class="form-label">End Time <span class="text-danger fw-bold">*</span></label>
-                            <input 
-                                type="text" 
-                                class=" form-control restricted" value="{{ format_time($fields['end_time']) }}" >
-                           
-                        </div>
-                        @endif 
-                       {{-- <div class="col-12 col-md-12 mb-3" wire:ignore>
-                            <label for="relative-emp" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
-                            <select class="form-select multi-select" multiple wire:model="fields.employees">
-                                @foreach($OtherEmployees as $employee)
-                                    <option value="{{ $employee->employee_no }}">
-                                        ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
-                                    </option>
-                                @endforeach
-                            </select>                                
-                            <div class="error-field select2-error">
-                                
-                            </div>
-                        </div>--}}
-                        <div class="col-12 col-md-12 mb-3">
-                            <label for="justification" class="form-label">Justification <span class="text-danger fw-bold">*</span></label>
-                           
-                            @if(($fields['status'] ?? null) === null)
-                            <textarea 
-                                rows="5" 
-                                placeholder="Write something..."
-                                id="justification" 
-                                class="form-control @error('fields.justification') is-invalid @enderror" 
+                            <textarea
+                                rows="5"
+                                class="form-control @error('fields.justification') is-invalid @enderror
+                                    @if(($fields['status'] ?? null) === 'disapproved') restricted @endif"
                                 wire:model="fields.justification"
+                                @if(($fields['status'] ?? null) === 'disapproved') readonly @endif
                             ></textarea>
-                            <div class="error-field">
-                                @error('fields.justification') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            @endif  
 
-
-                           @if(($fields['status'] ?? null) === 'pending')
-                            <textarea 
-                                rows="5" 
-                                placeholder="Write something..."
-                                id="justification" 
-                                class="form-control @error('fields.justification') is-invalid @enderror" 
-                                wire:model="fields.justification"
-                            ></textarea>
-                            <div class="error-field">
-                                @error('fields.justification') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            @endif   
-                            
-                            @if(($fields['status'] ?? null) === 'disapproved')
-                            <textarea 
-                                rows="5" 
-                                id="justification" 
-                                class="form-control restricted" readonly>{{ $fields['justification'] ?? 'N/A' }}</textarea>
-                          
-                            @endif  
+                            @error('fields.justification')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
 
-                        <!-- ADD THIS BLOCK BELOW JUSTIFICATION -->
-                       @if(($fields['status'] ?? null) === 'disapproved')
-                        <div class="row">
+                        {{-- DISAPPROVAL NOTE --}}
+                        @if(($fields['status'] ?? null) === 'disapproved')
                             <div class="col-12 mb-4">
-                                <label class="mb-2" for="disapproval_note">Reason for Disapproval</label>
-                                <textarea id="disapproval_note" class="form-control restricted" rows="3" readonly>{{ $fields['disapproval_note'] ?? 'N/A' }}</textarea>
+                                <label class="mb-2">Reason for Disapproval</label>
+                                <textarea
+                                    rows="3"
+                                    class="form-control restricted"
+                                    readonly
+                                >{{ $fields['disapproval_note'] ?? 'N/A' }}</textarea>
                             </div>
-                        </div>
                         @endif
-                    </div>  
+
+                    </div>
                 </div>
+
                 <hr class="mx-3">
-                @if(($fields['status'] ?? null) === 'pending' || ($fields['status'] ?? null) === null)
-                <div class="card-footer bg-transparent border-0 d-flex justify-content-end gap-3">
-                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                        <span wire:loading.remove wire:target="save">Proceed <i class="fa-solid fa-arrow-right ms-2"></i></span>
-                        <span wire:loading wire:target="save">Proceeding <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                    </button>
-                </div>
-                 @endif
+
+                {{-- FOOTER --}}
+                @if(($fields['status'] ?? null) !== 'disapproved')
+                    <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-5 py-3 fw-bold">
+                            <span wire:loading.remove wire:target="save">
+                                Proceed <i class="fa-solid fa-arrow-right ms-2"></i>
+                            </span>
+                            <span wire:loading wire:target="save">
+                                Proceeding <i class="fa-solid fa-spinner fa-spin ms-2"></i>
+                            </span>
+                        </button>
+                    </div>
+                @endif
+
             </div>
         </div>
     </div>
 </form>
 
-@section('script')
-    <script>
-        $(function() {
-            $('.multi-select').select2();
-
-            $('.multi-select').on('change', function (e) {
-                const data = $('.multi-select').select2('val');
-                @this.dispatch('onChange', [data ?? null]);
+{{-- SCRIPTS --}}
+@push('scripts')
+<script>
+    function initTimePicker() {
+        if ($('.timepicker').length) {
+            $('.timepicker').timepicker({
+                timeFormat: 'H:i'
             });
+        }
+    }
 
+    document.addEventListener('livewire:navigated', initTimePicker);
 
-            Livewire.on('reloadSelect2', () => {
-                $('.multi-select').select2();
-            });
-
-            Livewire.on('select2Err', (error) => {
-                $('.select2-error').html('<span class="text-danger">'+error+'</span>');
-            });
-
-        });
-    </script>
-@endsection
+    Livewire.hook('message.processed', () => {
+        initTimePicker();
+    });
+</script>
+@endpush

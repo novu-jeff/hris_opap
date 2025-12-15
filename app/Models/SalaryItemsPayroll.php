@@ -81,4 +81,10 @@ class SalaryItemsPayroll extends Model
         return $this->belongsTo(SalaryPayroll::class, 'payroll_id', 'id');
     }
 
+    public function deductions()
+    {
+        return $this->hasMany(PayrollSallaryDeduction::class,'payroll_item_id')
+                        ->with('loan.loanType'); // 👈 important!
+    }
+
 }

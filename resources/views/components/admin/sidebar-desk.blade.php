@@ -79,6 +79,12 @@
                 </a>
                 @endcan
 
+                 @can('read leave')
+                <a href="{{ route('ess.loan') }}" class="submenu-item">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Loan Applications
+                </a>
+                @endcan
+
                 @can('read obs')
                 <a href="{{ route('ess.obs') }}" class="submenu-item">
                     <i class="fa-solid fa-briefcase"></i> Official Business Slip Application

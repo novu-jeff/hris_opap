@@ -195,6 +195,21 @@
 
     <!-- Deductions -->
     <div class="section-title">*** Deductions ***</div>
+    <!-- Loan Deductions -->
+@if($payslip->deductions->where('reference_type', 'loan')->count())
+    <table class="info-table">
+        @foreach($payslip->deductions->where('reference_type', 'loan') as $deduction)
+            <tr>
+                <td class="label">
+                    {{ $deduction->loan->loanType->name ?? 'Loan Deduction' }}
+                </td>
+                <td class="value">
+                    PHP {{ number_format($deduction->amount, 2) }}
+                </td>
+            </tr>
+        @endforeach
+    </table>
+@endif
     <table class="info-table">
         <tr><td class="label">GSIS Contribution:</td><td class="value">PHP {{ number_format($payslip['rlip'], 2) }}</td></tr>
         <tr><td class="label">PAG-IBIG Contribution:</td><td class="value">PHP {{ number_format($payslip['hdmf'], 2) }}</td></tr>
