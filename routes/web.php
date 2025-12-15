@@ -41,6 +41,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\ViolationController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherDeductionsController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherEarningsController;
 use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
+use App\Http\Controllers\Admin\Settings\HRIS\LoanTypeController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
@@ -66,6 +67,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
+use App\Http\Controllers\Employee\LoanController as EmployeeLoanController;
 use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
@@ -87,7 +89,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\SystemJobsController;
 use App\Http\Controllers\Admin\LeaveImportController;
-use App\Http\Controllers\Employee\LoanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -349,6 +350,9 @@ Route::prefix('admin')->group(function() {
         
                 Route::resource('employment-type', EmploymentTypeController::class)
                     ->names('employment-type');
+
+                Route::resource('loan-type', LoanTypeController::class)
+                    ->names('loan-type');    
         
                 Route::resource('position', PositionController::class)
                     ->names('position');
@@ -471,10 +475,10 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
 
          Route::prefix('loans')->group(function() {
 
-            Route::get('/', [LoanController::class, 'index'])
+            Route::get('/', [EmployeeLoanController::class, 'index'])
                 ->name('employee.loan');
-            Route::get('loan-application', [LoanController::class, 'create'])->name('employee.loan-application');
-            Route::get('{id}/edit', [LoanController::class, 'edit'])->name('employee.loan.edit');
+            Route::get('loan-application', [EmployeeLoanController::class, 'create'])->name('employee.loan-application');
+            Route::get('{id}/edit', [EmployeeLoanController::class, 'edit'])->name('employee.loan.edit');
            
                 
         });
