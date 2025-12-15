@@ -75,10 +75,19 @@ if (!method_exists($instance, 'computePayroll')) {
 
         // Update loan table
         foreach ($item['loan_deductions'] ?? [] as $ld) {
-            Loan::where('id', $ld['reference_id'])->update([
-                'balance' => DB::raw('balance - ' . $ld['amount']),
-                'last_posted_at' => now()
-            ]);
+            $loan = Loan::find($ld['reference_id']);
+            if ($loan) {
+                $loan->balance -= $ld['amount'];
+                $loan->last_posted_at = now();
+
+                // If fully paid, mark as 'paid'
+                if ($loan->balance <= 0) {
+                    $loan->balance = 0;
+                    $loan->status = 'completed';
+                }
+
+                $loan->save();
+            }
         }
     }
 }
