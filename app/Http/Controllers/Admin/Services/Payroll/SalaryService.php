@@ -307,10 +307,9 @@ class SalaryService extends Controller {
 
 
                  // Fetch approved loans for this employee
-             $employeeLoans = Loan::where('employee_no', $employee_no)
-                ->where('status', 'approved')
-                ->where('balance', '>', 0) // only loans with remaining balance
-                ->get();
+                $employeeLoans = Loan::where('employee_no', $employee_no)
+                    ->where('status', 'approved')
+                    ->get();
 
                 \Log::info('Employee loans fetched', [
                     'employee_no' => $employee_no,
@@ -323,18 +322,25 @@ class SalaryService extends Controller {
                 $other_loans = 0;
 
                 foreach ($employeeLoans as $loan) {
-                    $deductionAmount = $loan->monthly_amortization;
-                    $other_loans += $deductionAmount;
+                    if ($loan->balance > 0) {
+                        $deductionAmount = $loan->monthly_amortization;
+                        $other_loans += $deductionAmount;
 
-                    $loanDeductionsToInsert[] = [
-                        'payroll_item_id' => 0, // updated later
-                        'reference_type' => 'loan',
-                        'reference_id' => $loan->id,
-                        'description' => 'Loan deduction: ' . ($loan->loanType->name ?? 'Loan'),
-                        'amount' => $deductionAmount,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                        $loanDeductionsToInsert[] = [
+                            'payroll_item_id' => 0, // updated later
+                            'reference_type' => 'loan',
+                            'reference_id' => $loan->id,
+                            'description' => 'Loan deduction: ' . ($loan->loanType->name ?? 'Loan'),
+                            'amount' => $deductionAmount,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+
+                    } else {
+                        // Loan fully paid, mark as complete
+                        $loan->status = 'completed';
+                        $loan->save();
+                    }    
                 }
 
                 $salary_type = $employee['salary_type'];
