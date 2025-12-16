@@ -16,7 +16,7 @@
                     <a href="{{route('ess.announcements.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</a>
                 </div>
             @else
-                <a href="{{route('ess.announcements.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                <!-- <a href="{{route('ess.announcements.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
             @endif
         </div>
     </div>

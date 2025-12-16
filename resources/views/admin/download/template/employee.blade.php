@@ -102,7 +102,7 @@
 
     <div class="container">
         <div class="btn-actions">
-            <a href="{{route('hris.index')}}" class="btn-custom btn-back"><i class="fa-solid fa-arrow-left-long"></i> Go Back</a>
+            <!-- <a href="{{route('hris.index')}}" class="btn-custom btn-back"><i class="fa-solid fa-arrow-left-long"></i> Go Back</a> -->
             <button class="btn-custom btn-print"><i class="fa-solid fa-print"></i> Print Page</button>
             <a href="{{route('download.view', ['show' => 'employee', 'employee_no' => $data[0]['employee_no'], 'toPDS' => 'true'])}}" class="btn-custom btn-download"><i class="fa-solid fa-download"></i> Download PDS</a>
         </div>

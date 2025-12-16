@@ -10,7 +10,7 @@
             <h1>Add Loan Type</h1>
         </div>
         {{-- <div class="actions">
-            <a href="{{route('employment-type.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <!-- <a href="{{route('employment-type.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
         </div> --}}
     </div>
     <div class="mt-3">

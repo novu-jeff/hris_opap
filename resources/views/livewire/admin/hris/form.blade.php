@@ -1,6 +1,6 @@
 <div>
     <div class="d-flex justify-content-end mb-5 gap-3">
-        <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
+        <!-- <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a> -->
     </div>
     <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">

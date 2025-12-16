@@ -308,8 +308,8 @@ class Apply extends Component
                     ->where('status', false)
                     ->count();
 
-                $max_pending_application = env('MAX_PENDING_LEAVE_APPLICATION');
-
+                $max_pending_application = 5; // env('MAX_PENDING_LEAVE_APPLICATION', 5);
+// dd($pendingApplications, $max_pending_application);
                 if ($pendingApplications >= $max_pending_application) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
@@ -325,7 +325,7 @@ class Apply extends Component
                         ->where('status', 'pending')
                         ->where('isDeleted', false);
                 })->whereIn('date', $this->selectedDates)->exists();
-
+                // dd($existingLeave);
                 if ($existingLeave) {
                     return $this->dispatch('alert', [
                         'showAlert' => true,
@@ -376,8 +376,8 @@ class Apply extends Component
                             ]);
                         }
                     }
-                } else {
-
+                } else {    
+                    // dd('here');
                     $leaveCredits = $leaveCreditsModel::where('leave_type_id', $this->type)
                         ->where('employee_no', $this->employee_no)
                         ->first();
