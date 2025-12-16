@@ -42,7 +42,7 @@ class Clock extends Component
     ];
 
     protected $rules = [
-        'upload_accomplishment' => 'required|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // 2MB max
+        'upload_accomplishment' => 'required|file|mimes:pdf|max:5120', // 5MB max
     ];
 
     protected $validationAttributes = [
