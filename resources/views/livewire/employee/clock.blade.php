@@ -248,10 +248,18 @@
                         {{-- Accomplishment file input --}}
                         <div class="mb-3">
                             <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
-                            <input type="file" wire:model="upload_accomplishment" id="accomplishmentFile" class="form-control"  >
-                            @error('upload_accomplishment') 
-                                <span class="text-danger">{{ $message }}</span> 
+                            <input
+                                type="file"
+                                wire:model="upload_accomplishment"
+                                id="accomplishmentFile"
+                                class="form-control"
+                                accept="application/pdf"
+                            />
+
+                            @error('upload_accomplishment')
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
+
 
                             {{-- Temporary preview link --}}
                             @if($upload_accomplishment)

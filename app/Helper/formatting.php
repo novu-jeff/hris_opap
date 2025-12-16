@@ -263,6 +263,17 @@ if (!function_exists('file_type')) {
     }
 }
 
+if (!function_exists('file')) {
+    function file($string) {
+        $extension = strtolower(pathinfo($string, PATHINFO_EXTENSION));
+        if (in_array($extension, ['pdf'])) {
+            return 'pdf';
+        } else {
+            return $extension;
+        }
+    }
+}
+
 
 if(!function_exists('format_time')) {
     function format_time($time) {
