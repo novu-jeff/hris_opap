@@ -56,7 +56,7 @@
         @if(empty($items))
             <button class="btn btn-primary px-5 py-3 text-uppercase" wire:click="uploadRecords">Upload Billing</button>
         @else
-            <a href="{{route('gsis.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
+            <!-- <a href="{{route('gsis.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a> -->
         @endif
     </div>
 

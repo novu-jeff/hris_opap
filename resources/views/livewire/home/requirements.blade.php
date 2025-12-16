@@ -25,7 +25,7 @@
                                 </div>    
                                 <div class="card-body py-4">
                                     <div class="d-flex gap-3 justify-content-start">
-                                        <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button>
+                                        <!-- <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button> -->
                                         <a href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 px-5 py-3 text-uppercase fw-bold">View Job</a>
                                     </div> 
                                 </div>                           

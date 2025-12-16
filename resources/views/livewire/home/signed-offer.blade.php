@@ -24,7 +24,7 @@
                                     <hr class="mx-3">
                                     <div class="card-body pt-1 pb-4">
                                         <div class="d-flex gap-3 justify-content-start">
-                                            <button type="button" wire:click="go_back" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</button>
+                                            <!-- <button type="button" wire:click="go_back" class="btn btn-primary text-uppercase fw-bold px-5 py-3 fs-6">Go Back</button> -->
                                             <a href="{{route('home.view-job', ['slug' => $record->job->slug])}}" class="btn btn-outline-primary d-flex align-items-center gap-2 px-5 py-3 text-uppercase fw-bold">View Job</a>
                                         </div>   
                                         <div class="row mt-4">
@@ -54,7 +54,7 @@
             @else
                 <div class="alert alert-info text-uppercase text-center">Job Offer Already Signed.</div>
                 <div class="mt-3 d-flex justify-content-center">
-                    <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button>
+                    <!-- <button type="button" wire:click="go_back" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</button> -->
                 </div>
             @endif
         </div>
