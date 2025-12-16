@@ -152,6 +152,7 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeUpdatePersonal::class => 'employee_no',
                 \App\Models\EmployeeUpdateSkillsHobbies::class => 'employee_no',
                 \App\Models\EmployeeUpdateTrainings::class => 'employee_no',
+                \App\Models\Loan::class => 'employee_no',
             ];
              \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
             $jobs = [];
