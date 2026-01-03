@@ -268,7 +268,7 @@ class Clock extends Component
             return;
         }
 
-        if (is_null($this->gps_location)) {
+       /* if (is_null($this->gps_location)) {
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'info',
@@ -276,7 +276,7 @@ class Clock extends Component
                 'message' => 'No location detected. Please make sure to enable your location or GPS.',
             ]);
             return;
-        }
+        }*/
 
         if (empty($this->imageCaptured)) {
             $this->dispatch('alert', [

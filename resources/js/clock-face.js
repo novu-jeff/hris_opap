@@ -20,7 +20,7 @@ export function initializeClockFace() {
         const $clockModal = $('#clockInModal');
         const clockModal = new bootstrap.Modal($clockModal[0], { backdrop: 'static', keyboard: false });
 
-        startLocate();
+       // startLocate();
         startCamera();
 
         // -----------------------------
@@ -39,7 +39,7 @@ export function initializeClockFace() {
         });
 
         Livewire.on('loadDefaults', () => {
-            startLocate();
+            //startLocate();
             startCamera();
         });
 
@@ -54,21 +54,21 @@ export function initializeClockFace() {
             if (!isFaceDetected) return showAlert('No Face Detected', 'Please ensure your face is visible to the camera.');
             
             // ✅ Check actual latitude and longitude
-            if (latitude === null || longitude === null) {
+           /* if (latitude === null || longitude === null) {
                 return showAlert('No Location Detected', 'Please enable your GPS/location services.');
-            }
+            }*/
 
             if (imageData) {
                 $clockPreview.attr('src', imageData);
                 showCountdownModal(imageData, isFaceDetected);
                 stopCamera();
-                stopLocate();
+               // stopLocate();
             }
         });
 
         $(document).on('click', '.retakeButton', () => {
             startCamera();
-            startLocate();
+            //startLocate();
         });
 
         async function captureSnapshot(element) {
@@ -90,17 +90,19 @@ export function initializeClockFace() {
             const proceedLabel = proceedBtn.querySelector('span');
             let countdown = 5;
 
-            proceedBtn.disabled = true;
-            proceedLabel.textContent = `Proceed (${countdown})`;
+           // proceedBtn.disabled = true;
+           // proceedLabel.textContent = `Proceed (${countdown})`;
+           proceedLabel.textContent = `Proceed`;
+            proceedBtn.disabled = false;
 
-            const interval = setInterval(() => {
+          /*  const interval = setInterval(() => {
                 countdown--;
                 proceedLabel.textContent = countdown > 0 ? `Proceed (${countdown})` : 'Proceed';
                 if (countdown <= 0) {
                     clearInterval(interval);
                     proceedBtn.disabled = false;
                 }
-            }, 1000);
+            }, 1000);*/
 
             Livewire.dispatch('imageCaptured', [imageData, faceStatus, forced]);
         }
