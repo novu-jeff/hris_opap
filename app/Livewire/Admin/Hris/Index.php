@@ -338,6 +338,8 @@ class Index extends Component
 
                 $chunks = array_chunk(array_values($sheet), 100);
 
+              
+
                 foreach ($chunks as $chunk) {
                     $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
                 }
