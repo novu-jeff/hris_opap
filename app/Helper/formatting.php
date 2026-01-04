@@ -45,12 +45,12 @@ if(!function_exists('relative_time')) {
 
 if (!function_exists('relative_time_duration')) {
     
-    function relative_time_duration(string $date)
+    function relative_time_duration(?string $date): string
     {
 
-        if (!$date) {
-            return 'N/A';
-        }
+       if (empty($date)) {
+        return 'N/A';
+    }
 
         $date = Carbon::parse($date);
         $now  = Carbon::now();
