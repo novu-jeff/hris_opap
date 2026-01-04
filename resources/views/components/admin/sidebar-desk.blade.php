@@ -274,7 +274,7 @@
                     @endcan
                     @can('read gsis-billing')
                     <a href="{{ route('gsis.index') }}" class="submenu-item">
-                        <i class="fa-solid fa-bank"></i>  SIS Billing</a>
+                        <i class="fa-solid fa-bank"></i>  GSIS Billing</a>
                     @endcan
                     @can('read other-earnings')
                     <a href="{{ route('other-earnings.index') }}" class="submenu-item">

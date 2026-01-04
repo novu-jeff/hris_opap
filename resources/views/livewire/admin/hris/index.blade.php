@@ -63,7 +63,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">Add Employee</h1>
-                    <button type="button" class="btn-close" wire:loading.remove wire:target="upload_file" wire:click="close_upload_employee" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:loading.remove wire:target="file" wire:click="close_upload_employee" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body py-4 px-4">
                     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
