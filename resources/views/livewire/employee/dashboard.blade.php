@@ -339,7 +339,7 @@
             <div class="row mb-2">
                 <div class="col-6">Date Hired:</div>
                 <div class="col-6 text-end fw-bold">
-                    {{ \Carbon\Carbon::parse($dateHired)->format('F d, Y') }}
+                    {{ $dateHired == 'N/A'? 'N/A' : \Carbon\Carbon::parse($dateHired)->format('F d, Y') }}
                 </div>
             </div>
 
