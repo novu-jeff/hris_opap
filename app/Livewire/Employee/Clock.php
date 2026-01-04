@@ -82,7 +82,7 @@ class Clock extends Component
    public function getLocation($lng, $lat, $isToHide = false)
 {
     // Log coordinates received from JS
-    \Log::info('GPS Location Received:', ['lng' => $lng, 'lat' => $lat, 'isToHide' => $isToHide]);
+    // \Log::info('GPS Location Received:', ['lng' => $lng, 'lat' => $lat, 'isToHide' => $isToHide]);
 
     $this->isToHide = $isToHide;
     $accessToken = env('MAPBOX_API');
@@ -126,7 +126,7 @@ class Clock extends Component
                     'lat' => $lat
                 ]
             ];
-            \Log::warning('Mapbox API request failed', ['status' => $response->status()]);
+            // \Log::warning('Mapbox API request failed', ['status' => $response->status()]);
         }
     } catch (\Exception $e) {
         // Network or other errors — fallback to coordinates

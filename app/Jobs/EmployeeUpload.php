@@ -15,7 +15,6 @@ use Throwable;
 class EmployeeUpload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
-
     protected $chunk;
     protected $sheetName;
     protected $schedules;

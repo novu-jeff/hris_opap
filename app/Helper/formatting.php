@@ -43,6 +43,7 @@ if(!function_exists('relative_time')) {
     }
 }
 
+
 if (!function_exists('relative_time_duration')) {
     
     function relative_time_duration(?string $date): string
@@ -52,8 +53,13 @@ if (!function_exists('relative_time_duration')) {
         return 'N/A';
     }
 
-        $date = Carbon::parse($date);
-        $now  = Carbon::now();
+        try {
+            $date = Carbon::parse($date);
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
+
+        $now = Carbon::now();
 
         // If hire date is in the future
         if ($date->greaterThan($now)) {
@@ -80,7 +86,7 @@ if (!function_exists('relative_time_duration')) {
             $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
         }
 
-        return count($parts) ? implode(', ', $parts) : 'less than a day'; 
+        return $parts ? implode(', ', $parts) : 'less than a day';
     }
 }
 
