@@ -73,36 +73,7 @@
                             <div class="watermark">
                                 <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
                             </div>
-                            <div class="overlay py-3">
-                                <div class="{{ $gps_location && !$isToHide ? 'd-block' : 'd-none' }}">
-                                    <div class="map-container" wire:ignore>
-                                        <div id="map"></div>
-                                    </div>
-                                </div>
-                                <div class="details p-2 d-flex align-items-center">
-    <div id="location-info">
-        @if($gps_location && !$isToHide)
-            @php
-                $place = $gps_location['place'] ?? null;
-                $lat = $gps_location['coordinates']['lat'] ?? 0;
-                $lng = $gps_location['coordinates']['lng'] ?? 0;
-            @endphp
-
-            <div class="mb-0" id="face-status"></div>
-           <!-- <div class="mb-0">
-                {{--{{ $place ?? "Lat: {$lat}, Long: {$lng}" }}--}}
-            </div>-->
-            <div class="mb-0">Lat: {{ number_format($lat, 5) }}°, Long: {{ number_format($lng, 5) }}°</div>
-            <div class="mb-0">{{ now()->toDayDateTimeString() }}</div>
-        @else
-            <div class="text-nowrap">
-                Locating, Please Wait... <i class="ms-2 fa-solid fa-spinner fa-spin"></i>
-            </div>
-        @endif
-    </div>
-</div>
-
-                            </div>
+                            
                         </div>
                         <div class="text-muted text-center text-muted text-uppercase mt-3 fst-italic">
                             <small>Please ensure your face is clearly visible and your location is enabled before proceeding.</small>

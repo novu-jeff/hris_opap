@@ -19,18 +19,36 @@ use App\Models\EmployementTypes;
 use App\Models\Positions;
 use App\Models\Sections;
 use App\Models\Tranche;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class EmployeeUploadService extends Controller
 {
 
-    public function transformDate($value) {
-        if(is_numeric($value)) {
-            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
-        } else {
-            return format_date($value, 'carbon_date')->format('Y-m-d');
-        }
-    }    
+    private function normalizeHeader($header)
+    {
+        return strtolower(trim($header));
+    }
+
+
+    public function transformDate($value)
+{
+    if (empty($value)) {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
+            ->format('Y-m-d');
+    }
+
+    try {
+        return \Carbon\Carbon::parse($value)->format('Y-m-d');
+    } catch (\Exception $e) {
+        return null;
+    }
+}
+   
 
     private function getMonthlySalary($eligible, $position_id, $step_id)
     {
@@ -53,50 +71,89 @@ class EmployeeUploadService extends Controller
         return 0;
     }
     
-    public function uploadEmployeeInformation($data, $schedules)
-    {
-        $product = strtolower(env('APP_PRODUCT'));
-        Log::info("Starting uploadEmployeeInformation process for product: {$product}");
 
-        foreach ($data as $key => $employeeData) {
-            Log::info("Processing employee row #{$key}", ['employee_no' => $employeeData[0] ?? null]);
 
-            if ($product === 'government') {
-                $indexes = [
-                    'job_category' => 17,
-                    'position' => 18,
-                    'section' => 19,
-                    'company_name' => null,
-                    'date_hired' => 16,
-                    'bank_account_no' => 15,
-                    'gsis' => 11,
-                    'pagibig' => 12,
-                    'philhealth' => 13,
-                    'tin' => 14,
-                    'email' => 20,
-                    'salary' => 20,
-                ];
-            } else {
-                $indexes = [
-                    'job_category' => 18,
-                    'position' => 19,
-                    'section' => 20,
-                    'company_name' => 16,
-                    'date_hired' => 17,
-                    'bank_account_no' => 15,
-                    'gsis' => null,
-                    'pagibig' => 11,
-                    'philhealth' => 13,
-                    'tin' => 14,
-                    'email' => 21,
-                    'sss' => 12,
-                    'salary' => 21,
-                ];
-            }
+public function uploadEmployeeInformation(array $rows, array $schedules)
+{
+    if (count($rows) === 0) {
+        Log::warning('Employee Information sheet is emptys');
+        return;
+    }
 
-            $jobCategoryName = trim($employeeData[$indexes['job_category']] ?? '');
-            $positionName = trim($employeeData[$indexes['position']] ?? '');
-            $sectionName = trim($employeeData[$indexes['section']] ?? '');
+    $expectedHeaders = [
+        'employee no.',
+        'bsd no.',
+        'lastname',
+        'firstname',
+        'middlename',
+        'address',
+        'sex',
+        'civil status',
+        'birthday',
+        'age',
+        'gsis id',
+        'pagibig id',
+        'sss id',
+        'philhealth id',
+        'tin id',
+        'bank account no.',
+        'date hired',
+        'position',
+        'monthly salary',
+        'job category',
+        'email',
+        'unit'
+    ];
+
+    // Normalize first row
+    $firstRow = array_map(fn($v) => strtolower(trim((string) $v)), $rows[0]);
+
+    // Detect header row
+    $headerMatches = array_intersect($expectedHeaders, $firstRow);
+    $hasHeaderRow = count($headerMatches) >= 3;
+
+    Log::info('Employee Information header detection', [
+        'has_header' => $hasHeaderRow,
+        'matches' => array_values($headerMatches),
+    ]);
+
+    // Build column map
+    $columnMap = [];
+    if ($hasHeaderRow) {
+        foreach ($expectedHeaders as $header) {
+            $columnMap[$header] = array_search($header, $firstRow);
+        }
+        $startRow = 1;
+    } else {
+        $columnMap = array_combine($expectedHeaders, range(0, count($expectedHeaders) - 1));
+        $startRow = 0;
+    }
+
+    // Process each row
+    for ($i = $startRow; $i < count($rows); $i++) {
+        $row = $rows[$i];
+
+        // Map row data
+        $data = [];
+        foreach ($columnMap as $field => $index) {
+            $data[$field] = $row[$index] ?? null;
+        }
+
+        if (empty($data['employee no.'])) {
+            Log::warning('Skipping row without employee number', ['row' => $i + 1]);
+            continue;
+        }
+
+        // Normalize dates and numeric fields
+        $data['birthday'] = $this->transformDate($data['birthday']);
+        $data['date hired'] = $this->transformDate($data['date hired']);
+        $data['monthly salary'] = is_numeric($data['monthly salary'])
+            ? (float) $data['monthly salary']
+            : null;
+
+         $jobCategoryName = ucfirst(strtolower(trim($data['job category'] ?? '')));
+            $positionName = trim($data['position'] ?? '');
+            $sectionName = trim($data['section'] ?? '');
 
             $jobCategory = !empty($jobCategoryName)
                 ? EmployementTypes::firstOrCreate(['name' => $jobCategoryName])
@@ -108,77 +165,76 @@ class EmployeeUploadService extends Controller
                 : null;
             Log::info("Position processed", ['name' => $positionName, 'id' => $position?->id]);
 
-            $section = !empty($sectionName)
+         /*   $section = !empty($sectionName)
                 ? Sections::firstOrCreate(['name' => $sectionName])
                 : null;
-            Log::info("Section processed", ['name' => $sectionName, 'id' => $section?->id]);
+            Log::info("Section processed", ['name' => $sectionName, 'id' => $section?->id]);   */ 
 
-            $monthlyRate = 0;
-            if ($product === 'government') {
-                $monthlyRate = $this->getMonthlySalary(
-                    $jobCategory?->id ?? '',
-                    $position?->id ?? '',
-                    1
-                );
-            } else {
-                $monthlyRate = floatval($employeeData[$indexes['salary']] ?? 0);
-            }
-            Log::info("Monthly rate determined", ['rate' => $monthlyRate]);
+        Log::info('Uploading employee', [
+            'row' => $i + 1,
+            'employee_no' => $data['employee no.']
+        ]);
 
-            $employeeInfo = EmployeeInformation::updateOrCreate(
-                ['employee_no' => $employeeData[0]],
-                [
-                    'bsd_no' => $employeeData[1],
-                    'shift_id' => $schedules['shift'] ?? null,
-                    'schedule_id' => $schedules['schedule'] ?? null,
-                    'section_id' => $section?->id,
-                    'date_hired' => $this->transformDate($employeeData[$indexes['date_hired']] ?? null),
-                    'position_id' => $position?->id,
-                    'employment_type_id' => $jobCategory?->id,
-                    'bank_account_no' => $employeeData[$indexes['bank_account_no']] ?? null,
-                    'salary' => $monthlyRate,
-                ]
+        // =========================
+        // EmployeeInformation (HR/payroll)
+        // =========================
+        EmployeeInformation::updateOrCreate(
+            ['employee_no' => $data['employee no.']],
+            [
+                'bsd_no'          => $data['bsd no.'],
+                'bank_account_no' => $data['bank account no.'],
+                'date_hired' => $this->transformDate($data['date hired'] ?? null),
+                'position_id'        => $position?->id,
+                'salary'  => $data['monthly salary'],
+                'employment_type_id'    => $jobCategory?->id,
+                'email'           => $data['email'],
+                'unit'            => $data['unit'],
+                'shift_id'        => $schedules['shift'] ?? null,
+                'schedule_id'     => $schedules['schedule'] ?? null,
+            ]
+        );
+
+        // =========================
+        // EmployeePersonal (personal info)
+        // ==========================
+        EmployeePersonal::updateOrCreate(
+            ['employee_no' => $data['employee no.']],
+            [
+                'lastname'      => $data['lastname'],
+                'firstname'     => $data['firstname'],
+                'middlename'    => $data['middlename'],
+                'present_address'=> $data['address'],
+                'sex'           => strtolower($data['sex'] ?? ''),
+                'civil_status'  => strtolower($data['civil status'] ?? ''),
+                'birthday'      => $data['birthday'],
+                'age'           => $data['age'],
+                'gsis_no'       => $data['gsis id'],
+                'pagibig_no'    => $data['pagibig id'],
+                'sss_no'        => $data['sss id'],
+                'philhealth_no' => $data['philhealth id'],
+                'tin_no'        => $data['tin id'],
+            ]
+        );
+
+
+        $this->createAccount(
+                $data['employee no.'],
+                $data['firstname'],
+                $data['lastname'],
+                $data['email'] ?? null
             );
-            Log::info("Employee information updated/created", ['employee_no' => $employeeData[0]]);
-
-            $personalData = [
-                'bsd_no' => $employeeData[1],
-                'lastname' => $employeeData[2],
-                'firstname' => $employeeData[3],
-                'middlename' => $employeeData[4],
-                'present_address' => $employeeData[5],
-                'sex' => strtolower($employeeData[7] ?? ''),
-                'civil_status' => strtolower($employeeData[8] ?? ''),
-                'birthday' => $this->transformDate($employeeData[9] ?? null),
-                'age' => $employeeData[10] ?? null,
-                'pagibig_no' => $employeeData[$indexes['pagibig']] ?? null,
-                'philhealth_no' => $employeeData[$indexes['philhealth']] ?? null,
-                'tin_no' => $employeeData[$indexes['tin']] ?? null,
-            ];
-
-            if ($product === 'government') {
-                $personalData['gsis_no'] = $employeeData[$indexes['gsis']] ?? null;
-            } else {
-                $personalData['sss_no'] = $employeeData[$indexes['sss']] ?? null;
-            }
-
-            EmployeePersonal::updateOrCreate(
-                ['employee_no' => $employeeData[0]],
-                $personalData
-            );
-            Log::info("Employee personal data updated/created", ['employee_no' => $employeeData[0]]);
-
-            $this->createAccount(
-                $employeeData[0],
-                $employeeData[3],
-                $employeeData[2],
-                $employeeData[$indexes['email']] ?? null
-            );
-            Log::info("Account created for employee", ['employee_no' => $employeeData[0]]);
-        }
-
-        Log::info("Completed uploadEmployeeInformation process.");
+            Log::info("Account created for employee", ['employee_no' =>  $data['employee no.']]);
     }
+
+    Log::info('Employee Information upload completed');
+}
+
+
+
+
+
+
+
 
 
     public function uploadFamilyBackground($data) {
