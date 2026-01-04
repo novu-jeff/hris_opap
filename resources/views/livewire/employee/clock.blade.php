@@ -76,7 +76,7 @@
                             
                         </div>
                         <div class="text-muted text-center text-muted text-uppercase mt-3 fst-italic">
-                            <small>Please ensure your face is clearly visible and your location is enabled before proceeding.</small>
+                            <small>Please ensure your face is clearly visible before proceeding.</small>
                         </div>
                     </div>
                 </div>
