@@ -12,7 +12,7 @@
             <i class="fa-solid fa-gauge"></i> Dashboard
         </a>
 
-        <a href="{{ route('employee.announcements.index') }}" class="menu-item">
+      <!--  <a href="{{ route('employee.announcements.index') }}" class="menu-item">
             <i class="fa-solid fa-bullhorn"></i> Announcements
         </a>
 
@@ -33,7 +33,7 @@
 
        <a href="{{ route('employee.loan') }}" class="menu-item">
             <i class="fa-solid fa-hand-holding-dollar"></i> Loan Application
-        </a>
+        </a>-->
         
       <!-- <a href="{{ route('employee.leave-card') }}" class="menu-item">
             <i class="fa-solid fa-id-card"></i> Leave Card
@@ -43,18 +43,18 @@
             <i class="fa-solid fa-coins"></i> Leave Credits
         </a>-->
 
-        <a href="{{ route('employee.atro') }}" class="menu-item">
+       <!-- <a href="{{ route('employee.atro') }}" class="menu-item">
             <i class="fa-solid fa-business-time"></i> Overtime (ATRO)
         </a>
 
         <a href="{{ route('employee.obs.index') }}" class="menu-item">
             <i class="fa-solid fa-briefcase"></i> Official Business
-        </a>
+        </a>-->
 
        <!-- <a href="{{ route('employee.clock') }}" class="menu-item clock-button">
             <i class="fa-solid fa-clock"></i> Clock In / Out
         </a>-->
-        <a href="{{ route('employee.team') }}" class="menu-item">
+      <!--  <a href="{{ route('employee.team') }}" class="menu-item">
             <i class="fa-solid fa-users"></i> My Team
         </a>
 
@@ -67,7 +67,7 @@
         </a>
         <a href="{{ route('employee.tutorial') }}" class="menu-item">
             <i class="fa-solid fa-graduation-cap"></i> Tutorials
-        </a>
+        </a>-->
 
     </div>
 
