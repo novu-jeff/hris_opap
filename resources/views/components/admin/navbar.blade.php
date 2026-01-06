@@ -1,13 +1,13 @@
 <nav class="navbar navbar-light bg-white shadow-sm fixed-top">
-    <div class="container-fluid d-flex justify-content-between align-items-center px-2 px-lg-4">
+    <div class="container-fluid px-2 px-lg-4 d-flex align-items-center">
 
-        <!-- LEFT: Sidebar toggle -->
+        <!-- LEFT: Sidebar toggle (mobile) -->
         <button class="btn d-lg-none me-2" id="sidebarToggle">
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <!-- RIGHT SIDE: Notifications + Profile -->
-        <div class="d-flex align-items-center gap-2 gap-lg-3 flex-wrap" style="overflow: visible;">
+        <!-- RIGHT: Always visible -->
+        <div id="navbarTopContent" class="ms-auto d-flex align-items-center gap-2 gap-lg-3 flex-wrap" style="overflow: visible;">
 
             <!-- Notifications -->
             <div class="flex-shrink-0">
@@ -16,14 +16,19 @@
 
             <!-- Profile Dropdown -->
             <div class="dropdown flex-shrink-0" style="position: relative;">
-                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 
+                   href="#" 
+                   role="button" 
+                   data-bs-toggle="dropdown" 
+                   aria-expanded="false">
 
-                    <img class="rounded-circle border"
-                         style="width: 36px; height: 36px"
-                         src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(Auth::user()->name)}}"
-                         alt="Profile">
+                    <img class="profile-img rounded-circle border"
+                         style="width: 40px; height: 40px"
+                         src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(Auth::user()->name)}}" 
+                         alt="Profile Image">
 
                     <div class="d-flex flex-column">
+                        <!-- Name always visible -->
                         <span class="fw-bold text-uppercase text-truncate" style="max-width: 100px;">
                             {{ Auth::user()->name }}
                         </span>
