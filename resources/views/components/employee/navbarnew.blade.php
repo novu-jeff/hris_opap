@@ -51,7 +51,7 @@
                              alt="Profile">
 
                         <!-- Name (always visible) -->
-                        <span class="fw-bold text-uppercase text-truncate" style="max-width: 100px;">
+                        <span class="fw-bold text-uppercase "> 
                             {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
                         </span>
                     </a>
