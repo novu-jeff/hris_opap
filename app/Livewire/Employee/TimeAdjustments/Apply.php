@@ -28,6 +28,11 @@ class Apply extends Component
     public $reason;
     public $attachments = [];
     public $preview_attachments = [];
+    protected $rules = [
+        'attachments' => 'required|array|min:1',
+        'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
+    ];
+
 
     protected $listeners = ['save'];
 
@@ -89,16 +94,15 @@ class Apply extends Component
         $record = EmployeeTimeAdjustmentsAttachments::find($id);
 
         if ($record) {
+            Storage::disk('public')->delete($record->attachment);
             $record->delete();
 
-            if (Storage::disk('public')->exists('request-timelogs/' . $record->attachment)) {
-                Storage::disk('public')->delete('request-timelogs/' . $record->attachment);
-                $this->preview_attachments = array_filter($this->preview_attachments, function ($record) use ($id) {
-                    return $record['id'] != $id;
-                });                
-            }
-        } 
+            $this->preview_attachments = array_values(
+                array_filter($this->preview_attachments, fn ($item) => $item['id'] != $id)
+            );
+        }
     }
+
 
 
     public function save(bool $isNotify = true) {
@@ -131,30 +135,22 @@ class Apply extends Component
 
                 foreach ($this->attachments as $attachment) {
 
-                    if ($attachment instanceof \Illuminate\Http\UploadedFile) {
-                        $filename = strtolower(str_replace(' ', '_', $attachment->getClientOriginalName()));
-                    } else {
-                        $filename = $attachment;
-                    }
+                    $filename = strtolower(
+                        time() . '_' . str_replace(' ', '_', $attachment->getClientOriginalName())
+                    );
 
-                    if ($attachment instanceof \Illuminate\Http\UploadedFile) {
-                        $attachment->storeAs('request-timelogs', strtolower($filename), 'public');
-                    }
+                    $path = $attachment->storeAs(
+                        'time-adjustments',
+                        $filename,
+                        'public'
+                    );
 
-                    $existingAttachment = EmployeeTimeAdjustmentsAttachments::where('employee_requests_id', $model->id)->first();
-                    if ($existingAttachment && $existingAttachment->file) {
-                        Storage::disk('public')->delete('request-timelogs/' . $existingAttachment->file);
-                    }
-
-                    EmployeeTimeAdjustmentsAttachments::updateOrCreate([
+                    EmployeeTimeAdjustmentsAttachments::create([
                         'employee_requests_id' => $model->id,
-                        'attachment' => $filename,
-                    ], [
-                        'employee_requests_id' => $model->id,
-                        'attachment' => $filename,
+                        'attachment' => $path,
                     ]);
-                    
                 }
+
 
 
                 if (is_null($this->record_id)) {
