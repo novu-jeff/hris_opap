@@ -241,7 +241,7 @@ class Show extends Component
 
         if ($personal && $update && $account) {
             $fields = [
-                 'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
+                'profile', 'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
                 'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
                 'present_address', 'present_province', 'present_city',
                 'permanent_address', 'permanent_province', 'permanent_city',
