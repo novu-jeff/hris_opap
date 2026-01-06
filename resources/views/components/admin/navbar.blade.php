@@ -7,49 +7,48 @@
         </button>
 
         <!-- RIGHT: Always visible -->
-        <div id="navbarTopContent" class="ms-auto d-flex align-items-center gap-2 gap-lg-3 flex-wrap" style="overflow: visible;">
+        <div id="navbarTopContent"
+             class="ms-auto d-flex align-items-center gap-1 gap-lg-3 flex-nowrap">
 
             <!-- Notifications -->
-            <div class="flex-shrink-0">
+            <div class="nav-item flex-shrink-0">
                 @livewire('notifications')
             </div>
 
             <!-- Profile Dropdown -->
-            <div class="dropdown flex-shrink-0" style="position: relative;">
-                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 
-                   href="#" 
-                   role="button" 
-                   data-bs-toggle="dropdown" 
-                   aria-expanded="false">
+      
+                <div class="nav-item dropdown flex-shrink-0" style="position: relative;">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-1 gap-lg-2"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false" title="{{ Auth::user()->name }}">
 
-                    <img class="profile-img rounded-circle border"
-                         style="width: 40px; height: 40px"
-                         src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(Auth::user()->name)}}" 
-                         alt="Profile Image">
+                        <!-- Avatar -->
+                        <img class="profile-img" style="width: 40px; height: 40px"
+                            src="https://ui-avatars.com/api/?background=005668&color=ffffff&font-size=0.4&bold=true&name={{ urlencode(Auth::user()->name)}}" 
+                            alt="Profile Image">
 
-                    <div class="d-flex flex-column">
-                        <!-- Name always visible -->
+                        <!-- Name (always visible) -->
                         <span class="fw-bold text-uppercase text-truncate" style="max-width: 100px;">
-                            {{ Auth::user()->name }}
+                             {{ Auth::user()->name }}
                         </span>
-                        <small class="text-uppercase fw-bold text-muted mb-0 text-truncate" style="max-width: 100px;">
-                            {{ Auth::user()->getRoleNames()->first() }}
-                        </small>
-                    </div>
-                </a>
+                    </a>
 
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('home.logout') }}"
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        
+                        <li>
+                             <a class="dropdown-item" href="{{ route('home.logout') }}"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             Logout
                         </a>
                         <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
                             @csrf
                         </form>
-                    </li>
-                </ul>
-            </div>
+                        </li>
+                    </ul>
+                </div>
+         
 
         </div>
     </div>
