@@ -27,6 +27,7 @@ class EmployeeInformation extends Model
         'status',
         'salary_method',
         'salary',
+        'w_tax',
         'salary_type',
         'bank_account_no',
         'payroll_account_number',

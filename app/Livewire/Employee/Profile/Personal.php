@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Log;
 
 class Personal extends Component
 {
@@ -232,7 +233,14 @@ class Personal extends Component
         return;
     }
 
+        Log::info('Employee Personal SAVE payload', [
+            'employee_no' => $this->employee_no,
+            'records' => $this->records,
+        ]);
+
     DB::beginTransaction();
+
+
 
     try {
         $data = $this->records;
@@ -240,13 +248,47 @@ class Personal extends Component
         // ---- HANDLE PROFILE PHOTO ----
         if (!empty($data['profile']) && method_exists($data['profile'], 'store')) {
             //dd(123);    
-                $folder = 'employees/' . $employee_no;
+                $folder = 'employees/tempo/' . $employee_no;
                 $fileName = 'profile.' . $data['profile']->getClientOriginalExtension();
                 $filePath = $data['profile']->storeAs($folder, $fileName, 'public');
                 $data['profile'] = $filePath; // save path for DB
          } elseif (!isset($data['profile'])) {
             $data['profile'] = null;
         }
+
+        Log::info('EmployeeUpdatePersonal DB payload', [
+            'employee_no' => $employee_no,
+            'data' => [
+                'profile' => $data['profile'] ?? null,
+                'firstname' => $data['firstname'] ?? null,
+                'middlename' => $data['middlename'] ?? null,
+                'lastname' => $data['lastname'] ?? null,
+                'suffix' => $data['suffix'] ?? null,
+                'birthday' => $data['birthday'] ?? null,
+                'civil_status' => $data['civil_status'] ?? null,
+                'sex' => $data['sex'] ?? null,
+                'citizenship' => $data['citizenship'] ?? null,
+                'citizenship_type' => $data['citizenship_type'] ?? null,
+                'country' => $data['country'] ?? null,
+                'present_address' => $data['present_address'] ?? null,
+                'present_province' => $data['present_province'] ?? null,
+                'present_city' => $data['present_city'] ?? null,
+                'permanent_address' => $data['permanent_address'] ?? null,
+                'permanent_province' => $data['permanent_province'] ?? null,
+                'permanent_city' => $data['permanent_city'] ?? null,
+                'mobile_number' => $data['mobile_number'] ?? null,
+                'tel_no' => $data['tel_no'] ?? null,
+                'email' => $data['email'] ?? null,
+                'height' => $data['height'] ?? null,
+                'weight' => $data['weight'] ?? null,
+                'blood_type' => $data['blood_type'] ?? null,
+                'gsis_no' => $data['gsis_no'] ?? null,
+                'pagibig_no' => $data['pagibig_no'] ?? null,
+                'philhealth_no' => $data['philhealth_no'] ?? null,
+                'sss_no' => $data['sss_no'] ?? null,
+                'tin_no' => $data['tin_no'] ?? null,
+            ]
+        ]);
 
         // ---- SAVE TO EMPLOYEE_UPDATE_PERSONAL ----
         EmployeeUpdatePersonal::updateOrCreate(

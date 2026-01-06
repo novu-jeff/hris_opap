@@ -25,6 +25,7 @@ use App\Notifications\Notifications;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class Show extends Component
 {
@@ -219,28 +220,28 @@ class Show extends Component
 
          // ---- HANDLE PROFILE PICTURE ----
         if ($this->profile) {
+            // Target folder: storage/app/public/employees/{employee_no}
+            $folder = storage_path("app/public/employees/{$employee_no}");
 
-            // employee folder
-            $folder = "public/employees/{$employee_no}";
-
-            // create folder if not exists
-            if (!is_dir(storage_path("app/{$folder}"))) {
-                mkdir(storage_path("app/{$folder}"), 0777, true);
+            // Create folder if it doesn't exist
+            if (!is_dir($folder)) {
+                mkdir($folder, 0777, true);
             }
 
-            // store the uploaded file
-            $storedPath = $this->profile->storeAs(
-                $folder,
-                'profile.' . $this->profile->extension()
-            );
+            // Final path
+            $filename = 'profile.' . $this->profile->extension();
+            $path = $folder . '/' . $filename;
 
-            // save to database
-            $personal->profile = str_replace('public', 'storage', $storedPath);
+            // Move the uploaded file from temp to final folder
+            $this->profile->move($folder, $filename);
+
+            // Save relative storage path to DB
+            $personal->profile = "storage/employees/{$employee_no}/{$filename}";
         }
 
         if ($personal && $update && $account) {
             $fields = [
-                'profile', 'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
+                 'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
                 'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
                 'present_address', 'present_province', 'present_city',
                 'permanent_address', 'permanent_province', 'permanent_city',
@@ -248,10 +249,36 @@ class Show extends Component
                 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
             ];
 
+            Log::info('Personal data BEFORE SAVE', [
+                'employee_no' => $employee_no,
+                'original_personal' => $personal->only([
+                     'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
+                    'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
+                    'present_address', 'present_province', 'present_city',
+                    'permanent_address', 'permanent_province', 'permanent_city',
+                    'mobile_number', 'tel_no', 'height', 'weight', 'blood_type',
+                    'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
+                ]),
+                'update_personal' => $update?->only([
+                     'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
+                    'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
+                    'present_address', 'present_province', 'present_city',
+                    'permanent_address', 'permanent_province', 'permanent_city',
+                    'mobile_number', 'tel_no', 'height', 'weight', 'blood_type',
+                    'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
+                    ]),
+            ]);
+
             foreach ($fields as $field) {
                 $personal->$field = $update->$field ?? $personal->$field;
             }
             $personal->save();
+
+            Log::info('Account email update', [
+                'employee_no' => $employee_no,
+                'old_email' => $account->email,
+                'new_email' => $update->email,
+            ]);
 
             $account->email = $update->email;
             $account->save();
@@ -272,6 +299,13 @@ class Show extends Component
                 $data[$field] = $update->$field ?? null;
             }
 
+            Log::info('Batch update BEFORE SAVE', [
+                'employee_no' => $employee_no,
+                'model' => $targetModel,
+                'match_query' => $query,
+                'save_data' => $data,
+            ]);
+
             $targetModel::updateOrCreate($query, $data);
         }
     }
@@ -282,15 +316,74 @@ class Show extends Component
         ]);
     }
 
-    public function updateParentsData($employee_no) {
-        $this->batchUpdate($employee_no, EmployeeUpdateParents::class, EmployeeParents::class, ['spouse_surname'], [
+    public function updateParentsData($employee_no)
+{
+    // Fetch existing (approved) parents data
+    $original = EmployeeParents::where('employee_no', $employee_no)->first();
+
+    // Fetch pending update parents data
+    $updates = EmployeeUpdateParents::where('employee_no', $employee_no)->get();
+
+    // 1️⃣ Log ORIGINAL vs UPDATE parent data
+    Log::info('PARENTS DATA BEFORE SAVE', [
+        'employee_no' => $employee_no,
+        'original_parents' => $original?->only([
             'spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix',
             'father_surname', 'father_firstname', 'father_middlename', 'father_suffix',
             'father_business_name', 'father_business_address', 'father_tel_no',
             'mother_surname', 'mother_firstname', 'mother_middlename', 'mother_occupation',
-            'mother_business_name', 'mother_business_address', 'mother_tel_no'
-        ]);
+            'mother_business_name', 'mother_business_address', 'mother_tel_no',
+        ]),
+        'update_parents' => $updates->map(fn ($u) => $u->only([
+            'spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix',
+            'father_surname', 'father_firstname', 'father_middlename', 'father_suffix',
+            'father_business_name', 'father_business_address', 'father_tel_no',
+            'mother_surname', 'mother_firstname', 'mother_middlename', 'mother_occupation',
+            'mother_business_name', 'mother_business_address', 'mother_tel_no',
+        ]))->toArray(),
+    ]);
+
+    // 2️⃣ Log FIELD-BY-FIELD CHANGES (diff)
+    if ($original) {
+        foreach ($updates as $update) {
+            $diff = [];
+
+            foreach ($update->getAttributes() as $key => $value) {
+                if (
+                    array_key_exists($key, $original->getAttributes()) &&
+                    $original->$key !== $value
+                ) {
+                    $diff[$key] = [
+                        'old' => $original->$key,
+                        'new' => $value,
+                    ];
+                }
+            }
+
+            if (!empty($diff)) {
+                Log::info('PARENTS FIELD CHANGES DETECTED', [
+                    'employee_no' => $employee_no,
+                    'changes' => $diff,
+                ]);
+            }
+        }
     }
+
+    // 3️⃣ Proceed with actual saving
+    $this->batchUpdate(
+        $employee_no,
+        EmployeeUpdateParents::class,
+        EmployeeParents::class,
+        ['spouse_surname'],
+        [
+            'spouse_surname', 'spouse_firstname', 'spouse_middlename', 'spouse_suffix',
+            'spouse_occupation', 'spouse_business_name_employer', 'spouse_business_address', 'spouse_contact_no',
+            'father_surname', 'father_firstname', 'father_middlename', 'father_suffix',
+            'mother_surname', 'mother_firstname', 'mother_middlename'
+        ]
+    );
+}
+
 
     public function updateChildrenData($employee_no) {
         $this->batchUpdate($employee_no, EmployeeUpdateChildren::class, EmployeeChildren::class, ['firstname'], [
