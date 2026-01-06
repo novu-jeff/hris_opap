@@ -18,8 +18,8 @@
                             {{-- OLD PHOTO --}}
                             <div class="text-center">
                                 <p class="mb-1 fw-semibold">Old</p>
-                                @if(!empty($records['profile']['old']))
-                                    <img src="{{ asset('storage/' . $records['profile']['old']) }}"
+                                @if(!empty($records['profile']['new']))
+                                    <img src="{{ asset('storage/' . $records['profile']['new']) }}"
                                         class="rounded border"
                                         style="width:120px; height:120px; object-fit:cover;">
                                 @else
@@ -35,8 +35,8 @@
                                 <p class="mb-1 fw-semibold">New</p>
 
                                 {{-- If new is Livewire temporary upload --}}
-                                @if($records['profile']['new'] instanceof \Livewire\TemporaryUploadedFile)
-                                    <img src="{{ $records['profile']['new']->temporaryUrl() }}"
+                                @if($records['profile']['old'] instanceof \Livewire\TemporaryUploadedFile)
+                                    <img src="{{ $records['profile']['old']->temporaryUrl() }}"
                                         class="rounded border border-danger border-3"
                                         style="width:120px; height:120px; object-fit:cover;">
                                 

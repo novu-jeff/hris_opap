@@ -18,6 +18,8 @@ class PayrollController extends Controller
     {
         $employmentTypes =  EmployementTypes::with(['setting'])->get();
 
+       // dd($employmentTypes);
+
         $defaultActions = 'salary';
         $defaultEmploymentType = $employmentTypes[0]->name;
 

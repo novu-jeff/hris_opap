@@ -46,6 +46,10 @@ class SalaryItemsPayroll extends Model
                 'kawani',
                 'lbp_payroll_account',
                 'salary',
+                'net_first_half',
+                'net_second_half',
+                'is_first_half_locked',
+                'is_second_half_locked',
             ];
         }
 

@@ -181,6 +181,12 @@ class SalaryService extends Controller {
 
         if ($this->product == 'government') {
 
+                    \Log::info('Start computePayroll Government', [
+            'payroll_id' => $payroll->id,
+            'employees_count' => count($employees),
+            'type' => $type
+        ]);
+
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;
             $leaveCard_service = new LeaveCardService;
@@ -194,6 +200,17 @@ class SalaryService extends Controller {
                 $position = $employee['position_name'];
                 $basic_salary = round(floatval($employee['salary']), 2);
                 $salary_type = $employee['salary_type'];
+                $gw_tax = $employee['w_tax'];
+
+                Log::info('GW TAX RAW VALUE', [
+                    'payroll_id' => $payroll->id,
+                    'employee_no' => $employee_no,
+                    'employee_name' => $name,
+                    'gw_tax_raw' => $gw_tax,
+                    'gw_tax_type' => gettype($gw_tax),
+                    'has_deductions' => $hasDeductions,
+                    'employee_keys' => array_keys($employee),
+                ]);
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
@@ -201,6 +218,10 @@ class SalaryService extends Controller {
                 $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);
 
                 $dtr_summary  = $dtr['summary'];
+
+                $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
+                
+                $overtime = $overtimeData['gross_ot_pay'];
 
                 $earnings = $other_service->earnings($employee_no);
                 $deductions = $hasDeductions ? $other_service->deductions($employee_no) : [];
@@ -214,6 +235,7 @@ class SalaryService extends Controller {
                         ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
                         ->first() ?? (object) []
                     : (object) [];
+               
 
                 // Earnings
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
@@ -228,8 +250,9 @@ class SalaryService extends Controller {
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                 $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2) : 0;
-                $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
-                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
+               // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
+                $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
+               $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
@@ -246,6 +269,12 @@ class SalaryService extends Controller {
                     $plreg + $mpl + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $aut
                 );
 
+                Log::info('GW TAX BEFORE COMPUTE', [
+                    'employee_no' => $employee_no,
+                    'gw_tax_before_round' => $gw_tax,
+                    'has_deductions' => $hasDeductions,
+                ]);
+
                 $net = round($gross - $total_deduction, 2);
                 $half = round($net / 2, 2);
 
@@ -257,6 +286,7 @@ class SalaryService extends Controller {
                     'basic_salary' => $basic_salary,
                     'pera' => $pera,
                     'gross_amount_earned' => $gross,
+                    'overtime_pay' => $overtime,
                     'rlip' => $rlip,
                     'hdmf' => $hdmf,
                     'philhealth' => $philhealth,
@@ -277,6 +307,10 @@ class SalaryService extends Controller {
                     'kawani' => $kawani,
                     'lbp_payroll_account' => $net,
                     'salary' => $half,
+                    'net_first_half' => $half,
+                    'net_second_half' => $half,
+                    'is_first_half_locked' => 0,
+                    'is_second_half_locked' => 0,
                 ];
             }
 
