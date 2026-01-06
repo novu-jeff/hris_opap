@@ -30,7 +30,7 @@
                             alt="Profile Image">
 
                         <!-- Name (always visible) -->
-                        <span class="fw-bold text-uppercase text-truncate" style="max-width: 100px;">
+                        <span class="fw-bold text-uppercase ">
                              {{ Auth::user()->name }}
                         </span>
                     </a>
