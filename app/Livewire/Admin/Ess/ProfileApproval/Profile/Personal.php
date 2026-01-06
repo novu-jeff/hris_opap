@@ -52,24 +52,14 @@ class Personal extends Component
             $oldValue = $oldRecord ? $oldRecord->$field : '';
             $newValue = $newRecord ? $newRecord->$field : '';
 
-            $finalValue = (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue;
+           $updatedValue = $newRecord ? $newRecord->$field : null;
 
-    
-            // Store the results of comparison
             $result[$field] = [
                 'old' => $oldValue,
-                'new' =>  $finalValue,
+                'new' => $updatedValue ?? $oldValue,
+                'changed' => $updatedValue !== null && $updatedValue != $oldValue
             ];
-
-             // Log differences only
-                if ($oldValue !== $finalValue) {
-                    \Log::info('Personal field changed', [
-                        'employee_no' => $this->employee_no,
-                        'field' => $field,
-                        'old_value' => $oldValue,
-                        'new_value' => $finalValue,
-                    ]);
-                }
+            
         }
 
         // Optional: log full comparison for debugging
