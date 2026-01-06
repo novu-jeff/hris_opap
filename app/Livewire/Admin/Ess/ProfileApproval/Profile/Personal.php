@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Ess\ProfileApproval\Profile;
 
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\EmployeeAccount;
 use Illuminate\Support\Facades\Log;
 
 use Livewire\Component;
@@ -31,6 +32,7 @@ class Personal extends Component
 
         $updated = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
         $stored = EmployeePersonal::where('employee_no', $this->employee_no)->first();
+        $account = EmployeeAccount::where('employee_no', $this->employee_no)->first(); 
 
         if (!$stored) {
             $this->records = [];
@@ -39,47 +41,45 @@ class Personal extends Component
 
        // $fields = array_keys($stored->getAttributes());
           $fields = (new EmployeePersonal)->getFillable();
+          $fields[] = 'email'; // include email explicitly
 
-        $this->records = $this->compareFields($stored, $updated, $fields);
+        $this->records = $this->compareFields($stored, $updated, $fields, $account);
     }
 
-   
-    private function compareFields($oldRecord, $newRecord, $fields)
-    {
-        $result = [];
-        foreach ($fields as $field) {
-            // Use null coalescing operator to ensure we don't get null if data is missing
-            $oldValue = $oldRecord ? $oldRecord->$field : '';
-            $newValue = $newRecord ? $newRecord->$field : '';
 
-            $finalValue = (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue;
 
-    
-            // Store the results of comparison
-            $result[$field] = [
-                'old' => $oldValue,
-                'new' =>  $finalValue,
-            ];
+    private function compareFields($oldRecord, $newRecord, $fields, $account = null)
+        {
+            $result = [];
+            foreach ($fields as $field) {
 
-             // Log differences only
-                if ($oldValue !== $finalValue) {
-                    \Log::info('Personal field changed', [
-                        'employee_no' => $this->employee_no,
-                        'field' => $field,
-                        'old_value' => $oldValue,
-                        'new_value' => $finalValue,
-                    ]);
+                // Use EmployeeAccount for email
+                if ($field === 'email') {
+                    $oldValue = $account ? $account->email ?? '' : '';
+                } else {
+                    $oldValue = $oldRecord ? $oldRecord->$field ?? '' : '';
                 }
-        }
 
-        // Optional: log full comparison for debugging
+                $updatedValue = $newRecord ? $newRecord->$field ?? '' : '';
+
+                $oldValue = trim($oldValue);
+                $updatedValue = trim($updatedValue);
+
+                $result[$field] = [
+                    'old' => $oldValue,
+                    'new' => $updatedValue,
+                    'changed' => $updatedValue !== '' && $updatedValue != $oldValue
+                ];
+            }
+
             \Log::info('Full personal field comparison', [
                 'employee_no' => $this->employee_no,
                 'comparison' => $result,
             ]);
 
-        return $result;
-    }
+            return $result;
+        }
+
 
     protected function formatRecords($data) {
         return [

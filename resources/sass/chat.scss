@@ -587,6 +587,28 @@ button:focus {
 
 
 @media(min-width: 0px) and (max-width: 992px) {
+
+    .notification {
+        width: 100%;
+        display: flex !important;
+        justify-content: center;
+        margin-right:15px;
+    }
+
+    .notification span.count {
+        position: absolute;
+        right: 10px;
+        font-size: 10px;
+
+    }
+     .notification .content {
+        width: 80%;
+        margin-left: 10px !important;
+        position: fixed;
+        left: 0;
+        cursor: pointer;
+    }
+
     .send-box {
         // textarea, button {
         //     width: 100% !important;
