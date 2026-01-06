@@ -11,6 +11,7 @@ use Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class Family extends Component
 {
@@ -23,6 +24,7 @@ class Family extends Component
     protected $listeners = ['save'];
 
     public function mount() {
+       // dd(123);
         $this->loadRecords();
     }
 
@@ -183,6 +185,27 @@ class Family extends Component
             try {
 
                 $data = $this->records;
+
+                Log::info('FAMILY DB PAYLOAD (BEFORE SAVE)', [
+                    'employee_no' => $employee_no,
+                    'payload' => [
+                        'spouse_surname' => $data['spouse_surname'] ?? null,
+                        'spouse_firstname' => $data['spouse_firstname'] ?? null,
+                        'spouse_middlename' => $data['spouse_middlename'] ?? null,
+                        'spouse_suffix' => $data['spouse_suffix'] ?? null,
+                        'spouse_occupation' => $data['spouse_occupation'] ?? null,
+                        'spouse_business_name_employer' => $data['spouse_business_name_employer'] ?? null,
+                        'spouse_business_address' => $data['spouse_business_address'] ?? null,
+                        'spouse_contact_no' => $data['spouse_contact_no'] ?? null,
+                        'father_surname' => $data['father_surname'] ?? null,
+                        'father_firstname' => $data['father_firstname'] ?? null,
+                        'father_middlename' => $data['father_middlename'] ?? null,
+                        'father_suffix' => $data['father_suffix'] ?? null,
+                        'mother_surname' => $data['mother_surname'] ?? null,
+                        'mother_firstname' => $data['mother_firstname'] ?? null,
+                        'mother_middlename' => $data['mother_middlename'] ?? null,
+                    ],
+                ]);
 
                 EmployeeUpdateParents::updateOrCreate([
                     'employee_no' => $employee_no

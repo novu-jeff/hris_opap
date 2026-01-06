@@ -171,7 +171,20 @@ class Apply extends Component
 
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
     
-                    $this->resetExcept('employee_no', 'employee_id');
+                    //$this->resetExcept('employee_no', 'employee_id');
+
+                    $this->reset([
+                    'date',
+                    'clock_in',
+                    'break_out',
+                    'break_in',
+                    'clock_out',
+                    'reason',
+                    'attachments',
+                    'preview_attachments',
+                ]);
+
+                $this->dispatch('form-reset');
 
                     return;
                 } else {

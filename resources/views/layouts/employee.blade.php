@@ -179,13 +179,13 @@
         @include('components.employee.navbarnew')
 
         <!-- FLOATING CLOCK-IN/OUT BUTTON -->
-      {{--  @canany(['read clock-in-out', 'write clock-in-out'])
+        @canany(['read clock-in-out', 'write clock-in-out'])
         <div id="floatingClockBtn">
             <a href="{{ route('employee.clock') }}" class="btn btn-success">
                 <i class="fa-solid fa-clock"></i> Clock In / Out
             </a>
         </div>
-        @endcanany --}}
+        @endcanany
 
           <!-- ================= SIDEBAR ================= -->
         @include('components.employee.sidebar') <!-- create a separate sidebar Blade -->

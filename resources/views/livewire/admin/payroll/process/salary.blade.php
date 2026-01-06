@@ -158,8 +158,14 @@
                                             class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">{{ number_format($record['lbp_payroll_account'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['salary'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['salary'], 2) }}</td>
+                                    <td colspan="2">{{ number_format($record['net_first_half'] ?? 0, 2) }}
+                                                @if($record['is_first_half_locked'])
+                                                    <span class="badge bg-success ms-1">Locked</span>
+                                                @endif</td>
+                                    <td colspan="2">{{ number_format($record['net_second_half'] ?? 0, 2) }}
+                                            @if($record['is_second_half_locked'])
+                                                <span class="badge bg-success ms-1">Locked</span>
+                                            @endif</td>
                                 </tr>
                             @endforeach
                         @empty
