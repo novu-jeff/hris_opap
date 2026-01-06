@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Ess\ProfileApproval\Profile;
 
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeUpdatePersonal;
+use Illuminate\Support\Facades\Log;
 
 use Livewire\Component;
 
@@ -13,7 +14,8 @@ class Personal extends Component
     public $records;
     public $isDualCitizenship;
 
-    public function mount() {
+    public function mount($employee_no) {
+         $this->employee_no = $employee_no;
         $this->loadRecords();
     }
 
@@ -21,10 +23,22 @@ class Personal extends Component
 
     public function loadRecords() {
 
+         if (!$this->employee_no) {
+            $this->records = [];
+            return;
+        }
+
+
         $updated = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
         $stored = EmployeePersonal::where('employee_no', $this->employee_no)->first();
 
-        $fields = array_keys($stored->getAttributes());
+        if (!$stored) {
+            $this->records = [];
+            return;
+        }
+
+       // $fields = array_keys($stored->getAttributes());
+          $fields = (new EmployeePersonal)->getFillable();
 
         $this->records = $this->compareFields($stored, $updated, $fields);
     }
@@ -37,13 +51,32 @@ class Personal extends Component
             // Use null coalescing operator to ensure we don't get null if data is missing
             $oldValue = $oldRecord ? $oldRecord->$field : '';
             $newValue = $newRecord ? $newRecord->$field : '';
+
+            $finalValue = (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue;
+
     
             // Store the results of comparison
             $result[$field] = [
                 'old' => $oldValue,
-                'new' => (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue,
+                'new' =>  $finalValue,
             ];
+
+             // Log differences only
+                if ($oldValue !== $finalValue) {
+                    \Log::info('Personal field changed', [
+                        'employee_no' => $this->employee_no,
+                        'field' => $field,
+                        'old_value' => $oldValue,
+                        'new_value' => $finalValue,
+                    ]);
+                }
         }
+
+        // Optional: log full comparison for debugging
+            \Log::info('Full personal field comparison', [
+                'employee_no' => $this->employee_no,
+                'comparison' => $result,
+            ]);
 
         return $result;
     }

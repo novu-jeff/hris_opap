@@ -64,75 +64,112 @@ class Salary extends Component
 
     }
 
-    public function recompute($sectionIndex, $employeeIndex)
-    {
-        $payroll = &$this->records['payroll'];
-        $payroll_item = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+  public function recompute($sectionIndex, $employeeIndex)
+{
+    $payroll = &$this->records['payroll'];
+    $payroll_item = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
 
-        $payroll_item['hdmf']   = round(floatval($this->hdmf[$sectionIndex][$employeeIndex] ?? 0), 2);
-        $payroll_item['uca']    = round(floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0), 2);
-        $payroll_item['dbp']    = round(floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0), 2);
-        $payroll_item['kawani'] = round(floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0), 2);
+    // === 1. UPDATE DEDUCTION FIELDS FROM INPUT ===
+    $payroll_item['hdmf']   = round(floatval($this->hdmf[$sectionIndex][$employeeIndex] ?? 0), 2);
+    $payroll_item['uca']    = round(floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0), 2);
+    $payroll_item['dbp']    = round(floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0), 2);
+    $payroll_item['kawani'] = round(floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0), 2);
 
-        $fields = [
-            'rlip', 'hdmf', 'philhealth', 'consoloan', 'emergency_loan',
-            'plreg', 'mpl', 'cpl', 'mp2', 'mplstlms', 'cir375_cir449',
-            'uca', 'dbp', 'kawani', 'w_tax', 'aut'
-        ];
+    // === 2. RECOMPUTE TOTAL DEDUCTIONS ===
+    $fields = [
+        'rlip','hdmf','philhealth','consoloan','emergency_loan',
+        'plreg','mpl','cpl','mp2','mplstlms','cir375_cir449',
+        'uca','dbp','kawani','w_tax','aut'
+    ];
 
-        $totalDeduction = round(array_sum(array_map(
-            fn($field) => round(floatval($payroll_item[$field] ?? 0), 2),
-            $fields
-        )), 2);
+    $totalDeduction = round(array_sum(array_map(
+        fn($field) => round(floatval($payroll_item[$field] ?? 0), 2),
+        $fields
+    )), 2);
 
-        $gross = round(floatval($payroll_item['gross_amount_earned'] ?? 0), 2);
-        $net = round($gross - $totalDeduction, 2);
-        $half = round($net / 2, 2);
+    $gross = round(floatval($payroll_item['gross_amount_earned'] ?? 0), 2);
+    $computedNet = round($gross - $totalDeduction, 2);  // net for whole month
 
-        $payroll_item['total_deductions'] = $totalDeduction;
-        $payroll_item['net_amount'] = $net;
-        $payroll_item['lbp_payroll_account'] = $net;
+    // === 3. FETCH DB RECORD FOR LOCKING LOGIC ===
+    $item = \App\Models\SalaryItemsPayroll::find($payroll_item['id']);
+
+    // === 4. FIRST-HALF LOCK LOGIC APPLIED HERE ===
+    if ($item && $item->is_first_half_locked) {
+
+        // Never change net_first_half again
+        $newNetSecondHalf = round($computedNet - $item->net_first_half, 2);
+
+        // Save back to DB object (not yet saving to DB)
+        $item->net_second_half = $newNetSecondHalf;
+        $item->net_amount = $item->net_first_half + $newNetSecondHalf;
+
+        // Sync to Livewire array for UI
+        $payroll_item['net_first_half'] = $item->net_first_half;
+        $payroll_item['net_second_half'] = $newNetSecondHalf;
+        $payroll_item['net_amount'] = $item->net_amount;
+        $payroll_item['salary'] = $newNetSecondHalf; // second half salary
+
+    } else {
+
+        // No lock → recompute both halves equally
+        $half = round($computedNet / 2, 2);
+
+        $item->net_first_half = $half;
+        $item->net_second_half = $half;
+        $item->net_amount = $computedNet;
+
+        // Sync back to Livewire
+        $payroll_item['net_first_half'] = $half;
+        $payroll_item['net_second_half'] = $half;
+        $payroll_item['net_amount'] = $computedNet;
         $payroll_item['salary'] = $half;
-
-        $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? null;
-        if ($original) {
-            $hasChanged = $this->isChanged($payroll_item, $original);
-            $item_id = $payroll_item['id'];
-
-            if ($hasChanged) {
-                if (!in_array($item_id, $this->updatedItems)) {
-                    $this->updatedItems[] = $item_id;
-                }
-                $this->hasChanges = true;
-            } else {
-                $key = array_search($item_id, $this->updatedItems);
-                if ($key !== false) {
-                    unset($this->updatedItems[$key]);
-                    $this->updatedItems = array_values($this->updatedItems); // reindex
-                }
-                $this->hasChanges = !empty($this->updatedItems);
-            }
-        }
-
-        $overallNet = 0;
-        foreach ($this->records['payroll_items'] as $section) {
-            foreach ($section['employees'] as $employee) {
-                $overallNet += round(floatval($employee['net_amount'] ?? 0), 2);
-            }
-        }
-
-        $payroll['overall_net_amount'] = round($overallNet, 2);
-        $payroll['overall_salary'] = round($overallNet / 2, 2);
-
-
-        \Log::debug('Payroll recomputed', [
-            'section' => $sectionIndex,
-            'employee' => $employeeIndex,
-            'net' => $payroll_item['net_amount'],
-            'deductions' => $payroll_item['total_deductions'],
-            'overall_net' => $payroll['overall_net_amount']
-        ]);
     }
+
+    // === 5. Always update these common fields ===
+    $payroll_item['total_deductions'] = $totalDeduction;
+    $payroll_item['lbp_payroll_account'] = $payroll_item['net_amount'];
+
+    // === 6. CHANGE TRACKING (NO CHANGE NEEDED HERE) ===
+    $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? null;
+    if ($original) {
+        $hasChanged = $this->isChanged($payroll_item, $original);
+        $item_id = $payroll_item['id'];
+
+        if ($hasChanged) {
+            if (!in_array($item_id, $this->updatedItems)) {
+                $this->updatedItems[] = $item_id;
+            }
+            $this->hasChanges = true;
+        } else {
+            $key = array_search($item_id, $this->updatedItems);
+            if ($key !== false) {
+                unset($this->updatedItems[$key]);
+                $this->updatedItems = array_values($this->updatedItems);
+            }
+            $this->hasChanges = !empty($this->updatedItems);
+        }
+    }
+
+    // === 7. OVERALL NET ===
+    $overallNet = 0;
+    foreach ($this->records['payroll_items'] as $section) {
+        foreach ($section['employees'] as $employee) {
+            $overallNet += round(floatval($employee['net_amount'] ?? 0), 2);
+        }
+    }
+
+    $payroll['overall_net_amount'] = round($overallNet, 2);
+    $payroll['overall_salary'] = round($overallNet / 2, 2);
+
+    \Log::debug('Payroll recomputed', [
+        'section' => $sectionIndex,
+        'employee' => $employeeIndex,
+        'net' => $payroll_item['net_amount'],
+        'deductions' => $payroll_item['total_deductions'],
+        'overall_net' => $payroll['overall_net_amount']
+    ]);
+}
+
 
 
     protected function isChanged(array $current, array $original): bool
@@ -195,6 +232,8 @@ class Salary extends Component
                         'net_amount'          => $employeeData['net_amount'] ?? 0,
                         'lbp_payroll_account' => $employeeData['lbp_payroll_account'] ?? 0,
                         'salary'              => $employeeData['salary'] ?? 0,
+                        'net_first_half'      => $employeeData['net_first_half'] ?? 0,
+                        'net_second_half'     => $employeeData['net_second_half'] ?? 0,
                     ];
 
                     $payrollItem->update($updateData);

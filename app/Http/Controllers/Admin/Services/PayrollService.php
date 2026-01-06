@@ -40,6 +40,7 @@ class PayrollService extends Controller {
                 'ei.date_hired',
                 'ei.salary',
                 'ei.bsd_no',
+                'ei.w_tax',
                 'ei.position_id',
                 'ei.salary_type',
                 'p.firstname',
@@ -47,7 +48,6 @@ class PayrollService extends Controller {
                 'p.gsis_no',
                 'po.name as position_name',
                 'po.salary_grade',
-                'po.w_tax',
                 's.name as section_name'
             )
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')

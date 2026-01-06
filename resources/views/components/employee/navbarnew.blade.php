@@ -33,7 +33,7 @@
             <ul class="navbar-nav align-items-center gap-3">
                 <!-- Notifications -->
                 <li class="nav-item">
-                  {{--  @livewire('notifications') --}}
+                    @livewire('notifications')
                 </li>
 
                 <!-- Profile -->

@@ -55,7 +55,7 @@
                             <div class="mt-1 mb-3">
                                 <small class="text-muted fw-bold">Note: Please provide any supporting proof for the reason stated above.</small>
                             </div>
-                            <input type="file" wire:model="attachments" id="attachments" class="form-control mb-1" multiple>                            
+                            <input type="file" wire:model="attachments"   id="attachments" class="form-control mb-1" multiple>                            
                             <small class="text-muted fw-medium fst-italic"><span class="text-danger">*</span> Accepts multiple files</small>
                             <div class="error-field">
                                 @error('attachments') <span class="text-danger">{{ $message }}</span> @enderror
@@ -92,3 +92,25 @@
         </div>
     </div>
 </form>
+
+<script>
+
+
+    document.addEventListener('livewire:init', () => {
+     
+
+        Livewire.on('form-reset', () => {
+
+   
+
+            // Clear file input
+            console.log('Resetting file input');
+            const fileInput = document.getElementById('attachments');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+        });
+    });
+</script>
+

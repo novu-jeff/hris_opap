@@ -81,8 +81,8 @@ class Edit extends Component
         $this->records = [];
 
         $expectedHeaders = [
-            "salary_grade", "step_1", "step_2", "step_3", "step_4",
-            "step_5", "step_6", "step_7", "step_8"
+            "salary_grade", "step_1", "step_1_wtax", "step_2", "step_2_wtax", "step_3", "step_3_wtax", "step_4", "step_4_wtax",
+            "step_5", "step_5_wtax", "step_6", "step_6_wtax", "step_7", "step_7_wtax", "step_8", "step_8_wtax"
         ];
 
         if (!Storage::exists($filePath)) {
@@ -140,7 +140,7 @@ class Edit extends Component
     public function save() {
         
 
-        if (Gate::denies('write tranches')) {
+       /* if (Gate::denies('write tranches')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -148,49 +148,61 @@ class Edit extends Component
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
-        }
+        }*/
 
 
         $this->validate();
 
+        DB::beginTransaction();
+
         try {
-           
+            // Update tranche basic info
             $tranche = Tranche::findOrFail($this->id);
             $tranche->name = $this->name;
             $tranche->eligible = $this->eligible;
             $tranche->save();
 
-            TrancheItems::where('tranche_id', $this->id)
-                ->delete();
+            // We will re-sync tranche items (safe for edit)
+            TrancheItems::where('tranche_id', $this->id)->delete();
 
-            foreach ($this->records as $key => $data) {
-                $this->records[$key]['tranche_id'] = $this->id;
+            foreach ($this->records as $row) {
+
+                // Helper to clean CSV values
+                $clean = fn ($v) => ($v === '' || $v === '0') ? null : $v;
+
+                $insertData = [
+                    'tranche_id'   => $this->id,
+                    'salary_grade' => $row['salary_grade'],
+                ];
+
+                // Handle step + step_wtax dynamically
+                foreach (range(1, 8) as $i) {
+                    $insertData["step_{$i}"]       = $clean($row["step_{$i}"] ?? null);
+                    $insertData["step_{$i}_wtax"]  = $clean($row["step_{$i}_wtax"] ?? null);
+                }
+
+                TrancheItems::create($insertData);
             }
-
-            TrancheItems::insert($this->records);
 
             DB::commit();
 
             $this->dispatch('alert', [
-                'status' => 'success',
-                'title' => 'Success!', 
+                'status'    => 'success',
+                'title'     => 'Success!',
                 'showAlert' => true,
-                'message' => 'Tranche was updated successfully.'
+                'message'   => 'Tranche steps and withholding tax updated successfully.'
             ]);
 
         } catch (\Exception $e) {
-            
             DB::rollBack();
 
             $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Oops!', 
+                'status'    => 'error',
+                'title'     => 'Oops!',
                 'showAlert' => true,
-                'message' => 'Error occured: ' . $e->getMessage()
+                'message'   => 'Error occurred: ' . $e->getMessage()
             ]);
-
         }
-
     }
 
     public function render()

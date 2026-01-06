@@ -79,11 +79,11 @@
                 </a>
                 @endcan
 
-                 @can('read leave')
+               {{--  @can('read leave')
                 <a href="{{ route('ess.loan') }}" class="submenu-item">
                     <i class="fa-solid fa-hand-holding-dollar"></i> Loan Applications
                 </a>
-                @endcan
+                @endcan --}}
 
                 @can('read obs')
                 <a href="{{ route('ess.obs') }}" class="submenu-item">
@@ -256,10 +256,10 @@
                     <a href="{{ route('employment-type.index') }}" class="submenu-item">
                         <i class="fa-solid fa-user-tag"></i> Employment Type</a>
                     @endcan
-                     @can('read employment-type')
+                    {{-- @can('read employment-type')
                     <a href="{{ route('loan-type.index') }}" class="submenu-item">
                         <i class="fa-solid fa-hand-holding-dollar"></i> Loan Type</a>
-                    @endcan
+                    @endcan--}}
                     @can('read positions')
                     <a href="{{ route('position.index') }}" class="submenu-item">
                         <i class="fa-solid fa-briefcase"></i> Positions</a>
