@@ -29,10 +29,11 @@ class Index extends Component
     ];
 
     protected $paginationTheme = 'bootstrap';
-    protected $listeners = ['remove'];
+    protected $listeners = ['setEmployees', 'remove'];
 
-    public function mount()
+    public function mount($id)
     {
+        $this->id = $id;
         $config = OtherEarnings::findOrFail($this->id);
 
         $this->fields['first_term'] = $config->first_term;
@@ -41,6 +42,9 @@ class Index extends Component
         if ($config->amount_type) {
             $this->onChange('amount_type', $config->amount_type);
         }
+
+        $this->employees = $this->getEmployees();
+         $this->dispatch('set_select');
     }
 
     public function onChange(string $property, string $value)
@@ -74,8 +78,13 @@ class Index extends Component
     public function getEmployees()
     {
         return ($this->page === 'create')
-            ? EmployeeInformation::with('personal')->whereDoesntHave('earnings')->get()
-            : EmployeeInformation::with('personal')->get();
+        ? EmployeeInformation::with('personal')
+            ->whereDoesntHave('earnings')
+            ->whereHas('personal') // ensures personal exists
+            ->get()
+        : EmployeeInformation::with('personal')
+            ->whereHas('personal') // ensures personal exists
+            ->get();
     }
 
     protected function fileRules(): array
@@ -116,6 +125,11 @@ class Index extends Component
         ];
     }
 
+    public function setEmployees($employees)
+    {
+        $this->fields['employee_no'] = $employees ?? [];
+    }
+
     public function save()
     {
         if (Gate::denies('write employee-earnings')) {
@@ -137,12 +151,12 @@ class Index extends Component
             $firstTerm = $this->fields['first_term'];
             $secondTerm = $this->fields['second_term'];
 
-            foreach ($this->employees as $employee) {
+            /*foreach ($this->employees as $employee) {
                 $data = [
                     'amount_type' => $amountType,
                 ];
 
-                if ($amountType === 'basic salary') {
+                if ($amountType === 'basic_salary') {
                     $data['amount'] = $employee->salary;
                 } else {
                     $data['first_term'] = $firstTerm ;
@@ -156,7 +170,33 @@ class Index extends Component
                     ],
                     $data
                 );
-            }
+            }*/
+
+             foreach ($this->fields['employee_no'] as $employee_no) {
+    // Fetch the employee record
+    $employee = EmployeeInformation::where('employee_no', $employee_no)->first();
+
+    if (!$employee) continue; // skip if employee not found
+
+    $data = [
+        'amount_type' => $amountType,
+    ];
+
+    if ($amountType === 'basic_salary') {
+        $data['amount'] = $employee->salary;
+    } else {
+        $data['first_term'] = $firstTerm;
+        $data['second_term'] = $secondTerm;
+    }
+
+    EmployeeEarnings::updateOrCreate(
+        [
+            'earning_id' => $earningId,
+            'employee_no' => $employee_no,
+        ],
+        $data
+    );
+}   
 
             DB::commit();
 

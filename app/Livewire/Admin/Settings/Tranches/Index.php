@@ -19,6 +19,7 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     public $show;
+    public $showWtax = true; 
 
 
     public function remove(bool $isNotify = true, int $id = null) {

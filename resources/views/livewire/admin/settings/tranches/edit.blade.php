@@ -58,28 +58,92 @@
                                             <tr>
                                                 <td>{{ $data['salary_grade'] }}</td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_1" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_1"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_1_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_2" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_2"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_2_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_3" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_3"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_3_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_4" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_4"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_4_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_5" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_5"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_5_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_6" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_6"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_6_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_7" class="form-control">
+                                                    <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_7"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_7_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    <input type="text" wire:model="records.{{ $key }}.step_8" class="form-control">
+                                                   <div class="border rounded p-2">
+                                                        <label class="form-label mb-1 small text-muted">Salary</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_8"
+                                                            class="form-control form-control-sm mb-2">
+
+                                                        <label class="form-label mb-1 small text-muted">WTAX</label>
+                                                        <input type="text" wire:model="records.{{ $key }}.step_8_wtax"
+                                                            class="form-control form-control-sm">
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
