@@ -14,6 +14,7 @@ class EmployeeEarnings extends Model
         'employee_no',
         'earning_id',
         'amount_type',
+        'amount',
         'first_term',
         'second_term'
     ];
@@ -23,7 +24,7 @@ class EmployeeEarnings extends Model
     }
 
     public function earning() {
-        return $this->hasOne(OtherEarnings::class, 'id', 'earning_id');
+        return $this->belongsTo(OtherEarnings::class, 'earning_id', 'id');
     }
 
 }

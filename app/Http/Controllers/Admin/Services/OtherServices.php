@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 class OtherServices extends Controller
 {
 
-    public function earnings(string $employee_no) {
+   /* public function earnings(string $employee_no) {
 
         $records = EmployeeEarnings::where('employee_no', $employee_no)
             ->get();
@@ -55,7 +55,30 @@ class OtherServices extends Controller
         }
 
         return $records;
+    }*/
+
+    public function earnings(string $employee_no): array
+{
+    $records = EmployeeEarnings::with('earning') // load relation to OtherEarnings
+        ->where('employee_no', $employee_no)
+        ->get();
+
+    $newRecords = [];
+
+    foreach ($records as $record) {
+        $newRecords[] = [
+            'code' => $record->earning->code ?? 'UNKNOWN',
+            'name' => $record->earning->name ?? 'Unknown',
+            'amount_type' => $record->amount_type,
+            'first_term' => $record->first_term ?? 0,
+            'second_term' => $record->second_term ?? 0,
+            'amount' => $record->amount ?? 0,
+        ];
     }
+
+    return $newRecords;
+}
+
 
     public function deductions(string $employee_no) {
         
