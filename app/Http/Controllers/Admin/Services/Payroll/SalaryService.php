@@ -201,6 +201,8 @@ class SalaryService extends Controller {
                 $basic_salary = round(floatval($employee['salary']), 2);
                 $salary_type = $employee['salary_type'];
                 $gw_tax = $employee['w_tax'];
+                $rate = 0.05;
+                $ceiling = 100000;
 
                 Log::info('GW TAX RAW VALUE', [
                     'payroll_id' => $payroll->id,
@@ -245,7 +247,10 @@ class SalaryService extends Controller {
 
                 // Deductions (based on flag)
                 $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
-                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
+               // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
+               $philhealth = $hasDeductions
+                                ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                                : 0;
                 $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2) : 0;
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
