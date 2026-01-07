@@ -51,16 +51,43 @@
                 <div class="mt-4">
                     @livewire($view, ['employee_no' => $employee_no, 'form' => $form])
                 </div>
-                <div class="card-footer d-flex gap-3 justify-content-end bg-transparent border-0 mt-5 pb-3">
-                    <button type="button" wire:click="disapproved" class="btn btn-outline-danger px-5 py-3 text-uppercase fw-bold">
-                        <span wire:loading.remove wire:target="disapproved">Disapprove <i class="fa-solid fa-thumbs-down ms-2"></i></span>
-                        <span wire:loading wire:target="disapproved">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                    </button>
-                    <button type="button" wire:click="approved" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                        <span wire:loading.remove wire:target="approved">Approve <i class="fa-solid fa-thumbs-up ms-2"></i></i></span>
-                        <span wire:loading wire:target="approved">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                    </button>
-                </div>
+                <div class="card-footer
+                        d-flex
+                        flex-column flex-md-row
+                        gap-3
+                        justify-content-md-end
+                        bg-transparent border-0 mt-5 pb-3">
+
+                <button type="button"
+                        wire:click="disapproved"
+                        class="btn btn-outline-danger
+                            px-4 px-md-5 py-3
+                            text-uppercase fw-bold">
+
+                    <span wire:loading.remove wire:target="disapproved">
+                        Disapprove <i class="fa-solid fa-thumbs-down ms-2"></i>
+                    </span>
+                    <span wire:loading wire:target="disapproved">
+                        Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                    </span>
+                </button>
+
+                <button type="button"
+                        wire:click="approved"
+                        class="btn btn-primary
+                            px-4 px-md-5 py-3
+                            text-uppercase fw-bold">
+
+                    <span wire:loading.remove wire:target="approved">
+                        Approve <i class="fa-solid fa-thumbs-up ms-2"></i>
+                    </span>
+                    <span wire:loading wire:target="approved">
+                        Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                    </span>
+                </button>
+
+            </div>
+
             </div>
         </div>
     </div>
