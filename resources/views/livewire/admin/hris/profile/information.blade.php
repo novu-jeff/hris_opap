@@ -273,7 +273,7 @@
                             @if (count($records['other_earnings']) > 0)
                                 @foreach ($records['other_earnings'] as $item)
                                      <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
-                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        <span>{{ ucwords($item['name']) }}</span>
                                         -
                                         <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
@@ -302,7 +302,7 @@
                             @if($hasDeductions)
                                 @foreach ($records['other_deductions'] as $item)
                                     <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
-                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        <span>{{ ucwords($item['name']) }}</span>
                                         -
                                         <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
