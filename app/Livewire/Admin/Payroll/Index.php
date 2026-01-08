@@ -108,7 +108,14 @@ class Index extends Component
         $employmentPayroll = $this->employmentTypes->mapWithKeys(function ($item) {
             $subs = [];
 
-            $settings = $item->setting ?? [];
+            $settings = array_merge([
+                'is_salary' => false,
+                'is_clothing_allowance' => false,
+                'is_mid_year' => false,
+                'is_year_end' => false,
+                'is_ot_pay' => false,
+            ], $item->setting?->toArray() ?? []);
+
 
             if ($settings['is_salary']) {
                 $subs['salary'] = [
