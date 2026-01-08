@@ -16,18 +16,23 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        $employmentTypes =  EmployementTypes::with(['setting'])->get();
-
-       // dd($employmentTypes);
+        $employmentTypes = EmployementTypes::with(['setting'])->get();
 
         $defaultActions = 'salary';
         $defaultEmploymentType = $employmentTypes[0]->name;
 
         $options = $employmentTypes->mapWithKeys(function ($item) {
-            
+
             $subs = [];
 
-            $settings = $item->setting ?? [];
+            // Normalize settings (PREVENTS undefined array key errors)
+            $settings = array_merge([
+                'is_salary' => false,
+                'is_clothing_allowance' => false,
+                'is_mid_year' => false,
+                'is_year_end' => false,
+                'is_ot_pay' => false,
+            ], $item->setting?->toArray() ?? []);
 
             if ($settings['is_salary']) {
                 $subs['salary'] = 'Salary';
@@ -56,9 +61,7 @@ class PayrollController extends Controller
         $employmentTypeInput = strtolower($request->input('employment_type', $defaultEmploymentType));
         $typeInput = strtolower($request->input('type', $defaultActions));
 
-
         if (!array_key_exists($employmentTypeInput, $options)) {
-           // dd('here');
             return redirect()->route('payroll.index', [
                 'employment_type' => $defaultEmploymentType,
                 'type' => $defaultActions,
@@ -68,7 +71,6 @@ class PayrollController extends Controller
         $validSubTypes = array_keys($options[$employmentTypeInput]['sub']);
 
         if (!in_array($typeInput, $validSubTypes)) {
-          //  dd('here2');
             $firstType = $validSubTypes[0] ?? $defaultActions;
 
             return redirect()->route('payroll.index', [
@@ -84,6 +86,7 @@ class PayrollController extends Controller
             'options' => $options,
         ]);
     }
+
     
     public function process(string $type, int $id) {
 
