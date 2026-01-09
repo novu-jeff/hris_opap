@@ -66,6 +66,8 @@ class Salary extends Component
 
   public function recompute($sectionIndex, $employeeIndex)
 {
+   
+    
     $payroll = &$this->records['payroll'];
     $payroll_item = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
 
@@ -74,6 +76,8 @@ class Salary extends Component
     $payroll_item['uca']    = round(floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0), 2);
     $payroll_item['dbp']    = round(floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0), 2);
     $payroll_item['kawani'] = round(floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0), 2);
+
+   
 
     // === 2. RECOMPUTE TOTAL DEDUCTIONS ===
     $fields = [
@@ -93,41 +97,72 @@ class Salary extends Component
     // === 3. FETCH DB RECORD FOR LOCKING LOGIC ===
     $item = \App\Models\SalaryItemsPayroll::find($payroll_item['id']);
 
-    // === 4. FIRST-HALF LOCK LOGIC APPLIED HERE ===
-    if ($item && $item->is_first_half_locked) {
+   // === 4. GOVERNMENT HALF RECOMPUTE RULE ===
+$item = SalaryItemsPayroll::find($payroll_item['id']);
 
-        // Never change net_first_half again
-        $newNetSecondHalf = round($computedNet - $item->net_first_half, 2);
+if ($this->product === 'government' && $item) {
 
-        // Save back to DB object (not yet saving to DB)
-        $item->net_second_half = $newNetSecondHalf;
-        $item->net_amount = $item->net_first_half + $newNetSecondHalf;
+    // FIRST HALF IS FIXED ONCE LOADED
+    $fixedFirstHalf = round(
+        floatval($item->net_first_half ?? $payroll_item['net_first_half'] ?? 0),
+        2
+    );
 
-        // Sync to Livewire array for UI
-        $payroll_item['net_first_half'] = $item->net_first_half;
-        $payroll_item['net_second_half'] = $newNetSecondHalf;
-        $payroll_item['net_amount'] = $item->net_amount;
-        $payroll_item['salary'] = $newNetSecondHalf; // second half salary
+    // SECOND HALF ABSORBS ALL CHANGES
+    $secondHalf = round($computedNet - $fixedFirstHalf, 2);
 
-    } else {
+    $item->net_first_half  = $fixedFirstHalf;
+    $item->net_second_half = $secondHalf;
+    
 
-        // No lock → recompute both halves equally
-        $half = round($computedNet / 2, 2);
-
-        $item->net_first_half = $half;
-        $item->net_second_half = $half;
-        $item->net_amount = $computedNet;
-
-        // Sync back to Livewire
-        $payroll_item['net_first_half'] = $half;
-        $payroll_item['net_second_half'] = $half;
-        $payroll_item['net_amount'] = $computedNet;
-        $payroll_item['salary'] = $half;
+    // Sync to Livewire
+    $payroll_item['net_first_half']  = $fixedFirstHalf;
+    $payroll_item['net_second_half'] = $secondHalf;
+    if($payroll_item['dbp'] > 0  ){
+         //dd($payroll_item['uca'] );
+        $item->net_amount      = $computedNet;
+        $payroll_item['net_amount']  = $computedNet;
     }
+
+
+    if($payroll_item['uca'] > 0  ){
+         //dd($payroll_item['uca'] );
+          $item->net_amount      = $computedNet;
+          $payroll_item['net_amount']      = $computedNet;
+    }
+
+    if($payroll_item['hdmf'] > 0  ){
+         //dd($payroll_item['uca'] );
+          $item->net_amount      = $computedNet;
+          $payroll_item['net_amount']      = $computedNet;
+    }
+
+
+    // Government salary = 2nd half only
+    $payroll_item['salary'] = $secondHalf;
+
+} else {
+
+    // NON-GOVERNMENT (NORMAL SPLIT)
+    $firstHalf  = floor(($computedNet / 2) * 100) / 100;
+    $secondHalf = round($computedNet - $firstHalf, 2);
+
+    if ($item) {
+        $item->net_first_half  = $firstHalf;
+        $item->net_second_half = $secondHalf;
+        $item->net_amount      = $computedNet;
+    }
+
+    $payroll_item['net_first_half']  = $firstHalf;
+    $payroll_item['net_second_half'] = $secondHalf;
+    $payroll_item['net_amount']      = $computedNet;
+    $payroll_item['salary']          = $firstHalf;
+}
+
 
     // === 5. Always update these common fields ===
     $payroll_item['total_deductions'] = $totalDeduction;
-    $payroll_item['lbp_payroll_account'] = $payroll_item['net_amount'];
+    $payroll_item['lbp_payroll_account'] = $computedNet;
 
     // === 6. CHANGE TRACKING (NO CHANGE NEEDED HERE) ===
     $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? null;

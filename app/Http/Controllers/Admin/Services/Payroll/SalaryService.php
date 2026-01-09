@@ -249,8 +249,8 @@ class SalaryService extends Controller {
                 $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
                $philhealth = $hasDeductions
-                                ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
-                                : 0;
+                    ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                    : 0;
                 $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2) : 0;
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
@@ -282,6 +282,8 @@ class SalaryService extends Controller {
 
                 $net = round($gross - $total_deduction, 2);
                 $half = round($net / 2, 2);
+                $firstHalf  = floor(($net / 2) * 100) / 100;
+                $secondHalf = round($net - $firstHalf, 2);
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
@@ -312,8 +314,8 @@ class SalaryService extends Controller {
                     'kawani' => $kawani,
                     'lbp_payroll_account' => $net,
                     'salary' => $half,
-                    'net_first_half' => $half,
-                    'net_second_half' => $half,
+                    'net_first_half' => $firstHalf,
+                    'net_second_half' => $secondHalf,
                     'is_first_half_locked' => 0,
                     'is_second_half_locked' => 0,
                 ];
