@@ -64,111 +64,238 @@ class Salary extends Component
 
     }
 
-  public function recompute($sectionIndex, $employeeIndex)
+    public function recompute($sectionIndex, $employeeIndex)
 {
-    $payroll = &$this->records['payroll'];
-    $payroll_item = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+    // =========================================================
+    // 1. REFERENCES
+    // =========================================================
+    $payroll      = &$this->records['payroll'];
+    $payrollItem  = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+    $dbItem       = SalaryItemsPayroll::find($payrollItem['id']);
 
-    // === 1. UPDATE DEDUCTION FIELDS FROM INPUT ===
-    $payroll_item['hdmf']   = round(floatval($this->hdmf[$sectionIndex][$employeeIndex] ?? 0), 2);
-    $payroll_item['uca']    = round(floatval($this->uca[$sectionIndex][$employeeIndex] ?? 0), 2);
-    $payroll_item['dbp']    = round(floatval($this->dbp[$sectionIndex][$employeeIndex] ?? 0), 2);
-    $payroll_item['kawani'] = round(floatval($this->kawani[$sectionIndex][$employeeIndex] ?? 0), 2);
+    // =========================================================
+    // 2. SYNC INPUT DEDUCTIONS
+    // =========================================================
+    foreach (['hdmf', 'uca', 'dbp', 'kawani'] as $field) {
+        $payrollItem[$field] = round(
+            floatval($this->{$field}[$sectionIndex][$employeeIndex] ?? 0),
+            2
+        );
+    }
 
-    // === 2. RECOMPUTE TOTAL DEDUCTIONS ===
-    $fields = [
+    // =========================================================
+    // 3. DEDUCTIONS GROUPS
+    // =========================================================
+    $netAffectingDeductions = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
         'plreg','mpl','cpl','mp2','mplstlms','cir375_cir449',
-        'uca','dbp','kawani','w_tax','aut'
+        'uca','w_tax','aut'
     ];
 
-    $totalDeduction = round(array_sum(array_map(
-        fn($field) => round(floatval($payroll_item[$field] ?? 0), 2),
-        $fields
+    $bankAllocations = ['dbp', 'kawani'];
+
+    // Total deductions that affect net
+    $netDeductions = round(array_sum(array_map(
+        fn ($f) => floatval($payrollItem[$f] ?? 0),
+        $netAffectingDeductions
     )), 2);
 
-    $gross = round(floatval($payroll_item['gross_amount_earned'] ?? 0), 2);
-    $computedNet = round($gross - $totalDeduction, 2);  // net for whole month
+    // Total bank allocations (DBP/Kawani)
+    $bankTotal = round(array_sum(array_map(
+        fn ($f) => floatval($payrollItem[$f] ?? 0),
+        $bankAllocations
+    )), 2);
 
-    // === 3. FETCH DB RECORD FOR LOCKING LOGIC ===
-    $item = \App\Models\SalaryItemsPayroll::find($payroll_item['id']);
+    // =========================================================
+    // 4. COMPUTE GROSS NET
+    // =========================================================
+    $gross       = round(floatval($payrollItem['gross_amount_earned'] ?? 0), 2);
+    $netComputed = round($gross - $netDeductions, 2);
 
-    // === 4. FIRST-HALF LOCK LOGIC APPLIED HERE ===
-    if ($item && $item->is_first_half_locked) {
+    // =========================================================
+    // 5. GOVERNMENT PAYROLL LOGIC
+    // =========================================================
+if ($this->product === 'government' && $dbItem) {
 
-        // Never change net_first_half again
-        $newNetSecondHalf = round($computedNet - $item->net_first_half, 2);
+    $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex];
 
-        // Save back to DB object (not yet saving to DB)
-        $item->net_second_half = $newNetSecondHalf;
-        $item->net_amount = $item->net_first_half + $newNetSecondHalf;
+    $hdmfChanged = ($payrollItem['hdmf'] ?? 0) != ($original['hdmf'] ?? 0);
+    $ucaChanged  = ($payrollItem['uca'] ?? 0)  != ($original['uca'] ?? 0);
 
-        // Sync to Livewire array for UI
-        $payroll_item['net_first_half'] = $item->net_first_half;
-        $payroll_item['net_second_half'] = $newNetSecondHalf;
-        $payroll_item['net_amount'] = $item->net_amount;
-        $payroll_item['salary'] = $newNetSecondHalf; // second half salary
+    \Log::debug('Recompute called', [
+        'section' => $sectionIndex,
+        'employee' => $employeeIndex,
+        'hdmf_changed' => $hdmfChanged,
+        'uca_changed' => $ucaChanged,
+        'UCApayroll' => $payrollItem['uca'],
+    ]);
 
+    // ------------------------------------
+    // NET AMOUNT (HDMF + UCA only)
+    // ------------------------------------
+   if ($hdmfChanged || $ucaChanged) {
+    
+        $netAmount = round(
+            ($payrollItem['gross_amount_earned'] ?? 0)
+            - $netDeductions,
+            2
+        );
+
+         \Log::debug('UCA CHANGED', [
+            'gross' => $payrollItem['gross_amount_earned'],
+            'netdeduction' => $netDeductions,
+            'net' => $netAmount
+        ]);
+
+        $payrollItem['net_amount'] = $netAmount;
+        $dbItem->net_amount        = $netAmount;
     } else {
+         
+        if(($original['uca'] ?? 0) == 0 && ($payrollItem['uca'] ?? 0) == 0 ) {
+            \Log::debug('back to zero uca');
+            $netAmount = round(
+                ($payrollItem['gross_amount_earned'] ?? 0)
+                - $netDeductions,
+                2
+            );
 
-        // No lock → recompute both halves equally
-        $half = round($computedNet / 2, 2);
-
-        $item->net_first_half = $half;
-        $item->net_second_half = $half;
-        $item->net_amount = $computedNet;
-
-        // Sync back to Livewire
-        $payroll_item['net_first_half'] = $half;
-        $payroll_item['net_second_half'] = $half;
-        $payroll_item['net_amount'] = $computedNet;
-        $payroll_item['salary'] = $half;
+             $payrollItem['net_amount'] = $netAmount;
+             $dbItem->net_amount        = $netAmount; 
+        } 
+        else 
+           
+        {
+             $netAmount = round($payrollItem['net_amount'], 2);
+             $payrollItem['net_amount'] = $netAmount;
+             $dbItem->net_amount        = $netAmount;    
+        }
+            
     }
 
-    // === 5. Always update these common fields ===
-    $payroll_item['total_deductions'] = $totalDeduction;
-    $payroll_item['lbp_payroll_account'] = $payroll_item['net_amount'];
+    // ------------------------------------
+    // FIRST HALF
+    // ------------------------------------
+    if ($hdmfChanged) {
+        // Only HDMF re-splits halves
+        
+        $firstHalf = floor(($netAmount / 2) * 100) / 100;
+        $n = $netAmount; 
 
-    // === 6. CHANGE TRACKING (NO CHANGE NEEDED HERE) ===
-    $original = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? null;
+        \Log::debug('here in hdmf changed', [
+            'firsthalf' => $firstHalf,
+            'netamount' => $netAmount,
+            'n' => $n
+        ]);
+      // dd($firstHalf);
+    } else {
+        // Fixed first half
+      
+        \Log::debug('here in no hdmf changed');
+        $firstHalf = round($original['net_first_half'], 2);
+        
+    }
+
+    // ------------------------------------
+    // LBP PAYROLL ACCOUNT
+    // ------------------------------------
+    $bankTotal = round(
+        floatval($payrollItem['dbp'] ?? 0) +
+        floatval($payrollItem['kawani'] ?? 0),
+        2
+    );
+
+    $lbpPayroll = round($netAmount - $bankTotal, 2);
+
+    // ------------------------------------
+    // SECOND HALF (ALWAYS RECALCULATED)
+    // ------------------------------------
+    $secondHalf = round($lbpPayroll - $firstHalf, 2);
+
+    \Log::debug('secondhalf computation', [
+        'secondhalf' => $secondHalf,
+        'firsthalf' => $firstHalf,
+        'lbpayroll' => $lbpPayroll,
+        'netamount' => $netAmount,
+    ]);
+
+
+
+    // ------------------------------------
+    // APPLY VALUES
+    // ------------------------------------
+    $payrollItem['net_first_half']      = $firstHalf;
+    $payrollItem['net_second_half']     = $secondHalf;
+    $payrollItem['salary']              = $secondHalf;
+    $payrollItem['lbp_payroll_account'] = $lbpPayroll;
+
+    $dbItem->net_first_half  = $firstHalf;
+    $dbItem->net_second_half = $secondHalf;
+}
+
+
+
     if ($original) {
-        $hasChanged = $this->isChanged($payroll_item, $original);
-        $item_id = $payroll_item['id'];
+        $changed = $this->isChanged($payrollItem, $original);
+        $id      = $payrollItem['id'];
 
-        if ($hasChanged) {
-            if (!in_array($item_id, $this->updatedItems)) {
-                $this->updatedItems[] = $item_id;
-            }
-            $this->hasChanges = true;
-        } else {
-            $key = array_search($item_id, $this->updatedItems);
-            if ($key !== false) {
-                unset($this->updatedItems[$key]);
-                $this->updatedItems = array_values($this->updatedItems);
-            }
-            $this->hasChanges = !empty($this->updatedItems);
+        if ($changed && !in_array($id, $this->updatedItems)) {
+            $this->updatedItems[] = $id;
         }
+
+        if (!$changed && ($key = array_search($id, $this->updatedItems)) !== false) {
+            unset($this->updatedItems[$key]);
+        }
+
+        $this->updatedItems = array_values($this->updatedItems);
+        $this->hasChanges   = !empty($this->updatedItems);
     }
 
-    // === 7. OVERALL NET ===
-    $overallNet = 0;
-    foreach ($this->records['payroll_items'] as $section) {
-        foreach ($section['employees'] as $employee) {
-            $overallNet += round(floatval($employee['net_amount'] ?? 0), 2);
-        }
-    }
+    // =========================================================
+    // 6. TOTAL DEDUCTIONS (ALWAYS RECOMPUTE)
+    // =========================================================
 
-    $payroll['overall_net_amount'] = round($overallNet, 2);
-    $payroll['overall_salary'] = round($overallNet / 2, 2);
+    // Net-affecting deductions
+    $netAffectingDeductions = [
+        'rlip','hdmf','philhealth','consoloan','emergency_loan',
+        'plreg','mpl','cpl','mp2','mplstlms','cir375_cir449',
+        'uca','w_tax','aut'
+    ];
+
+    $netDeductionTotal = round(array_sum(array_map(
+        fn ($f) => floatval($payrollItem[$f] ?? 0),
+        $netAffectingDeductions
+    )), 2);
+
+    // Bank allocations (DBP + Kawani)
+    $bankTotal = round(
+        floatval($payrollItem['dbp'] ?? 0) +
+        floatval($payrollItem['kawani'] ?? 0),
+        2
+    );
+
+    // Final total deductions
+    $payrollItem['total_deductions'] = round(
+        $netDeductionTotal,
+        2
+    );
+
+    $lbpPayroll = round($netAmount - $bankTotal, 2);
+
+// ------------------------------------
+// SECOND HALF (ALWAYS CHANGES)
+// ------------------------------------
+$secondHalf = round($lbpPayroll - $firstHalf, 2);
 
     \Log::debug('Payroll recomputed', [
         'section' => $sectionIndex,
         'employee' => $employeeIndex,
-        'net' => $payroll_item['net_amount'],
-        'deductions' => $payroll_item['total_deductions'],
-        'overall_net' => $payroll['overall_net_amount']
+        'net' => $payrollItem['net_amount'],
+        'lbp' => $payrollItem['lbp_payroll_account'],
+        'total_deductions' => $payrollItem['total_deductions']
     ]);
 }
+
+
 
 
 
