@@ -81,11 +81,24 @@ class OtherServices extends Controller
 
 
     public function deductions(string $employee_no) {
-        
-        $records = EmployeeDeductions::where('employee_no', $employee_no)
-            ->get();
 
-        return $records;
+      
+        
+        $records = EmployeeDeductions::with('deduction') // load relation to OtherEarnings
+        ->where('employee_no', $employee_no)
+        ->get();
+
+        $newRecords = [];
+
+        foreach ($records as $record) {
+            $newRecords[] = [
+                'code' => $record->deduction->code ?? 'UNKNOWN',
+                'name' => $record->deduction->name ?? 'Unknown',
+                'amount' => $record->amount ?? 0,
+            ];
+        }
+
+        return $newRecords;
     
     }
 

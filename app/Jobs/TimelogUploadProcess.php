@@ -61,6 +61,11 @@ class TimelogUploadProcess implements ShouldQueue
 
 
         $external = config('app.external_timelogs');
+        \log::dedug('timelog upload process', [
+            'external' => $external,
+            'item' => $item,
+            'timestamp' => $timestamp,
+        ]);
 
         if ($external) {
             $records[] = [
@@ -81,6 +86,13 @@ class TimelogUploadProcess implements ShouldQueue
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+            \LOG::DEBUG('internal timelog upload', [
+                'employee_id' => $item['bsdno'] ?? null,
+                'timestamp' => $timestamp,
+                'status' => $item['type'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
 
 
