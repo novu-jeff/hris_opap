@@ -34,7 +34,7 @@ class Index extends Component
     ];
 
     protected $paginationTheme = 'bootstrap';
-    protected $listeners = ['remove', 'onChange'];
+    protected $listeners = ['setEmployees', 'remove', 'onChange'];
 
 
     public function setPage(string $page = null, string $toUpdate = null)
@@ -62,13 +62,15 @@ class Index extends Component
 
     public function getEmployees()
     {
-        if($this->page == 'create') {
-            return EmployeeInformation::with('personal')
-                ->whereDoesntHave('deductions')
-                ->get();
-        }
 
-        return EmployeeInformation::with('personal')->get();
+         return ($this->page === 'create')
+        ? EmployeeInformation::with('personal')
+            ->whereDoesntHave('deductions')
+            ->whereHas('personal') // ensures personal exists
+            ->get()
+        : EmployeeInformation::with('personal')
+            ->whereHas('personal') // ensures personal exists
+            ->get();
 
     }
 
@@ -112,6 +114,11 @@ class Index extends Component
 
             'fields.valid_until.date'       => 'Valid until must be a valid date.',
         ];
+    }
+
+    public function setEmployees($employees)
+    {
+        $this->fields['employee_no'] = $employees ?? [];
     }
 
 

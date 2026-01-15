@@ -119,15 +119,14 @@
         Livewire.on('set_select', () => {
             setTimeout(() => {
                 $('.multi-select').select2();
-                $('.multi-select').on('change', function (e) {
-                    const data = $('.multi-select').select2('val');
-                    console.log(data);
-                    @this.dispatch('onChange', [data ?? null]);
-                });
 
+                $('.multi-select').on('change', function () {
+                    let data = $(this).val();
+                    @this.call('setEmployees', data);
+                });
             }, 10);
-            
         });
+
 
         
 
