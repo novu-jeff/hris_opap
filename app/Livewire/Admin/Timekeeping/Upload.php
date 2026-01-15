@@ -37,191 +37,200 @@ class Upload extends Component
         $this->actionBy = Auth::user();
     }
 
+ 
     public function updatedFile()
-    {
-        if ($this->file) {
-            $file = $this->file;
+{
+    if (!$this->file) {
+        $this->isParsing = true;
+        return;
+    }
 
-            if ($file instanceof \Illuminate\Http\UploadedFile && $file->getClientOriginalExtension() === 'csv') {
-                try {
-                    Storage::delete(Storage::allFiles('public/temp/files'));
+    $file = $this->file;
 
-                    $fileName = uniqid() . '.csv';
-                    $filePath = $file->storeAs('public/temp/files', $fileName);
-                    $this->upload_preview = asset('storage/temp/files/' . $fileName);
+    if (!($file instanceof \Illuminate\Http\UploadedFile) || $file->getClientOriginalExtension() !== 'csv') {
+        $this->addError('file', 'The file must be in CSV format.');
+        $this->file = null;
+        return;
+    }
 
-                    $data = array_map('str_getcsv', explode("\n", file_get_contents(storage_path("app/$filePath"))));
-                    $header = $data[0];
-                    $header = preg_replace('/^\xEF\xBB\xBF/', '', $header);
+    try {
+        // Clear old temp files
+        Storage::delete(Storage::allFiles('public/temp/files'));
 
-                    $this->checkIfValidFormat($header);
+        // Store the uploaded CSV
+        $fileName = uniqid() . '.csv';
+        $filePath = $file->storeAs('public/temp/files', $fileName);
+        $this->upload_preview = asset('storage/temp/files/' . $fileName);
 
-                    $chunks = array_chunk($data, 500);
+        // Prepare temp folder for chunks
+        $tempPath = resource_path('temp/' . time());
+        if (!file_exists($tempPath)) {
+            mkdir($tempPath, 0777, true);
+        }
+        $this->tempPath = $tempPath;
 
-                    $tempPath = resource_path('temp/' . time());
-                    if (!file_exists($tempPath)) {
-                        mkdir($tempPath, 0777, true);
-                    }
+        // Read CSV using fgetcsv (robust for Excel CSVs)
+        $handle = fopen(storage_path("app/$filePath"), 'r');
+        if (!$handle) {
+            throw new \Exception("Unable to open uploaded CSV file.");
+        }
 
-                    $this->tempPath = $tempPath;
+        $header = fgetcsv($handle);
+        if (!$header) {
+            throw new \Exception("CSV file is empty or malformed.");
+        }
 
-                    $logDateTimeIndex = array_search('logdatetime', array_map('strtolower', $header));
-                    $monthYears = [];
+        // Remove BOM if exists
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
 
-                    foreach ($data as $rowIndex => $row) {
-                        if ($rowIndex === 0) continue;
+        $this->checkIfValidFormat($header);
 
-                        if (isset($row[$logDateTimeIndex])) {
-                            $dateStr = trim($row[$logDateTimeIndex]);
+        $data = [];
+        while (($row = fgetcsv($handle)) !== false) {
+            if (count(array_filter($row)) === 0) continue; // skip empty rows
+            $data[] = $row;
+        }
+        fclose($handle);
 
-                            try {
-                                $carbon = \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $dateStr);
-                                $month = $carbon->format('M');
-                                $year = $carbon->format('Y');
-                                $monthYears[] = ['month' => $month, 'year' => $year];
-                            } catch (\Exception $e) {
-                                \Log::info('error: ' . $e->getMessage());
-                            }
-                        }
-                    }
+        // Determine month/year for notification
+        $logDateTimeIndex = array_search('logdatetime', array_map('strtolower', $header));
+        $monthYears = [];
 
-                    $monthYears = array_unique(array_map(fn($item) => $item['month'] . ' ' . $item['year'], $monthYears));
-                    sort($monthYears);
+        foreach ($data as $row) {
+            if (!isset($row[$logDateTimeIndex])) continue;
 
-                    $yearsOnly = array_unique(array_map(fn($str) => explode(' ', $str)[1], $monthYears));
-
-                    if (count($yearsOnly) === 1) {
-                        $monthsOnly = array_map(fn($str) => explode(' ', $str)[0], $monthYears);
-                        $this->monthYear = implode(', ', $monthsOnly) . ' ' . $yearsOnly[0];
-                    } else {
-                        $this->monthYear = implode(', ', $monthYears);
-                    }
-
-                    foreach ($chunks as $index => $chunkData) {
-                        $chunkFileName = "/tmp_{$index}.csv";
-                        $chunkFilePath = $tempPath . $chunkFileName;
-                        $chunkDataWithHeader = array_merge([$header], $chunkData);
-                        $csvContent = implode("\n", array_map(fn($row) => implode(',', $row), $chunkDataWithHeader));
-
-                        file_put_contents($chunkFilePath, $csvContent);
-                    }
-
-                    $this->isParsing = false;
-                } catch (\Exception $e) {
-                    $this->addError('file', 'There was an error saving the file to temporary storage: ' . $e->getMessage());
-                    $this->isParsing = false;
-                }
-            } else {
-                $this->addError('file', 'The file must be in CSV format.');
+            $dateStr = trim($row[$logDateTimeIndex]);
+            try {
+                $carbon = Carbon::parse($dateStr);
+                $monthYears[] = ['month' => $carbon->format('M'), 'year' => $carbon->format('Y')];
+            } catch (\Exception $e) {
+                \Log::warning('Invalid date in CSV', ['value' => $dateStr]);
             }
-            $this->file = null;
+        }
+
+        $monthYears = array_unique(array_map(fn($item) => $item['month'] . ' ' . $item['year'], $monthYears));
+        sort($monthYears);
+
+        $yearsOnly = array_unique(array_map(fn($str) => explode(' ', $str)[1], $monthYears));
+        if (count($yearsOnly) === 1) {
+            $monthsOnly = array_map(fn($str) => explode(' ', $str)[0], $monthYears);
+            $this->monthYear = implode(', ', $monthsOnly) . ' ' . $yearsOnly[0];
         } else {
-            $this->isParsing = true;
-        }
-    }
-
-    public function upload_file() {
-
-        if (Gate::denies('write timelogs')) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Access Denied!', 
-                'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.',
-            ]);
-            return;
+            $this->monthYear = implode(', ', $monthYears);
         }
 
-        if (!$this->upload_preview) {
-            return $this->dispatch('alert', [
-                'status' => 'warning',
-                'title' => 'Please be informed',
-                'isRemoveRowDT' => false,
-                'showAlert' => true,
-                'message' => 'File logs are required!',
-            ]);
-        }
+        // Save chunks to temp folder
+        $chunks = array_chunk($data, 500);
+        foreach ($chunks as $index => $chunkData) {
+            $chunkFilePath = $tempPath . "/tmp_{$index}.csv";
+            $chunkDataWithHeader = array_merge([$header], $chunkData);
 
-        try {
-
-            $path = $this->tempPath;
-            $files = glob($path . '/*.csv');
-
-            $jobs = []; 
-
-            foreach ($files as $key => $file) {
-                $data = array_map('str_getcsv', file($file));
-
-                $header = $data[0]; 
-                array_shift($data); 
-
-                if (!empty($data)) {
-                    array_shift($data); 
-                }
-
-                $formattedData = [];
-
-                foreach ($data as $row) {
-                    $formattedRow = array_combine($header, $row);
-                    $formattedRow['origin'] = 'biometrics';
-                    $formattedData[] = $formattedRow;
-                }
-
-                $jobs[] = new TimelogUploadProcess($formattedData); 
-
-                unlink($file);
+            $csvContent = '';
+            foreach ($chunkDataWithHeader as $row) {
+                $csvContent .= implode(',', array_map(fn($col) => "\"$col\"", $row)) . "\n";
             }
 
-            if (!empty($jobs)) {
+            file_put_contents($chunkFilePath, $csvContent);
+        }
 
-                $batch = Bus::batch($jobs)
-                    ->withOption('actionBy', [
-                        'id' => $this->actionBy->id,
-                        'name' => $this->actionBy->name
-                    ])
-                    ->name('Timekeeping Upload For ' . $this->monthYear)
-                    ->catch(function (Batch $batch, \Throwable $e) {
-                        \Log::error('Error: ' . $e->getMessage());
-                        $this->actionBy?->notify(new Notifications(
-                            'error',
-                            'An error occurred during uploading timelogs.',
-                            route('system.jobs', ['id' => $batch->id]),
-                            'admin'
-                        ));
-                    })
-                    ->then(function (Batch $batch) { 
-                        $this->actionBy?->notify(new Notifications(
-                            'success',
-                            'The uploading of timelogs has been finished.',
-                                route('system.jobs', ['id' => $batch->id]),
-                            'admin'
-                        ));
-                    })
-                    ->finally(function () {
-                       
-                    })
-                    ->dispatch();
+        $this->isParsing = false;
+        $this->file = null;
+
+    } catch (\Exception $e) {
+        $this->addError('file', 'Error processing CSV: ' . $e->getMessage());
+        $this->isParsing = false;
+        $this->file = null;
+    }
+}
+
+    public function upload_file()
+{
+    if (Gate::denies('write timelogs')) {
+        return $this->dispatch('alert', [
+            'status' => 'error',
+            'title' => 'Access Denied!', 
+            'showAlert' => true,
+            'message' => 'You do not have permission to perform this action.',
+        ]);
+    }
+
+    if (!$this->upload_preview) {
+        return $this->dispatch('alert', [
+            'status' => 'warning',
+            'title' => 'Please be informed',
+            'showAlert' => true,
+            'message' => 'File logs are required!',
+        ]);
+    }
+
+    try {
+        $files = glob($this->tempPath . '/*.csv');
+        $jobs = [];
+
+        foreach ($files as $file) {
+            $handle = fopen($file, 'r');
+            if (!$handle) continue;
+
+            $header = fgetcsv($handle);
+            $data = [];
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count(array_filter($row)) === 0) continue; // skip empty
+                $data[] = array_combine($header, $row);
+            }
+            fclose($handle);
+
+            if (!empty($data)) {
+                // add origin
+                $data = array_map(fn($row) => array_merge($row, ['origin' => 'biometrics']), $data);
+                $jobs[] = new TimelogUploadProcess($data);
             }
 
-            $this->dispatch('alert', [
-                'status' => 'info',
-                'title' => 'Please be informed',
-                'showAlert' => true,
-                'message' => 'The uploading of timelogs has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
-            ]);
-            
-        } catch (\Exception $e) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Oops!',
-                'isRemoveRowDT' => true,
-                'showAlert' => true,
-                'message' => 'Error: ' . $e->getMessage(),
-            ]);
-        } finally {
-            $this->isUploading = false;
+            unlink($file);
         }
+
+        if (!empty($jobs)) {
+            Bus::batch($jobs)
+                ->withOption('actionBy', ['id' => $this->actionBy->id, 'name' => $this->actionBy->name])
+                ->name('Timekeeping Upload For ' . $this->monthYear)
+                ->catch(function ($batch, \Throwable $e) {
+                    Log::error('Timekeeping batch error: ' . $e->getMessage());
+                    $this->actionBy?->notify(new Notifications(
+                        'error',
+                        'Error during timelogs upload',
+                        route('system.jobs', ['id' => $batch->id]),
+                        'admin'
+                    ));
+                })
+                ->then(function ($batch) {
+                    $this->actionBy?->notify(new Notifications(
+                        'success',
+                        'Timelogs upload completed successfully',
+                        route('system.jobs', ['id' => $batch->id]),
+                        'admin'
+                    ));
+                })
+                ->dispatch();
+        }
+
+        $this->dispatch('alert', [
+            'status' => 'info',
+            'title' => 'Please be informed',
+            'showAlert' => true,
+            'message' => 'Timelogs upload started. You will be notified when done.',
+        ]);
+
+    } catch (\Exception $e) {
+        $this->dispatch('alert', [
+            'status' => 'error',
+            'title' => 'Oops!',
+            'showAlert' => true,
+            'message' => 'Error: ' . $e->getMessage(),
+        ]);
+    } finally {
+        $this->isUploading = false;
     }
+}
+
 
     private function checkIfValidFormat($headers) {
 
