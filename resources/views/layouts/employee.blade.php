@@ -410,6 +410,15 @@ function stopResize() {
     window.removeEventListener('mouseup', stopResize);
 }
 
+
+Livewire.onError(statusCode => {
+    if (statusCode === 419) {
+        window.location.href = "{{ route('session.expired') }}";
+        return false;
+    }
+});
+
+
    
 
         

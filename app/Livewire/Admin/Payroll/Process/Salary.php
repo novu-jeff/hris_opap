@@ -378,6 +378,7 @@ $secondHalf = round($lbpPayroll - $firstHalf, 2);
                 'status' => 'success',
                 'title' => 'Yey!',
                 'message' => 'Changes Saved',
+                 'redirect' => route('payroll.process', ['type' => $this->type, 'payroll_id' => $this->payroll_id])
             ]);
 
         } catch (\Throwable $e) {

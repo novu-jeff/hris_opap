@@ -103,6 +103,14 @@ use App\Http\Controllers\Admin\LeaveImportController;
 
 Route::redirect('/', 'jobs', 301);;
 
+/**
+ * Session Expired Page (419)
+ * Must be OUTSIDE auth / admin / employee middleware
+ */
+Route::get('/session-expired', function () {
+    return response()->view('errors.session-expired', [], 419);
+})->name('session.expired');
+
 Route::get('jobs', [HomeController::class, 'index'])
         ->name('home.index')
         ->middleware('applicant:guest');
