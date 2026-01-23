@@ -176,7 +176,7 @@
                     <a class="submenu-item" href="{{route('scheduler.index')}}">
                          <i class="fa-solid fa-calendar"></i> Scheduler</a>
                 @endcan
-                @can('read tranches')
+                 @can('read scheduler')
                     <a class="submenu-item" href="{{route('tranches.index')}}">
                         <i class="fa-solid fa-layer-group"></i> Tranches</a>
                 @endcan
