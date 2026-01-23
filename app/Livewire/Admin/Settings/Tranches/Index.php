@@ -54,6 +54,7 @@ class Index extends Component
             if($record) {
                 
                 $record->isDeleted = true;
+                $record->year = '0000';
                 $record->save();
 
                 $this->dispatch('alert', [
