@@ -361,7 +361,7 @@ class SalaryService extends Controller {
                 $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'HDMF')['amount'] ?? 0), 2) : 0;
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
-                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR375, CIR449')['amount'] ?? 0), 2) : 0;
+                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
                 $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
@@ -374,8 +374,8 @@ class SalaryService extends Controller {
                 $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
 
                 // Optional deductions
-                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP Savings')['amount'] ?? 0), 2) : 0;
-                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unlad Kawani')['amount'] ?? 0), 2) : 0;
+                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
+                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
                 $total_deduction = round(
                     $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
