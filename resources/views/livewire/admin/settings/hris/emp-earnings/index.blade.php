@@ -24,18 +24,12 @@
                             <input type="text" id="amount_type" wire:model="fields.amount_type" class="form-control restricted" readonly>
                             @error('fields.amount_type') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        @if(in_array($amountType, ['fixed_amount', 'percentage']))
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="first_term" class="form-label">First Term</label>
-                                <input type="number" id="first_term" wire:model="fields.first_term" class="form-control">
-                                @error('fields.first_term') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="second_term" class="form-label">Second Term</label>
-                                <input type="number" id="second_term" wire:model="fields.second_term" class="form-control">
-                                @error('fields.second_term') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
+                        <div class="col-12 col-md-12 mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <input type="text" id="amount" wire:model="fields.amount" class="form-control">
+                            @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                       
                     </div>
                     <div class="d-flex justify-content-end mt-3">
                         <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
@@ -76,8 +70,7 @@
                             <tr>
                                 <th>Employee No</th>
                                 <th>Employee Name</th>
-                                <th>First Term</th>
-                                <th>Second Term</th>
+                                <th>Amount</th>
                                 <th>Last Update</th>
                                 <th>Actions</th>
                             </tr>
@@ -88,10 +81,7 @@
                                     <td>{{ $record->employee_no }}</td>
                                     <td>{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                     <td>
-                                        PHP {{ number_format($record->first_term, 2) }}
-                                    </td>
-                                    <td>
-                                        PHP {{ number_format($record->second_term, 2) }}
+                                        PHP {{ number_format($record->amount, 2) }}
                                     </td>
                                     <td>
                                         {{ \Carbon\Carbon::parse($record->updated_at)->format('F d, Y \•\ H:i A') }}

@@ -207,9 +207,7 @@
                         <select wire:model="records.employee_information.salary_method" id="records.employee_information.salary_method" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             <option value="cash">Cash</option>
-                            <option value="bank transfer">Bank Transfer</option>
-                            <option value="paycheck">Paycheck</option>
-                            <option value="e-wallet">E-Wallet</option>
+                            <option value="land bank atm">Land Bank ATM</option>
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror

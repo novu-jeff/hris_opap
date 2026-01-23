@@ -11,21 +11,27 @@
                             class="btn btn-sm btn-outline-primary" 
                             wire:click="changePeriod('control', '-1')"
                             wire:loading.attr="disabled" 
-                            wire:loading.class="btn-secondary">
+                            wire:loading.class="btn-secondary"
+                            {{ $hasPrevious ? '' : 'disabled' }}
+                            title="Monthly Payslip"
+                            style="{{ $hasPrevious ? '' : 'opacity:0.5; cursor:not-allowed;' }}">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
                         
                         <div class="mx-3" id="cuttOffPeriod">
-                            {{ \Carbon\Carbon::parse($currentPeriod->payroll_date)->format('F d, Y') }}
+                             {{ \Carbon\Carbon::parse($currentPeriod->payroll_date)->format('F Y') }}
                         </div>
                                                 
                         <button 
-                            class="btn btn-sm btn-outline-primary" 
-                            wire:click="changePeriod('control', '1')"
-                            wire:loading.attr="disabled" 
-                            wire:loading.class="btn-secondary">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>                
+                        class="btn btn-sm btn-outline-primary" 
+                        wire:click="changePeriod('control', '1')"
+                        wire:loading.attr="disabled" 
+                        wire:loading.class="btn-secondary"
+                        {{ $hasNext ? '' : 'disabled' }}
+                        title="Monthly Payslip"
+                        style="{{ $hasNext ? '' : 'opacity:0.5; cursor:not-allowed;' }}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>                
                     </div>
                 </div>
                 @if($requestStatus && $requestStatus == 'pending')

@@ -26,6 +26,7 @@ class Index extends Component
         'amount_type' => null,
         'first_term'  => null,
         'second_term' => null,
+        'amount' => null,
     ];
 
     protected $paginationTheme = 'bootstrap';
@@ -38,6 +39,7 @@ class Index extends Component
 
         $this->fields['first_term'] = $config->first_term;
         $this->fields['second_term'] = $config->second_term;
+        $this->fields['amount'] = $config->amount;
 
         if ($config->amount_type) {
             $this->onChange('amount_type', $config->amount_type);
@@ -61,12 +63,16 @@ class Index extends Component
         $this->toUpdate = $toUpdate;
         
         if ($page === 'edit' && $toUpdate) {
-            $data = EmployeeEarnings::where('employee_no', $toUpdate)->first();
+            $data = EmployeeEarnings::where('employee_no', $toUpdate)
+             ->where('earning_id', $this->id)
+            ->first();
+            
             $this->fields = [
                 'employee_no' => [$toUpdate],
                 'amount_type' => $data->amount_type ?? null,
                 'first_term'  => $data->first_term ?? null,
                 'second_term' => $data->second_term ?? null,
+                'amount' => $data->amount ?? null,
             ];
         $this->onChange('amount_type', $data->amount_type);
         }
@@ -79,12 +85,15 @@ class Index extends Component
     {
         return ($this->page === 'create')
         ? EmployeeInformation::with('personal')
-            ->whereDoesntHave('earnings')
-            ->whereHas('personal') // ensures personal exists
+            ->whereHas('personal')
+             ->whereDoesntHave('earnings', function ($q) {
+                $q->where('earning_id', $this->id);
+            })
             ->get()
         : EmployeeInformation::with('personal')
             ->whereHas('personal') // ensures personal exists
             ->get();
+            
     }
 
     protected function fileRules(): array
@@ -110,8 +119,8 @@ class Index extends Component
 
         $termRules = ($amountType === 'basic salary') ? 'nullable|numeric' : 'required|numeric';
 
-        $rules['fields.first_term'] = $termRules;
-        $rules['fields.second_term'] = $termRules;
+        
+        $rules['fields.amount'] = $termRules;
 
         return $rules;
     }
@@ -120,8 +129,7 @@ class Index extends Component
     {
         return [
             'fields.amount_type.required' => 'The amount type field is required.',
-            'fields.first_term.required' => 'The first term field is required.',
-            'fields.second_term.required' => 'The second term field is required.',
+            'fields.amount.required' => 'The amount field is required.',
         ];
     }
 
@@ -150,6 +158,7 @@ class Index extends Component
             $amountType = str_replace(' ', '_', $this->fields['amount_type']);
             $firstTerm = $this->fields['first_term'];
             $secondTerm = $this->fields['second_term'];
+            $amount = $this->fields['amount'];
 
             /*foreach ($this->employees as $employee) {
                 $data = [
@@ -185,6 +194,7 @@ class Index extends Component
     if ($amountType === 'basic_salary') {
         $data['amount'] = $employee->salary;
     } else {
+        $data['amount'] = $amount;
         $data['first_term'] = $firstTerm;
         $data['second_term'] = $secondTerm;
     }

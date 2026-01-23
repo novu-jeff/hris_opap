@@ -33,6 +33,7 @@ class SalaryItemsPayroll extends Model
                 'emergency_loan',
                 'plreg',
                 'mpl',
+                'mpl_lite',
                 'cpl',
                 'mp2',
                 'mplstlms',

@@ -26,6 +26,30 @@
                                 @error('eligible') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        {{-- Tranche Year --}}
+                        <div class="col-12 col-md-6 mb-4">
+                            <label class="mb-2" for="year">Tranche Year <span class="text-danger">*</span></label>
+                            <select wire:model="year" id="year" class="form-select">
+                                <option value=""> - CHOOSE YEAR - </option>
+                               
+                                <option value="{{ now()->year }}">{{ now()->year }}</option>
+                                <option value="{{ now()->year + 1 }}">{{ now()->year + 1 }}</option>
+                            </select>
+                            <div class="error-field">
+                                @error('year') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        {{-- Active --}}
+                        <div class="col-12 col-md-6 mb-4 d-flex align-items-center">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" wire:model="is_active" id="is_active">
+                                <label class="form-check-label" for="is_active">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
                         <div class="col-12 mb-4">
                             <label class="mb-2" for="name">File <span class="text-danger">*</span></label>
                             <input type="file" wire:model="file" id="file" class="form-control">
