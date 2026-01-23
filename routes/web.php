@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
+use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
@@ -295,6 +296,8 @@ Route::prefix('admin')->group(function() {
         Route::prefix('reports')->group( function() {
             Route::get('daily-time-record', [DailyTimeRecordController::class, 'index'])->name('reports.dtr');
             Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+
+            Route::get('payroll-record', [PayrollReportController::class, 'index'])->name('reports.payroll');
 
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');

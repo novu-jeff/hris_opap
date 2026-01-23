@@ -96,65 +96,46 @@
 </div>
 
 
-    <div class="card border-0 mt-3">
-        <div class="card-body p-0">
-            <div class="row mb-4">
-                <div class="col-md-6 d-flex align-items-center gap-2">
-                    <label for="entries" class="form-label mb-0">Show entries:</label>
-                    <select id="entries" wire:model.live="entries" class="form-select w-auto">
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="30">30</option>
-                        <option value="40">40</option>
-                        <option value="50">50</option>
-                        <option value="60">60</option>
-                        <option value="70">70</option>
-                        <option value="80">80</option>
-                        <option value="90">90</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-                <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
-                    <label for="search" class="form-label mb-0">Search:</label>
-                    <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered w-100">
-                    <thead>
+   @foreach($tranchesByYear as $year => $yearTranches)
+    <div class="card mb-2">
+        <div class="card-header bg-primary text-white" data-bs-toggle="collapse" data-bs-target="#year-{{ $year }}">
+            Year: {{ $year }}
+        </div>
+        <div id="year-{{ $year }}" class="collapse">
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light text-center">
                         <tr>
                             <th>Name</th>
-                            <th style="max-width: 200px;">Action</th>
+                            <th>Eligible</th>
+                            <th>Active</th>
+                            <th>Action</th>
                         </tr>
-                    </thead>                
+                    </thead>
                     <tbody>
-                        @forelse($records as $record)
-                            <tr data-id="{{$record->id}}">
-                                <td>{{$record->name}}</td>
+                        @foreach($yearTranches as $tranche)
+                            <tr>
+                                <td>{{ $tranche->name }}</td>
+                                <td>{{ $tranche->eligible }}</td>
+                                <td>{{ $tranche->is_active ? 'Yes' : 'No' }}</td>
                                 <td>
-                                    <button wire:click="view('{{$record->id}}')" class="btn btn-primary mx-1">
+                                    <button wire:click="view({{ $tranche->id }})" class="btn btn-primary btn-sm">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
-                                    <a href="{{route('tranches.edit', ['tranch' => $record->id])}}" class="btn btn-primary mx-1">
+                                    <a href="{{ route('tranches.edit', $tranche->id) }}" class="btn btn-warning btn-sm">
                                         <i class="fa-solid fa-edit"></i>
                                     </a>
-                                    <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
+                                    <button wire:click="remove(true, {{ $tranche->id }})" class="btn btn-danger btn-sm">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="mt-4">
-                {{ $records->links(data: ['scrollTo' => false]) }}
-            </div>
         </div>
-    </div>    
+    </div>
+@endforeach
+
 </div>

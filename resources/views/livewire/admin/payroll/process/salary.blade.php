@@ -55,9 +55,9 @@
                             <th rowspan="2" class="text-center">Basic Salary</th>
                             <th rowspan="2" class="text-center">Pera</th>
                             <th rowspan="2" class="text-center">Gross Amount Earned</th>
-                            <th colspan="26" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
-                            <th colspan="2" class="text-center">AUT</th>
-                            <th colspan="8" class="text-center"></th>
+                            <th colspan="29" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                  
+                            <th colspan="10" class="text-center"></th>
                             <th colspan="10" class="text-center">Salary</th> 
                         </tr>
                         <tr>
@@ -68,21 +68,21 @@
                             <th colspan="2" class="vertical-text green">EMERGYLN</th>
                             <th colspan="2" class="vertical-text green">PLREG</th>
                             <th colspan="2" class="vertical-text green">MPL</th>
+                            <th colspan="2" class="vertical-text green">MPL LITE</th>
                             <th colspan="2" class="vertical-text green">CPL</th>
                             <th colspan="2" class="vertical-text yellow">MP2</th>
                             <th colspan="2" class="vertical-text yellow">MPL STLMS</th>
                             <th colspan="2" class="vertical-text yellow">CIR375, CIR449</th>
                             <th colspan="2" class="vertical-text red">W/TAX</th>
                             <th colspan="2" class="vertical-text red">UCA</th>
-                            <th class="vertical-text grey">1st Half</th>
-                            <th class="vertical-text grey">2nd Half</th>
+                            <th class="vertical-text grey">AUT</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
                             <th colspan="2" class="vertical-text grey">DBP</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
-                            <th colspan="2" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
-                            <th colspan="2" class="text-center">First Half</th>
-                            <th colspan="2" class="text-center">Second Half</th>
+                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
+                            <th colspan="4" class="text-center">First Half</th>
+                            <th colspan="4" class="text-center">Second Half</th>
                         </tr>
                     </thead>
 
@@ -122,50 +122,149 @@
                                     <td>{{ number_format($record['basic_salary'], 2) }}</td>
                                     <td>{{ number_format($record['pera'], 2) }}</td>
                                     <td>{{ number_format($record['gross_amount_earned'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['rlip'], 2) }}</td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="rlip.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
+                                    </td>
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td colspan="2">{{ number_format($record['philhealth'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['consoloan'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['emergency_loan'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['plreg'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mpl'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['cpl'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mp2'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mplstlms'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['cir375_cir449'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['w_tax'], 2) }}</td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="philhealth.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>    
+                                        
+                                      </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="consoloan.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>    
+                                    </td>
+                                    <td colspan="2">
+                                           <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="emergency_loan.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="plreg.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                    </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mpl.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mpl_lite.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>    
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="cpl.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mp2.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mplstlms.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="cir375_cir449.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="w_tax.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td>{{ $record['aut'] }}</td>
-                                    <td>{{ $record['aut'] }}</td>
-                                    <td>{{ number_format($record['total_deductions'], 2) }}</td>
-                                    <td>{{ number_format($record['net_amount'], 2) }}</td>
+                                    <td>
+                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="aut.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
+                                        
+                                        </td>
+                                    
+                                    <td>
+                                         <input type="text"
+                                            wire:model.lazy="total_deductions.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'total_deductions')"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
+                                        
+                                       </td>
+                                    <td>
+                                        <input type="text" class="form-control wide-input {{ $isApproved ? 'restricted' : '' }}" " 
+                                            wire:model.lazy="net_amount.{{ $sectionIndex }}.{{ $employeeIndex }}" 
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_amount')"
+                                        {{ $isApproved ? 'readonly' : '' }}>
+                                        </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="kawani.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td colspan="2">{{ number_format($record['lbp_payroll_account'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['net_first_half'] ?? 0, 2) }}
-                                                @if($record['is_first_half_locked'])
-                                                    <span class="badge bg-success ms-1">Locked</span>
-                                                @endif</td>
-                                    <td colspan="2">{{ number_format($record['net_second_half'] ?? 0, 2) }}
-                                            @if($record['is_second_half_locked'])
-                                                <span class="badge bg-success ms-1">Locked</span>
-                                            @endif</td>
+                                    <td colspan="4">
+                                          <input type="text" class="form-control wide-input {{ $isApproved ? 'restricted' : '' }}" 
+                                         wire:model.lazy="lbp_payroll_account.{{ $sectionIndex }}.{{ $employeeIndex }}" 
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'lbp_payroll_account')"
+                                        {{ $isApproved ? 'readonly' : '' }}> 
+                                        </td>
+                                    <td colspan="4">
+
+                                        <input type="text"
+                                        class="form-control wide-input
+                                            {{ ($isApproved || $isSecondCutoff) ? 'restricted' : '' }}"
+                                        wire:model.lazy="net_first_half.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                        wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_first_half')"
+                                        {{ ($isApproved || $isSecondCutoff) ? 'readonly' : '' }}
+                                    >
+
+                                    @if($record['is_first_half_locked'])
+                                        <span class="badge bg-success ms-1">Locked</span>
+                                    @endif
+                                    </td>
+                                    <td colspan="4">
+                                          <input type="text"
+                                            class="form-control wide-input
+                                                {{ ($isApproved || $isFirstCutoff) ? 'restricted' : '' }}"
+                                            wire:model.lazy="net_second_half.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_second_half')"
+                                            {{ ($isApproved || $isFirstCutoff) ? 'readonly' : '' }}
+                                        >
+
+                                        @if($record['is_second_half_locked'])
+                                            <span class="badge bg-success ms-1">Locked</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         @empty
@@ -185,15 +284,16 @@
                 <table>
                     <thead>
                         <tr>
+                            <th rowspan="2" class="vertical-text text-dark">Status</th>
                             <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
                             <th rowspan="2" class="text-center">Position</th>
                             <th rowspan="2" class="text-center">Basic Salary</th>
                             <th rowspan="2" class="text-center">Pera</th>
                             <th rowspan="2" class="text-center">Gross Amount Earned</th>
-                            <th colspan="26" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
-                            <th colspan="2" class="text-center">AUT</th>
-                            <th colspan="8" class="text-center"></th>
+                            <th colspan="29" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                  
+                            <th colspan="10" class="text-center"></th>
                             <th colspan="10" class="text-center">Salary</th> 
                         </tr>
                         <tr>
@@ -204,34 +304,50 @@
                             <th colspan="2" class="vertical-text green">EMERGYLN</th>
                             <th colspan="2" class="vertical-text green">PLREG</th>
                             <th colspan="2" class="vertical-text green">MPL</th>
+                            <th colspan="2" class="vertical-text green">MPL LITE</th>
                             <th colspan="2" class="vertical-text green">CPL</th>
                             <th colspan="2" class="vertical-text yellow">MP2</th>
                             <th colspan="2" class="vertical-text yellow">MPL STLMS</th>
                             <th colspan="2" class="vertical-text yellow">CIR375, CIR449</th>
                             <th colspan="2" class="vertical-text red">W/TAX</th>
                             <th colspan="2" class="vertical-text red">UCA</th>
-                            <th class="vertical-text grey">1st Half</th>
-                            <th class="vertical-text grey">2nd Half</th>
-
+                            <th class="vertical-text grey">AUT</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
                             <th colspan="2" class="vertical-text grey">DBP</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
-                            <th colspan="2" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
-                            <th colspan="2" class="text-center">First Half</th>
-                            <th colspan="2" class="text-center">Second Half</th>
+                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
+                            <th colspan="4" class="text-center">First Half</th>
+                            <th colspan="4" class="text-center">Second Half</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @foreach($records['payroll_items'] as $sectionIndex => $sectionGroup)
+                        @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
                             <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
-                                <td colspan="100%">{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</td>
+                                <td colspan="100%">
+                                    <div class="d-flex justify-content-between w-100 px-5">
+                                        <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                                        <span class="text-center flex-grow-1">{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                                        <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
+                                    </div>
+                                </td>
                             </tr>
 
                             @foreach($sectionGroup['employees'] as $employeeIndex => $record)
                                 <tr>
-                                    <td>#{{ $employeeIndex + 1 }}</td>
+                                    <td>
+                                        <div class="marked-changed">
+                                            @if(in_array($record['id'], $updatedItems))
+                                                <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
+                                            @else
+                                                <i class="fa-solid fa-check ready" title="No changes made"></i>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        #{{ $employeeIndex + 1 }}
+                                    </td>
                                     <td>
                                         <a href="{{ route('hris.show', ['employee_no' => $record['employee_no'], 'form' => 'information']) }}"
                                         class="text-dark" target="_blank">
@@ -242,50 +358,163 @@
                                     <td>{{ number_format($record['basic_salary'], 2) }}</td>
                                     <td>{{ number_format($record['pera'], 2) }}</td>
                                     <td>{{ number_format($record['gross_amount_earned'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['rlip'], 2) }}</td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="rlip.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
+                                    </td>
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $status === 'readonly' ? 'restricted' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td colspan="2">{{ number_format($record['philhealth'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['consoloan'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['emergency_loan'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['plreg'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mpl'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['cpl'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mp2'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['mplstlms'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['cir375_cir449'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['w_tax'], 2) }}</td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="philhealth.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>    
+                                        
+                                      </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="consoloan.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>    
+                                    </td>
+                                    <td colspan="2">
+                                           <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="emergency_loan.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="plreg.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                    </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mpl.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>
+                                    <td colspan="2">
+                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mpl_lite.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>    
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="cpl.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mp2.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="mplstlms.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="cir375_cir449.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
+                                    <td colspan="2">
+                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="w_tax.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                        </td>
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td>{{ $record['aut'] }}</td>
-                                    <td>{{ $record['aut'] }}</td>
-                                    <td>{{ number_format($record['total_deductions'], 2) }}</td>
-                                    <td>{{ number_format($record['net_amount'], 2) }}</td>
+                                    <td>
+                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="aut.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
+                                        
+                                        </td>
+                                    
+                                    <td>
+                                         <input type="text"
+                                            wire:model.lazy="total_deductions.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'total_deductions')"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
+                                        
+                                       </td>
+                                    <td>
+                                        <input type="text" class="form-control wide-input {{ $isApproved ? 'restricted' : '' }}" " 
+                                            wire:model.lazy="net_amount.{{ $sectionIndex }}.{{ $employeeIndex }}" 
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_amount')"
+                                        {{ $isApproved ? 'readonly' : '' }}>
+                                        </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="kawani.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                            class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
-                                    <td colspan="2">{{ number_format($record['lbp_payroll_account'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['salary'], 2) }}</td>
-                                    <td colspan="2">{{ number_format($record['salary'], 2) }}</td>
+                                    <td colspan="4">
+                                          <input type="text" class="form-control wide-input {{ $isApproved ? 'restricted' : '' }}" 
+                                         wire:model.lazy="lbp_payroll_account.{{ $sectionIndex }}.{{ $employeeIndex }}" 
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'lbp_payroll_account')"
+                                        {{ $isApproved ? 'readonly' : '' }}> 
+                                        </td>
+                                    <td colspan="4">
+
+                                        <input type="text"
+                                        class="form-control wide-input
+                                            {{ ($isApproved || $isSecondCutoff) ? 'restricted' : '' }}"
+                                        wire:model.lazy="net_first_half.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                        wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_first_half')"
+                                        {{ ($isApproved || $isSecondCutoff) ? 'readonly' : '' }}
+                                    >
+
+                                    @if($record['is_first_half_locked'])
+                                        <span class="badge bg-success ms-1">Locked</span>
+                                    @endif
+                                    </td>
+                                    <td colspan="4">
+                                          <input type="text"
+                                            class="form-control wide-input
+                                                {{ ($isApproved || $isFirstCutoff) ? 'restricted' : '' }}"
+                                            wire:model.lazy="net_second_half.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_second_half')"
+                                            {{ ($isApproved || $isFirstCutoff) ? 'readonly' : '' }}
+                                        >
+
+                                        @if($record['is_second_half_locked'])
+                                            <span class="badge bg-success ms-1">Locked</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="12" class="py-3 text-uppercase fw-bold text-muted">
+                                    No data found
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+
+
         @endif
     @endif
     

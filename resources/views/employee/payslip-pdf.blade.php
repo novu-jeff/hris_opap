@@ -148,20 +148,30 @@
         </div>
     </div>
 
+     @php
+                // Parse cut-off period
+                [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+
+                $startDate = \Carbon\Carbon::parse($start);
+
+                // Full month range based on the payroll month
+                $fullMonthStart = $startDate->copy()->startOfMonth();
+                $fullMonthEnd   = $startDate->copy()->endOfMonth();
+
+                $fullMonthCutoff = $fullMonthStart->format('F j')
+                    . ' – ' .
+                    $fullMonthEnd->format('F j, Y');
+            @endphp
+
     <!-- Employee Info -->
     <table class="info-table">
         <tr>
             <td class="label">Cut Off Period:</td>
             <td class="value">
-                {{ collect(explode(' to ', $payslip['payroll']['cut_off_period']))
-                    ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
-                    ->implode(' to ') }}
+                {{ $payslipView['fullMonthCutoff'] }}
             </td>
         </tr>
-        <tr>
-            <td class="label">Payroll Date:</td>
-            <td class="value">{{ \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y') }}</td>
-        </tr>
+        
         <tr>
             <td class="label">Employee's Name:</td>
             <td class="value">{{ $payslip['name'] }}</td>
@@ -217,14 +227,15 @@
         <tr><td class="label">GSIS Emergency Loan:</td><td class="value">PHP {{ number_format($payslip['emergency_loan'], 2) }}</td></tr>
         <tr><td class="label">GSIS Conso Loan:</td><td class="value">PHP {{ number_format($payslip['consoloan'], 2) }}</td></tr>
         <tr><td class="label">GSIS MPL:</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
-        <tr><td class="label">GSIS MPL Lite:</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
+        <tr><td class="label">GSIS MPL Lite:</td><td class="value">PHP {{ number_format($payslip['mpl_lite'], 2) }}</td></tr>
         <tr><td class="label">GSIS CPL:</td><td class="value">PHP {{ number_format($payslip['cpl'], 2) }}</td></tr>
-        <tr><td class="label">HDMF Calamity Loan:</td><td class="value">PHP {{ number_format($payslip['hdmf'], 2) }}</td></tr>
         <tr><td class="label">HDMF MP2:</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
+        <tr><td class="label">MPL STLMS:</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
         <tr><td class="label">Cir375-ECQ:</td><td class="value">PHP {{ number_format($payslip['cir375_cir449'], 2) }}</td></tr>
         <tr><td class="label">SSS:</td><td class="value">PHP {{ number_format($payslip['sss'], 2) }}</td></tr>
         <tr><td class="label">PAGIBIG:</td><td class="value">PHP {{ number_format($payslip['pagibig'], 2) }}</td></tr>
         <tr><td class="label">BIR Withholding TAX:</td><td class="value">PHP {{ number_format($payslip['w_tax'], 2) }}</td></tr>
+        <tr><td class="label">UCA:</td><td class="value">PHP {{ number_format($payslip['uca'], 2) }}</td></tr>
         <tr><td class="label">Lates / Undertime / Absences:</td><td class="value">PHP {{ number_format($payslip['aut'], 2) }}</td></tr>
         <tr><td class="label">Total Deductions:</td><td class="value">PHP {{ number_format($payslip['total_deductions'], 2) }}</td></tr>
     </table>
@@ -235,8 +246,15 @@
         <tr><td class="label">Net Amount:</td><td class="value">PHP {{ number_format($payslip['net_amount'], 2) }}</td></tr>
         <tr><td class="label">DBP:</td><td class="value">PHP {{ number_format($payslip['dbp'], 2) }}</td></tr>
         <tr><td class="label">Unlad Kawani:</td><td class="value">PHP {{ number_format($payslip['kawani'], 2) }}</td></tr>
-        <tr><td class="label">Amount Due (15):</td><td class="value">PHP {{ number_format($payslip['salary'], 2) }}</td></tr>
-        <tr><td class="label">Amount Due (28):</td><td class="value">PHP {{ number_format($payslip['salary'], 2) }}</td></tr>
+        <tr><td class="label">LBP Payroll Account:</td><td class="value">PHP {{ number_format($payslip['lbp_payroll_account'], 2) }}</td></tr>
+        <tr>
+            <td class="label">Amount Due (15):</td>
+            <td class="value">PHP {{ number_format($payslip['net_first_half'], 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label">Amount Due (30):</td>
+            <td class="value">PHP {{ number_format($payslip['net_second_half'], 2) }}</td>
+        </tr>
     </table>
 
     <!-- Issued By -->
