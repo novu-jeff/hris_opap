@@ -26,6 +26,11 @@ class Payslip extends Component
     public $error;
     public $requestStatus;
     public $currentPeriod;
+    public $payslipView = [];
+
+    public $hasPrevious = false;
+    public $hasNext = false;
+
     protected $listeners = ['request'];
 
     public function mount() {
@@ -41,7 +46,8 @@ class Payslip extends Component
         $payroll = SalaryItemsPayroll::with('information.section', 'payroll','deductions.loan.loanType')
             ->where('employee_no', $this->employee_no)
             ->whereHas('payroll', function($query) {
-                $query->where('status', 'approved');    
+                $query->where('status', 'approved');
+                 $this->secondHalfFilter($query);    
             })
             ->orderBy(
                 SalaryPayroll::select('payroll_date')
@@ -55,11 +61,16 @@ class Payslip extends Component
             return;
         }
 
+        $viewData = $this->buildPayslipViewData($payroll);
+
         $this->payroll = $payroll;                 // Salary items
-        $this->payslip = $payroll;                 // Salary items
+        $this->payslip = $payroll; 
+        $this->payslipView = $viewData;                // Salary items
         $this->currentPeriod = $payroll->payroll;  // Payroll header
 
         $this->checkRequest();
+
+        $this->updateNavigationAvailability();
 
     }
 
@@ -69,6 +80,21 @@ class Payslip extends Component
             ->first();
         $this->requestStatus = $payroll_request->status ?? null;
     }
+
+    private function buildPayslipViewData($payslip)
+{
+    [$start] = explode(' to ', $payslip->payroll->cut_off_period);
+    $startDate = Carbon::parse($start);
+
+    return [
+        'fullMonthCutoff' =>
+            $startDate->copy()->startOfMonth()->format('F j')
+            . ' – ' .
+            $startDate->copy()->endOfMonth()->format('F j, Y'),
+
+        'monthLabel' => $startDate->format('F Y'),
+    ];
+}
 
    
 
@@ -82,7 +108,8 @@ class Payslip extends Component
             $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
 
             $pdf = Pdf::loadView('employee.payslip-pdf', [
-                'payslip' => $this->payroll
+                'payslip' => $this->payroll,
+                'payslipView' => $this->payslipView,
             ]);
 
             return response()->streamDownload(
@@ -100,79 +127,49 @@ class Payslip extends Component
     }
 
 
-    public function downloadBK()
-    {
-        $this->checkRequest();
 
-        if ($this->requestStatus == 'approved') {
-
-            $payroll_date = Carbon::parse($this->payroll->payroll_date)->format('F d, Y');
-            $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
-
-            return $this->dispatch('download-payslip', [
-                'allowDownload' => true,
-                'filename' => $filename
-            ]);
-        }
-
-        return $this->dispatch('alert', [
-            'showAlert' => true,
-            'status' => 'error',
-            'title' => 'Oops!',
-            'message' => 'You\'re request is not yet approved. You have no permission to download this payslip.',
-        ]);
-
-    }
 
     public function changePeriod($control, $direction)
-    {
-        $currentDate = $this->currentPeriod->payroll_date;
-        $employeeNo = $this->employee_no;
+{
+    $currentMonth = Carbon::parse($this->currentPeriod->payroll_date)->startOfMonth();
+    $employeeNo = $this->employee_no;
 
-        $query = SalaryItemsPayroll::with('information.section', 'payroll')
-            ->where('employee_no', $employeeNo)
-            ->whereHas('payroll', function ($q) {
-                $q->where('status', 'approved');
-            });
+    // Determine target month
+    $targetMonth = $direction == '-1'
+        ? $currentMonth->copy()->subMonth()
+        : $currentMonth->copy()->addMonth();
 
-        // Previous period
-        if ($direction == '-1') {
-            $query->whereHas('payroll', fn($q) =>
-                $q->where('payroll_date', '<', $currentDate)
-            )
-            ->orderBy(
-                SalaryPayroll::select('payroll_date')
-                    ->whereColumn('payroll_salary.id', 'payroll_salary_items.payroll_id'),
-                'desc'
-            );
-        }
+    $next = SalaryItemsPayroll::with('information.section', 'payroll','deductions.loan.loanType')
+        ->where('employee_no', $employeeNo)
+        ->whereHas('payroll', function ($q) use ($targetMonth) {
+            $q->where('status', 'approved');
 
-        // Next period
-        if ($direction == '1') {
-            $query->whereHas('payroll', fn($q) =>
-                $q->where('payroll_date', '>', $currentDate)
-            )
-            ->orderBy(
-                SalaryPayroll::select('payroll_date')
-                    ->whereColumn('payroll_salary.id', 'payroll_salary_items.payroll_id'),
-                'asc'
-            );
-        }
+            // SAME MONTH only
+            $q->whereMonth('payroll_date', $targetMonth->month)
+              ->whereYear('payroll_date', $targetMonth->year);
 
-        $next = $query->first();
+            // ONLY 16–30/31 payroll
+            $this->secondHalfFilter($q);
+        })
+        ->first();
 
-        if (!$next) {
-            $this->error = 'No more payroll records in this direction.';
-            return;
-        }
-
-        // Update displayed data
-        $this->payroll = $next;
-        $this->payslip = $next;
-        $this->currentPeriod = $next->payroll;
-
-        $this->checkRequest();
+    if (!$next) {
+        $this->error = 'No more payroll records in this direction.';
+        return;
     }
+
+    // Update state
+    $this->payroll = $next;
+    $this->payslip = $next;
+    $this->currentPeriod = $next->payroll;
+
+    $this->payslipView = $this->buildPayslipViewData($next);
+
+    $this->checkRequest();
+
+    $this->updateNavigationAvailability();
+}
+
 
 
 
@@ -208,6 +205,38 @@ class Payslip extends Component
             $this->error = 'No more payroll records in this direction.';
         }
     }
+
+    private function secondHalfFilter($query)
+    {
+        return $query->whereRaw(
+            "DAY(SUBSTRING_INDEX(cut_off_period, ' to ', 1)) = 16"
+        );
+    }
+
+    private function updateNavigationAvailability()
+    {
+        $employeeNo = $this->employee_no;
+        $currentMonth = Carbon::parse($this->currentPeriod->payroll_date)->startOfMonth();
+
+        // Previous
+        $this->hasPrevious = SalaryItemsPayroll::where('employee_no', $employeeNo)
+            ->whereHas('payroll', function ($q) use ($currentMonth) {
+                $q->where('status', 'approved')
+                ->whereMonth('payroll_date', $currentMonth->copy()->subMonth()->month)
+                ->whereYear('payroll_date', $currentMonth->copy()->subMonth()->year);
+            })
+            ->exists();
+
+        // Next
+        $this->hasNext = SalaryItemsPayroll::where('employee_no', $employeeNo)
+            ->whereHas('payroll', function ($q) use ($currentMonth) {
+                $q->where('status', 'approved')
+                ->whereMonth('payroll_date', $currentMonth->copy()->addMonth()->month)
+                ->whereYear('payroll_date', $currentMonth->copy()->addMonth()->year);
+            })
+            ->exists();
+    }
+
 
     public function request(bool $isNotify = true) {
         if($isNotify) {
