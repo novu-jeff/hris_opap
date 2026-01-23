@@ -28,6 +28,7 @@ class EmployeeInformation extends Model
         'salary_method',
         'salary',
         'w_tax',
+        'step_id',
         'salary_type',
         'bank_account_no',
         'payroll_account_number',
@@ -111,11 +112,11 @@ class EmployeeInformation extends Model
     }
 
     public function earnings() {
-        return $this->hasOne(EmployeeEarnings::class, 'employee_no', 'employee_no');
+        return $this->hasMany(EmployeeEarnings::class, 'employee_no', 'employee_no');
     }
 
     public function deductions() {
-        return $this->hasOne(EmployeeDeductions::class, 'employee_no', 'employee_no');
+        return $this->hasMany(EmployeeDeductions::class, 'employee_no', 'employee_no');
     }
 
     public function employment_type() {

@@ -15,12 +15,30 @@
             </div>
 
             {{-- EMPLOYEE INFO --}}
+            <!--'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),-->
+            <!--'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
+                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
+                        ->implode(' to '),-->
+            @php
+                // Parse cut-off period
+                [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+
+                $startDate = \Carbon\Carbon::parse($start);
+
+                // Full month range based on the payroll month
+                $fullMonthStart = $startDate->copy()->startOfMonth();
+                $fullMonthEnd   = $startDate->copy()->endOfMonth();
+
+                $fullMonthCutoff = $fullMonthStart->format('F j')
+                    . ' – ' .
+                    $fullMonthEnd->format('F j, Y');
+            @endphp
+
+
+
             <div class="info border-section p-3 mt-3">
                 @foreach([
-                    'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
-                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
-                        ->implode(' to '),
-                    'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),
+                    'Cutt Off Period' =>  $payslipView['fullMonthCutoff'],
                     'Employee\'s Name' => $payslip['name'],
                     'Position' => $payslip['position'],
                     'Unit' => $payslip['information']['section']['name'],
@@ -62,16 +80,17 @@
                     'GSIS Education Assistance Loan' => 0,
                     'GSIS Policy Loan' => 0,
                     'GSIS MPL' => $payslip['mpl'],
-                    'GSIS MPL Lite' => $payslip['mplstlms'],
+                    'GSIS MPL Lite' => $payslip['mpl_lite'],
                     'GSIS CPL' => $payslip['cpl'],
-                    'HDMF Calamity Loan' => $payslip['hdmf'],
+                    'HDMF Calamity Loan' => 0,
                     'HDMF MP2' => $payslip['mp2'],
+                    'MPL STLMS' => $payslip['mplstlms'],
                     'HDMF MP3' => 0,
                     'Cir375-ECQ' => $payslip['cir375_cir449'],
                     'SSS' => $payslip['sss'],
                     'Loan Deductions' => $payslip['other_loans'],
-                    'PAGIBIG' => $payslip['pagibig'],
                     'BIR Withholding TAX' => $payslip['w_tax'],
+                    'UCA' => $payslip['uca'],
                     'Lates / Undertime / Absences' => $payslip['aut'],
                 ] as $label => $value)
                     <div class="d-flex align-items-start border-bottom py-1">
@@ -110,8 +129,9 @@
                     'Net Amount' => $payslip['net_amount'],
                     'DBP' => $payslip['dbp'],
                     'Unlad Kawani' => $payslip['kawani'],
-                    'Amount Due (15)' => $payslip['salary'],
-                    'Amount Due (28)' => $payslip['salary'],
+                    'LBP Payroll Account' => $payslip['lbp_payroll_account'],
+                    'Amount Due (15)' => $payslip['net_first_half'],
+                    'Amount Due (30)' => $payslip['net_second_half'],
                 ] as $label => $value)
                     <div class="d-flex align-items-start border-bottom py-1">
                         <div class="label">{{ $label }}:</div>

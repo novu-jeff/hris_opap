@@ -36,6 +36,11 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     protected $listeners = ['setEmployees', 'remove', 'onChange'];
 
+    public function mount($id)
+    {
+        $this->id = $id;
+    }
+
 
     public function setPage(string $page = null, string $toUpdate = null)
     {
@@ -44,8 +49,11 @@ class Index extends Component
         $this->page = $page;
         $this->toUpdate = $toUpdate;
 
+       
+
         if($page == 'edit' && !is_null($toUpdate)) {
             $data = EmployeeDeductions::where('employee_no', $toUpdate)
+                ->where('deduction_id', $this->id)
                 ->first();
 
             $this->fields = [
@@ -65,8 +73,10 @@ class Index extends Component
 
          return ($this->page === 'create')
         ? EmployeeInformation::with('personal')
-            ->whereDoesntHave('deductions')
-            ->whereHas('personal') // ensures personal exists
+            ->whereHas('personal')
+            ->whereDoesntHave('deductions', function ($q) {
+                $q->where('deduction_id', $this->id);
+            })
             ->get()
         : EmployeeInformation::with('personal')
             ->whereHas('personal') // ensures personal exists
@@ -162,6 +172,13 @@ class Index extends Component
             $amount  = $this->fields['amount'];
             $validUntil   = $this->fields['valid_until'];
             $employees   = $this->fields['employee_no']; 
+
+            \Log::info('Saving Employee Deductions', [
+                'deduction_id' => $deductionId,
+                'amount' => $amount,
+                'valid_until' => $validUntil,
+                'employees' => $employees,
+            ]);
             
             foreach ($employees as $empNo) {
                 EmployeeDeductions::updateOrCreate(

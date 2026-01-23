@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Validation\Rule;
 
 class Edit extends Component
 {
@@ -20,16 +21,37 @@ class Edit extends Component
     public $file;
     public $records;
 
+    public $year;
+    public $is_active;
+    public $availableYears = [];
+
     public function mount() {
-        $this->loadRecords();
+        
+
+        $this->availableYears = Tranche::select('year')
+        ->distinct()
+        ->orderBy('year', 'desc')
+        ->pluck('year')
+        ->toArray();
+
+       $records = $this->loadRecords();
+
+       // $this->year = null; // <--- Important, initially empty
+        $this->year = $records->year;
     }
 
     public function loadRecords() {
-        $records = Tranche::with('items')->where('id', $this->id)
-            ->first();
+        // $records = Tranche::with('items')->where('id', $this->id)
+        //     ->first();
+        $records = Tranche::with('items')->where('id', $this->id)->firstOrFail();
+
         $this->name = $records->name;
         $this->eligible = $records->eligible;
+        $this->year = $records->year;
+        $this->is_active = (bool) $records->is_active;
         $this->records = $records->items->toArray() ?? [];
+
+         return $records; // <--- return it if needed
     }
 
     public function updatedFile()
@@ -132,10 +154,24 @@ class Edit extends Component
         return [
             'name' => 'required',
             'eligible' => 'required|exists:employment_types,id',
-            'file' => empty($this->records) ? 'required' : 'nullable', 
+            'year'     => [
+            'required',
+            'integer',
+            Rule::unique('tranche')
+                ->where(fn ($q) => $q->where('eligible', $this->eligible))
+                ->ignore($this->id), // ✅ ignore current record
+        ],
+            'file'     => 'nullable|file|mimes:csv,txt', // <--- optional file
     
         ];
     } 
+
+
+    protected function messages() {
+        return [
+            'year.unique' => 'A tranche for this eligible already exists for the selected year.',
+        ];
+    }
 
     public function save() {
         
@@ -156,10 +192,35 @@ class Edit extends Component
         DB::beginTransaction();
 
         try {
+
+             // Deactivate all other tranches for the same eligible type if this is active
+            // if ($this->is_active) {
+                 Tranche::where('eligible', $this->eligible)->update(['is_active' => 0]);
+            // }
+
+             // deactivate other tranches for the same year
+            // Tranche::where('year', $this->year)->update([
+            //     'is_active' => false
+            // ]);
+
+            // create or update tranche
+            // $tranche = Tranche::updateOrCreate(
+            //     ['id' => $this->tranche_id ?? null],
+            //     [
+            //         'name'      => $this->name,
+            //         'year'      => $this->year,
+            //         'eligible'  => $this->eligible,
+            //         'is_active' => true,
+            //     ]
+            // );
+
+
+//dd($this->id);
             // Update tranche basic info
             $tranche = Tranche::findOrFail($this->id);
             $tranche->name = $this->name;
             $tranche->eligible = $this->eligible;
+            $tranche->is_active = $this->is_active ? 1 : 0;
             $tranche->save();
 
             // We will re-sync tranche items (safe for edit)
@@ -204,6 +265,31 @@ class Edit extends Component
             ]);
         }
     }
+
+    public function updatedYear($year)
+    {
+        
+        if (!$year) {
+            $this->records = [];
+            return;
+        }
+
+        // Get the first tranche for the selected year, active or inactive
+        $tranche = Tranche::where('year', $year)->first();
+
+        if ($tranche) {
+            // If tranche exists, load its items
+            $this->records = TrancheItems::where('tranche_id', $tranche->id)
+                ->orderBy('salary_grade')
+                ->get()
+                ->toArray();
+        } else {
+            // No tranche exists yet for this year → empty records
+            $this->records = [];
+        }
+   
+    }
+
 
     public function render()
     {

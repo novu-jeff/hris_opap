@@ -80,13 +80,18 @@ class OtherServices extends Controller
 }
 
 
-    public function deductions(string $employee_no) {
+    public function deductions(string $employee_no, ?string $cutoffEndDate = null) {
 
       
         
-        $records = EmployeeDeductions::with('deduction') // load relation to OtherEarnings
-        ->where('employee_no', $employee_no)
-        ->get();
+        $query = EmployeeDeductions::with('deduction')
+        ->where('employee_no', $employee_no);
+
+        if ($cutoffEndDate) {
+            $query->whereDate('valid_until', '>=', $cutoffEndDate);
+        }
+
+     $records = $query->get();
 
         $newRecords = [];
 
@@ -95,6 +100,7 @@ class OtherServices extends Controller
                 'code' => $record->deduction->code ?? 'UNKNOWN',
                 'name' => $record->deduction->name ?? 'Unknown',
                 'amount' => $record->amount ?? 0,
+                'valid_until' => $record->valid_until,
             ];
         }
 

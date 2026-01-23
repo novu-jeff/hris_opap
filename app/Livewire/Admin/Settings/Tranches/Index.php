@@ -95,20 +95,22 @@ class Index extends Component
     public function render()
     {
 
-        $model = Tranche::with('items')
-            ->where('isDeleted', false);;
+       $model = Tranche::with('items')
+        ->where('isDeleted', false);
 
         if ($this->search) {
-
-            $this->resetPage(); 
-
-            $records = $model->where('name', 'like', '%' . $this->search . '%');
+            $this->resetPage();
+            $model = $model->where('name', 'like', '%' . $this->search . '%');
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        // Get all tranches
+        $records = $model->latest()->get();
+
+        // Group tranches by year
+        $tranchesByYear = $records->groupBy('year');
 
         return view('livewire.admin.settings.tranches.index', [
-            'records' => $records
+            'tranchesByYear' => $tranchesByYear,
         ]);
     }
 }

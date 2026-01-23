@@ -21,6 +21,19 @@ class Create extends Component
     public $file;
     public $records;
 
+    public $year;
+    public $is_active;
+    public $availableYears = [];
+
+    public function mount()
+    {
+        $this->availableYears = Tranche::select('year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->toArray();
+    }
+
     public function updatedFile()
     {
         if ($this->file) {
@@ -148,28 +161,37 @@ class Create extends Component
         } */
 
 
-        $this->validate();
+       $this->validate();
 
         DB::beginTransaction();
 
         try {
-            // Get or create tranche
-            $tranche = Tranche::firstOrCreate(
-                ['eligible' => $this->eligible],
-                ['name' => $this->name]
+
+            // Deactivate all other tranches for the same eligible type if this is active
+            if ($this->is_active) {
+                Tranche::where('eligible', $this->eligible)->update(['is_active' => 0]);
+            }
+
+            // Create or update the tranche
+            $tranche = Tranche::updateOrCreate(
+                [
+                    'eligible' => $this->eligible,
+                    'year'     => $this->year,
+                ],
+                [
+                    'name'      => $this->name,
+                    'is_active' => $this->is_active ? 1 : 0,
+                ]
             );
 
+            // Save tranche items...
             foreach ($this->records as $row) {
+                $clean = fn($v) => ($v === "" || $v === "0") ? null : $v;
 
-                // Helper: clean CSV values
-                $clean = fn ($v) => ($v === "" || $v === "0") ? null : $v;
-
-                // Build step + wtax data dynamically
                 $updateData = [];
-
                 foreach (range(1, 8) as $i) {
-                    $updateData["step_{$i}"]       = $clean($row["step_{$i}"] ?? null);
-                    $updateData["step_{$i}_wtax"]  = $clean($row["step_{$i}_wtax"] ?? null);
+                    $updateData["step_{$i}"]      = $clean($row["step_{$i}"] ?? null);
+                    $updateData["step_{$i}_wtax"] = $clean($row["step_{$i}_wtax"] ?? null);
                 }
 
                 TrancheItems::updateOrCreate(
@@ -187,7 +209,7 @@ class Create extends Component
                 'status'    => 'success',
                 'title'     => 'Success!',
                 'showAlert' => true,
-                'message'   => 'Tranche steps and withholding tax saved successfully.'
+                'message'   => 'Tranche saved successfully.'
             ]);
 
             $this->reset();
@@ -197,15 +219,16 @@ class Create extends Component
 
             $this->dispatch('alert', [
                 'status'    => 'error',
-                'title'     => 'Oops!',
+                'title'     => 'Error',
                 'showAlert' => true,
-                'message'   => 'Error occurred: ' . $e->getMessage()
+                'message'   => $e->getMessage()
             ]);
         }
-    }
+}
     
     public function render()
     {
+
         return view('livewire.admin.settings.tranches.create');
     }
 }
