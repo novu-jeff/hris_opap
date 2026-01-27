@@ -51,6 +51,7 @@ class Personal extends Component
 
         $data = !empty($updated) ? $updated : $stored;
 
+
         $this->originalData = $data;
         $this->records = $this->formatRecords($data);
 
@@ -129,6 +130,8 @@ class Personal extends Component
             $fields, 
             array_map(fn($field) => $field === 'email' ? $email : ($data[$field] ?? null), $fields)
         );
+
+        \Log::info('Formatted Personal Records', $formattedPersonal);
 
     
         return $formattedPersonal;
@@ -339,7 +342,7 @@ class Personal extends Component
 
         $user = EmployeeAccount::find($this->employee_id);
         $message = "Employee <strong>{$this->employee_no}</strong> has submitted updated <strong>profile information</strong>.";
-        $redirect = route('ess.approval-profile.show', ['employee_no' => $user->employee_no, 'form' => 'details']);
+        $redirect = route('ess.approval-profile.show', ['employee_no' => $user->employee_no, 'form' => 'personal']);
         $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
         return;
