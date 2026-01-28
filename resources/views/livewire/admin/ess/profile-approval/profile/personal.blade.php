@@ -75,7 +75,7 @@
                             </div>  
                             <div class="col-12 col-md-4 mb-3">
                                 <label class="mb-2" for="birthday">Date of Birth</label>
-                                <input type="text" wire:model="records.birthday.new" id="birthday" class="form-control restricted {{$records['birthday']['changed'] ? 'border-danger border-3' : ''}}">
+                                <input type="text" readonly wire:model="records.birthday.new" id="birthday" class="form-control restricted {{$records['birthday']['changed'] ? 'border-danger border-3' : ''}}">
                                 <div class="error-field">
                                     @error('records.birthday.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -162,21 +162,21 @@
                         <div class="row">
                             <div class="col-12 col-md-12 mb-3">
                                 <label class="mb-2" for="present_address">Residential Address</label>
-                                <input type="text" wire:model="records.present_address.new" id="present_address" class="{{$records['present_address']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                <input type="text" readonly wire:model="records.present_address.new" id="present_address" class="restricted {{$records['present_address']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                 <div class="error-field">
                                     @error('records.present_address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="present_province">State / Province</label>
-                                <input type="text" wire:model="records.present_province.new" id="present_province" class="{{$records['present_province']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.present_province.new" id="present_province" class="restricted {{$records['present_province']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.present_province.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="present_city">City / Municipality</label>
-                                <input type="text" wire:model="records.present_city.new" id="present_city" class="{{$records['present_city']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.present_city.new" id="present_city" class="{{$records['present_city']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.present_city.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -186,21 +186,21 @@
                             </div> 
                             <div class="col-12 col-md-12 mb-3">
                                 <label class="mb-2" for="permanent_address">Permanent Address</label>
-                                <input type="text" wire:model="records.permanent_address.new" id="permanent_address" class="{{$records['permanent_address']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
+                                <input type="text" readonly wire:model="records.permanent_address.new" id="permanent_address" class="restricted {{$records['permanent_address']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" placeholder="House / Block / Lot / Street / Subdivision / Village / Barangay">
                                 <div class="error-field">
                                     @error('records.permanent_address.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="permanent_province">State / Province</label>
-                                <input type="text" wire:model="records.permanent_province.new" id="permanent_province" class="{{$records['permanent_province']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.permanent_province.new" id="permanent_province" class="restricted {{$records['permanent_province']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.permanent_province.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="permanent_city">City / Municipality</label>
-                                <input type="text" wire:model="records.permanent_city.new" id="permanent_city" class="{{$records['permanent_city']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.permanent_city.new" id="permanent_city" class="restricted {{$records['permanent_city']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.permanent_city.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -220,21 +220,21 @@
                         <div class="row">
                             <div class="col-12 col-md-4 mb-3">
                                 <label class="mb-2" for="mobile_number">Mobile No.</label>
-                                <input type="text" wire:model="records.mobile_number.new" id="mobile_number" class="{{$records['mobile_number']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" data-mask="mobile">
+                                <input type="text" readonly wire:model="records.mobile_number.new" id="mobile_number" class="restricted {{$records['mobile_number']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase" data-mask="mobile">
                                 <div class="error-field">
                                     @error('records.mobile_number.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-4 mb-3">
                                 <label class="mb-2" for="tel_no">Telephone No.</label>
-                                <input type="text" wire:model="records.tel_no.new" id="tel_no" class="{{$records['tel_no']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.tel_no.new" id="tel_no" class="restricted {{$records['tel_no']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.tel_no.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>  
                             <div class="col-12 col-md-4 mb-3">
                                 <label class="mb-2" for="email">Email</label>
-                                <input type="email" wire:model="records.email.new" id="email" class="{{$records['email']['changed'] ? 'border-danger border-3' : ''}} form-control">
+                                <input type="email" readonly wire:model="records.email.new" id="email" class="restricted {{$records['email']['changed'] ? 'border-danger border-3' : ''}} form-control">
                                 <div class="error-field">
                                     @error('records.email.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
@@ -254,21 +254,21 @@
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="height">Height</label>
-                                <input type="text" wire:model="records.height.new" id="height" class="{{$records['height']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.height.new" id="height" class="restricted {{$records['height']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.height.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="weight">Weight</label>
-                                <input type="text" wire:model="records.weight.new" id="weight" class="{{$records['weight']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.weight.new" id="weight" class="restricted {{$records['weight']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.weight.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="mb-2" for="blood_type">Blood Type</label>
-                                <input type="text" wire:model="records.blood_type.new" id="blood_type" class="{{$records['blood_type']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
+                                <input type="text" readonly wire:model="records.blood_type.new" id="blood_type" class="restricted {{$records['blood_type']['changed'] ? 'border-danger border-3' : ''}} form-control text-uppercase">
                                 <div class="error-field">
                                     @error('records.blood_type.new') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>

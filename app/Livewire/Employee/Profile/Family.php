@@ -38,7 +38,9 @@ class Family extends Component
 
         $data = !empty($updated) ? $updated : $stored;
 
-        $this->originalData = $data;
+       
+
+       $this->originalData = $data;
         $this->records = $this->formatRecords($data);
 
     }

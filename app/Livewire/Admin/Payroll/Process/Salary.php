@@ -174,7 +174,8 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         // First cutoff (1–15): recompute first half ONLY
         //$firstHalf  = round($lbpPayroll / 2, 2);
         $firstHalf  = floor(($lbpPayroll / 2) * 100) / 100;
-        $secondHalf = $original['net_second_half'] ?? 0;
+        //$secondHalf = $original['net_second_half'] ?? 0;
+        $secondHalf = round($lbpPayroll - $firstHalf, 2);
     } else {
         // Second cutoff (16–end): recompute second half ONLY
         $firstHalf  = $original['net_first_half'] ?? 0;
