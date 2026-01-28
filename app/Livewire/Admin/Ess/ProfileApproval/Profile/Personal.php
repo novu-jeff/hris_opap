@@ -34,51 +34,63 @@ class Personal extends Component
         $stored = EmployeePersonal::where('employee_no', $this->employee_no)->first();
         $account = EmployeeAccount::where('employee_no', $this->employee_no)->first(); 
 
-        if (!$stored) {
-            $this->records = [];
-            return;
-        }
+       
 
        // $fields = array_keys($stored->getAttributes());
-          $fields = (new EmployeePersonal)->getFillable();
+        $fields = (new EmployeePersonal)->getFillable();
           $fields[] = 'email'; // include email explicitly
 
+          \Log::Debug('Comparing personal fields', [
+            'employee_no' => $this->employee_no,
+            'fields' => $fields]);
+
         $this->records = $this->compareFields($stored, $updated, $fields, $account);
+
+        \Log::info('Loaded personal records for comparison', [
+            'employee_no' => $this->employee_no,
+            'records' => $this->records,
+        ]);
     }
 
 
-
-    private function compareFields($oldRecord, $newRecord, $fields, $account = null)
+        private function compareFields($oldRecord, $newRecord, $fields, $account = null)
         {
             $result = [];
+
             foreach ($fields as $field) {
 
-                // Use EmployeeAccount for email
+                // OLD VALUE
                 if ($field === 'email') {
-                    $oldValue = $account ? $account->email ?? '' : '';
+                    $oldValue = $account?->email ?? '';
                 } else {
-                    $oldValue = $oldRecord ? $oldRecord->$field ?? '' : '';
+                    $oldValue = $oldRecord?->$field ?? '';
                 }
 
-                $updatedValue = $newRecord ? $newRecord->$field ?? '' : '';
+                // NEW VALUE (may be empty if no update exists)
+                $newValue = $newRecord?->$field ?? null;
 
-                $oldValue = trim($oldValue);
-                $updatedValue = trim($updatedValue);
+                $oldValue = trim((string) $oldValue);
+                $newValue = trim((string) $newValue);
+
+                // ✅ FALLBACK: if no update, show old value
+                if ($newValue === '' || $newValue === null) {
+                    $displayValue = $oldValue;
+                    $changed = false;
+                } else {
+                    $displayValue = $newValue;
+                    $changed = $newValue != $oldValue;
+                }
 
                 $result[$field] = [
-                    'old' => $oldValue,
-                    'new' => $updatedValue,
-                    'changed' => $updatedValue !== '' && $updatedValue != $oldValue
+                    'old'     => $oldValue,
+                    'new'     => $displayValue,
+                    'changed' => $changed,
                 ];
             }
 
-            \Log::info('Full personal field comparison', [
-                'employee_no' => $this->employee_no,
-                'comparison' => $result,
-            ]);
-
             return $result;
         }
+
 
 
     protected function formatRecords($data) {

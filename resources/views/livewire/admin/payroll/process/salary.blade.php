@@ -248,22 +248,18 @@
                                         {{ ($isApproved || $isSecondCutoff) ? 'readonly' : '' }}
                                     >
 
-                                    @if($record['is_first_half_locked'])
-                                        <span class="badge bg-success ms-1">Locked</span>
-                                    @endif
+                                   
                                     </td>
                                     <td colspan="4">
                                           <input type="text"
                                             class="form-control wide-input
-                                                {{ ($isApproved || $isFirstCutoff) ? 'restricted' : '' }}"
+                                                {{ ($isApproved) ? 'restricted' : '' }}"
                                             wire:model.lazy="net_second_half.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_second_half')"
-                                            {{ ($isApproved || $isFirstCutoff) ? 'readonly' : '' }}
+                                            {{ ($isApproved ) ? 'readonly' : '' }}
                                         >
 
-                                        @if($record['is_second_half_locked'])
-                                            <span class="badge bg-success ms-1">Locked</span>
-                                        @endif
+                                       
                                     </td>
                                 </tr>
                             @endforeach
@@ -484,9 +480,6 @@
                                         {{ ($isApproved || $isSecondCutoff) ? 'readonly' : '' }}
                                     >
 
-                                    @if($record['is_first_half_locked'])
-                                        <span class="badge bg-success ms-1">Locked</span>
-                                    @endif
                                     </td>
                                     <td colspan="4">
                                           <input type="text"
@@ -497,9 +490,7 @@
                                             {{ ($isApproved || $isFirstCutoff) ? 'readonly' : '' }}
                                         >
 
-                                        @if($record['is_second_half_locked'])
-                                            <span class="badge bg-success ms-1">Locked</span>
-                                        @endif
+                                       
                                     </td>
                                 </tr>
                             @endforeach
