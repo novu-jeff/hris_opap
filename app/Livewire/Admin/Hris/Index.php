@@ -95,57 +95,192 @@ class Index extends Component
         }
     }
 
-    public function updatedFile() {
+    // public function updatedFile() {
 
+    //     if (Gate::denies('write hris')) {
+    //         $this->dispatch('alert', [
+    //             'status' => 'error',
+    //             'title' => 'Access Denied!',
+    //             'showAlert' => true,
+    //             'message' => 'You do not have permission to perform this action.',
+    //         ]);
+    //         return;
+    //     }
+
+    //     if ($this->file) {
+
+    //         $this->upload_preview;
+
+    //         $file = $this->file;
+
+    //         if ($file instanceof \Illuminate\Http\UploadedFile) {
+    //             $extension = strtolower($file->getClientOriginalExtension());
+
+    //             if (in_array($extension, ['xls', 'xlsx'])) {
+    //                 try {
+
+    //                     $files = Storage::files('public/temp/files');
+
+    //                     Storage::delete($files);
+
+    //                     $fileName = uniqid() . '.' . $extension;
+
+    //                     $file->storeAs('public/temp/files', $fileName);
+
+    //                     $this->upload_preview = asset('storage/temp/files/' . $fileName);
+
+    //                     $this->isParsing = false;
+
+    //                 } catch (\Exception $e) {
+    //                     $this->addError('file', 'There was an error saving the file to temporary storage.');
+    //                     $this->isParsing = false;
+    //                 }
+    //             } else {
+    //                 $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
+    //             }
+    //         }
+
+    //         $this->file = null;
+    //     } else {
+    //         $this->isParsing = true;
+    //     }
+
+    // }
+
+    public function updatedFile()
+    {
         if (Gate::denies('write hris')) {
-            $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Access Denied!',
-                'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.',
-            ]);
+            $this->addError('file', 'You do not have permission to perform this action.');
             return;
         }
 
-        if ($this->file) {
+        $this->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
 
-            $this->upload_preview;
-
-            $file = $this->file;
-
-            if ($file instanceof \Illuminate\Http\UploadedFile) {
-                $extension = strtolower($file->getClientOriginalExtension());
-
-                if (in_array($extension, ['xls', 'xlsx'])) {
-                    try {
-
-                        $files = Storage::files('public/temp/files');
-
-                        Storage::delete($files);
-
-                        $fileName = uniqid() . '.' . $extension;
-
-                        $file->storeAs('public/temp/files', $fileName);
-
-                        $this->upload_preview = asset('storage/temp/files/' . $fileName);
-
-                        $this->isParsing = false;
-
-                    } catch (\Exception $e) {
-                        $this->addError('file', 'There was an error saving the file to temporary storage.');
-                        $this->isParsing = false;
-                    }
-                } else {
-                    $this->addError('file', 'The file must be an Excel file (.xls or .xlsx).');
-                }
-            }
-
-            $this->file = null;
-        } else {
-            $this->isParsing = true;
-        }
-
+        // Just mark preview-ready
+        $this->upload_preview = $this->file->getClientOriginalName();
     }
+
+
+    // public function upload_file()
+    // {
+    //     if (Gate::denies('write hris')) {
+    //         $this->dispatch('alert', [
+    //             'status' => 'error',
+    //             'title' => 'Access Denied!',
+    //             'showAlert' => true,
+    //             'message' => 'You do not have permission to perform this action.',
+    //         ]);
+    //         return;
+    //     }
+
+    //     $this->isUploading = true;
+
+    //     try {
+    //         $relativePath = str_replace(asset('storage/'), '', $this->upload_preview);
+    //         $absolutePath = storage_path('app/public/' . $relativePath);
+
+    //         if (!Storage::exists('public/' . $relativePath)) {
+    //             throw new \Exception('File does not exist in storage.');
+    //         }
+
+    //         $spreadsheet = IOFactory::load($absolutePath);
+    //         $sheetNames = $spreadsheet->getSheetNames();
+
+    //         $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
+
+    //         $this->validateUploaded($spreadsheet, $sheetNames);
+
+    //         $schedules = [
+    //             'shift' => $this->shift_id,
+    //             'schedule' => $this->schedule_id
+    //         ];
+
+    //         $jobs = [];
+
+    //         foreach ($sheetsData as $index => $sheet) {
+    //             $sheetName = $sheetNames[$index];
+
+    //             $sheet = array_slice($sheet, 1);
+    //             $sheet = array_filter($sheet, fn($row) =>
+    //                 isset($row[0]) && !empty($row[0]) &&
+    //                 !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
+    //             );
+    //             $sheet = array_values($sheet);
+
+    //             $chunks = array_chunk($sheet, 100);
+
+    //             foreach ($chunks as $chunk) {
+    //                 $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
+    //             }
+    //         }
+            
+    //         if(!empty($jobs)) {
+    //             Bus::batch($jobs)
+    //                 ->withOption('actionBy', [
+    //                     'id' => $this->actionBy->id,
+    //                     'name' => $this->actionBy->name
+    //                 ])
+    //                 ->name('Employee Uploading')
+    //                 ->catch(function (Batch $batch, \Throwable $e) {
+    //                     \Log::error('Error: ' . $e->getMessage());
+    //                     $this->actionBy?->notify(new Notifications(
+    //                         'error',
+    //                         'An error occurred during the uploading of employee informations.',
+    //                         route('system.jobs', ['id' => $batch->id]),
+    //                         'admin'
+    //                     ));
+    //                 })
+    //                 ->then(function (Batch $batch) { 
+    //                     $this->actionBy?->notify(new Notifications(
+    //                         'success',
+    //                         'The uploading of employee informations has been successful.',
+    //                         route('system.jobs', ['id' => $batch->id]),
+    //                         'admin'
+    //                     ));
+    //                 })
+    //                 ->dispatch();
+
+
+    //             $this->dispatch('hideModal', [
+    //                 'modal' => 'upload_employee'
+    //             ]);
+
+    //             $this->dispatch('alert', [
+    //                 'status' => 'info',
+    //                 'title' => 'Please be informed',
+    //                 'showAlert' => true,
+    //                 'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
+    //             ]);
+
+    //             $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
+    //             $this->loadRecords();
+    //         } else {
+    //             return $this->dispatch('alert', [
+    //                 'showAlert' => true,
+    //                 'status' => 'error',
+    //                 'title' => 'Oops',
+    //                 'message' => 'No jobs were processed'
+    //             ]);
+
+    //         }
+
+    //     } catch (\Exception $e) {
+
+    //         logger()->error('Error uploading file: ' . $e->getMessage());
+
+    //         $this->dispatch('alert', [
+    //             'status' => 'error',
+    //             'title' => 'Oops!',
+    //             'isRemoveRowDT' => true,
+    //             'showAlert' => true,
+    //             'message' => 'Error: ' . $e->getMessage(),
+    //         ]);
+    //     } finally {
+    //         $this->isUploading = false;
+    //     }
+    // }
 
     public function upload_file()
     {
@@ -162,17 +297,26 @@ class Index extends Component
         $this->isUploading = true;
 
         try {
-            $relativePath = str_replace(asset('storage/'), '', $this->upload_preview);
-            $absolutePath = storage_path('app/public/' . $relativePath);
 
-            if (!Storage::exists('public/' . $relativePath)) {
-                throw new \Exception('File does not exist in storage.');
+            $this->validate([
+                'file' => 'required|file|mimes:xlsx,xls|max:5120',
+            ]);
+
+            // Store file ONCE here (correct Livewire flow)
+            $path = $this->file->storeAs(
+                'public/temp/files',
+                uniqid() . '.' . $this->file->getClientOriginalExtension()
+            );
+
+            $absolutePath = storage_path('app/' . $path);
+
+            if (!file_exists($absolutePath)) {
+                throw new \Exception('Uploaded file not found on server.');
             }
 
             $spreadsheet = IOFactory::load($absolutePath);
-            $sheetNames = $spreadsheet->getSheetNames();
-
-            $sheetsData = Excel::toArray(new EmployeeImports, $absolutePath);
+            $sheetNames  = $spreadsheet->getSheetNames();
+            $sheetsData  = Excel::toArray(new EmployeeImports, $absolutePath);
 
             $this->validateUploaded($spreadsheet, $sheetNames);
 
@@ -187,84 +331,58 @@ class Index extends Component
                 $sheetName = $sheetNames[$index];
 
                 $sheet = array_slice($sheet, 1);
-                $sheet = array_filter($sheet, fn($row) =>
+                $sheet = array_filter($sheet, fn ($row) =>
                     isset($row[0]) && !empty($row[0]) &&
-                    !empty(array_filter($row, fn($v) => $v !== null && $v !== ''))
+                    !empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))
                 );
-                $sheet = array_values($sheet);
 
-                $chunks = array_chunk($sheet, 100);
+                $chunks = array_chunk(array_values($sheet), 100);
+
+              
 
                 foreach ($chunks as $chunk) {
                     $jobs[] = new EmployeeUpload($chunk, $sheetName, $schedules);
                 }
             }
-            
-            if(!empty($jobs)) {
-                Bus::batch($jobs)
-                    ->withOption('actionBy', [
-                        'id' => $this->actionBy->id,
-                        'name' => $this->actionBy->name
-                    ])
-                    ->name('Employee Uploading')
-                    ->catch(function (Batch $batch, \Throwable $e) {
-                        \Log::error('Error: ' . $e->getMessage());
-                        $this->actionBy?->notify(new Notifications(
-                            'error',
-                            'An error occurred during the uploading of employee informations.',
-                            route('system.jobs', ['id' => $batch->id]),
-                            'admin'
-                        ));
-                    })
-                    ->then(function (Batch $batch) { 
-                        $this->actionBy?->notify(new Notifications(
-                            'success',
-                            'The uploading of employee informations has been successful.',
-                            route('system.jobs', ['id' => $batch->id]),
-                            'admin'
-                        ));
-                    })
-                    ->dispatch();
 
-
-                $this->dispatch('hideModal', [
-                    'modal' => 'upload_employee'
-                ]);
-
-                $this->dispatch('alert', [
-                    'status' => 'info',
-                    'title' => 'Please be informed',
-                    'showAlert' => true,
-                    'message' => 'The uploading of employee has been started. We are currently processing the data. You will receive another notification once the upload is complete. Thank you for your patience.',
-                ]);
-
-                $this->reset(['shift_id', 'schedule_id', 'isLinkSchedule']);
-                $this->loadRecords();
-            } else {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops',
-                    'message' => 'No jobs were processed'
-                ]);
-
+            if (empty($jobs)) {
+                throw new \Exception('No valid data found in the uploaded file.');
             }
 
-        } catch (\Exception $e) {
+            Bus::batch($jobs)
+                ->name('Employee Uploading')
+                ->dispatch();
 
-            logger()->error('Error uploading file: ' . $e->getMessage());
+            $this->dispatch('hideModal', ['modal' => 'upload_employee']);
+
+            $this->dispatch('alert', [
+                'status' => 'info',
+                'title' => 'Please be informed',
+                'showAlert' => true,
+                'message' => 'Employee upload has started. You will be notified once completed.',
+            ]);
+
+            $this->reset(['file', 'upload_preview', 'shift_id', 'schedule_id', 'isLinkSchedule']);
+            $this->loadRecords();
+
+        } catch (\Throwable $e) {
+
+            logger()->error('Employee upload failed', [
+                'error' => $e->getMessage(),
+            ]);
 
             $this->dispatch('alert', [
                 'status' => 'error',
-                'title' => 'Oops!',
-                'isRemoveRowDT' => true,
+                'title' => 'Upload Failed',
                 'showAlert' => true,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => $e->getMessage(),
             ]);
+
         } finally {
             $this->isUploading = false;
         }
     }
+
 
     public function validateUploaded($spreadsheet, $sheetNames) {
 
@@ -277,7 +395,8 @@ class Index extends Component
                 'gsis id', 'pagibig id', 'philhealth id', 'tin id', 'bank account no.',
                 'date hired', 'job category', 'position', 'unit', 'monthly salary'
             ];
-            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units'];
+            // $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments', 'positions', 'units'];
+            $opt_req = ['job categories', 'bool', 'civil status', 'sex', 'departments'];
         } else {
             $emp_info_req = [
                 'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
@@ -294,9 +413,9 @@ class Index extends Component
             'family background' => [
                 'employee no.', 'spouse surname', 'spouse firstname', 'spouse middlename',
                 'spouse suffix', 'spouse occupation', 'spouse business name',
-                'spouse business address', 'spouse contact no.', "father's surname",
-                "father's firstname", "father's middlename", "father's suffix",
-                "mother's surname", "mother's firstname", "mother's middlename"
+                'spouse business address', 'spouse contact no', "father surname",
+                "father firstname", "father middlename", "father suffix",
+                "mother surname", "mother firstname", "mother middlename"
             ],
             'children' => [
                 'employee no.', 'firstname', 'middlename', 'lastname', 'birthdate'
@@ -402,6 +521,7 @@ class Index extends Component
             if($record) {
 
                 $record->isDeleted = true;
+                $record->status = 'inactive';
                 $record->save();
 
                 $record = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
@@ -518,6 +638,7 @@ class Index extends Component
             if($record) {
 
                 $record->isDeleted = false;
+                $record->status = 'active';
                 $record->save();
 
                 $this->loadRecords();

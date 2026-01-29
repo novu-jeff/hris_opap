@@ -74,7 +74,7 @@
 
     @if (!empty($batch_id))
         <div class="d-flex justify-content-center mt-3">
-            <a href="{{ route('system.jobs') }}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</a>
+            <!-- <a href="{{ route('system.jobs') }}" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">Go Back</a> -->
         </div>
     @endif
 </div>

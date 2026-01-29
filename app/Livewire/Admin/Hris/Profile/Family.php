@@ -44,7 +44,7 @@ class Family extends Component
             'father_surname' => $data->father_surname ?? null,
             'father_firstname' => $data->father_firstname ?? null,
             'father_middlename' => $data->father_middlename ?? null,
-            'father_suffix' => $data->suffix ?? null,
+            'father_suffix' => $data->father_suffix ?? null,
             'mother_surname' => $data->mother_surname ?? null,
             'mother_firstname' => $data->mother_firstname ?? null,
             'mother_middlename' => $data->mother_middlename ?? null,

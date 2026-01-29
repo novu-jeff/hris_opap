@@ -13,7 +13,7 @@
         <div class="action">
             @if ($action === 'index')
                 <div class="d-md-flex gap-3">
-                    <a href="{{route('employee.dashboard')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    <!-- <a href="{{route('employee.dashboard')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
                 </div>
             @endif
         </div>

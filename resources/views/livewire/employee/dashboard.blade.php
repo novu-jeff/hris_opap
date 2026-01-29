@@ -339,7 +339,7 @@
             <div class="row mb-2">
                 <div class="col-6">Date Hired:</div>
                 <div class="col-6 text-end fw-bold">
-                    {{ \Carbon\Carbon::parse($dateHired)->format('F d, Y') }}
+                    {{ $dateHired == 'N/A'? 'N/A' : \Carbon\Carbon::parse($dateHired)->format('F d, Y') }}
                 </div>
             </div>
 
@@ -530,10 +530,10 @@
 
                             <!-- AM -->
                             <td>{{ isset($day['clock_in']) ? \Carbon\Carbon::parse($day['clock_in'])->format('g:i A') : ' ' }}</td>
-                            <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
+                            <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
 
                             <!-- PM -->
-                            <td>{{ isset($day['lunch_in']) ? \Carbon\Carbon::parse($day['lunch_in'])->format('g:i A') : ' ' }}</td>
+                            <td>{{ isset($day['lunch_out']) ? \Carbon\Carbon::parse($day['lunch_out'])->format('g:i A') : ' ' }}</td>
                             <td>{{ isset($day['clock_out']) ? \Carbon\Carbon::parse($day['clock_out'])->format('g:i A') : ' ' }}</td>
 
                             <!-- Overtime -->

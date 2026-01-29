@@ -21,3 +21,10 @@
 </div>
 </div>
 @endsection
+
+<style>
+    .table-light td {
+    font-weight: 600;
+    }
+ 
+</style>

@@ -188,7 +188,7 @@
         @endcanany
 
           <!-- ================= SIDEBAR ================= -->
-        @include('components.employee.sidebar', ['companyInfo' => $companyInfo]) <!-- create a separate sidebar Blade -->
+        @include('components.employee.sidebar') <!-- create a separate sidebar Blade -->
         <main>
             <div class="container">
                 <div class="content">
@@ -216,54 +216,55 @@
                     </div>
                 </div>
             </div>
-        </main><div class="footer mt-5">
-    <div class="container mt-3 py-5">
-        <div class="row">
-            <div class="col-12 text-center">
+        </main>
+        <div class="footer mt-5">
+            <div class="container mt-3 py-5">
+                <div class="row">
+                    <div class="col-12 text-center">
 
-                <div class="logo">
-                    <img src="{{ asset('/img/' . $provider['client_logo']) }}">
-                    <img src="{{ asset('/img/' . $provider['logo']) }}">
+                        <div class="logo">
+                            <img src="{{ asset('/img/' . $provider['client_logo']) }}">
+                            <img src="{{ asset('/img/' . $provider['logo']) }}">
+                        </div>
+
+                        <div class="logo-phrase mt-3">
+                            <p>{{ $provider['tagline'] }}</p>
+                        </div>
+
+                        <hr class="mt-3 mb-2 mx-auto" style="width:150px;">
+
+                        <div class="socials">
+                            <ul class="list-inline">
+                                <li class="list-inline-item">
+                                    <a target="_blank" href="https://novulutions.com/">
+                                        <i class="fa-solid fa-earth-asia"></i>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a target="_blank" href="https://www.facebook.com/novulutionsinc">
+                                        <i class="fa-brands fa-facebook"></i>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a target="_blank" href="https://www.linkedin.com/company/novulutions-inc/">
+                                        <i class="fa-brands fa-linkedin"></i>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a target="_blank" href="https://www.youtube.com/@NovulutionsInc">
+                                        <i class="fa-brands fa-youtube"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <p class="ending text-center mb-0 text-muted mt-5">
+                            &copy; 2025. Powered by {{$provider['company']}}
+                        </p>
+                    </div>
                 </div>
-
-                <div class="logo-phrase mt-3">
-                    <p>{{ $provider['tagline'] }}</p>
-                </div>
-
-                <hr class="mt-3 mb-2 mx-auto" style="width:150px;">
-
-                <div class="socials">
-                    <ul class="list-inline">
-                        <li class="list-inline-item">
-                            <a target="_blank" href="https://novulutions.com/">
-                                <i class="fa-solid fa-earth-asia"></i>
-                            </a>
-                        </li>
-                        <li class="list-inline-item">
-                            <a target="_blank" href="https://www.facebook.com/novulutionsinc">
-                                <i class="fa-brands fa-facebook"></i>
-                            </a>
-                        </li>
-                        <li class="list-inline-item">
-                            <a target="_blank" href="https://www.linkedin.com/company/novulutions-inc/">
-                                <i class="fa-brands fa-linkedin"></i>
-                            </a>
-                        </li>
-                        <li class="list-inline-item">
-                            <a target="_blank" href="https://www.youtube.com/@NovulutionsInc">
-                                <i class="fa-brands fa-youtube"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <p class="ending text-center mb-0 text-muted mt-5">
-                    &copy; 2025. Powered by {{$provider['company']}}
-                </p>
             </div>
         </div>
-    </div>
-</div>
 
         
     </div>
@@ -409,6 +410,15 @@ function stopResize() {
     window.removeEventListener('mousemove', resize);
     window.removeEventListener('mouseup', stopResize);
 }
+
+
+Livewire.onError(statusCode => {
+    if (statusCode === 419) {
+        window.location.href = "{{ route('session.expired') }}";
+        return false;
+    }
+});
+
 
    
 

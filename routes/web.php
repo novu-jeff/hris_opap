@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ESSAuthorityToRenderTimeController;
 use App\Http\Controllers\Admin\LeaveController as ESSLeaveController;
 use App\Http\Controllers\Admin\PayslipRequestController as ESSPayslipRequestController;
 use App\Http\Controllers\Admin\ApprovalUpdateProfile as ESSApprovalProfile;
+use App\Http\Controllers\Admin\LoanController as ESSLoanController;
 use App\Http\Controllers\Admin\DownloadController;
 use App\Http\Controllers\Admin\ESSFAQController;
 use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
+use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
@@ -40,6 +42,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\ViolationController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherDeductionsController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherEarningsController;
 use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
+use App\Http\Controllers\Admin\Settings\HRIS\LoanTypeController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
@@ -65,6 +68,7 @@ use App\Http\Controllers\Home\InterviewController as HomeInterviewController;
 use App\Http\Controllers\Employee\LoginController as EmployeeLoginController;
 use App\Http\Controllers\Employee\DashboardController;
 use App\Http\Controllers\Employee\LeaveController as EmployeeLeaveController;
+use App\Http\Controllers\Employee\LoanController as EmployeeLoanController;
 use App\Http\Controllers\Employee\ClockInOutController as EmployeeClockInOutController;
 use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
@@ -99,6 +103,14 @@ use App\Http\Controllers\Admin\LeaveImportController;
 */
 
 Route::redirect('/', 'jobs', 301);;
+
+/**
+ * Session Expired Page (419)
+ * Must be OUTSIDE auth / admin / employee middleware
+ */
+Route::get('/session-expired', function () {
+    return response()->view('errors.session-expired', [], 419);
+})->name('session.expired');
 
 Route::get('jobs', [HomeController::class, 'index'])
         ->name('home.index')
@@ -242,6 +254,9 @@ Route::prefix('admin')->group(function() {
             Route::get('leave', [ESSLeaveController::class, 'index'])
                 ->name('ess.leave');
 
+            Route::get('loan', [ESSLoanController::class, 'index'])
+                ->name('ess.loan');    
+
             Route::get('payslip/request/download', [ESSPayslipRequestController::class, 'index'])
                 ->name('ess.payslip-request');
 
@@ -281,6 +296,9 @@ Route::prefix('admin')->group(function() {
         Route::prefix('reports')->group( function() {
             Route::get('daily-time-record', [DailyTimeRecordController::class, 'index'])->name('reports.dtr');
             Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
+
+            Route::get('payroll-record', [PayrollReportController::class, 'index'])->name('reports.payroll');
+            Route::get('payroll-record/view/{payroll}', [PayrollReportController::class, 'view'])->name('reports.payroll.view');
 
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');
@@ -344,6 +362,9 @@ Route::prefix('admin')->group(function() {
         
                 Route::resource('employment-type', EmploymentTypeController::class)
                     ->names('employment-type');
+
+                Route::resource('loan-type', LoanTypeController::class)
+                    ->names('loan-type');    
         
                 Route::resource('position', PositionController::class)
                     ->names('position');
@@ -464,6 +485,16 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 
         });
 
+         Route::prefix('loans')->group(function() {
+
+            Route::get('/', [EmployeeLoanController::class, 'index'])
+                ->name('employee.loan');
+            Route::get('loan-application', [EmployeeLoanController::class, 'create'])->name('employee.loan-application');
+            Route::get('{id}/edit', [EmployeeLoanController::class, 'edit'])->name('employee.loan.edit');
+           
+                
+        });
+
         Route::prefix('time-adjustments')->group(function() {
 
             Route::get('/', [TimeAdjustmentsController::class, 'index'])
@@ -512,3 +543,5 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
 
     });
 });
+
+

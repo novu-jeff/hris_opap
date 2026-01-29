@@ -15,9 +15,61 @@ class Salary extends Component
 
     public function regeneratePayroll($payroll_id) {
 
+      
+       // dd('here');
+        // 1️⃣ Fetch the payroll record
         $payroll = SalaryPayroll::findOrFail($payroll_id);
-
         $this->payroll_id = $payroll_id;
+
+        // 2️⃣ Delete existing payroll items for this payroll
+        \DB::table('payroll_salary_items')
+            ->where('payroll_id', $payroll->id)
+            ->delete();
+
+        // 2️⃣ Get your PayrollService
+        $service = app(\App\Http\Controllers\Admin\Services\PayrollService::class);
+
+        // 3️⃣ Fetch employees for this payroll
+        // getEmployees() returns eligible/ineligible arrays
+     
+        $employeesData = $service->getEmployees($payroll->employment_type, 'salary');
+
+        //dd($employeesData);
+
+        // Only take eligible employees
+        $employees = $employeesData['eligible']['items'] ?? [];
+
+        if (empty($employees)) {
+            session()->flash('error', 'No eligible employees found for this payroll.');
+            return;
+        }
+
+        // 4️⃣ Split employees into manageable chunks
+        $chunks = array_chunk($employees, 1000);
+
+       // dd($chunks );
+
+        // 5️⃣ Prepare PayrollJob instances
+        $jobs = [];
+        foreach ($chunks as $chunk) {
+            $jobs[] = new \App\Jobs\PayrollJob(
+                $chunk,        // array of employees
+                $payroll->id,  // payroll ID
+                'salary'       // payroll type
+            );
+        }
+   \Log::info("regenerate count jobs payroll", ['count' => count($jobs)]);
+        // 6️⃣ Dispatch jobs as a batch
+        $batch = \Illuminate\Support\Facades\Bus::batch($jobs)
+            ->name('Regenerate Payroll #' . $payroll->id)
+            ->allowFailures()
+            ->dispatch();
+
+        // 7️⃣ Save batch ID in payroll record
+        $payroll->batch_id = $batch->id;
+        $payroll->save();
+
+       
 
         $this->dispatch('start-job-dispatch', [
             'payroll_id' => $payroll->id,
@@ -57,8 +109,20 @@ class Salary extends Component
                 'message' => $message,
                 'action' => $action,
             ]);
+
+            
+
         } else {
             $this->deletePayroll($this->payroll_id);
+
+            // ✅ Dispatch success AFTER deletion
+        $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Success!',
+            'id' => $this->payroll_id,
+            'isRemoveRowDT' => true,
+            'message' => 'Payroll #' . strtoupper($this->payroll_id) . ' has been successfully removed.'
+        ]);
         }
     }
 

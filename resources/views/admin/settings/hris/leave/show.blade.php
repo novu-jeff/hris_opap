@@ -12,9 +12,9 @@
                 </div>
                 <div class="actions">
                     @if($action)
-                        <a href="{{route('leave.show', ['leave' => $id])}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                        <!-- <a href="{{route('leave.show', ['leave' => $id])}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
                     @else
-                        <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                        <!-- <a href="{{route('leave.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
                     @endif
                 </div>
             </div>
@@ -37,7 +37,7 @@
                     <h1>Add Credits</h1>
                 </div>
                 <div class="actions d-flex gap-3">
-                    <a href="{{route('leave.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    <!-- <a href="{{route('leave.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
                     <button type="button" data-bs-toggle="modal" wire:click="select_employee" data-bs-target="#importModal" 
                         class="btn btn-sm btn-primary px-5 py-3 text-uppercase fw-bold">
                         <span>

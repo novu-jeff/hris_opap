@@ -49,7 +49,7 @@
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="date_hired">Date Hired</label>
-                        <input type="text" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control restricted" readonly>
+                        <input type="date" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control restricted" >
                         <div class="error-field">
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
@@ -207,9 +207,7 @@
                         <select wire:model="records.employee_information.salary_method" id="records.employee_information.salary_method" class="form-select">
                             <option value=""> - CHOOSE - </option>
                             <option value="cash">Cash</option>
-                            <option value="bank transfer">Bank Transfer</option>
-                            <option value="paycheck">Paycheck</option>
-                            <option value="e-wallet">E-Wallet</option>
+                            <option value="land bank atm">Land Bank ATM</option>
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
@@ -273,7 +271,7 @@
                             @if (count($records['other_earnings']) > 0)
                                 @foreach ($records['other_earnings'] as $item)
                                      <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
-                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        <span>{{ ucwords($item['name']) }}</span>
                                         -
                                         <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>
@@ -302,7 +300,7 @@
                             @if($hasDeductions)
                                 @foreach ($records['other_deductions'] as $item)
                                     <li class="d-flex align-items-center gap-2 mb-2 text-uppercase">
-                                        <span>{{ ucwords($item['deduction']['name']) }}</span>
+                                        <span>{{ ucwords($item['name']) }}</span>
                                         -
                                         <strong>PHP {{ number_format($item['amount'], 2) }}</strong>
                                         <i class="fa fa-check text-primary fs-4 ms-2" aria-hidden="true"></i>

@@ -26,6 +26,12 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     protected $listeners = ['remove'];
+
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
     
     public function render()
     {
@@ -56,19 +62,30 @@ class Index extends Component
         }
 
         $grouped = $data->groupBy('employee_no')->map(function ($items, $employee_no) {
-            $types = $items->pluck('type')->unique();
-            $personal = EmployeePersonal::where('employee_no', $employee_no)->first();
+// dd( $items);
+    $latest = $items->sortByDesc('updated_at')->first();
+    $types = $items->pluck('type')->unique();
 
-            return [
-                'employee_no' => $employee_no,
-                'type' => $types->first(), 
-                'types' => str_replace('-', ' ', $types->implode(', ')),
-                'name' => $personal
-                    ? trim("{$personal->firstname} {$personal->middlename} {$personal->lastname}")
-                    : 'N/A',
-                'date_applied' => optional($items->sortByDesc('updated_at')->first()['updated_at'])->format('M d, Y'),
-            ];
-        })->values();
+    $personal = EmployeePersonal::where('employee_no', $employee_no)->first();
+
+    return [
+        'employee_no' => $employee_no,
+        'type' => $latest['type'],
+        'types' => str_replace('-', ' ', $types->implode(', ')),
+        'name' => $personal
+            ? trim("{$personal->firstname} {$personal->middlename} {$personal->lastname}")
+            : 'N/A',
+
+        // IMPORTANT: store raw timestamp for sorting
+        'date_applied_raw' => $latest['updated_at'] ?? null,
+
+        // Display version only
+        'date_applied' => $latest['updated_at']
+            ? \Carbon\Carbon::parse($latest['updated_at'])->format('M d, Y')
+            : 'N/A',
+    ];
+
+});
 
         if ($this->search) {
             $search = strtolower($this->search);
@@ -78,8 +95,12 @@ class Index extends Component
             })->values();
         }
 
-        $grouped = $grouped->map(function ($item, $index) {
-            $item['id'] = $index + 1;
+       $grouped = $grouped->sortByDesc('date_applied_raw')->values();
+
+    //    dd($grouped);
+
+       $grouped = $grouped->values()->map(function ($item, $i) {
+            $item['id'] = $i + 1;
             return $item;
         });
 

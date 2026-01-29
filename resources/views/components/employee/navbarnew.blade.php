@@ -3,11 +3,8 @@
 
     // Detect real profile photo
     $profilePhoto = null;
-
     if (!empty($employee->personal->profile)) {
-        // Example: employees/EMP-TEST-01/profile.jpg
         $storagePath = 'storage/' . $employee->personal->profile;
-
         if (file_exists(public_path($storagePath))) {
             $profilePhoto = asset($storagePath);
         }
@@ -20,52 +17,62 @@
     }
 @endphp
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-    <div class="container-fluid px-4">
-       
-        <!-- TOGGLE BUTTON -->
-        <button class="navbar-toggler" id="sidebarToggle">
-            <span class="navbar-toggler-icon"></span>
+<nav class="navbar navbar-light bg-white shadow-sm fixed-top">
+    <div class="container-fluid px-2 px-lg-4 d-flex align-items-center">
+
+        <!-- LEFT: Sidebar toggle (mobile) -->
+        <button class="btn d-lg-none me-2" id="sidebarToggle">
+            <i class="fa-solid fa-bars"></i>
         </button>
 
-        <!-- RIGHT SIDE -->
-        <div class="collapse navbar-collapse justify-content-end" id="navbarTopContent">
-            <ul class="navbar-nav align-items-center gap-3">
-                <!-- Notifications -->
-                <li class="nav-item">
-                    @livewire('notifications')
-                </li>
+        <!-- RIGHT: Always visible -->
+        <div id="navbarTopContent"
+             class="ms-auto d-flex align-items-center gap-1 gap-lg-3 flex-nowrap">
 
-                <!-- Profile -->
-                @if($employee)
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <!-- Notifications -->
+            <div class="nav-item flex-shrink-0">
+                @livewire('notifications')
+            </div>
 
-                            <!-- FINAL PROFILE PHOTO (REAL OR FALLBACK) -->
-                            <img class="rounded-circle border" 
-                                 src="{{ $profilePhoto }}" 
-                                 alt="Profile" width="40" height="40">
+            <!-- Profile Dropdown -->
+            @if($employee)
+                <div class="nav-item dropdown flex-shrink-0" style="position: relative;">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-1 gap-lg-2"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
 
-                            <span class="d-none d-lg-inline fw-bold text-uppercase">
-                                {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
-                            </span>
-                        </a>
+                        <!-- Avatar -->
+                        <img src="{{ $profilePhoto }}"
+                             class="rounded-circle border"
+                             width="36"
+                             height="36"
+                             alt="Profile">
 
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('employee.profile', ['form' => 'profile']) }}">
-                                    <i class="fa-solid fa-user me-2"></i> My Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('employee.logout') }}">
-                                    <i class="fa-solid fa-door-open me-2"></i> Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                @endif
-            </ul>
+                        <!-- Name (always visible) -->
+                        <span class="fw-bold text-uppercase "> 
+                            {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
+                        </span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ route('employee.profile', ['form' => 'profile']) }}">
+                                <i class="fa-solid fa-user me-2"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ route('employee.logout') }}">
+                                <i class="fa-solid fa-door-open me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            @endif
+
         </div>
     </div>
 </nav>

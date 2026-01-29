@@ -55,7 +55,7 @@
                             <textarea id="reason" cols="30" rows="20" class="form-control restricted" readonly placeholder="Write something...">{{$view_records['reason'] ?? ''}}</textarea>
                         </div>
                         
-                        @if($view_records && !is_null($view_records->attachments))
+                        @if($view_records && $view_records->attachments)
                             <div class="col-12 md-4">
                                 <label class="mb-2">Attachments</label>
                                 <div class="attachments">
@@ -63,8 +63,11 @@
                                         @foreach($view_records->attachments as $item)
                                             <li class="list-unstyled-item">
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <a class="d-flex align-items-center text-decoration-none" href="{{Storage::url('public/time-adjustmentss/' . $item['attachment'])}}" download>
-                                                        {{$item['attachment']}}
+                                                    <a
+                                                        href="{{ Storage::url($item['attachment']) }}" 
+                                                        target="_blank" rel="noopener noreferrer"
+                                                    >
+                                                        {{ basename($item['attachment']) }}
                                                     </a>
                                                 </div>
                                             </li>
@@ -73,6 +76,7 @@
                                 </div>
                             </div>
                         @endif
+
                     </div>
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')

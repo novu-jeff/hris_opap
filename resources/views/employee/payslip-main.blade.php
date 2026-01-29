@@ -15,12 +15,30 @@
             </div>
 
             {{-- EMPLOYEE INFO --}}
+            <!--'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),-->
+            <!--'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
+                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
+                        ->implode(' to '),-->
+            @php
+                // Parse cut-off period
+                [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+
+                $startDate = \Carbon\Carbon::parse($start);
+
+                // Full month range based on the payroll month
+                $fullMonthStart = $startDate->copy()->startOfMonth();
+                $fullMonthEnd   = $startDate->copy()->endOfMonth();
+
+                $fullMonthCutoff = $fullMonthStart->format('F j')
+                    . ' – ' .
+                    $fullMonthEnd->format('F j, Y');
+            @endphp
+
+
+
             <div class="info border-section p-3 mt-3">
                 @foreach([
-                    'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
-                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
-                        ->implode(' to '),
-                    'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),
+                    'Cutt Off Period' =>  $payslipView['fullMonthCutoff'],
                     'Employee\'s Name' => $payslip['name'],
                     'Position' => $payslip['position'],
                     'Unit' => $payslip['information']['section']['name'],
@@ -62,23 +80,46 @@
                     'GSIS Education Assistance Loan' => 0,
                     'GSIS Policy Loan' => 0,
                     'GSIS MPL' => $payslip['mpl'],
-                    'GSIS MPL Lite' => $payslip['mplstlms'],
+                    'GSIS MPL Lite' => $payslip['mpl_lite'],
                     'GSIS CPL' => $payslip['cpl'],
-                    'HDMF Calamity Loan' => $payslip['hdmf'],
+                    'HDMF Calamity Loan' => 0,
                     'HDMF MP2' => $payslip['mp2'],
+                    'MPL STLMS' => $payslip['mplstlms'],
                     'HDMF MP3' => 0,
                     'Cir375-ECQ' => $payslip['cir375_cir449'],
                     'SSS' => $payslip['sss'],
-                    'PAGIBIG' => $payslip['pagibig'],
+                    'Loan Deductions' => $payslip['other_loans'],
                     'BIR Withholding TAX' => $payslip['w_tax'],
+                    'UCA' => $payslip['uca'],
                     'Lates / Undertime / Absences' => $payslip['aut'],
-                    'Total Deductions' => $payslip['total_deductions'],
                 ] as $label => $value)
                     <div class="d-flex align-items-start border-bottom py-1">
                         <div class="label">{{ $label }}:</div>
                         <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
                     </div>
                 @endforeach
+            </div>
+
+    @if($payslip->deductions->where('reference_type', 'loan')->count())
+
+        @foreach($payslip->deductions->where('reference_type', 'loan') as $deduction)
+            <div class="d-flex align-items-start border-bottom py-1">
+                <div class="label">
+                    {{ $deduction->loan->loanType->name ?? 'Loan Deduction' }}
+                </div>
+                <div class="value ms-2">
+                    PHP {{ number_format($deduction->amount, 2) }}
+                </div>
+            </div>
+        @endforeach
+    @endif
+
+
+            <div class="d-flex align-items-start border-bottom py-1 fw-bold">
+                <div class="label">Total Deductions:</div>
+                <div class="value ms-2">
+                    PHP {{ number_format($payslip['total_deductions'], 2) }}
+                </div>
             </div>
 
             {{-- NET PAY --}}
@@ -88,8 +129,9 @@
                     'Net Amount' => $payslip['net_amount'],
                     'DBP' => $payslip['dbp'],
                     'Unlad Kawani' => $payslip['kawani'],
-                    'Amount Due (15)' => $payslip['salary'],
-                    'Amount Due (28)' => $payslip['salary'],
+                    'LBP Payroll Account' => $payslip['lbp_payroll_account'],
+                    'Amount Due (15)' => $payslip['net_first_half'],
+                    'Amount Due (30)' => $payslip['net_second_half'],
                 ] as $label => $value)
                     <div class="d-flex align-items-start border-bottom py-1">
                         <div class="label">{{ $label }}:</div>
@@ -110,11 +152,12 @@
     {{-- SECURITY OVERLAYS --}}
     <div class="payslip-overlay"></div>
 
-    {{-- Watermark 1 (center diagonal) --}}
-    <div class="payslip-watermark">CONFIDENTIAL • {{$payslip['name']}} • DO NOT COPY</div>
-
-    {{-- Watermark 2 (bottom-right) --}}
-    <div class="payslip-watermark-bottom">CONFIDENTIAL</div>
+    <div class="payslip-watermark-diagonal-1">CONFIDENTIAL1 • {{$payslip['name']}} • DO NOT COPY</div>
+    <div class="payslip-watermark-diagonal-2">CONFIDENTIAL 2• {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-3">CONFIDENTIAL 3• {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-4">CONFIDENTIAL4 • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-diagonal-5">CONFIDENTIAL5 • {{$payslip['name']}} • DO NOT COPY</div>
+<div class="payslip-watermark-center-large">CONFIDENTIAL</div>
 </div>
 
 
@@ -209,6 +252,81 @@
 .payslip-container {
     position: relative;
     z-index: 5;
+}
+
+/* Diagonal watermark #1 */
+.payslip-watermark-diagonal-1,
+.payslip-watermark-diagonal-2,
+.payslip-watermark-diagonal-3,
+.payslip-watermark-diagonal-4,
+.payslip-watermark-diagonal-5     {
+    position: absolute;
+    font-size: 40px;
+    font-weight: 100;
+    color: rgba(255, 0, 0, 0.08);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Diagonal #1: top-left to bottom-right */
+.payslip-watermark-diagonal-1 {
+    top: 25%;
+    left: -40%;
+    transform: rotate(25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-2 {
+    bottom: 30%;
+    left: -40%;
+    transform: rotate(25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-3 {
+    bottom: 10%;
+    left: -40%;
+    transform: rotate(25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-4 {
+    top: 10%;
+    left: -40%;
+    transform: rotate(25deg);
+}
+
+/* Diagonal #2: bottom-left to top-right */
+.payslip-watermark-diagonal-5 {
+    top: 40%;
+    left: -40%;
+    transform: rotate(25deg);
+}
+
+/* Large center watermark */
+.payslip-watermark-center-large {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(255, 0, 0, 0.05);
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+}
+
+/* Keep previous bottom-right watermark */
+.payslip-watermark-bottom {
+    bottom: 15px;
+    right: 15px;
+    font-size: 25px;
+    font-weight: 700;
+    color: rgba(255, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 20;
 }
 
 /* Prevent printing */

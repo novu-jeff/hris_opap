@@ -139,14 +139,20 @@ class HRISProcessingService extends Controller
 
         $record = EmployeeInformation::where('employee_no', $employee_no)
             ->first();
+//\Log::info('Saving employee information data', $data);
+        $getdata = $this->handleSalary($data);
 
-        $salary = $this->handleSalary($data);
+       
+        $salary = $getdata['salary'];   
+        $wtax = $getdata['w_tax'];
 
+\Log::info('Saving employee information data', $data, ['salary' => $salary, 'w_tax' => $wtax]);
         if ($record) {
             $record->fill([
                 'section_id' => $data['section_id'] ? $data['section_id'] : null,
                 'position_id' => $data['position_id'],
                 'job_completion' => $data['job_completion'],
+                'date_hired' => $data['date_hired'],
                 'bsd_no' => $data['biometrics_id'],
                 'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
                 'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
@@ -155,6 +161,8 @@ class HRISProcessingService extends Controller
                 'status' => $data['status'],
                 'salary_method' => $data['salary_method'],
                 'salary' => $salary,
+                'w_tax' => $wtax,
+                'step_id' => $data['step_id'],
                 'payroll_account_number' => $data['payroll_account_number'],
             ]);
 
@@ -791,24 +799,36 @@ class HRISProcessingService extends Controller
                     ->value('salary_grade') ?? '';
     
                 $stepColumn = "step_" . ($step_id ?? '');
+                $stepColumnTax = "step_" . ($step_id ?? '') . "_wtax";
+
     
-                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $eligible) {
+                $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $stepColumnTax, $eligible) {
                         $query->where('salary_grade', $salaryGrade)
-                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn);
+                            ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
                     }])
-                    ->where('eligible', $eligible)
+                     ->where('eligible', $eligible)
+                    ->where('is_active', 1)
+                    ->latest('year')
                     ->first();
                 
                 $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
                     ? $activeTranche->items->first()->$stepColumn 
                     : 0;
+                
+                $wtax = ($activeTranche && $activeTranche->items->isNotEmpty()) 
+                    ? $activeTranche->items->first()->$stepColumnTax 
+                    : 0;
     
                 if ($activeTranche) {
-                    return $data['salary'] = $salary;
+                    $data['salary'] = $salary;
+                    $data['w_tax'] = $wtax;
+                     return $data;
                 }
             }
         } else {
-            return $data['salary'];
+            $data['salary'];
+            $data['w_tax'];
+            return $data;
         }
         
     }

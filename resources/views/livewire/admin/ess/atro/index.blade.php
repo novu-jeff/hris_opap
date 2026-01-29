@@ -43,7 +43,25 @@
                             <textarea id="justification" class="form-control restricted" rows="5" readonly>{{ isset($view_records) ? $view_records->justification : '' }}</textarea>                            
                         </div>
                     </div>
+                   @if (isset($view_records->status) && $view_records->status === 'disapproved')   
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="disapproval_note">Reason for Disapproval</label>
+                            <textarea id="disapproval_note" class="form-control restricted" rows="3"  readonly>{{ isset($view_records) ? $view_records->disapproval_note : '' }}</textarea>
+                        </div>
+                    </div>
+                     @endif
+
+                     @if (isset($view_records->status) && $view_records->status === 'pending')   
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <label class="mb-2" for="disapproval_note">Reason for Disapproval</label>
+                            <textarea id="disapproval_note" class="form-control" rows="3" wire:model.defer="disapproval_note" ></textarea>
+                        </div>
+                    </div>
+                     @endif
                 </div>
+                
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">
                         <button wire:click="disapproved" class="btn btn-danger text-uppercase fw-medium">Disapprove</button>

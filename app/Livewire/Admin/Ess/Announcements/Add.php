@@ -45,7 +45,8 @@ class Add extends Component
             $this->banner = $record->banner;
             $this->title = $record->title;
             $this->content = $record->content;
-            $this->preview_banner = Storage::url('public/announcements/' . $record->banner);
+             
+            $this->preview_banner = $record->banner === 'default.jpg' ? asset('img/announcement.jpg') : Storage::url('public/announcements/' . $record->banner);
             $this->attachments = $record->attachments->toArray() ?? [];
             
         }

@@ -4,6 +4,8 @@ namespace App\Livewire\Admin\Ess\ProfileApproval\Profile;
 
 use App\Models\EmployeePersonal;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\EmployeeAccount;
+use Illuminate\Support\Facades\Log;
 
 use Livewire\Component;
 
@@ -13,7 +15,8 @@ class Personal extends Component
     public $records;
     public $isDualCitizenship;
 
-    public function mount() {
+    public function mount($employee_no) {
+         $this->employee_no = $employee_no;
         $this->loadRecords();
     }
 
@@ -21,32 +24,74 @@ class Personal extends Component
 
     public function loadRecords() {
 
-        $updated = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
-        $stored = EmployeePersonal::where('employee_no', $this->employee_no)->first();
-
-        $fields = array_keys($stored->getAttributes());
-
-        $this->records = $this->compareFields($stored, $updated, $fields);
-    }
-
-   
-    private function compareFields($oldRecord, $newRecord, $fields)
-    {
-        $result = [];
-        foreach ($fields as $field) {
-            // Use null coalescing operator to ensure we don't get null if data is missing
-            $oldValue = $oldRecord ? $oldRecord->$field : '';
-            $newValue = $newRecord ? $newRecord->$field : '';
-    
-            // Store the results of comparison
-            $result[$field] = [
-                'old' => $oldValue,
-                'new' => (empty($newValue) || is_null($newValue)) ? $oldValue : $newValue,
-            ];
+         if (!$this->employee_no) {
+            $this->records = [];
+            return;
         }
 
-        return $result;
+
+        $updated = EmployeeUpdatePersonal::where('employee_no', $this->employee_no)->first();
+        $stored = EmployeePersonal::where('employee_no', $this->employee_no)->first();
+        $account = EmployeeAccount::where('employee_no', $this->employee_no)->first(); 
+
+       
+
+       // $fields = array_keys($stored->getAttributes());
+        $fields = (new EmployeePersonal)->getFillable();
+          $fields[] = 'email'; // include email explicitly
+
+          \Log::Debug('Comparing personal fields', [
+            'employee_no' => $this->employee_no,
+            'fields' => $fields]);
+
+        $this->records = $this->compareFields($stored, $updated, $fields, $account);
+
+        \Log::info('Loaded personal records for comparison', [
+            'employee_no' => $this->employee_no,
+            'records' => $this->records,
+        ]);
     }
+
+
+        private function compareFields($oldRecord, $newRecord, $fields, $account = null)
+        {
+            $result = [];
+
+            foreach ($fields as $field) {
+
+                // OLD VALUE
+                if ($field === 'email') {
+                    $oldValue = $account?->email ?? '';
+                } else {
+                    $oldValue = $oldRecord?->$field ?? '';
+                }
+
+                // NEW VALUE (may be empty if no update exists)
+                $newValue = $newRecord?->$field ?? null;
+
+                $oldValue = trim((string) $oldValue);
+                $newValue = trim((string) $newValue);
+
+                // ✅ FALLBACK: if no update, show old value
+                if ($newValue === '' || $newValue === null) {
+                    $displayValue = $oldValue;
+                    $changed = false;
+                } else {
+                    $displayValue = $newValue;
+                    $changed = $newValue != $oldValue;
+                }
+
+                $result[$field] = [
+                    'old'     => $oldValue,
+                    'new'     => $displayValue,
+                    'changed' => $changed,
+                ];
+            }
+
+            return $result;
+        }
+
+
 
     protected function formatRecords($data) {
         return [

@@ -79,6 +79,12 @@
                 </a>
                 @endcan
 
+               {{--  @can('read leave')
+                <a href="{{ route('ess.loan') }}" class="submenu-item">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Loan Applications
+                </a>
+                @endcan --}}
+
                 @can('read obs')
                 <a href="{{ route('ess.obs') }}" class="submenu-item">
                     <i class="fa-solid fa-briefcase"></i> Official Business Slip Application
@@ -135,6 +141,10 @@
                 <a href="{{ route('reports.dtr') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Daily Time Record</a>
                 @endcan
+                @can('read dtr')
+                <a href="{{ route('reports.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Payroll Record</a>
+                @endcan
                 @if($product == 'private')
                     <a href="{{ route('reports.bir') }}" class="submenu-item">
                         <i class="fa-solid fa-file-lines"></i> BIR</a>
@@ -148,8 +158,15 @@
                  @endif
             </div>    
         </div>
-         @endcanany
+         @endcanany 
 
+         <!-- HRIS -->
+        @canany([
+            'read company-information', 'read scheduler', 'read tranches', 'read holidays',
+            'read branches', 'read departments', 'read sections', 'read assessments', 'read requirements',
+            'read users', 'read roles', 'read bank-information', 'read employment-type', 'read positions',
+            'read violations', 'read leave-types', 'read gsis-billing', 'read other-earnings', 'read other-deductions'
+        ])
         <!-- Settings -->
         <div class="menu-group">
             <p class="menu-group-title"><i class="fa-solid fa-cogs"></i> Settings</p>
@@ -163,7 +180,7 @@
                     <a class="submenu-item" href="{{route('scheduler.index')}}">
                          <i class="fa-solid fa-calendar"></i> Scheduler</a>
                 @endcan
-                @can('read tranches')
+                 @can('read scheduler')
                     <a class="submenu-item" href="{{route('tranches.index')}}">
                         <i class="fa-solid fa-layer-group"></i> Tranches</a>
                 @endcan
@@ -243,6 +260,10 @@
                     <a href="{{ route('employment-type.index') }}" class="submenu-item">
                         <i class="fa-solid fa-user-tag"></i> Employment Type</a>
                     @endcan
+                    {{-- @can('read employment-type')
+                    <a href="{{ route('loan-type.index') }}" class="submenu-item">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Loan Type</a>
+                    @endcan--}}
                     @can('read positions')
                     <a href="{{ route('position.index') }}" class="submenu-item">
                         <i class="fa-solid fa-briefcase"></i> Positions</a>
@@ -257,7 +278,7 @@
                     @endcan
                     @can('read gsis-billing')
                     <a href="{{ route('gsis.index') }}" class="submenu-item">
-                        <i class="fa-solid fa-bank"></i>  SIS Billing</a>
+                        <i class="fa-solid fa-bank"></i>  GSIS Billing</a>
                     @endcan
                     @can('read other-earnings')
                     <a href="{{ route('other-earnings.index') }}" class="submenu-item">
@@ -272,7 +293,7 @@
 
             </div>
         </div>
-
+     @endcanany 
     </div>
 
 </div>

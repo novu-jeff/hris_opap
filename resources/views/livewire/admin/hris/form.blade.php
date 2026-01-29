@@ -1,6 +1,6 @@
 <div>
     <div class="d-flex justify-content-end mb-5 gap-3">
-        <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a>
+        <!-- <a href="{{route('hris.index')}}" class="btn btn-outline-primary px-5 py-3 text-uppercase">Go Back</a> -->
     </div>
     <ul class="nav nav-pills mb-3 d-flex justify-content-center gap-3 py-4" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -36,9 +36,9 @@
         <li class="nav-item" role="presentation">
             <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'account']) }}" class="{{in_array('information', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'account' ? 'active' : ''}}" id="pills-details-tab" role="tab" aria-controls="pills-details" aria-selected="{{$form == 'account' ? 'true' : 'false'}}">IX. Employee Account</a>
         </li>
-        <li class="nav-item" role="presentation">
+        <!--<li class="nav-item" role="presentation">
             <a href="{{ route('hris.show', ['employee_no' => $employee_no, 'form' => 'history-leave-card']) }}" class="{{in_array('history-leave-card', $tabsHasChanges) ? 'tabsHasChanges' : ''}} px-4 py-2 text-uppercase fw-bold nav-link {{$form == 'history-leave-card' ? 'active' : ''}}" id="pills-history-leave-card-tab" role="tab" aria-controls="pills-history-leave-card" aria-selected="{{$form == 'history-leave-card' ? 'true' : 'false'}}">X. Leave Card</a>
-        </li>
+        </li>-->
     </ul>
     <div class="tab-content" id="pills-tabContent">
         @php

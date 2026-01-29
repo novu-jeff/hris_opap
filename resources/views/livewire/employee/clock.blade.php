@@ -73,39 +73,10 @@
                             <div class="watermark">
                                 <img src="{{ asset('/img/' . $provider['client_logo']) }}">            
                             </div>
-                            <div class="overlay py-3">
-                                <div class="{{ $gps_location && !$isToHide ? 'd-block' : 'd-none' }}">
-                                    <div class="map-container" wire:ignore>
-                                        <div id="map"></div>
-                                    </div>
-                                </div>
-                                <div class="details p-2 d-flex align-items-center">
-    <div id="location-info">
-        @if($gps_location && !$isToHide)
-            @php
-                $place = $gps_location['place'] ?? null;
-                $lat = $gps_location['coordinates']['lat'] ?? 0;
-                $lng = $gps_location['coordinates']['lng'] ?? 0;
-            @endphp
-
-            <div class="mb-0" id="face-status"></div>
-           <!-- <div class="mb-0">
-                {{--{{ $place ?? "Lat: {$lat}, Long: {$lng}" }}--}}
-            </div>-->
-            <div class="mb-0">Lat: {{ number_format($lat, 5) }}°, Long: {{ number_format($lng, 5) }}°</div>
-            <div class="mb-0">{{ now()->toDayDateTimeString() }}</div>
-        @else
-            <div class="text-nowrap">
-                Locating, Please Wait... <i class="ms-2 fa-solid fa-spinner fa-spin"></i>
-            </div>
-        @endif
-    </div>
-</div>
-
-                            </div>
+                            
                         </div>
                         <div class="text-muted text-center text-muted text-uppercase mt-3 fst-italic">
-                            <small>Please ensure your face is clearly visible and your location is enabled before proceeding.</small>
+                            <small>Please ensure your face is clearly visible before proceeding.</small>
                         </div>
                     </div>
                 </div>
@@ -119,7 +90,7 @@
     </div>
 
     <div class="modal fade" wire:ignore.self id="logs_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog custom-modal modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">
@@ -154,6 +125,7 @@
                                         aria-labelledby="heading{{ $dateKey }}"
                                         data-bs-parent="#logsAccordion">
                                         <div class="accordion-body">
+                                            <div class="table-responsive">
                                             <table class="table table-bordered text-center">
                                                 <thead>
                                                     <tr>
@@ -214,6 +186,7 @@
                                                     @endif
                                                 </tbody>
                                             </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -227,48 +200,74 @@
         </div>
     </div>
 
+
+
     <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
-                <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
 
-                    <div class="modal-header border-0 pt-2 pb-0">
-                        <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
+                <div class="modal-header border-0 pt-2 pb-0">
+                    <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
+                </div>
+
+                <div class="modal-body">
+                    {{-- Captured image preview --}}
+                    <div class="mb-3" wire:ignore>
+                        <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
                     </div>
 
-                    <div class="modal-body">
-                        <div class="mb-3" wire:ignore>
-                            <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
+                    @if($entry === 3 || $isForcedOut)
+                        {{-- Accomplishment file input --}}
+                        <div class="mb-3">
+                            <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
+                            <input
+                                type="file"
+                                wire:model="upload_accomplishment"
+                                id="accomplishmentFile"
+                                class="form-control"
+                                accept="application/pdf"
+                            />
+
+                            @error('upload_accomplishment')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+
+
+                            {{-- Temporary preview link --}}
+                            @if($upload_accomplishment)
+                                <p class="mt-2">
+                                    Selected File: 
+                                    
+                                      <strong>{{ $upload_accomplishment->getClientOriginalName() }}</strong>
+                                  
+                                </p>
+                            @endif
                         </div>
+                    @endif
+                </div>
 
-                        @if($entry === 3 || $isForcedOut)
-                            <div class="mb-3">
-                                <label for="accomplishment" class="text-start">Accomplishment Report</label>
-                                <input type="file" wire:model="accomplishment" name="accomplishment" id="accomplishment" class="form-control">
-                                @error('accomplishment') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
-                    </div>
+                <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
+                    <button type="button" class="retakeButton btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
+                        Retake
+                    </button>
 
-                    <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
-                        <button type="button" class="retakeButton btn btn-danger py-3 px-5 text-uppercase fw-bold" data-bs-dismiss="modal">
-                            Retake
-                        </button>
-                        <button type="submit"
-                            class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
-                            wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
-                            wire:loading.attr="disabled">
-                            <span>Proceed</span>
-                            <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
-                                <i class="fa-solid fa-spinner fa-spin"></i>
-                            </span>
-                        </button>
-                    </div>
+                    <button type="submit"
+                        class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
+                        wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
+                        wire:loading.attr="disabled">
+                        <span>Proceed</span>
+                        <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
 
-                </form>
-            </div>
+            </form>
         </div>
     </div>
+</div>
+
 </div>
 
 <script type="module">

@@ -558,9 +558,17 @@ class DailyTimeRecordService {
 
            switch ($type) {
                 case 'regular':
+                    $legalHolidays = true;
+                    $isLegalHoliday = true;
+
+                    // ✅ ADD REGULAR HOLIDAY REMARK
+                    $ownRemarks[] = 'Regular Holiday';
+                    break;
                 case 'special-non-working':
                     $legalHolidays = true;
                     $isLegalHoliday = true;
+
+                    $ownRemarks[] = 'Special Holiday';
                     break;
                 case 'special-working':
                 case 'company':
@@ -578,6 +586,10 @@ class DailyTimeRecordService {
             $ownRemarks[] = $arrayWeeklySchedule[$dayRemarkKey];
         }
 
+         Log::info('Date In logs', [
+                'date_logs' => $date_is_in_logs
+            ]);
+
         if ($date_is_in_logs) {
             if ($isLegalHoliday) {
                 $workedOnLegalHolidays = true;
@@ -585,6 +597,8 @@ class DailyTimeRecordService {
             } elseif ($isSpecialHoliday) {
                 $workedOnSpecialHolidays = true;
                 $ownRemarks[] = 'Special Hol.';
+            }elseif ($isHoliday) {
+                $ownRemarks[] = 'Holiday Work';
             }
             $workedDays = true;
         } elseif ($isScheduled && !$isHoliday && !$isFuture && !$isLeave) {
@@ -639,13 +653,35 @@ class DailyTimeRecordService {
      * @param  string  $date  The date to check (format: YYYY-MM-DD).
      * @return object|null    The holiday record if found, or null if none exists.
      */
-    private function getHolidayByDate($date)
+   /* private function getHolidayByDate($date)
     {
         return DB::table('holidays')
             ->where('isDeleted', false)
             ->where('date', $date)
             ->first();
+    }*/
+
+    private function getHolidayByDate($date)
+    {
+        $monthDay = Carbon::parse($date)->format('m-d');
+
+        $holiday = DB::table('holidays')
+            ->where('isDeleted', false)
+            ->where('date', $monthDay)
+            ->first();
+
+        if ($holiday) {
+            Log::info('Holiday matched', [
+                'input_date' => $date,
+                'lookup_key' => $monthDay,
+                'holiday_name' => $holiday->name,
+                'holiday_type' => $holiday->type,
+            ]);
+        }
+
+        return $holiday;
     }
+
 
     /**
      * Check if an employee has approved leave on a specific date.
@@ -1013,9 +1049,9 @@ class DailyTimeRecordService {
            // dd('here4');
             $record['clock_in'] = $timestamps[0]->format('h:i A');
         } else {
-        //  dd('here');
+        // dd($timestamps );
             # Fallback: assign based on time ranges
-           // dd($timestamps);
+          //dd($record, $timestamps );
             foreach ($timestamps as $ts) {
                // dd($ts->format('h:i A'));   
                 $hour = (int) $ts->format('H');
@@ -1023,12 +1059,13 @@ class DailyTimeRecordService {
                 if (!isset($record['clock_in']) && $hour >= 5 && $hour <= 9) {
                    // dd('here5');
                     $record['clock_in'] = $ts->format('h:i A');
-                } elseif (!isset($record['lunch_out']) && $hour >= 11 && $hour <= 12) {
-                    //dd('here6');
-                    $record['lunch_out'] = $ts->format('h:i A');
-                } elseif (!isset($record['lunch_in']) && $hour >= 12 && $hour <= 13) {
-                   // dd('here7');
+                } elseif (!isset($record['lunch_in']) && $hour >= 11 && $hour <= 12) {
+                 //  dd($hour);
                     $record['lunch_in'] = $ts->format('h:i A');
+                } elseif (!isset($record['lunch_out']) && $hour >= 12 && $hour <= 13) {
+
+                 // dd($record['lunch_out']);
+                    $record['lunch_out'] = $ts->format('h:i A');
                 } elseif (!isset($record['clock_out']) && $hour >= 15 && $hour <= 18) {
                    // dd('here8');
                     $record['clock_out'] = $ts->format('h:i A');
