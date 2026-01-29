@@ -153,7 +153,9 @@ class Manual extends Component
             ],
             'records.employee_information.biometrics_id' => [
                 'required',
-                Rule::unique('employee_information', 'bsd_no')
+                'integer',
+                'min:0',
+                    Rule::unique('employee_information', 'bsd_no')
             ],
             'records.employee_information.status' => 'required|in:active,inactive',
             'records.employee_information.date_hired' => 'required|date',
@@ -165,6 +167,8 @@ class Manual extends Component
             'records.employee_information.salary_type' => 'required|in:monthly,daily',    
             'records.employee_information.salary' => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.shift_schedule' => 'required|exists:sections,id',
+            'records.employee_information.employee_schedule' => 'required|exists:sections,id',
         ];
     }
 
@@ -174,6 +178,8 @@ class Manual extends Component
             'records.employee_information.employee_no.unique' => 'The employee no is already taken.',
             'records.employee_information.biometrics_id.required' => 'The biometrics ID is required.',
             'records.employee_information.biometrics_id.unique' => 'The biometrics ID is already taken.',
+            'records.employee_information.biometrics_id.integer' => 'The biometrics ID must be a number.',
+            'records.employee_information.biometrics_id.min' => 'The biometrics ID cannot be negative.',
             'records.employee_information.type.in' => 'The selected employment type does not exists.',
             'records.employee_information.status.required' => 'The account status is required.',
             'records.employee_information.status.in' => 'The status must be either active or inactive.',
@@ -197,6 +203,8 @@ class Manual extends Component
             'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',
+            'records.employee_information.shift_schedule.required' => 'The shift schedule field is required.',
+            'records.employee_information.employee_schedule.required' => 'The days schedule field is required.',
         ];
     }
 
@@ -248,6 +256,7 @@ class Manual extends Component
                 'status' => 'error',
                 'title' => 'Error!',
                 'message' => $e->getMessage(),
+                // 'message' => 'zab cutie',
                 'showAlert' => true,
             ]);
         }
@@ -270,6 +279,11 @@ class Manual extends Component
             'salary' => $data['salary'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);
+    }
+
+    public function updatedRecordsEmployeeInformationBiometricsId()
+    {
+        $this->validateOnly('records.employee_information.biometrics_id', $this->rules());
     }
 
     public function render()

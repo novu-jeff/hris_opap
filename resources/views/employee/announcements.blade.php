@@ -14,7 +14,7 @@
             
             @if ($action === 'view')
                 <div class="d-md-flex gap-3">
-                    <a href="{{route('employee.announcements.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                    <!-- <a href="{{route('employee.announcements.index')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
                 </div>
             @endif
         </div>

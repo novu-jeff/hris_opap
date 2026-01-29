@@ -342,6 +342,15 @@ table {
     min-height: 350px !important;
   }
 
+  .change-password .content {
+    width: calc(90%);
+    display: none;
+  }
+
+  .clockinout .card{
+    min-height: 140px;
+  }
+
   .container .action {
     margin-top: 40px;
 

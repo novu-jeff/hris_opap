@@ -15,7 +15,6 @@ use Throwable;
 class EmployeeUpload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
-
     protected $chunk;
     protected $sheetName;
     protected $schedules;
@@ -27,29 +26,46 @@ class EmployeeUpload implements ShouldQueue
         $this->schedules = $schedules;
     }
 
-    public function handle()
-    {
-        $service = new EmployeeUploadService;
+   public function handle()
+{
+    $service = new EmployeeUploadService;
 
-        try {
-            match ($this->sheetName) {
-                'EMPLOYEE INFORMATION' => $service->uploadEmployeeInformation($this->chunk, $this->schedules),
-                'Family Background' => $service->uploadFamilyBackground($this->chunk),
-                'Children' => $service->uploadChildren($this->chunk),
-                'Education' => $service->uploadEducation($this->chunk),
-                'Employment History' => $service->uploadEmploymentHistory($this->chunk),
-                'Civil Service' => $service->uploadCivilService($this->chunk),
-                'Trainings' => $service->uploadTrainings($this->chunk),
-                'Other Works' => $service->uploadOtherWorks($this->chunk),
-                'Skills' => $service->uploadSkills($this->chunk),
-                default => null
-            };
-        } catch (Throwable $e) {
-            Log::error("Error processing sheet '{$this->sheetName}': " . $e->getMessage(), [
+    try {
+        // Log basic info about the sheet being processed
+        Log::info('Processing sheet', [
+            'raw' => $this->sheetName,
+            'normalized' => strtolower($this->sheetName),
+            'rows' => count($this->chunk),
+            'first_employee_no' => $this->chunk[0][0] ?? null
+        ]);
+
+        // Match sheet names and call the corresponding service method
+        match ($this->sheetName) {
+            'Employee Information' => $service->uploadEmployeeInformation($this->chunk, $this->schedules),
+            'Family Background' => $service->uploadFamilyBackground($this->chunk),
+            'Children' => $service->uploadChildren($this->chunk),
+            'Education' => $service->uploadEducation($this->chunk),
+            'Employment History' => $service->uploadEmploymentHistory($this->chunk),
+            'Civil Service' => $service->uploadCivilService($this->chunk),
+            'Trainings' => $service->uploadTrainings($this->chunk),
+            'Other Works' => $service->uploadOtherWorks($this->chunk),
+            'Skills' => $service->uploadSkills($this->chunk),
+            default => Log::warning('No handler matched for sheet', [
                 'sheet' => $this->sheetName,
-                'chunk' => $this->chunk,
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
+                'rows' => count($this->chunk),
+            ])
+        };
+
+        Log::info('Sheet processing complete', ['sheet' => $this->sheetName]);
+
+    } catch (Throwable $e) {
+        Log::error("Error processing sheet '{$this->sheetName}': " . $e->getMessage(), [
+            'sheet' => $this->sheetName,
+            'chunk' => $this->chunk,
+            'trace' => $e->getTraceAsString()
+        ]);
     }
+}
+
+
 }

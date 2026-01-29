@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Services\DailyTimeRecordService;
 use Illuminate\Support\Facades\Log;
+use App\Models\Loan;
+use App\Models\Positions;
+use App\Models\Tranche;
 
 class SalaryService extends Controller {
 
@@ -49,13 +52,39 @@ class SalaryService extends Controller {
         $employmentType = EmployementTypes::find($payroll->employment_type);
         $payroll->formatted_employment_type = $employmentType->name ?? '';
 
-        $payroll->no_employees = $payroll->items->count();
+        $payroll->no_employees = $payroll->items
+            ->pluck('employee_no')
+            ->unique()
+            ->count();
+
+        $isFirstHalf = false;
+        if ($payroll->cut_off_period) {
+            [$startDate] = explode(' to ', $payroll->cut_off_period);
+            $isFirstHalf = Carbon::parse(trim($startDate))->day <= 15;
+        }
+
+        $overallNetAmount = 0;
+        $overallSalary = 0;
+
+        foreach ($payroll->items as $item) {
+            $amount = $isFirstHalf
+                ? (float) $item->net_first_half
+                : (float) $item->net_second_half;
+
+            $overallSalary += $amount;
+            $overallNetAmount += $amount;
+        }
+
 
         $netAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->net_amount));
-        $salaryAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->salary));
+        //$salaryAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->salary));
 
         $payroll->overall_net_amount = round($netAmount, 2);
-        $payroll->overall_salary = round($salaryAmount, 2);
+       // $payroll->overall_salary = round($salaryAmount, 2);
+       // $payroll->type = 'Salary Payroll';
+
+        $payroll->overall_salary = round($overallSalary, 2);
+      //  $payroll->overall_net_amount = round($overallNetAmount, 2);
         $payroll->type = 'Salary Payroll';
 
         $grouped = [];
@@ -136,10 +165,15 @@ class SalaryService extends Controller {
 
         $jobs = [];
 
-        
+       // dd('hre');
 
         foreach ($chunks as $chunk) {
-            $jobs[] = new PayrollJob($chunk, $payroll, 'salary');
+           // dd('set');
+            $jobs[] = new PayrollJob(
+                                    $chunk,          // already an array
+                                    $payroll->id,    // pass only ID
+                                    'salary'
+                                );
         }
 
         $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
@@ -160,11 +194,63 @@ class SalaryService extends Controller {
 
     }
 
+    private function getFirstHalfNetAmount(
+        string $employeeNo,
+        SalaryPayroll $currentPayroll
+    ): float {
+        return SalaryPayroll::query()
+            ->whereMonth('payroll_date', Carbon::parse($currentPayroll->payroll_date)->month)
+            ->whereYear('payroll_date', Carbon::parse($currentPayroll->payroll_date)->year)
+            ->where('cut_off_period', 'like', '%01%15%')
+            ->where('status', 'approved')
+            ->whereHas('items', function ($q) use ($employeeNo) {
+                $q->where('employee_no', $employeeNo);
+            })
+            ->with(['items' => function ($q) use ($employeeNo) {
+                $q->where('employee_no', $employeeNo);
+            }])
+            ->get()
+            ->pluck('items')
+            ->flatten()
+            ->first()
+            ->net_first_half ?? 0;
+    }
+
+
     public function computePayroll($payroll, $employees, $type) {
+
+                \Log::info('Start computePayroll', [
+            'payroll_id' => $payroll->id,
+            'employees_count' => count($employees),
+            'type' => $type
+        ]);
 
         $hasDeductions = $payroll->hasDeductions ?? false;
 
+      
+
+
         if ($this->product == 'government') {
+
+                    \Log::info('Start computePayroll Government', [
+            'payroll_id' => $payroll->id,
+            'employees_count' => count($employees),
+            'type' => $type,
+            'employees' => $employees,
+        ]);
+
+            $cutoff = $payroll->cut_off_period;
+
+            $isFirstHalf = false;
+
+            if ($cutoff) {
+                [$startDate, $endDate] = explode(' to ', $cutoff);
+
+                $startDay = (int) Carbon::parse($startDate)->day;
+
+                $isFirstHalf = $startDay <= 15;
+            }
+
 
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;
@@ -177,8 +263,74 @@ class SalaryService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
-                $basic_salary = round(floatval($employee['salary']), 2);
+                $position_id = $employee['position_id'];
+                $eligible = $employee['employment_type_id'];
+                //$basic_salary = round(floatval($employee['salary']), 2);
                 $salary_type = $employee['salary_type'];
+               // $gw_tax = $employee['w_tax'];
+                $rate = 0.05;
+                $ceiling = 100000;
+                $stepId = $employee['step_id'];
+
+                if (!empty($stepId)) {
+
+
+               $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
+
+               $stepColumn = "step_" . ($employee['step_id'] ?? '');
+                $stepColumnTax = "step_" . ($employee['step_id'] ?? '') . "_wtax";
+
+                // Get the latest tranche for this eligible type
+                $latestTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $stepColumnTax) {
+                    $query->where('salary_grade', $salaryGrade)
+                     ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
+                }])
+                 ->where('eligible', $eligible)
+                ->where('is_active', 1)
+                ->latest('year')
+                ->first();
+
+                \Log::info('Latest Tranche fetched', [
+                    'employee_no' => $employee_no,
+                    'eligible' => $eligible,
+                    'tranche_id' => $latestTranche->id ?? null,
+                    'salary_grade' => $salaryGrade,
+                    'step_column' => $stepColumn,
+                    'step_column_tax' => $stepColumnTax,
+                    'latest_tranche_items' => $latestTranche->items->first()->$stepColumn ?? null,
+                    'latest_tranche_items_tax' => $latestTranche->items->first()->$stepColumnTax ?? null,
+                ]);
+
+
+                $salary = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                        ? $latestTranche->items->first()->$stepColumn 
+                        : 0;
+                    
+                $wtax = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                    ? $latestTranche->items->first()->$stepColumnTax 
+                    : 0;
+
+                } else {
+                    $salary = $employee['salary'];
+                    $wtax = $employee['w_tax'];
+                }    
+
+                Log::info('Tranche computation', [
+                    'employee_no' => $employee_no,
+                    'eligible' => $eligible,
+                    'tranche_id' => $latestTranche->id,
+                    'salary_grade' => $salaryGrade,
+                    'basic_salary' => $salary,
+                    'w_tax' => $wtax,
+                ]);
+
+
+                $basic_salary = round(floatval($salary), 2);
+                $salary_type = $employee['salary_type'];
+                $gw_tax = $wtax;
+
+                [$startDate, $endDate] = explode(' to ', $payroll->cut_off_period);
+                $cutoffEndDate = Carbon::parse(trim($endDate))->toDateString(); 
 
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
@@ -187,8 +339,12 @@ class SalaryService extends Controller {
 
                 $dtr_summary  = $dtr['summary'];
 
+                $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
+                
+                $overtime = $overtimeData['gross_ot_pay'];
+
                 $earnings = $other_service->earnings($employee_no);
-                $deductions = $hasDeductions ? $other_service->deductions($employee_no) : [];
+                $deductions = $hasDeductions ? $other_service->deductions($employee_no, $cutoffEndDate) : [];
 
                 $current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
                 $social_security = $hasDeductions
@@ -196,41 +352,78 @@ class SalaryService extends Controller {
                         ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
                         ->where('gb.billing_month', $current_date)
                         ->where('gi.crn_no', $employee['gsis_no'])
-                        ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.cpl')
+                        ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.mpl_lite', 'gi.cpl')
                         ->first() ?? (object) []
                     : (object) [];
+               
 
                 // Earnings
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
                 $gross = round($basic_salary + $pera, 2);
 
+              //  dd($hasDeductions, $social_security->consoloan );
+
                 // Deductions (based on flag)
                 $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
-                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
-                $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'HDMF')['amount'] ?? 0), 2) : 0;
-                $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MP2')['amount'] ?? 0), 2) : 0;
-                $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
-                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'CIR375, CIR449')['amount'] ?? 0), 2) : 0;
-                $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
-                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
+               // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
+               $philhealth = $hasDeductions
+                    ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                    : 0;
+                $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'HDMF')['amount'] ?? 0), 2) : 0;
+                $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
+                $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
+                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
+               // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
+                $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
+               $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
                 $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
+                $mpl_lite = $hasDeductions ? round(floatval($social_security->mpl_lite ?? 0), 2) : 0;
                 $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
                 $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
 
                 // Optional deductions
-                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'DBP Savings')['amount'] ?? 0), 2) : 0;
-                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('deduction.code', 'Unlad Kawani')['amount'] ?? 0), 2) : 0;
+                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
+                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
-                $total_deduction = round(
-                    $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
-                    $plreg + $mpl + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $aut
-                );
+                $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
+                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
+
+                Log::info('GW TAX BEFORE COMPUTE', [
+                    'employee_no' => $employee_no,
+                    'gw_tax_before_round' => $gw_tax,
+                    'has_deductions' => $hasDeductions,
+                    'deductions_count' => count($deductions),
+                    'deductions' => $deductions,
+                ]);
 
                 $net = round($gross - $total_deduction, 2);
                 $half = round($net / 2, 2);
+                if ($isFirstHalf) {
+
+                    // FIRST HALF PAYROLL (01–15)
+                    $firstHalf  = floor(($net / 2) * 100) / 100;
+                    $secondHalf = round($net - $firstHalf, 2);
+
+                } else {
+
+                    // SECOND HALF PAYROLL (16–end)
+                    $firstHalf = $this->getFirstHalfNetAmount($employee_no, $payroll);
+
+                    $secondHalf = round($net - $firstHalf, 2);
+                }
+              //  $firstHalf  = floor(($net / 2) * 100) / 100;
+              //  $secondHalf = round($net - $firstHalf, 2);
+
+              if (!$isFirstHalf) {
+                Log::warning('Missing first-half payrollss', [
+                    'employee_no' => $employee_no,
+                    'payroll_id' => $payroll->id
+                ]);
+            }
+
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
@@ -240,6 +433,7 @@ class SalaryService extends Controller {
                     'basic_salary' => $basic_salary,
                     'pera' => $pera,
                     'gross_amount_earned' => $gross,
+                    'overtime_pay' => $overtime,
                     'rlip' => $rlip,
                     'hdmf' => $hdmf,
                     'philhealth' => $philhealth,
@@ -247,6 +441,7 @@ class SalaryService extends Controller {
                     'emergency_loan' => $emergency_loan,
                     'plreg' => $plreg,
                     'mpl' => $mpl,
+                    'mpl_lite' => $mpl_lite,
                     'cpl' => $cpl,
                     'mp2' => $mp2,
                     'mplstlms' => $mplstlms,
@@ -260,12 +455,23 @@ class SalaryService extends Controller {
                     'kawani' => $kawani,
                     'lbp_payroll_account' => $net,
                     'salary' => $half,
+                    'net_first_half' => $firstHalf,
+                    'net_second_half' => $secondHalf,
+                    'is_first_half_locked' => $isFirstHalf ? 0 : 1,
+                    'is_second_half_locked' => $isFirstHalf ? 1 : 0,
                 ];
             }
 
             return $data;
 
         } else {
+
+                    \Log::info('Start computePayroll', [
+                'payroll_id' => $payroll->id,
+                'employees_count' => count($employees),
+                'type' => $type,
+                'deduc' => $hasDeductions
+            ]);        
 
             $other_service = new OtherServices;
             $dtr_service = new DailyTimeRecordService;
@@ -280,6 +486,44 @@ class SalaryService extends Controller {
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $basic_salary = round(floatval($employee['salary']), 2);
+
+
+                 // Fetch approved loans for this employee
+                $employeeLoans = Loan::where('employee_no', $employee_no)
+                    ->where('status', 'approved')
+                    ->get();
+
+                \Log::info('Employee loans fetched', [
+                    'employee_no' => $employee_no,
+                    'loans_count' => $employeeLoans->count(),
+                    'cut_period' => $payroll->cut_off_period,
+                    'loan_ids' => $employeeLoans->pluck('id')->toArray(),
+                ]);    
+
+                $loanDeductionsToInsert = [];
+                $other_loans = 0;
+
+                foreach ($employeeLoans as $loan) {
+                    if ($loan->balance > 0) {
+                        $deductionAmount = $loan->monthly_amortization;
+                        $other_loans += $deductionAmount;
+
+                        $loanDeductionsToInsert[] = [
+                            'payroll_item_id' => 0, // updated later
+                            'reference_type' => 'loan',
+                            'reference_id' => $loan->id,
+                            'description' => 'Loan deduction: ' . ($loan->loanType->name ?? 'Loan'),
+                            'amount' => $deductionAmount,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+
+                    } else {
+                        // Loan fully paid, mark as complete
+                        $loan->status = 'completed';
+                        $loan->save();
+                    }    
+                }
 
                 $salary_type = $employee['salary_type'];
 
@@ -298,12 +542,12 @@ class SalaryService extends Controller {
                 
                 $aut = round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type)));
 
-                $sss = $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0;
-                $pagibig = $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0;
-                $philhealth = $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0;
+                $sss = $hasDeductions ? $contribution_service->computeSSS($basic_salary)['employee_share'] ?? 0 : 0;
+                $pagibig = $hasDeductions ? $contribution_service->computePagibig($basic_salary)['employee_share'] ?? 0 : 0;
+                $philhealth = $hasDeductions ? $contribution_service->computePhilHealth($basic_salary)['employee_share'] ?? 0 : 0;
 
-                $w_tax = $contribution_service->computeWithholdingTax($basic_salary);
-                $other_loans = 0;
+                $w_tax = $hasDeductions ? $contribution_service->computeWithholdingTax($basic_salary) : 0;
+               // $other_loans = 0;
 
                 $gross_amount_earned = $basic_salary + $overtime + $holiday_pay + $allowances;
                 $total_deductions = $sss + $pagibig + $philhealth + $w_tax + $other_loans + $aut;
@@ -311,6 +555,39 @@ class SalaryService extends Controller {
                 
                 $bank_account = $employee['account_no'] ?? null;
                 $bank_name = $employee['bank'] ?? null;
+
+                Log::info('Payroll computation (NON-GOV)', [
+    'payroll_id' => $payroll->id,
+    'employee_no' => $employee_no,
+    'name' => $name,
+
+    // INPUTS
+    'basic_salary' => $basic_salary,
+    'salary_type' => $salary_type,
+    'cut_off_period' => $payroll->cut_off_period,
+    'dtr_summary' => $dtr_summary,
+
+    // EARNINGS
+    'overtime' => $overtime,
+    'holiday_pay' => $holiday_pay,
+    'allowances' => $allowances,
+    'gross_amount_earned' => $gross_amount_earned,
+
+    // DEDUCTIONS
+    'sss' => $sss,
+    'pagibig' => $pagibig,
+    'philhealth' => $philhealth,
+    'w_tax' => $w_tax,
+    'aut' => $aut,
+    'other_loans' => $other_loans,
+    'total_deductions' => $total_deductions,
+
+    // RESULT
+    'net_amount' => $net_amount,
+    'bank_account' => $bank_account,
+    'bank_name' => $bank_name,
+]);
+
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
@@ -328,6 +605,7 @@ class SalaryService extends Controller {
                     'philhealth' => round($philhealth, 2),
                     'w_tax' => round($w_tax, 2),
                     'other_loans' => round($other_loans, 2),
+                    'loan_deductions' => $loanDeductionsToInsert,
                     'total_deductions' => round($total_deductions, 2),
                     'net_amount' => round($net_amount, 2),
                     'bank_account' => $bank_account,
@@ -340,6 +618,7 @@ class SalaryService extends Controller {
         }
 
     }
+    
 
 
 }

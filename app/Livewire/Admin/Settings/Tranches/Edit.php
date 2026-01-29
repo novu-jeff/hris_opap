@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Validation\Rule;
 
 class Edit extends Component
 {
@@ -20,16 +21,37 @@ class Edit extends Component
     public $file;
     public $records;
 
+    public $year;
+    public $is_active;
+    public $availableYears = [];
+
     public function mount() {
-        $this->loadRecords();
+        
+
+        $this->availableYears = Tranche::select('year')
+        ->distinct()
+        ->orderBy('year', 'desc')
+        ->pluck('year')
+        ->toArray();
+
+       $records = $this->loadRecords();
+
+       // $this->year = null; // <--- Important, initially empty
+        $this->year = $records->year;
     }
 
     public function loadRecords() {
-        $records = Tranche::with('items')->where('id', $this->id)
-            ->first();
+        // $records = Tranche::with('items')->where('id', $this->id)
+        //     ->first();
+        $records = Tranche::with('items')->where('id', $this->id)->firstOrFail();
+
         $this->name = $records->name;
         $this->eligible = $records->eligible;
+        $this->year = $records->year;
+        $this->is_active = (bool) $records->is_active;
         $this->records = $records->items->toArray() ?? [];
+
+         return $records; // <--- return it if needed
     }
 
     public function updatedFile()
@@ -81,8 +103,8 @@ class Edit extends Component
         $this->records = [];
 
         $expectedHeaders = [
-            "salary_grade", "step_1", "step_2", "step_3", "step_4",
-            "step_5", "step_6", "step_7", "step_8"
+            "salary_grade", "step_1", "step_1_wtax", "step_2", "step_2_wtax", "step_3", "step_3_wtax", "step_4", "step_4_wtax",
+            "step_5", "step_5_wtax", "step_6", "step_6_wtax", "step_7", "step_7_wtax", "step_8", "step_8_wtax"
         ];
 
         if (!Storage::exists($filePath)) {
@@ -132,15 +154,29 @@ class Edit extends Component
         return [
             'name' => 'required',
             'eligible' => 'required|exists:employment_types,id',
-            'file' => empty($this->records) ? 'required' : 'nullable', 
+            'year'     => [
+            'required',
+            'integer',
+            Rule::unique('tranche')
+                ->where(fn ($q) => $q->where('eligible', $this->eligible))
+                ->ignore($this->id), // ✅ ignore current record
+        ],
+            'file'     => 'nullable|file|mimes:csv,txt', // <--- optional file
     
         ];
     } 
 
+
+    protected function messages() {
+        return [
+            'year.unique' => 'A tranche for this eligible already exists for the selected year.',
+        ];
+    }
+
     public function save() {
         
 
-        if (Gate::denies('write tranches')) {
+       /* if (Gate::denies('write tranches')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -148,50 +184,112 @@ class Edit extends Component
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
-        }
+        }*/
 
 
         $this->validate();
 
+        DB::beginTransaction();
+
         try {
-           
+
+             // Deactivate all other tranches for the same eligible type if this is active
+            // if ($this->is_active) {
+                 Tranche::where('eligible', $this->eligible)->update(['is_active' => 0]);
+            // }
+
+             // deactivate other tranches for the same year
+            // Tranche::where('year', $this->year)->update([
+            //     'is_active' => false
+            // ]);
+
+            // create or update tranche
+            // $tranche = Tranche::updateOrCreate(
+            //     ['id' => $this->tranche_id ?? null],
+            //     [
+            //         'name'      => $this->name,
+            //         'year'      => $this->year,
+            //         'eligible'  => $this->eligible,
+            //         'is_active' => true,
+            //     ]
+            // );
+
+
+//dd($this->id);
+            // Update tranche basic info
             $tranche = Tranche::findOrFail($this->id);
             $tranche->name = $this->name;
             $tranche->eligible = $this->eligible;
+            $tranche->is_active = $this->is_active ? 1 : 0;
             $tranche->save();
 
-            TrancheItems::where('tranche_id', $this->id)
-                ->delete();
+            // We will re-sync tranche items (safe for edit)
+            TrancheItems::where('tranche_id', $this->id)->delete();
 
-            foreach ($this->records as $key => $data) {
-                $this->records[$key]['tranche_id'] = $this->id;
+            foreach ($this->records as $row) {
+
+                // Helper to clean CSV values
+                $clean = fn ($v) => ($v === '' || $v === '0') ? null : $v;
+
+                $insertData = [
+                    'tranche_id'   => $this->id,
+                    'salary_grade' => $row['salary_grade'],
+                ];
+
+                // Handle step + step_wtax dynamically
+                foreach (range(1, 8) as $i) {
+                    $insertData["step_{$i}"]       = $clean($row["step_{$i}"] ?? null);
+                    $insertData["step_{$i}_wtax"]  = $clean($row["step_{$i}_wtax"] ?? null);
+                }
+
+                TrancheItems::create($insertData);
             }
-
-            TrancheItems::insert($this->records);
 
             DB::commit();
 
             $this->dispatch('alert', [
-                'status' => 'success',
-                'title' => 'Success!', 
+                'status'    => 'success',
+                'title'     => 'Success!',
                 'showAlert' => true,
-                'message' => 'Tranche was updated successfully.'
+                'message'   => 'Tranche steps and withholding tax updated successfully.'
             ]);
 
         } catch (\Exception $e) {
-            
             DB::rollBack();
 
             $this->dispatch('alert', [
-                'status' => 'error',
-                'title' => 'Oops!', 
+                'status'    => 'error',
+                'title'     => 'Oops!',
                 'showAlert' => true,
-                'message' => 'Error occured: ' . $e->getMessage()
+                'message'   => 'Error occurred: ' . $e->getMessage()
             ]);
+        }
+    }
 
+    public function updatedYear($year)
+    {
+        
+        if (!$year) {
+            $this->records = [];
+            return;
         }
 
+        // Get the first tranche for the selected year, active or inactive
+        $tranche = Tranche::where('year', $year)->first();
+
+        if ($tranche) {
+            // If tranche exists, load its items
+            $this->records = TrancheItems::where('tranche_id', $tranche->id)
+                ->orderBy('salary_grade')
+                ->get()
+                ->toArray();
+        } else {
+            // No tranche exists yet for this year → empty records
+            $this->records = [];
+        }
+   
     }
+
 
     public function render()
     {

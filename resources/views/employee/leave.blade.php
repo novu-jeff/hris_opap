@@ -19,7 +19,7 @@
                     @endcan
                 </div>
             @else
-                <a href="{{route('employee.leave')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+                <!-- <a href="{{route('employee.leave')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
             @endif
         </div>
     </div>

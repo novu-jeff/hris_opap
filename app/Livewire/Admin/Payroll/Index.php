@@ -53,6 +53,9 @@ class Index extends Component
     public string $batchStatusMessage = 'Please Wait...';
     public $actionBy;
 
+    public $cutoff_period = null;
+    public $period_date = null;
+
     protected $listeners = ['createPayroll', 'dispatchPayrollJobs', 'cancelPayroll', 'removePayroll'];
 
     public function mount()
@@ -290,64 +293,228 @@ class Index extends Component
         $this->activeTab = $value;
     }
 
-    public function createPayroll()
+    private function validateSalaryCutoff(?string $cutoff, ?string $payrollDate, ?int $employmentTypeId = null): array
     {
+        // Early null check
+
         $type = $this->type;
-
-        // Get employment type ID based on selected type
-        $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
-            ->value('id');
-
         $payrollService = app(PayrollService::class);
 
-        // -------------------------------
-        //  FIRST CLICK — SHOW EMPLOYEES
-        // -------------------------------
-        if ($this->isToCreate === false) {
+        if (empty($cutoff) || empty($payrollDate)) {
+            return [
+                'valid'   => false,
+                'title' => 'Missing Date',
+                'message' => 'Cut-off period and payroll date are required.'
+            ];
+        }
 
-            if (empty($employmentTypeId)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status'    => 'error',
-                    'title'     => 'Oops',
-                    'message'   => 'Employment type is required to fetch employees.'
-                ]);
+        // Format check
+        if (!preg_match('/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/', $cutoff)) {
+            return ['valid' => false, 'title' => 'Oops', 'message' => 'Invalid cut-off format.'];
+        }
+
+        [$start, $end] = explode(' to ', $cutoff);
+
+        try {
+            $startDate   = Carbon::parse($start);
+            $endDate     = Carbon::parse($end);
+            $payrollDate = Carbon::parse($payrollDate);
+        } catch (\Exception $e) {
+            return ['valid' => false, 'title' => 'Oops', 'message' => 'Invalid date values.'];
+        }
+
+        // Must be same month & year
+        if ($startDate->format('Y-m') !== $endDate->format('Y-m')) {
+            return ['valid' => false, 'title' => 'Oops', 'message' => 'Cut-off period must be within the same month.'];
+        }
+
+        if ($payrollDate->format('Y-m') !== $startDate->format('Y-m')) {
+            return ['valid' => false, 'title' => 'Oops', 'message' => 'Payroll date must be within the same month as cut-off period.'];
+        }
+
+        $lastDay = $startDate->daysInMonth;
+
+        // FIRST HALF (1–15)
+        if ($startDate->day === 1 && $endDate->day === 15) {
+            if ($payrollDate->day !== 15) {
+                return [
+                    'valid' => false,
+                    'title' => 'Invalid Payroll Date',
+                    'message' => 'Payroll date for first half must be the 15th.'
+                ];
+            }
+        }
+        // SECOND HALF (16–END)
+        elseif ($startDate->day === 16 && $endDate->day === $lastDay) {
+            if ($payrollDate->day !== $lastDay) {
+                return [
+                    'valid' => false,
+                    'title' => 'Invalid Payroll Date',
+                    'message' => "Payroll date for second half must be the {$lastDay}."
+                ];
             }
 
-            // 🔒 LOCK EMPLOYMENT TYPE ID FOR NEXT STEP
-            $this->lockedEmploymentTypeId = $employmentTypeId;
+            // -------------------------------
+            // Ensure first half is approved
+            // -------------------------------
+            if ($employmentTypeId) {
+                $firstHalfCutoff = $startDate->copy()->startOfMonth()->format('Y-m-d') . ' to ' . $startDate->copy()->day(15)->format('Y-m-d');
 
-            // Retrieve employees
-            $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
+                $firstHalfApproved = SalaryPayroll::where('employment_type', $employmentTypeId)
+                    ->where('cut_off_period', $firstHalfCutoff)
+                    ->where('status', 'approved') // assuming your column is 'status'
+                    ->exists();
 
-           // dd('here');
-         //   dd($this->employeesChecked);
+                if (!$firstHalfApproved) {
+                    return [
+                        'valid' => false,
+                        'title' => 'First Half Not Approved',
+                        'message' => 'You cannot generate the second half payroll until the first half is approved.'
+                    ];
+                }
+            }
+        }
+        // Everything else invalid
+        else {
+            return [
+                'valid' => false,
+                'title' => 'Oops',
+                'message' => 'Invalid cut-off period. Only 1–15 or 16–end of month is allowed.'
+            ];
+        }
 
-            // Move UI to "Eligible / Ineligible" screen
-            $this->isToCreate = true;
+        if (empty($employmentTypeId)) {
 
-            return;
+            return [
+                    'valid'   => false,
+                    'title' => 'Oops',
+                    'message' => 'Employment type is required to fetch employees.'
+                ];
+            
+            
+        }
+
+        $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
+
+
+         if (empty($this->employeesChecked['eligible']['items'])) {
+            return [
+                    'valid'   => false,
+                    'title' => 'Oops',
+                    'message' => 'No employees found for this payroll.'
+                ];
+            
         }
 
         // -------------------------------
-        //  SECOND CLICK — CREATE PAYROLL
+        // DUPLICATE PAYROLL CHECK
         // -------------------------------
+        if ($employmentTypeId) {
+            $exists = SalaryPayroll::where('employment_type', $employmentTypeId)
+                ->where('cut_off_period', $cutoff)
+                ->where('payroll_date', $payrollDate->format('Y-m-d'))
+                ->exists();
 
-        // Ensure eligible employees exist
-        if (empty($this->employeesChecked['eligible']['items'])) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status'    => 'error',
-                'title'     => 'Oops',
-                'message'   => 'No employees found for this payroll.'
-            ]);
+            if ($exists) {
+                return [
+                    'valid'   => false,
+                    'title' => 'Duplicate Payroll',
+                    'message' => 'This payroll already exists for the same cut-off period and payroll date.'
+                ];
+            }
         }
 
-        // Reuse locked ID (prevents Livewire re-render issues)
-        $employmentTypeId = $this->lockedEmploymentTypeId;
+        // All good
+        return ['valid' => true];
+    }
 
-        // Validate form fields
-        $this->validate();
+
+    private function showErrorAlert(string $title, string $message)
+    {
+        // Dispatch alert modal
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'error',
+            'title'     => $title,
+            'message'   => $message,
+        ]);
+
+        // Reset form inputs related to cut-off & payroll date
+        $this->reset([
+            'cut_off_period',
+            'payroll_date',
+            'ot_period',
+        ]);
+
+        // Reset validation errors
+        $this->resetValidation();
+    }
+
+
+    public function createPayroll()
+    {
+
+        $type = $this->type;
+
+    $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')
+        ->value('id');
+        
+
+    if ($type === 'salary') {
+        $result = $this->validateSalaryCutoff(
+            $this->cut_off_period,
+            $this->payroll_date,
+            $employmentTypeId // pass the locked employment type
+        );
+
+        if (!$result['valid']) {
+            return $this->showErrorAlert($result['title'], $result['message']);
+        }
+    }    
+
+
+         // Validate that payroll date / cut-off period are provided
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end') && empty($this->payroll_date)) {
+        return $this->showErrorAlert('Missing Date', 'Payroll date is required.');
+    }
+
+  
+
+    $payrollService = app(PayrollService::class);
+
+    // -------------------------------
+    // FIRST CLICK — SHOW EMPLOYEES
+    // -------------------------------
+    if ($this->isToCreate === false) {
+        if (empty($employmentTypeId)) {
+            
+            return $this->showErrorAlert('Oops', 'Employment type is required to fetch employees.');
+        }
+
+        $this->lockedEmploymentTypeId = $employmentTypeId;
+        $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
+        $this->isToCreate = true;
+
+        return;
+    }
+
+    // -------------------------------
+    // SECOND CLICK — VALIDATION
+    // -------------------------------
+
+   
+
+    // Ensure eligible employees exist
+    if (empty($this->employeesChecked['eligible']['items'])) {
+        
+        return $this->showErrorAlert('Oops', 'No employees found for this payroll.');
+    }
+
+    // Lock employment type ID
+    $employmentTypeId = $this->lockedEmploymentTypeId;
+
+    // Validate other rules from dynamicFields
+    $this->validate();
 
         // Map data per payroll type
         $map = [
@@ -376,9 +543,11 @@ class Index extends Component
                 'employment_type' => $employmentTypeId,
             ],
         ];
-        //dd($map[$type]);        
+      //  dd($map[$type]);        
 
         $process = $payrollService->getProcess($type);
+
+       // dd( $process);
         $data    = $map[$type];
 
        // dd($process['service']);
@@ -393,7 +562,19 @@ class Index extends Component
             throw new \Illuminate\Validation\ValidationException($validator);
         }
 
-        //dd($data);
+      // ------------------------------------------------------
+        // DUPLICATE PAYROLL CHECK
+        // ------------------------------------------------------
+        $exists = SalaryPayroll::where('employment_type', $employmentTypeId)
+            ->where('cut_off_period', $this->cut_off_period)
+            ->where('payroll_date', $this->payroll_date)
+            ->exists();
+
+        if ($exists) {
+            
+             return $this->showErrorAlert('Duplicate Payroll', 'This payroll already exists for the same cut-off period and payroll date.');
+        }
+
 
         // Create payroll record
         $payroll = $service->createPayroll($data);
@@ -637,6 +818,46 @@ class Index extends Component
         // Set status filter to 'approved'
         $this->status = 'approved';
     }
+
+    public function getCanProceedProperty()
+    {
+        return !empty($this->cut_off_period) && !empty($this->payroll_date);
+    }
+
+    private function isOneMonthCutoff($cutoff)
+    {
+        // Must match: "2025-12-01 to 2025-12-31"
+        if (!preg_match('/^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$/', $cutoff)) {
+            return false;
+        }
+
+        [$start, $end] = explode(' to ', $cutoff);
+
+        try {
+            $startDate = \Carbon\Carbon::parse($start);
+            $endDate   = \Carbon\Carbon::parse($end);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        // Must be the same month & same year
+        if ($startDate->format('Y-m') !== $endDate->format('Y-m')) {
+            return false;
+        }
+
+        // Start must be the **first day of the month**
+        if ($startDate->day !== 1) {
+            return false;
+        }
+
+        // End must be the **last day of the month**
+        if ($endDate->day !== $endDate->daysInMonth) {
+            return false;
+        }
+
+        return true;
+    }
+
 
     
     public function render()

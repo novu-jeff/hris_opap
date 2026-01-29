@@ -22,7 +22,7 @@ class EmployeeDeductions extends Model
     }
 
     public function deduction() {
-        return $this->hasOne(OtherDeductions::class, 'id', 'deduction_id');
+        return $this->belongsTo(OtherDeductions::class,'deduction_id', 'id');
     }
 
 }

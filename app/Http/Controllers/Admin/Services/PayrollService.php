@@ -40,6 +40,8 @@ class PayrollService extends Controller {
                 'ei.date_hired',
                 'ei.salary',
                 'ei.bsd_no',
+                'ei.w_tax',
+                'ei.step_id',
                 'ei.position_id',
                 'ei.salary_type',
                 'p.firstname',
@@ -47,7 +49,6 @@ class PayrollService extends Controller {
                 'p.gsis_no',
                 'po.name as position_name',
                 'po.salary_grade',
-                'po.w_tax',
                 's.name as section_name'
             )
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
@@ -57,7 +58,11 @@ class PayrollService extends Controller {
                 $query->where('ei.employment_type_id', $employment_type)
                     ->orWhereNull('ei.employment_type_id'); // include missing type
             })
+            ->where('ei.status', 'active')    // only active employees
+            ->where('ei.isDeleted', 0)        // only not deleted
             ->get();
+
+         //  dd($results);
 
         $employees = [
             'eligible' => [
@@ -132,7 +137,7 @@ class PayrollService extends Controller {
             $employees[$status]['items'][] = $employeeData;
             $employees[$status]['count']++;
         }
-
+//dd($employees);
         return $employees;
     }
 

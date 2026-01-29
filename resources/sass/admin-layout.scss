@@ -811,11 +811,16 @@
  
 }
 
-.modal-dialog.custom-modal {
+.wide-input {
+    width: 150px; /* or 250px for more space */
+    min-width: 150px; /* ensures it doesn't shrink too small */
+}
+
+/*.modal-dialog.custom-modal {
     max-width: 996px; 
     margin: 1.75rem auto; 
-    margin-left: 289px; /* Width of your sidebar */
-} 
+    margin-left: 289px;
+} */
 
 
 

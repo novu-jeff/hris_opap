@@ -27,6 +27,8 @@ class EmployeeInformation extends Model
         'status',
         'salary_method',
         'salary',
+        'w_tax',
+        'step_id',
         'salary_type',
         'bank_account_no',
         'payroll_account_number',
@@ -34,9 +36,15 @@ class EmployeeInformation extends Model
     ];
     
 
-    public function section() {
+   /* public function section() {
         return $this->hasOne(Sections::class, 'id', 'section_id');
-    }
+    }*/
+
+     // ✅ Correct relationship: belongsTo, because employee has section_id
+    public function section() {
+        return $this->belongsTo(Sections::class, 'section_id', 'id')
+                    ->with('branch', 'department');
+    }   
 
     public function branch() {
         return $this->hasOne(Branches::class, 'id', 'branch_id');
@@ -86,8 +94,17 @@ class EmployeeInformation extends Model
         return $this->hasMany(EmployeeSkillsHobbies::class, 'employee_no', 'employee_no');
     }
 
-    public function positions() {
+    public function loans()
+    {
+        return $this->hasMany(Loan::class, 'employee_no');
+    }
+
+    /*public function positions() {
         return $this->hasOne(Positions::class, 'id', 'position_id');
+    }*/
+    
+    public function positions() {
+        return $this->belongsTo(Positions::class, 'position_id', 'id');
     }
 
     public function leave_credits() {
@@ -95,15 +112,16 @@ class EmployeeInformation extends Model
     }
 
     public function earnings() {
-        return $this->hasOne(EmployeeEarnings::class, 'employee_no', 'employee_no');
+        return $this->hasMany(EmployeeEarnings::class, 'employee_no', 'employee_no');
     }
 
     public function deductions() {
-        return $this->hasOne(EmployeeDeductions::class, 'employee_no', 'employee_no');
+        return $this->hasMany(EmployeeDeductions::class, 'employee_no', 'employee_no');
     }
 
     public function employment_type() {
-        return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
+        //return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
+        return $this->belongsTo(EmployementTypes::class, 'employment_type_id', 'id');
     }
 
     public function shift()

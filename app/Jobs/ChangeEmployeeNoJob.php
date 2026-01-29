@@ -19,6 +19,9 @@ class ChangeEmployeeNoJob implements ShouldQueue
 
     public function __construct(string $model, string $oldEmployeeNo, string $newEmployeeNo)
     {
+
+        \Log::info("rey {$model}:  found");
+           
         $this->model = $model;
         $this->oldEmployeeNo = $oldEmployeeNo;
         $this->newEmployeeNo = $newEmployeeNo;
@@ -26,8 +29,20 @@ class ChangeEmployeeNoJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->model::where('employee_no', $this->oldEmployeeNo)
+
+        \Log::info("reynaldo here hadle {$this->model}:  found");
+
+        if($this->model == 'App\Models\EmployeeTimelogs'){
+            $this->model::where('employee_id', $this->oldEmployeeNo)
+            ->update(['employee_id' => $this->newEmployeeNo]);
+        }else{
+            $this->model::where('employee_no', $this->oldEmployeeNo)
             ->update(['employee_no' => $this->newEmployeeNo]);
+        }
+
+        //event(new \App\Events\EmployeeMigrationProgress($this->model));
+       // $this->model::where('employee_no', $this->oldEmployeeNo)
+      //      ->update(['employee_no' => $this->newEmployeeNo]);
     }
     
 }

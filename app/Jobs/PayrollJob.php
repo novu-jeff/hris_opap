@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Bus\Batchable;
 use App\Models\PayrollItems;
 use Throwable;
+use App\Models\Loan;
 
 class PayrollJob implements ShouldQueue
 {
@@ -20,38 +21,80 @@ class PayrollJob implements ShouldQueue
     protected $employees;
     protected $payroll;
     protected $type;
+    protected $payrollId;
 
-    public function __construct($employees, $payroll, $type)
-    {
-        $this->employees = $employees;
-        $this->payroll = $payroll;
-        $this->type = $type;
-    }
+   public function __construct(array $employees, int $payrollId, string $type)
+{
+    $this->employees = $employees;
+    $this->payrollId = $payrollId;
+    $this->type = $type;
+}
 
     public function handle()
-    {
-        \Log::info('Processing payroll items', [
-        'payroll_id' => $this->payroll->id,
+{
+   \Log::info('PayrollJob handle() STARTED', [
+        'payroll_id' => $this->payrollId
+    ]);
+    $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
+
+
+   $service = app(PayrollService::class);
+$process = $service->getProcess($this->type);
+
+$instance = app($process['service']);
+
+// Check if computePayroll exists
+if (!method_exists($instance, 'computePayroll')) {
+    \Log::error('computePayroll method does not exist on instance', [
+        'instance_class' => get_class($instance),
+        'process' => $process
+    ]);
+    return; // or throw exception
+}
+
+
+  \Log::info('Processing payroll here', [
+        'payroll_id' => $this->payrollId,
         'employees_count' => count($this->employees)
-        ]);
+    ]);
 
-        $service = app(PayrollService::class);
+    $data = $instance->computePayroll($payroll, $this->employees, $this->type);
+//dd($data);
+    foreach ($data as $item) {
+       // dd($item);
+       \Log::info('Saving payroll item', $item);
+        $payrollItem = $process['models']['child']::updateOrCreate([
+                'payroll_id'  => $item['payroll_id'],
+                'employee_no' => $item['employee_no'],
+            ], $item);
 
-        $process = $service->getProcess($this->type);
-        $serviceInstance = app($process['service']);
+        \Log::info('Saved payroll item', $payrollItem->toArray());    
 
-        $data = $serviceInstance->computePayroll($this->payroll, $this->employees, $this->type);
+        if (!empty($item['loan_deductions'])) {
+            foreach ($item['loan_deductions'] as &$loanDeduction) {
+                $loanDeduction['payroll_item_id'] = $payrollItem->id;
+            }
+            DB::table('payroll_salary_deductions')->insert($item['loan_deductions']);
+        }
 
-        foreach ($data as $item) {
-            $process['models']['child']::updateOrCreate(
-                [
-                    'payroll_id'  => $item['payroll_id'],
-                    'employee_no' => $item['employee_no'],
-                ],
-                $item
-            );
+        // Update loan table
+        foreach ($item['loan_deductions'] ?? [] as $ld) {
+            $loan = Loan::find($ld['reference_id']);
+            if ($loan) {
+                $loan->balance -= $ld['amount'];
+                $loan->last_posted_at = now();
+
+                // If fully paid, mark as 'paid'
+                if ($loan->balance <= 0) {
+                    $loan->balance = 0;
+                    $loan->status = 'completed';
+                }
+
+                $loan->save();
+            }
         }
     }
+}
 
     public function failed(Throwable $exception) {
         \Log::info('Error Processing Info: ' . $exception->getMessage());

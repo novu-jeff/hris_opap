@@ -19,6 +19,7 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     public $show;
+    public $showWtax = true; 
 
 
     public function remove(bool $isNotify = true, int $id = null) {
@@ -53,6 +54,7 @@ class Index extends Component
             if($record) {
                 
                 $record->isDeleted = true;
+                $record->year = '0000';
                 $record->save();
 
                 $this->dispatch('alert', [
@@ -94,20 +96,22 @@ class Index extends Component
     public function render()
     {
 
-        $model = Tranche::with('items')
-            ->where('isDeleted', false);;
+       $model = Tranche::with('items')
+        ->where('isDeleted', false);
 
         if ($this->search) {
-
-            $this->resetPage(); 
-
-            $records = $model->where('name', 'like', '%' . $this->search . '%');
+            $this->resetPage();
+            $model = $model->where('name', 'like', '%' . $this->search . '%');
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        // Get all tranches
+        $records = $model->latest()->get();
+
+        // Group tranches by year
+        $tranchesByYear = $records->groupBy('year');
 
         return view('livewire.admin.settings.tranches.index', [
-            'records' => $records
+            'tranchesByYear' => $tranchesByYear,
         ]);
     }
 }

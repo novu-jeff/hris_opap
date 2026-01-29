@@ -17,7 +17,7 @@
             </span>
             <img src="{{ $profilePhoto }}" alt="Profile Photo" style="width:50px; height:50px; object-fit:cover; border-radius:50%;">
             <div class="flex-grow-1 ms-2">
-                <h6 class="mb-0">{{ ucwords($fullname) }}</h6>
+                <h6 class="mb-0">{{ ucwords($fullname) }} </h6>
                 <small>{{ strtoupper($user['positions']->name ?? 'Employee') }}</small>
             </div>
         </div>

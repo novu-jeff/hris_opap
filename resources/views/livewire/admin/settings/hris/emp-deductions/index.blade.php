@@ -2,7 +2,7 @@
     
     @if($page == 'create' || $page == 'edit')
         <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
-            <button wire:click="setPage" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</button>
+            <!-- <button wire:click="setPage" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</button> -->
         </div>
         <div class="card border-0 mt-3 shadow">
             <div class="card-body p-4">
@@ -41,7 +41,7 @@
         </div>
     @else
        <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
-            <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <!-- <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
             <button wire:click="setPage('create')" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</button>
         </div>
         <div class="card border-0 mt-3">
@@ -119,15 +119,14 @@
         Livewire.on('set_select', () => {
             setTimeout(() => {
                 $('.multi-select').select2();
-                $('.multi-select').on('change', function (e) {
-                    const data = $('.multi-select').select2('val');
-                    console.log(data);
-                    @this.dispatch('onChange', [data ?? null]);
-                });
 
+                $('.multi-select').on('change', function () {
+                    let data = $(this).val();
+                    @this.call('setEmployees', data);
+                });
             }, 10);
-            
         });
+
 
         
 

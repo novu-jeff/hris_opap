@@ -15,9 +15,11 @@
         @if(!isset($employee_no))
             @livewire('admin.hris.index', ['selectedType' => $employment_type ?? null])
         @else
+   
             @livewire('admin.hris.form', ['employee_no' => $employee_no, 'form' => $form])
         @endif
     </div>
 </div>
 </div>
 @endsection
+

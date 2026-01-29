@@ -174,7 +174,7 @@
                         <img src="{{ asset('/img/' . $provider['logo'])}}">
                     </div>
                     <p class="text-uppercase fw-bold mb-0 mt-3">Powered by {{ $provider['company'] }}</p>
-                    <hr class="my-2" style="width: 600px;">
+                    <hr class="my-2" style="width: 100%;">
                     <p class="text-uppercase text-muted fw-bold" style="font-size: 13px;">{{ $provider['tagline'] }}</p>
                 </div>
             </div>

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 class OtherServices extends Controller
 {
 
-    public function earnings(string $employee_no) {
+   /* public function earnings(string $employee_no) {
 
         $records = EmployeeEarnings::where('employee_no', $employee_no)
             ->get();
@@ -55,14 +55,56 @@ class OtherServices extends Controller
         }
 
         return $records;
+    }*/
+
+    public function earnings(string $employee_no): array
+{
+    $records = EmployeeEarnings::with('earning') // load relation to OtherEarnings
+        ->where('employee_no', $employee_no)
+        ->get();
+
+    $newRecords = [];
+
+    foreach ($records as $record) {
+        $newRecords[] = [
+            'code' => $record->earning->code ?? 'UNKNOWN',
+            'name' => $record->earning->name ?? 'Unknown',
+            'amount_type' => $record->amount_type,
+            'first_term' => $record->first_term ?? 0,
+            'second_term' => $record->second_term ?? 0,
+            'amount' => $record->amount ?? 0,
+        ];
     }
 
-    public function deductions(string $employee_no) {
-        
-        $records = EmployeeDeductions::where('employee_no', $employee_no)
-            ->get();
+    return $newRecords;
+}
 
-        return $records;
+
+    public function deductions(string $employee_no, ?string $cutoffEndDate = null) {
+
+      
+        
+        $query = EmployeeDeductions::with('deduction')
+        ->where('employee_no', $employee_no);
+
+        if ($cutoffEndDate) {
+            $query->whereDate('valid_until', '>=', $cutoffEndDate);
+        }
+
+     $records = $query->get();
+
+        $newRecords = [];
+
+        foreach ($records as $record) {
+            $newRecords[] = [
+                'code' => $record->deduction->code ?? 'UNKNOWN',
+                'name' => $record->deduction->name ?? 'Unknown',
+                'amount' => $record->amount ?? 0,
+                'valid_until' => $record->valid_until,
+            ];
+        }
+
+        return $newRecords;
     
     }
 

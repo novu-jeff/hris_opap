@@ -55,14 +55,16 @@ class Apply extends Component
                     ->route('employee.atro');
             }
 
-            $start_time = Carbon::createFromFormat('h:i A', $records->start_time)->format('H:i:s');
-            $end_time = Carbon::createFromFormat('h:i A', $records->end_time)->format('H:i:s');
+           // $start_time = Carbon::createFromFormat('h:i A', $records->start_time)->format('H:i:s');
+           // $end_time = Carbon::createFromFormat('h:i A', $records->end_time)->format('H:i:s');
 
             $this->fields = [
                 'date' => $records->date,
-                'start_time' => $start_time,
-                'end_time' => $end_time,
+                'start_time' => $records->start_time,
+                'end_time' => $records->end_time,
                 'justification' => $records->justification,
+                'disapproval_note' => $records->disapproval_note,
+                'status' => $records->status,
                 'employees' => $records->relative->pluck('employee_no')->toArray(),
             ];
 

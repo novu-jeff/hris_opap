@@ -22,7 +22,21 @@ class ChangeEmployeeNo extends Component
     public string $current_employee_no = '';
     public string $new_employee_no = '';
 
-    protected $listeners = ['setEmployeeNo', 'save'];
+    public int $progress = 0; // 0 - 100
+    public int $totalJobs = 0;
+    public int $completedJobs = 0;
+
+    public bool $isMigrating = false;
+
+    protected $listeners = ['setEmployeeNo', 'save', 'employeeMigrationProgress' => 'incrementProgress'];
+
+    public function incrementProgress()
+    {
+        $this->completedJobs++;
+        if ($this->totalJobs > 0) {
+            $this->progress = intval(($this->completedJobs / $this->totalJobs) * 100);
+        }
+    }
 
     public function mount() {
         $this->actionBy = Auth::user();
@@ -90,51 +104,69 @@ class ChangeEmployeeNo extends Component
         
         try {
 
+             \Log::info("STEP 1: Starting migration");
+
             $newEmployeeNo = strtoupper($newEmployeeNo);
 
             $employeeModel = EmployeeInformation::where('employee_no', $oldEmployeeNo)->firstOrFail();
+             \Log::info("STEP 2: EmployeeInformation loaded");
+
+            $this->current_employee_no = strtoupper($newEmployeeNo);
+            $this->isMigrating = true;
+
             $employeeModel->employee_no = strtoupper($newEmployeeNo);
             $employeeModel->isTransferingEmp = true; 
+
             $employeeModel->save();
 
-            $relations = [
-                \App\Models\EmployeeAccount::class,
-                \App\Models\EmployeePersonal::class,
-                \App\Models\EmployeeEducation::class,
-                \App\Models\EmployeeParents::class,
-                \App\Models\EmployeeChildren::class,
-                \App\Models\EmployeeEmploymentHistory::class,
-                \App\Models\EmployeeCivilService::class,
-                \App\Models\EmployeeTrainings::class,
-                \App\Models\EmployeeOtherWorks::class,
-                \App\Models\EmployeeSkillsHobbies::class,
-                \App\Models\LeaveCredits::class,
-                \App\Models\EmployeeLeave::class,
-                \App\Models\EmployeeLeaveDates::class,
-                \App\Models\EmployeeBusinessSlip::class,
-                \App\Models\EmployeeAtro::class,
-                \App\Models\EmployeeAtroRelative::class,
-                \App\Models\EmployeeTimelogs::class,
-                \App\Models\EmployeeDeductions::class,
-                \App\Models\EmployeeEarnings::class,
-                \App\Models\EmployeeLeaveCard::class,
-                \App\Models\EmployeeTimeAdjustments::class,
-                \App\Models\EmployeeUpdateChildren::class,
-                \App\Models\EmployeeUpdateCivilService::class,
-                \App\Models\EmployeeUpdateEducation::class,
-                \App\Models\EmployeeUpdateEmploymentHistory::class,
-                \App\Models\EmployeeUpdateOtherWorks::class,
-                \App\Models\EmployeeUpdateParents::class,
-                \App\Models\EmployeeUpdatePersonal::class,
-                \App\Models\EmployeeUpdateSkillsHobbies::class,
-                \App\Models\EmployeeUpdateTrainings::class,
-            ];
+             \Log::info("STEP 3: EmployeeInformation updated");
 
+            $relations = [
+                \App\Models\EmployeeAccount::class => 'employee_no',
+                \App\Models\EmployeePersonal::class => 'employee_no',
+                \App\Models\EmployeeEducation::class => 'employee_no',
+                \App\Models\EmployeeParents::class => 'employee_no',
+                \App\Models\EmployeeChildren::class => 'employee_no',
+                \App\Models\EmployeeEmploymentHistory::class => 'employee_no',
+                \App\Models\EmployeeCivilService::class => 'employee_no',
+                \App\Models\EmployeeTrainings::class => 'employee_no',
+                \App\Models\EmployeeOtherWorks::class => 'employee_no',
+                \App\Models\EmployeeSkillsHobbies::class => 'employee_no',
+                \App\Models\LeaveCredits::class => 'employee_no',
+                \App\Models\EmployeeLeave::class => 'employee_no',
+                \App\Models\EmployeeLeaveDates::class => 'employee_no',
+                \App\Models\EmployeeBusinessSlip::class => 'employee_no',
+                \App\Models\EmployeeAtro::class => 'employee_no',
+                \App\Models\EmployeeAtroRelative::class => 'employee_no',
+                \App\Models\EmployeeTimelogs::class => 'employee_id',
+                \App\Models\EmployeeDeductions::class => 'employee_no',
+                \App\Models\EmployeeEarnings::class => 'employee_no',
+                \App\Models\EmployeeLeaveCard::class => 'employee_no',
+                \App\Models\EmployeeTimeAdjustments::class => 'employee_no',
+                \App\Models\EmployeeUpdateChildren::class => 'employee_no',
+                \App\Models\EmployeeUpdateCivilService::class => 'employee_no',
+                \App\Models\EmployeeUpdateEducation::class => 'employee_no',
+                \App\Models\EmployeeUpdateEmploymentHistory::class => 'employee_no',
+                \App\Models\EmployeeUpdateOtherWorks::class => 'employee_no',
+                \App\Models\EmployeeUpdateParents::class => 'employee_no',
+                \App\Models\EmployeeUpdatePersonal::class => 'employee_no',
+                \App\Models\EmployeeUpdateSkillsHobbies::class => 'employee_no',
+                \App\Models\EmployeeUpdateTrainings::class => 'employee_no',
+                \App\Models\Loan::class => 'employee_no',
+            ];
+             \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
             $jobs = [];
             
-            foreach ($relations as $model) {
-                $jobs[] = new ChangeEmployeeNoJob($model, $oldEmployeeNo, $newEmployeeNo);
+            foreach ($relations as $model => $column) {
+                $jobs[] = new ChangeEmployeeNoJob($model, $oldEmployeeNo, $newEmployeeNo, $column);
             }
+
+            // store total jobs count
+            $this->totalJobs = count($jobs);
+            $this->completedJobs = 0;
+            $this->progress = 0;
+
+             \Log::info("STEP 5: Jobs created", ['count' => count($jobs)]);
 
             if (!empty($jobs)) {
                 $batch = Bus::batch($jobs)
@@ -144,6 +176,7 @@ class ChangeEmployeeNo extends Component
                     ])
                     ->name('Migration: ' . $oldEmployeeNo . ' to ' . $newEmployeeNo)
                     ->catch(function (Batch $batch, \Throwable $e) {
+                         \Log::error("STEP 6: Batch catch hit: ".$e->getMessage());
                         $this->actionBy?->notify(new Notifications(
                             'error',
                             'An error occurred during migration of employee.',
@@ -152,6 +185,8 @@ class ChangeEmployeeNo extends Component
                         ));
                     })
                     ->then(function (Batch $batch) { 
+                        \Log::info("STEP 7: Batch completed");
+                        $this->progress = 100;
                         $this->actionBy?->notify(new Notifications(
                             'success',
                             'Migration of employee has been finished',
@@ -160,10 +195,19 @@ class ChangeEmployeeNo extends Component
                         ));
                     })
                     ->finally(function() use ($employeeModel) {
+                         \Log::info("STEP 8: Finally executing");
+                          $employeeModel->refresh();
                         $employeeModel->isTransferingEmp = false;
                         $employeeModel->save();
+
+                        $this->isMigrating = false;
+                        $this->progress = 100;
+                        $this->completedJobs = $this->totalJobs;
+
                     })
                     ->dispatch();
+
+                    \Log::info("STEP 9: Batch dispatched");
             }
 
             $this->reset(['new_employee_no']);
@@ -201,13 +245,39 @@ class ChangeEmployeeNo extends Component
         }
     }
 
-    
-    public function closeModal() 
+
+
+     public function closeModal()
     {
-        $this->reset(['current_employee_no', 'new_employee_no']);
-        $this->dispatch('hideModal', [
-            'modal' => 'change_employee_no'
-        ]);    
+        $this->reset(['current_employee_no', 'new_employee_no', 'isMigrating']);
+        $this->dispatch('hideModal', ['modal' => 'change_employee_no']);
+    }
+
+    public function checkMigrationStatus()
+    {
+            if (!$this->isMigrating || !$this->current_employee_no) {
+                return;
+            }
+
+            $employee = EmployeeInformation::where('employee_no', $this->current_employee_no)->first();
+
+            if (!$employee || $employee->isTransferingEmp) {
+                return; // still running
+            }
+
+            // ✅ FINISHED (RUNS ONCE)
+            $this->dispatch('alert', [
+                'status' => 'success',
+                'title' => 'Completed',
+                'showAlert' => true,
+                'message' => 'Employee number migration completed successfully.',
+            ]);
+
+            $this->dispatch('loadRecords');
+
+            // 🛑 STOP POLLING
+            $this->isMigrating = false;
+            $this->reset('current_employee_no');
     }
 
     public function render()

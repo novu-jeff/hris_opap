@@ -96,9 +96,11 @@ class Index extends Component
 
         } else {
 
-            $record = EmployeeTimeAdjustments::with('employee')->where('id', $this->selected_id)
+            $record = EmployeeTimeAdjustments::with('employee.personal')
+                ->where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
+
                 
             if(is_null($record)) {
                 return redirect()->route('ess.time-adjustments.index');
@@ -136,19 +138,18 @@ class Index extends Component
           //  dd($rawTimestamps);
             
             $logs = collect($rawTimestamps)->map(function ($time) use ($date, $record) {
-                $timestamp = "$date {$time['timestamp']}";
                 return [
+                    'employee_id' => $record->employee->id, // ✅ integer FK
                     'isWeb' => true,
                     'sn' => 'RUU5242500021',
                     'table' => 'ATTLOG',
                     'stamp' => '9999',
-                    'employee_id' => $record->employee->employee_no,
-                    'timestamp' => $timestamp,
+                    'timestamp' => "$date {$time['timestamp']}",
                     'status1' => $time['type'],
                 ];
             })->sortBy('timestamp')->values()->all();
             
-            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->employee_no)
+            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->id)
                 ->where('timestamp', 'LIKE', "{$date}%")
                 ->orderBy('timestamp', 'asc')
                 ->get();
@@ -248,7 +249,10 @@ class Index extends Component
             $status = $this->status;
         }
 
-        $model = EmployeeTimeAdjustments::with('attachments', 'employee')
+        $model = EmployeeTimeAdjustments::with([
+            'attachments',
+            'employee.personal'
+        ])
             ->where('status', $status)
             ->where('isDeleted', false);
 

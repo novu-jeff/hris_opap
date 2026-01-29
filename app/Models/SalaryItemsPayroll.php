@@ -33,6 +33,7 @@ class SalaryItemsPayroll extends Model
                 'emergency_loan',
                 'plreg',
                 'mpl',
+                'mpl_lite',
                 'cpl',
                 'mp2',
                 'mplstlms',
@@ -46,6 +47,10 @@ class SalaryItemsPayroll extends Model
                 'kawani',
                 'lbp_payroll_account',
                 'salary',
+                'net_first_half',
+                'net_second_half',
+                'is_first_half_locked',
+                'is_second_half_locked',
             ];
         }
 
@@ -79,6 +84,12 @@ class SalaryItemsPayroll extends Model
 
     public function payroll() {
         return $this->belongsTo(SalaryPayroll::class, 'payroll_id', 'id');
+    }
+
+    public function deductions()
+    {
+        return $this->hasMany(PayrollSallaryDeduction::class,'payroll_item_id')
+                        ->with('loan.loanType'); // 👈 important!
     }
 
 }

@@ -2,7 +2,7 @@
     
     @if($page == 'create' || $page == 'edit')
         <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
-            <button wire:click="setPage" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</button>
+            <!-- <button wire:click="setPage" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</button> -->
         </div>
         <div class="card border-0 mt-3 shadow">
             <div class="card-body p-4">
@@ -24,18 +24,12 @@
                             <input type="text" id="amount_type" wire:model="fields.amount_type" class="form-control restricted" readonly>
                             @error('fields.amount_type') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        @if(in_array($amountType, ['fixed_amount', 'percentage']))
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="first_term" class="form-label">First Term</label>
-                                <input type="number" id="first_term" wire:model="fields.first_term" class="form-control">
-                                @error('fields.first_term') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="second_term" class="form-label">Second Term</label>
-                                <input type="number" id="second_term" wire:model="fields.second_term" class="form-control">
-                                @error('fields.second_term') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
+                        <div class="col-12 col-md-12 mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <input type="text" id="amount" wire:model="fields.amount" class="form-control">
+                            @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                       
                     </div>
                     <div class="d-flex justify-content-end mt-3">
                         <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
@@ -48,7 +42,7 @@
         </div>
     @else
         <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
-            <a href="{{route('other-earnings.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a>
+            <!-- <a href="{{route('other-earnings.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
             <button wire:click="setPage('create')" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</button>
         </div>
         <div class="card border-0 mt-3">
@@ -76,8 +70,7 @@
                             <tr>
                                 <th>Employee No</th>
                                 <th>Employee Name</th>
-                                <th>First Term</th>
-                                <th>Second Term</th>
+                                <th>Amount</th>
                                 <th>Last Update</th>
                                 <th>Actions</th>
                             </tr>
@@ -88,10 +81,7 @@
                                     <td>{{ $record->employee_no }}</td>
                                     <td>{{ $record->personal->firstname . ' ' . $record->personal->lastname }}</td>
                                     <td>
-                                        PHP {{ number_format($record->first_term, 2) }}
-                                    </td>
-                                    <td>
-                                        PHP {{ number_format($record->second_term, 2) }}
+                                        PHP {{ number_format($record->amount, 2) }}
                                     </td>
                                     <td>
                                         {{ \Carbon\Carbon::parse($record->updated_at)->format('F d, Y \•\ H:i A') }}
@@ -130,14 +120,12 @@
         Livewire.on('set_select', () => {
             setTimeout(() => {
                 $('.multi-select').select2();
-                $('.multi-select').on('change', function (e) {
-                    const data = $('.multi-select').select2('val');
-                    console.log(data);
-                    @this.dispatch('onChange', [data ?? null]);
-                });
 
+                $('.multi-select').on('change', function () {
+                    let data = $(this).val();
+                    @this.call('setEmployees', data);
+                });
             }, 10);
-            
         });
 
         

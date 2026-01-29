@@ -26,21 +26,27 @@ class Index extends Component
         'amount_type' => null,
         'first_term'  => null,
         'second_term' => null,
+        'amount' => null,
     ];
 
     protected $paginationTheme = 'bootstrap';
-    protected $listeners = ['remove'];
+    protected $listeners = ['setEmployees', 'remove'];
 
-    public function mount()
+    public function mount($id)
     {
+        $this->id = $id;
         $config = OtherEarnings::findOrFail($this->id);
 
         $this->fields['first_term'] = $config->first_term;
         $this->fields['second_term'] = $config->second_term;
+        $this->fields['amount'] = $config->amount;
 
         if ($config->amount_type) {
             $this->onChange('amount_type', $config->amount_type);
         }
+
+        $this->employees = $this->getEmployees();
+         $this->dispatch('set_select');
     }
 
     public function onChange(string $property, string $value)
@@ -57,12 +63,16 @@ class Index extends Component
         $this->toUpdate = $toUpdate;
         
         if ($page === 'edit' && $toUpdate) {
-            $data = EmployeeEarnings::where('employee_no', $toUpdate)->first();
+            $data = EmployeeEarnings::where('employee_no', $toUpdate)
+             ->where('earning_id', $this->id)
+            ->first();
+            
             $this->fields = [
                 'employee_no' => [$toUpdate],
                 'amount_type' => $data->amount_type ?? null,
                 'first_term'  => $data->first_term ?? null,
                 'second_term' => $data->second_term ?? null,
+                'amount' => $data->amount ?? null,
             ];
         $this->onChange('amount_type', $data->amount_type);
         }
@@ -74,8 +84,16 @@ class Index extends Component
     public function getEmployees()
     {
         return ($this->page === 'create')
-            ? EmployeeInformation::with('personal')->whereDoesntHave('earnings')->get()
-            : EmployeeInformation::with('personal')->get();
+        ? EmployeeInformation::with('personal')
+            ->whereHas('personal')
+             ->whereDoesntHave('earnings', function ($q) {
+                $q->where('earning_id', $this->id);
+            })
+            ->get()
+        : EmployeeInformation::with('personal')
+            ->whereHas('personal') // ensures personal exists
+            ->get();
+            
     }
 
     protected function fileRules(): array
@@ -101,8 +119,8 @@ class Index extends Component
 
         $termRules = ($amountType === 'basic salary') ? 'nullable|numeric' : 'required|numeric';
 
-        $rules['fields.first_term'] = $termRules;
-        $rules['fields.second_term'] = $termRules;
+        
+        $rules['fields.amount'] = $termRules;
 
         return $rules;
     }
@@ -111,9 +129,13 @@ class Index extends Component
     {
         return [
             'fields.amount_type.required' => 'The amount type field is required.',
-            'fields.first_term.required' => 'The first term field is required.',
-            'fields.second_term.required' => 'The second term field is required.',
+            'fields.amount.required' => 'The amount field is required.',
         ];
+    }
+
+    public function setEmployees($employees)
+    {
+        $this->fields['employee_no'] = $employees ?? [];
     }
 
     public function save()
@@ -136,13 +158,14 @@ class Index extends Component
             $amountType = str_replace(' ', '_', $this->fields['amount_type']);
             $firstTerm = $this->fields['first_term'];
             $secondTerm = $this->fields['second_term'];
+            $amount = $this->fields['amount'];
 
-            foreach ($this->employees as $employee) {
+            /*foreach ($this->employees as $employee) {
                 $data = [
                     'amount_type' => $amountType,
                 ];
 
-                if ($amountType === 'basic salary') {
+                if ($amountType === 'basic_salary') {
                     $data['amount'] = $employee->salary;
                 } else {
                     $data['first_term'] = $firstTerm ;
@@ -156,7 +179,34 @@ class Index extends Component
                     ],
                     $data
                 );
-            }
+            }*/
+
+             foreach ($this->fields['employee_no'] as $employee_no) {
+    // Fetch the employee record
+    $employee = EmployeeInformation::where('employee_no', $employee_no)->first();
+
+    if (!$employee) continue; // skip if employee not found
+
+    $data = [
+        'amount_type' => $amountType,
+    ];
+
+    if ($amountType === 'basic_salary') {
+        $data['amount'] = $employee->salary;
+    } else {
+        $data['amount'] = $amount;
+        $data['first_term'] = $firstTerm;
+        $data['second_term'] = $secondTerm;
+    }
+
+    EmployeeEarnings::updateOrCreate(
+        [
+            'earning_id' => $earningId,
+            'employee_no' => $employee_no,
+        ],
+        $data
+    );
+}   
 
             DB::commit();
 
