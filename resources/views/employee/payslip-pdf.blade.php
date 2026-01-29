@@ -130,6 +130,35 @@
             margin-top: 20px;
         }
 
+        .issued {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .issued-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .issued .label {
+            width: 90px;              /* aligns "Issued by:" */
+            text-align: left;
+        }
+
+        .issued .line {
+            display: inline-block;
+            width: 420px;             /* SAME WIDTH for name & position */
+            border-bottom: 1px solid #000;
+            text-align: center;
+            padding-bottom: 2px;
+        }
+
+        .issued .position {
+            margin-left: 35px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -198,8 +227,8 @@
             <td class="value">PHP {{ number_format($payslip['pera'], 2) }}</td>
         </tr>
         <tr>
-            <td class="label">Overtime:</td>
-            <td class="value">PHP 0.00</td>
+            <td class="label">Gross Amount Earned:</td>
+            <td class="value">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</td>
         </tr>
     </table>
 
@@ -232,7 +261,6 @@
         <tr><td class="label">HDMF MP2:</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
         <tr><td class="label">MPL STLMS:</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
         <tr><td class="label">Cir375-ECQ:</td><td class="value">PHP {{ number_format($payslip['cir375_cir449'], 2) }}</td></tr>
-        <tr><td class="label">SSS:</td><td class="value">PHP {{ number_format($payslip['sss'], 2) }}</td></tr>
         <tr><td class="label">PAGIBIG:</td><td class="value">PHP {{ number_format($payslip['pagibig'], 2) }}</td></tr>
         <tr><td class="label">BIR Withholding TAX:</td><td class="value">PHP {{ number_format($payslip['w_tax'], 2) }}</td></tr>
         <tr><td class="label">UCA:</td><td class="value">PHP {{ number_format($payslip['uca'], 2) }}</td></tr>
@@ -258,10 +286,22 @@
     </table>
 
     <!-- Issued By -->
-    <div class="issued text-center">
-        <div>Issued by : <span style="text-decoration: underline;">____________________</span></div>
-        <div>___________________________</div>
+    <div class="issued">
+        <div class="issued-row">
+            <span class="label">Issued by:</span>
+            <span class="line">
+                {{ $supervisingOfficer['full_name'] }}
+            </span>
+        </div>
+
+        <div class="issued-row">
+            <span class="label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span class="line position">
+                {{ $supervisingOfficer['position_name'] }}
+            </span>
+        </div>
     </div>
+
 
 </div>
 </body>
