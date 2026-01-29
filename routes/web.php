@@ -298,6 +298,7 @@ Route::prefix('admin')->group(function() {
             Route::get('/daily-time-record/{id}/view', [DailyTimeRecordController::class, 'show'])->name('dtr.show');
 
             Route::get('payroll-record', [PayrollReportController::class, 'index'])->name('reports.payroll');
+            Route::get('payroll-record/view/{payroll}', [PayrollReportController::class, 'view'])->name('reports.payroll.view');
 
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');
