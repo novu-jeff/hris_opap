@@ -15,12 +15,15 @@ class PayrollExport implements FromCollection, WithHeadings, WithEvents
 {
     protected $payroll;
     protected $filterSalaryMethod;
+    protected $searchName;
 
-    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '')
+    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '', $searchName = '')
     {
         $this->payroll = $payroll;
         $this->filterSalaryMethod = $filterSalaryMethod;
+        $this->searchName = $searchName;
     }
+    
 
     public function collection()
     {
@@ -32,6 +35,16 @@ class PayrollExport implements FromCollection, WithHeadings, WithEvents
                 $item->information &&
                 strcasecmp($item->information->salary_method, $this->filterSalaryMethod) === 0
             );
+        }
+
+        // Filter by search name
+        if ($this->searchName) {
+            $items = $items->filter(function ($item) {
+                return str_contains(
+                    strtolower($item->name),
+                    strtolower($this->searchName)
+                );
+            });
         }
 
         return $items->map(fn($item) => [

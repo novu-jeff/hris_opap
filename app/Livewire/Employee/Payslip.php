@@ -9,6 +9,9 @@ use App\Models\EmployeePayslipRequest;
 use App\Models\EmployeeAccount;
 use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
+use App\Models\EmployeeInformation;
+use App\Models\EmployeePersonal;
+use App\Models\Positions;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -96,6 +99,28 @@ class Payslip extends Component
     ];
 }
 
+    public function getEmployeeByPosition($positionName)
+    {
+        $supervisingOfficer = EmployeeInformation::join('employee_personal as ep', 'employee_information.employee_no', '=', 'ep.employee_no')
+        ->join('positions as p', 'employee_information.position_id', '=', 'p.id')
+        ->where('p.name', $positionName)
+        ->selectRaw("p.name as pname, ep.firstname, ep.middlename, ep.lastname, ep.suffix, CONCAT(ep.firstname, ' ', IFNULL(ep.middlename,''), ' ', ep.lastname, ' ', IFNULL(ep.suffix,'')) as full_name")
+        ->first();
+
+        if ($supervisingOfficer) {
+            return [
+                'full_name' => $supervisingOfficer->full_name,
+                'position_name' => $supervisingOfficer->pname
+            ];
+        }
+
+        return [
+            'full_name' => 'N/A',
+            'position_name' => 'N/A'
+        ];
+    }
+
+
    
 
     public function download()
@@ -107,9 +132,12 @@ class Payslip extends Component
             $payroll_date = Carbon::parse($this->payroll->payroll_date)->format('F d, Y');
             $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
 
+            $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');
+
             $pdf = Pdf::loadView('employee.payslip-pdf', [
                 'payslip' => $this->payroll,
                 'payslipView' => $this->payslipView,
+                'supervisingOfficer' => $supervisingOfficer,
             ]);
 
             return response()->streamDownload(
@@ -293,6 +321,14 @@ class Payslip extends Component
 
     public function render()
     {
-        return view('livewire.employee.payslip');
+        $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');
+
+     
+
+        return view('livewire.employee.payslip', [
+            'supervisingOfficer' => $supervisingOfficer,
+        ]);
+
+        //return view('livewire.employee.payslip');
     }
 }

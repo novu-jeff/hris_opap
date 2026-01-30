@@ -33,5 +33,24 @@ tfoot tr.table-total-row {
     z-index: 5;
 }
 
+ .info-row {
+        display: flex;
+        /*justify-content: space-between;
+        gap: 12px;*/
+    }
+    .info-label {
+        min-width: 120px; /* adjust if needed */
+        color: #555;
+    }
+
+    .info-label-3 {
+        min-width: 180px; /* adjust if needed */
+        color: #555;
+    }
+    .info-value {
+        text-align: right;
+        white-space: nowrap;
+    }
+
 
 </style>
