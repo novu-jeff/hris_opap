@@ -44,8 +44,8 @@
     @endphp
     @if($product == 'government')
         @if($records['payroll']['employment_type']['id'] == '1')
-            <div class="table-responsive pb-3">
-                <table>
+            <div class="table-responsive pb-3 ">
+                <table class="table-striped payroll-table">
                     <thead>
                         <tr>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>

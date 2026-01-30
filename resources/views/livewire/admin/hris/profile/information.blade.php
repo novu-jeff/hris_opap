@@ -49,7 +49,7 @@
                     </div>  
                     <div class="col-12 col-md-3 mb-3">
                         <label class="mb-2" for="date_hired">Date Hired</label>
-                        <input type="text" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control restricted" readonly>
+                        <input type="date" wire:model="records.employee_information.date_hired" id="records.employee_information.date_hired" class="form-control restricted" >
                         <div class="error-field">
                             @error('records.employee_information.date_hired') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>

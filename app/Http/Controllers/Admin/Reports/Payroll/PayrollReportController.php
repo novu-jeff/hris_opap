@@ -18,4 +18,13 @@ class PayrollReportController extends Controller
 
         return view('admin.reports.payroll.index');
     }
+
+
+    public function view(int $payrollId)
+    {
+        // Filters
+   
+
+        return view('admin.reports.payroll.view', compact('payrollId'));
+    }
 }
