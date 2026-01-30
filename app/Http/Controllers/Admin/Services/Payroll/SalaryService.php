@@ -235,7 +235,8 @@ class SalaryService extends Controller {
                     \Log::info('Start computePayroll Government', [
             'payroll_id' => $payroll->id,
             'employees_count' => count($employees),
-            'type' => $type
+            'type' => $type,
+            'employees' => $employees,
         ]);
 
             $cutoff = $payroll->cut_off_period;
@@ -264,59 +265,69 @@ class SalaryService extends Controller {
                 $position = $employee['position_name'];
                 $position_id = $employee['position_id'];
                 $eligible = $employee['employment_type_id'];
-                $basic_salary = round(floatval($employee['salary']), 2);
+                //$basic_salary = round(floatval($employee['salary']), 2);
                 $salary_type = $employee['salary_type'];
-                $gw_tax = $employee['w_tax'];
+               // $gw_tax = $employee['w_tax'];
                 $rate = 0.05;
                 $ceiling = 100000;
+                $stepId = $employee['step_id'];
+
+                if (!empty($stepId)) {
 
 
-            /*    $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
+               $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
+
+               $stepColumn = "step_" . ($employee['step_id'] ?? '');
+                $stepColumnTax = "step_" . ($employee['step_id'] ?? '') . "_wtax";
 
                 // Get the latest tranche for this eligible type
-                $latestTranche = Tranche::with(['items' => function ($query) use ($salaryGrade) {
-                    $query->where('salary_grade', $salaryGrade);
+                $latestTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $stepColumnTax) {
+                    $query->where('salary_grade', $salaryGrade)
+                     ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
                 }])
-                ->where('eligible', $eligible)
-                ->orderByDesc('created_at')
+                 ->where('eligible', $eligible)
+                ->where('is_active', 1)
+                ->latest('year')
                 ->first();
 
-                $step = (int) ($employee['step_id'] ?? 1);
-                $step = max(1, min(8, $step)); // safety clamp
+                \Log::info('Latest Tranche fetched', [
+                    'employee_no' => $employee_no,
+                    'eligible' => $eligible,
+                    'tranche_id' => $latestTranche->id ?? null,
+                    'salary_grade' => $salaryGrade,
+                    'step_column' => $stepColumn,
+                    'step_column_tax' => $stepColumnTax,
+                    'latest_tranche_items' => $latestTranche->items->first()->$stepColumn ?? null,
+                    'latest_tranche_items_tax' => $latestTranche->items->first()->$stepColumnTax ?? null,
+                ]);
 
-                 $salary = 0;
-            $wtax = 0;
-            $latestStep = 1;
 
-            if ($latestTranche && $latestTranche->items->isNotEmpty()) {
-                $item = $latestTranche->items->first(); // the item for this salary grade
+                $salary = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                        ? $latestTranche->items->first()->$stepColumn 
+                        : 0;
+                    
+                $wtax = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                    ? $latestTranche->items->first()->$stepColumnTax 
+                    : 0;
 
-                // Loop through steps to find the highest non-zero salary
-                for ($i = 1; $i <= 8; $i++) {
-                    $stepColumn = "step_" . $i;
-                    $stepColumnTax = "step_" . $i . "_wtax";
-                    if (!empty($item->$stepColumn) && $item->$stepColumn > 0) {
-                        $latestStep = $i;
-                        $salary = $item->$stepColumn; // take the latest step salary
-                        $wtax = $item->$stepColumnTax;
-                    }
-                }
-            }
-                Log::info('Tranche computationxx', [
+                } else {
+                    $salary = $employee['salary'];
+                    $wtax = $employee['w_tax'];
+                }    
+
+                Log::info('Tranche computation', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
                     'tranche_id' => $latestTranche->id,
                     'salary_grade' => $salaryGrade,
-                    'step' => $latestStep,
                     'basic_salary' => $salary,
                     'w_tax' => $wtax,
                 ]);
 
-             
 
                 $basic_salary = round(floatval($salary), 2);
                 $salary_type = $employee['salary_type'];
-                $gw_tax = $wtax;*/
+                $gw_tax = $wtax;
 
                 [$startDate, $endDate] = explode(' to ', $payroll->cut_off_period);
                 $cutoffEndDate = Carbon::parse(trim($endDate))->toDateString(); 
@@ -377,12 +388,10 @@ class SalaryService extends Controller {
                 $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
                 $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
-                $total_deduction = round(
-                    $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
-                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut
-                );
+                $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
+                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
 
-                Log::info('GW TAX BEFORE COMPUTEsss', [
+                Log::info('GW TAX BEFORE COMPUTE', [
                     'employee_no' => $employee_no,
                     'gw_tax_before_round' => $gw_tax,
                     'has_deductions' => $hasDeductions,

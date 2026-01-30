@@ -120,7 +120,8 @@ class EmployeeInformation extends Model
     }
 
     public function employment_type() {
-        return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
+        //return $this->hasOne(EmployementTypes::class, 'id', 'employment_type_id');
+        return $this->belongsTo(EmployementTypes::class, 'employment_type_id', 'id');
     }
 
     public function shift()
