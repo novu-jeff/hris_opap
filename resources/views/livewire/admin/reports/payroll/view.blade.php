@@ -1,9 +1,10 @@
 <div>
     <div class="action mb-4"></div>
     <hr class="mt-0">
-    <div class="row mb-3">
+    <div class="row mb-3 align-items-end">
+    <!-- Filter by Salary Method -->
     <div class="col-md-4">
-    <label class="fw-bold">Filter by Salary Method</label>
+        <label class="fw-bold">Filter by Salary Method</label>
         <select wire:model.live="filterSalaryMethod" class="form-select">
             <option value="">All</option>
             <option value="cash">Cash</option>
@@ -11,8 +12,15 @@
         </select>
     </div>
 
+    <!-- Search by Name -->
     <div class="col-md-4">
-        <button wire:click="exportExcel" class="btn btn-success mt-4">
+        <label class="fw-bold">Search by Name</label>
+        <input type="text" wire:model.live="searchName" class="form-control" placeholder="Enter employee name">
+    </div>
+
+    <!-- Export Button -->
+    <div class="col-md-4 d-flex justify-content-start justify-content-md-end">
+        <button wire:click="exportExcel" class="btn btn-success mt-2 mt-md-0">
             Export to Excel
         </button>
     </div>
@@ -22,38 +30,66 @@
     <hr>
 
     <div class="row mb-3">
-        <div class="col-12 col-md-6">
-             <div class="fw-bold">No. of employees: <span class="ms-2">{{ $records['payroll']['no_employees'] }}</span></div>
-            <div class="fw-bold">Payroll Period: <span class="ms-2">{{ $records['payroll']['formatted_payroll_date'] }}</span></div>
-            <div class="fw-bold">Cut-off Period: <span class="ms-2">{{ $records['payroll']['formatted_cutoff_period'] }}</span></div>
-            <div class="fw-bold">Employee Type: <span class="ms-2">{{ $records['payroll']['formatted_employment_type'] }}</span></div>
-        </div>
-        <div class="col-12 col-md-6">
-           <div class="fw-bold">Basic Amount: <span class="ms-2">PHP {{ number_format($records['totals']['basic_salary'], 2) }}</span></div>
-           <div class="fw-bold">Gross Amount: <span class="ms-2">PHP {{ number_format($records['totals']['gross'], 2) }}</span></div>
-           <div class="fw-bold">Total Deductions: <span class="ms-2">PHP {{ number_format($records['totals']['total_deductions'], 2) }}</span></div>
-            <div class="fw-bold">Net Amount: <span class="ms-2">PHP {{ number_format($records['payroll']['overall_net_amount'], 2) }}</span></div>
-            <div class="fw-bold">Net lbp_payroll_account: <span class="ms-2">PHP {{ number_format($records['totals']['lbp_payroll_account'], 2) }}</span></div>
-          
-        @php
-            $cutoff = $records['payroll']['formatted_cutoff_period'];
-            $startDate = \Carbon\Carbon::parse(explode(' to ', $cutoff)[0]);
-            $dayStart = $startDate->day;
-            $isFirstHalf = $dayStart <= 15;
-        @endphp
-        @if($isFirstHalf)
-            <div class="fw-bold">FirstHalf Amount: <span class="ms-2">PHP {{ number_format($records['totals']['net_first_half'], 2) }}</span></div>
-        @else
-            <div class="fw-bold">SecondHalf Amount: <span class="ms-2">PHP {{ number_format($records['totals']['net_second_half'], 2) }}</span></div>
-        @endif
-            
-            
-        </div>
+        <div class="col-12 col-md-4">
+    <div class="info-row">
+        <span class="info-label">No. of employees:</span>
+        <span class="info-value">{{ $records['payroll']['no_employees'] }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Cut-off Period:</span>
+        <span class="info-value">{{ $records['payroll']['formatted_cutoff_period'] }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Employee Type:</span>
+        <span class="info-value">{{ $records['payroll']['formatted_employment_type'] }}</span>
+    </div>
+</div>
+
+<div class="col-12 col-md-4">
+    <div class="info-row">
+        <span class="info-label">Basic Amount:</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['basic_salary'], 2) }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Gross Amount:</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['gross'], 2) }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Total Deductions:</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['total_deductions'], 2) }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Net Amount:</span>
+        <span class="info-value">PHP {{ number_format($records['payroll']['overall_net_amount'], 2) }}</span>
+    </div>
+</div>
+
+<div class="col-12 col-md-4">
+    <div class="info-row">
+        <span class="info-label-3">Net LBP Payroll Account</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['lbp_payroll_account'], 2) }}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label-3">First Half Amount:</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['net_first_half'], 2) }}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label-3">Second Half Amount:</span>
+        <span class="info-value">PHP {{ number_format($records['totals']['net_second_half'], 2) }}</span>
+    </div>
+
+   
+</div>
+
     </div>
 
     <hr class="pt-3">
 
+
     <div class="table-responsive overflow-auto" style="max-width: 100%;">
+        
         <table class="table table-bordered table-striped table-hover">
             <thead>
                 <tr class="bg-primary text-white sticky-top">
@@ -103,7 +139,7 @@
                         @endphp
                         <tr>
                             <td>{{ $employeeIndex + 1 }}</td>
-                            <td>{{ $item['name'] }}</td>
+                            <td>{!! $this->highlightSearchTerm($item['name']) !!}</td>
                             <td>{{ $item['position'] }}</td>
                             <td>{{ $item['salary_method'] ?? 'N/A' }}</td> <!-- NEW -->
                             <td>{{ number_format($item['basic_salary'], 2) }}</td>
@@ -177,5 +213,6 @@
         </tfoot>
 
         </table>
+       
     </div>
 </div>
