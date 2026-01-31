@@ -152,21 +152,24 @@
                                                     </tr>
 
                                                     @if($hasImage)
-                                                        <tr>
-                                                            @for ($i = 0; $i < 4; $i++)
-                                                                <td>
-                                                                    @if (!empty($logList[$i]['captured_image']))
-                                                                        <a style="cursor: pointer" data-fancybox data-src="{{ Storage::url('timelogs/' . $logList[$i]['captured_image']) }}">
-                                                                            <img src="{{ Storage::url('timelogs/' . $logList[$i]['captured_image']) }}"
-                                                                                alt="log image"
-                                                                                style="width: 100%; height: 100px; object-fit: cover;">
-                                                                        </a>
-                                                                    @else
-                                                                        No Image
-                                                                    @endif
-                                                                </td>
-                                                            @endfor
-                                                        </tr>
+                                <tr>
+                                    @for ($i = 0; $i < 4; $i++)
+                                        <td>
+                                            @if (!empty($logList[$i]['captured_image']))
+                                                @php
+                                                    $logImage = 'timelogs/' . $logList[$i]['captured_image'];
+                                                @endphp
+                                                <a style="cursor: pointer" data-fancybox data-src="{{ Storage::disk('public')->url($logImage) }}">
+                                                    <img src="{{ Storage::disk('public')->url($logImage) }}"
+                                                        alt="log image"
+                                                        style="width: 100%; height: 100px; object-fit: cover;">
+                                                </a>
+                                            @else
+                                                No Image
+                                            @endif
+                                        </td>
+                                    @endfor
+                                </tr>
                                                     @endif
 
                                                     @if(!empty($accomplishment))
@@ -174,12 +177,26 @@
                                                             <td colspan="4">
                                                                 <div class="text-start mt-2 px-3">
                                                                     <p class="mb-2 fw-bold">Accomplishment Report:</p>
-                                                                    <p class="text-primary d-flex align-items-center gap-2 mt-3">
-                                                                        <i class="fa-solid fa-download"></i>
-                                                                        <a href="{{ Storage::url('accomplishments/' . $accomplishment['accomplishment']) }}" download>
-                                                                            {{ $accomplishment['accomplishment'] }}
-                                                                        </a>
-                                                                    </p>
+                                            @php
+                                                $accomplishmentFile = $accomplishment['accomplishment'] ?? null;
+                                                $accomplishmentPath = $accomplishmentFile ? 'accomplishments/' . $accomplishmentFile : null;
+                                                $accomplishmentExists = $accomplishmentPath
+                                                    ? Storage::disk('public')->exists($accomplishmentPath)
+                                                    : false;
+                                            @endphp
+                                            @if($accomplishmentExists)
+                                                <p class="text-primary d-flex align-items-center gap-2 mt-3">
+                                                    <i class="fa-solid fa-download"></i>
+                                                    <a href="{{ Storage::disk('public')->url($accomplishmentPath) }}" download>
+                                                        {{ $accomplishmentFile }}
+                                                    </a>
+                                                </p>
+                                            @else
+                                                <p class="text-warning d-flex align-items-center gap-2 mt-3">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                                    <span>Accomplishment file not found. Please re-upload.</span>
+                                                </p>
+                                            @endif
                                                                 </div>
                                                             </td>    
                                                         </tr>  
@@ -205,7 +222,7 @@
     <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-3">
-            <form wire:submit.prevent="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
+            <form wire:submit.prevent="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
 
                 <div class="modal-header border-0 pt-2 pb-0">
                     <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
@@ -217,7 +234,7 @@
                         <img id="clockInPreviewImage" src="" alt="Captured Image" class="img-fluid rounded shadow">
                     </div>
 
-                    @if($entry === 3 || $isForcedOut)
+                    @if($status === 'Clock Out' || $isForcedOut)
                         {{-- Accomplishment file input --}}
                         <div class="mb-3">
                             <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
@@ -228,6 +245,7 @@
                                 class="form-control"
                                 accept="application/pdf"
                             />
+                            <small class="text-muted d-block mt-1">PDF only, max 5 MB. Click Proceed right after selecting to avoid upload timeout.</small>
 
                             @error('upload_accomplishment')
                                 <span class="text-danger">{{ $message }}</span>
@@ -254,10 +272,10 @@
 
                     <button type="submit"
                         class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
-                        wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
+                        wire:target="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
                         wire:loading.attr="disabled">
                         <span>Proceed</span>
-                        <span wire:loading wire:target="{{ $entry === 3 || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
+                        <span wire:loading wire:target="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </span>
                     </button>

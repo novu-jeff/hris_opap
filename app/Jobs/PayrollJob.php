@@ -28,6 +28,7 @@ class PayrollJob implements ShouldQueue
     $this->employees = $employees;
     $this->payrollId = $payrollId;
     $this->type = $type;
+    $this->onQueue('payroll');
 }
 
     public function handle()
@@ -37,6 +38,10 @@ class PayrollJob implements ShouldQueue
     ]);
     $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
 
+   if (!$payroll) {
+       \Log::error('PayrollJob: Payroll not found', ['payroll_id' => $this->payrollId]);
+       return;
+   }
 
    $service = app(PayrollService::class);
 $process = $service->getProcess($this->type);
