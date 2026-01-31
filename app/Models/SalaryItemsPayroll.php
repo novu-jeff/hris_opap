@@ -13,7 +13,13 @@ class SalaryItemsPayroll extends Model
 
     protected $fillable = [];
 
-    public function getFillable()
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->fillable = $this->resolveFillable();
+    }
+
+    protected function resolveFillable(): array
     {
         $product = config('app.product');
 
@@ -25,6 +31,7 @@ class SalaryItemsPayroll extends Model
                 'position',
                 'basic_salary',
                 'pera',
+                'overtime_pay',
                 'gross_amount_earned',
                 'rlip',
                 'hdmf',

@@ -245,6 +245,11 @@ class Clock extends Component
         $this->dispatch('loadDefaults');
     }
 
+    private function requiresAccomplishment(): bool
+    {
+        return $this->status === 'Clock Out' || $this->isForcedOut;
+    }
+
    public function triggerClock()
     {
 
@@ -286,6 +291,16 @@ class Clock extends Component
                 'message' => 'No image was captured.',
             ]);
 
+            return;
+        }
+
+        if ($this->requiresAccomplishment() && empty($this->accomplishment)) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Missing File',
+                'message' => 'Please upload an accomplishment report before clocking out.',
+            ]);
             return;
         }
 
@@ -338,6 +353,7 @@ class Clock extends Component
     $this->resetErrorBag();
 
 
+    $this->validate();
 
     // Safety check
     if (!$this->upload_accomplishment) {
@@ -353,7 +369,17 @@ class Clock extends Component
     // Store the file
     $file = $this->upload_accomplishment;
     $fileName = $this->employee_no . '_' . time() . '.' . $file->getClientOriginalExtension();
-    $file->storeAs('accomplishments', $fileName, 'public');
+    $path = $file->storeAs('accomplishments', $fileName, 'public');
+
+    if (!$path || !Storage::disk('public')->exists($path)) {
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Upload Failed',
+            'message' => 'Accomplishment report could not be saved. Please check storage permissions or try again.',
+        ]);
+        return;
+    }
 
     // Save the filename to DB or property
     $this->accomplishment = $fileName;
