@@ -4,12 +4,14 @@ namespace App\Livewire\Admin\Reports\Payroll;
 
 use Livewire\Component;
 use App\Models\SalaryPayroll;
+use App\Models\EmployeeInformation;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PayrollExport;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\WithPagination;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 
 
@@ -23,6 +25,7 @@ class View extends Component
     public string $filterSalaryMethod = '';
 
     public array $records = [];
+    public $model;
     public bool $isApproved = false;
     public array $updatedItems = [];
     public bool $hasChanges = false;
@@ -74,49 +77,82 @@ class View extends Component
     
 
     // Group by section
-    $sections = $items->groupBy('section_name');
-    $payrollItems = [];
+    // Group by section
+$sections = $items->groupBy(function ($item) {
+    return optional($item->information->section)->name ?? 'NO SECTION';
+});
+$payrollItems = [];
 
-    foreach ($sections as $sectionName => $employees) {
-        $payrollItems[] = [
-            'section_name' => $sectionName,
-            'employees' => $employees->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'employee_no' => $item->employee_no,
-                    'name' => $item->name,
-                    'position' => $item->position,
-                    'salary_method' => $item->information?->salary_method ?? 'N/A',
-                    'employment_type' => $item->information?->employment_type?->name ?? 'N/A',
-                    'basic_salary' => $item->basic_salary,
-                    'pera' => $item->pera ?? 0,
-                    'gross_amount_earned' => $item->gross_amount_earned,
-                    'rlip' => $item->rlip ?? 0,
-                    'hdmf' => $item->hdmf ?? 0,
-                    'philhealth' => $item->philhealth ?? 0,
-                    'consoloan' => $item->consoloan ?? 0,
-                    'emergency_loan' => $item->emergency_loan ?? 0,
-                    'plreg' => $item->plreg ?? 0,
-                    'mpl' => $item->mpl ?? 0,
-                    'mpl_lite' => $item->mpl_lite ?? 0,
-                    'cpl' => $item->cpl ?? 0,
-                    'mp2' => $item->mp2 ?? 0,
-                    'mplstlms' => $item->mplstlms ?? 0,
-                    'cir375_cir449' => $item->cir375_cir449 ?? 0,
-                    'w_tax' => $item->w_tax ?? 0,
-                    'uca' => $item->uca ?? 0,
-                    'aut' => $item->aut ?? 0,
-                    'total_deductions' => $item->total_deductions ?? 0,
-                    'net_amount' => $item->net_amount ?? 0,
-                    'net_first_half' => $item->net_first_half ?? 0,
-                    'net_second_half' => $item->net_second_half ?? 0,
-                    'dbp' => $item->dbp ?? 0,
-                    'kawani' => $item->kawani ?? 0,
-                    'lbp_payroll_account' => $item->lbp_payroll_account ?? 0,
-                ];
-            })->toArray(),
-        ];
-    }
+foreach ($sections as $sectionName => $employees) {
+
+    $sectionTotals = [
+        'basic_salary' => $employees->sum('basic_salary'),
+        'pera' => $employees->sum('pera'),
+        'gross' => $employees->sum('gross_amount_earned'),
+        'rlip' => $employees->sum('rlip'),
+        'hdmf' => $employees->sum('hdmf'),
+        'philhealth' => $employees->sum('philhealth'),
+        'consoloan' => $employees->sum('consoloan'),
+        'emergency_loan' => $employees->sum('emergency_loan'),
+        'plreg' => $employees->sum('plreg'),
+        'mpl' => $employees->sum('mpl'),
+        'mpl_lite' => $employees->sum('mpl_lite'),
+        'cpl' => $employees->sum('cpl'),
+        'mp2' => $employees->sum('mp2'),
+        'mplstlms' => $employees->sum('mplstlms'),
+        'cir375_cir449' => $employees->sum('cir375_cir449'),
+        'w_tax' => $employees->sum('w_tax'),
+        'uca' => $employees->sum('uca'),
+        'aut' => $employees->sum('aut'),
+        'total_deductions' => $employees->sum('total_deductions'),
+        'net_amount' => $employees->sum('net_amount'),
+        'dbp' => $employees->sum('dbp'),
+        'kawani' => $employees->sum('kawani'),
+        'lbp_payroll_account' => $employees->sum('lbp_payroll_account'),
+        'net_first_half' => $employees->sum('net_first_half'),
+        'net_second_half' => $employees->sum('net_second_half'),
+    ];
+
+    $payrollItems[] = [
+        'section_name' => $sectionName,
+        'employees' => $employees->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'employee_no' => $item->employee_no,
+                'name' => $item->name,
+                'position' => $item->position,
+                'salary_method' => $item->information?->salary_method ?? 'N/A',
+                'basic_salary' => $item->basic_salary,
+                'pera' => $item->pera ?? 0,
+                'gross_amount_earned' => $item->gross_amount_earned,
+                'rlip' => $item->rlip ?? 0,
+                'hdmf' => $item->hdmf ?? 0,
+                'philhealth' => $item->philhealth ?? 0,
+                'consoloan' => $item->consoloan ?? 0,
+                'emergency_loan' => $item->emergency_loan ?? 0,
+                'plreg' => $item->plreg ?? 0,
+                'mpl' => $item->mpl ?? 0,
+                'mpl_lite' => $item->mpl_lite ?? 0,
+                'cpl' => $item->cpl ?? 0,
+                'mp2' => $item->mp2 ?? 0,
+                'mplstlms' => $item->mplstlms ?? 0,
+                'cir375_cir449' => $item->cir375_cir449 ?? 0,
+                'w_tax' => $item->w_tax ?? 0,
+                'uca' => $item->uca ?? 0,
+                'aut' => $item->aut ?? 0,
+                'total_deductions' => $item->total_deductions ?? 0,
+                'net_amount' => $item->net_amount ?? 0,
+                'dbp' => $item->dbp ?? 0,
+                'kawani' => $item->kawani ?? 0,
+                'lbp_payroll_account' => $item->lbp_payroll_account ?? 0,
+                'net_first_half' => $item->net_first_half ?? 0,
+                'net_second_half' => $item->net_second_half ?? 0,
+            ];
+        })->toArray(),
+        'section_totals' => $sectionTotals,
+    ];
+}
+
 
     $totalFirstHalf = $items->sum('net_first_half');
     $totalSecondHalf = $items->sum('net_second_half');
@@ -168,6 +204,27 @@ class View extends Component
     $this->isApproved = $this->payroll->status === 'approved';
 }
 
+     public function getEmployeeByPosition($positionName)
+    {
+        $supervisingOfficer = EmployeeInformation::join('employee_personal as ep', 'employee_information.employee_no', '=', 'ep.employee_no')
+        ->join('positions as p', 'employee_information.position_id', '=', 'p.id')
+        ->where('p.name', $positionName)
+        ->selectRaw("p.name as pname, ep.firstname, ep.middlename, ep.lastname, ep.suffix, CONCAT(ep.firstname, ' ', IFNULL(ep.middlename,''), ' ', ep.lastname, ' ', IFNULL(ep.suffix,'')) as full_name")
+        ->first();
+
+        if ($supervisingOfficer) {
+            return [
+                'full_name' => $supervisingOfficer->full_name,
+                'position_name' => $supervisingOfficer->pname
+            ];
+        }
+
+        return [
+            'full_name' => 'N/A',
+            'position_name' => 'N/A'
+        ];
+    }
+
     public function highlightSearchTerm(string $text): string
     {
         if (!$this->searchName) {
@@ -198,24 +255,74 @@ class View extends Component
 
 
     public function exportExcel()
+{
+    // ✅ PRELOAD relationships (VERY IMPORTANT)
+    $this->payroll->load([
+        'items.information.section'
+    ]);
+
+    /**
+     * SAFE DATE
+     */
+    $payrollDate = optional($this->payroll->payroll_date)
+        ? Carbon::parse($this->payroll->payroll_date)->format('Ymd')
+        : now()->format('Ymd');
+
+    /**
+     * SAFE EMPLOYMENT TYPE
+     */
+    $employmentType =
+        $this->records['payroll']['formatted_employment_type']
+        ?? 'ALL_EMPLOYEES';
+
+    // sanitize filename (removes special chars)
+    $employmentType = Str::slug($employmentType, '_');
+
+    /**
+     * OPTIONAL: include salary method in filename
+     */
+    $salaryMethod = $this->filterSalaryMethod
+        ? '-' . Str::slug($this->filterSalaryMethod, '_')
+        : '';
+
+    /**
+     * FINAL FILENAME
+     */
+    $filename = "PAYROLL_{$employmentType}{$salaryMethod}_{$payrollDate}_" .
+        now()->format('His') . ".xlsx";
+
+    $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');    
+
+    return Excel::download(
+        new PayrollExport(
+            $this->payroll,
+            $this->filterSalaryMethod,
+            $this->searchName,
+            $supervisingOfficer
+        ),
+        $filename
+    );
+}
+
+
+    protected function paginateArray(array $items, int $perPage = 10, int $page = null, array $options = [])
     {
-        $payrollDate = Carbon::parse($this->payroll->payroll_date)->format('Ymd'); // e.g. 20260116
-        $employmentType = $this->records['payroll']['formatted_employment_type']; // fallback if null
-
-        // sanitize employment type for filenames
-        $employmentType = str_replace(' ', '_', $employmentType);
-
-        $filename = "payroll-{$employmentType}-{$payrollDate}-" . now()->format('His') . ".xlsx";
-
-        return Excel::download(
-            new PayrollExport($this->payroll, $this->filterSalaryMethod, $this->searchName),
-            $filename
+        $page = $page ?: LengthAwarePaginator::resolveCurrentPage();
+        $items = collect($items);
+        $paginatedItems = $items->slice(($page - 1) * $perPage, $perPage)->values();
+        return new LengthAwarePaginator(
+            $paginatedItems,
+            $items->count(),
+            $perPage,
+            $page,
+            $options
         );
-
     }
 
     public function render()
     {
+      
+
         return view('livewire.admin.reports.payroll.view', [
             'records' => $this->records,
             'isApproved' => $this->isApproved,

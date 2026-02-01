@@ -134,6 +134,9 @@ class SalaryService extends Controller {
         ];
     }
 
+
+
+
     public function createPayroll($payload) {
         $payroll = SalaryPayroll::create([
             'payroll_date' => $payload['payroll_date'],
@@ -232,7 +235,7 @@ class SalaryService extends Controller {
 
         if ($this->product == 'government') {
 
-                    \Log::info('Start computePayroll Government', [
+                    \Log::info('Start computePayroll Governmentsss', [
             'payroll_id' => $payroll->id,
             'employees_count' => count($employees),
             'type' => $type,
@@ -260,6 +263,7 @@ class SalaryService extends Controller {
             $data = [];
 
             foreach ($employees as $employee) {
+                Log::info('Employee structure', $employee);
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
@@ -289,6 +293,7 @@ class SalaryService extends Controller {
                 ->where('is_active', 1)
                 ->latest('year')
                 ->first();
+                
 
                 \Log::info('Latest Tranche fetched', [
                     'employee_no' => $employee_no,
@@ -311,11 +316,11 @@ class SalaryService extends Controller {
                     : 0;
 
                 } else {
-                    $salary = $employee['salary'];
-                    $wtax = $employee['w_tax'];
+                    $wtax = data_get($employee, 'w_tax', 0);
+                    $salary = data_get($employee, 'salary', 0);
                 }    
 
-                Log::info('Tranche computation', [
+                Log::info('Tranche computationss', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
                     'tranche_id' => $latestTranche->id,
@@ -346,7 +351,8 @@ class SalaryService extends Controller {
                 $earnings = $other_service->earnings($employee_no);
                 $deductions = $hasDeductions ? $other_service->deductions($employee_no, $cutoffEndDate) : [];
 
-                $current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
+                //$current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
+                $current_date = Carbon::parse($payroll->payroll_date)->format('Y-m-d');
                 $social_security = $hasDeductions
                     ? DB::table('social_security as gb')
                         ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')

@@ -144,7 +144,7 @@ class HRISProcessingService extends Controller
 
        
         $salary = $getdata['salary'];   
-        $wtax = $getdata['w_tax'];
+        $wtax = $getdata['w_tax'] ?? 0;
 
 \Log::info('Saving employee information data', $data, ['salary' => $salary, 'w_tax' => $wtax]);
         if ($record) {
@@ -827,7 +827,7 @@ class HRISProcessingService extends Controller
             }
         } else {
             $data['salary'];
-            $data['w_tax'];
+            //$data['w_tax'];
             return $data;
         }
         

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TrancheItems;
+use App\Models\EmployementTypes;
 
 class Tranche extends Model
 {
@@ -24,6 +26,11 @@ class Tranche extends Model
 
     public function items() {
         return $this->hasMany(TrancheItems::class, 'tranche_id', 'id');
+    }
+
+    public function employmentType()
+    {
+        return $this->belongsTo(EmployementTypes::class, 'eligible');
     }
 
 }

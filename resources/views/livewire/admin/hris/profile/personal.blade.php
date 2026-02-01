@@ -241,6 +241,81 @@
         </div>
         <div class="accordion-item mb-4">
             <h2 class="accordion-header">
+                <button class="accordion-button text-uppercase fw-bold" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#flush-government-ids"
+                        aria-expanded="false"
+                        aria-controls="flush-government-ids">
+                    Government ID Numbers
+                </button>
+            </h2>
+
+            <div id="flush-government-ids" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                    <div class="row">
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="gsis_no">GSIS No.</label>
+                            <input type="text"
+                                wire:model="records.gsis_no"
+                                id="gsis_no"
+                                class="form-control">
+                            @error('records.gsis_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="pagibig_no">Pag-IBIG No.</label>
+                            <input type="text"
+                                wire:model="records.pagibig_no"
+                                id="pagibig_no"
+                                class="form-control">
+                            @error('records.pagibig_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="philhealth_no">PhilHealth No.</label>
+                            <input type="text"
+                                wire:model="records.philhealth_no"
+                                id="philhealth_no"
+                                class="form-control">
+                            @error('records.philhealth_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="sss_no">SSS No.</label>
+                            <input type="text"
+                                wire:model="records.sss_no"
+                                id="sss_no"
+                                class="form-control">
+                            @error('records.sss_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="tin_no">TIN</label>
+                            <input type="text"
+                                wire:model="records.tin_no"
+                                id="tin_no"
+                                class="form-control">
+                            @error('records.tin_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item mb-4">
+            <h2 class="accordion-header">
                 <button class="accordion-button text-uppercase fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-appearance" aria-expanded="false" aria-controls="flush-appearance">
                     Appearance
                 </button>
