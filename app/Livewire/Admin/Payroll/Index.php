@@ -577,7 +577,9 @@ class Index extends Component
 
 
         // Create payroll record
-        $payroll = $service->createPayroll($data);
+       $payroll = $service->createPayroll($data);
+
+      
 
         // Start queue batch processing
         $this->dispatch('start-job-dispatch', [

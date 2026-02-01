@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 use Illuminate\Support\Facades\Log;
+use App\Models\EmployementTypes;
 
 class Create extends Component
 {
@@ -25,13 +26,25 @@ class Create extends Component
     public $is_active;
     public $availableYears = [];
 
+    public $employmentTypes = [];
+    public $years = [];
+
     public function mount()
     {
+
+        $startYear = 2018;
+        $endYear   = now()->year + 1;
+
+        $this->years = range($startYear, $endYear);
+
         $this->availableYears = Tranche::select('year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->toArray();
+
+         // ✅ dynamic employment types
+        $this->employmentTypes = EmployementTypes::orderBy('name')->get();   
     }
 
     public function updatedFile()

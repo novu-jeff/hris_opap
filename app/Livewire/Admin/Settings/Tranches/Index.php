@@ -79,7 +79,7 @@ class Index extends Component
 
     public function view(int $id) {
 
-        $records = Tranche::with('items')
+        $records = Tranche::with(['items', 'employmentType'])
             ->where('id', $id)
             ->first(); 
 
@@ -96,7 +96,7 @@ class Index extends Component
     public function render()
     {
 
-       $model = Tranche::with('items')
+       $model = Tranche::with(['items', 'employmentType'])
         ->where('isDeleted', false);
 
         if ($this->search) {

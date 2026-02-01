@@ -116,7 +116,7 @@
                         @foreach($yearTranches as $tranche)
                             <tr>
                                 <td>{{ $tranche->name }}</td>
-                                <td>{{ $tranche->eligible }}</td>
+                                <td>{{ $tranche->employmentType->name ?? 'N/A' }}</td>
                                 <td>{{ $tranche->is_active ? 'Yes' : 'No' }}</td>
                                 <td>
                                     <button wire:click="view({{ $tranche->id }})" class="btn btn-primary btn-sm">

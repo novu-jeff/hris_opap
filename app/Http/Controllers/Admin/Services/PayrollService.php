@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
 use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Controller;
+use App\Models\EmployementTypes;
 use App\Models\BonusItemsPayroll;
 use App\Models\BonusPayroll;
 use App\Models\ClothingAllowanceItemsPayroll;
@@ -32,6 +33,11 @@ class PayrollService extends Controller {
     {
         $currentYear = now()->year;
 
+        $cosId = EmployementTypes::where('code', 'COS')->value('id');
+        $joId  = EmployementTypes::where('code', 'JO')->value('id');
+
+     //  dd( $cosId , $joId, $employment_type );
+
         $results = DB::table('employee_information as ei')
             ->select(
                 'ei.id as employee_id',
@@ -54,15 +60,21 @@ class PayrollService extends Controller {
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
-            ->where(function ($query) use ($employment_type) {
-                $query->where('ei.employment_type_id', $employment_type)
-                    ->orWhereNull('ei.employment_type_id'); // include missing type
+            ->where(function ($query) use ($employment_type, $cosId, $joId) {
+
+                if ($employment_type == $cosId) {
+                    // COS payroll must include JO employees
+                    $query->whereIn('ei.employment_type_id', [$cosId, $joId]);
+                } else {
+                    $query->where('ei.employment_type_id', $employment_type);
+                }
+
             })
-            ->where('ei.status', 'active')    // only active employees
-            ->where('ei.isDeleted', 0)        // only not deleted
+            ->where('ei.status', 'active')
+            ->where('ei.isDeleted', 0)
             ->get();
 
-         //  dd($results);
+        
 
         $employees = [
             'eligible' => [
@@ -89,9 +101,11 @@ class PayrollService extends Controller {
                     $reasons[] = 'no BSD number';
                 }
 
-                if (empty($row->position_id)) {
-                    $reasons[] = 'no position assigned';
-                }
+                if($row->employment_type_id != $joId) {
+                    if (empty($row->position_id)) {
+                        $reasons[] = 'no position assigned';
+                    }
+                }    
 
                 if ($type === 'mid_year') {
                     $may15 = Carbon::create($currentYear, 5, 15);
@@ -137,7 +151,7 @@ class PayrollService extends Controller {
             $employees[$status]['items'][] = $employeeData;
             $employees[$status]['count']++;
         }
-//dd($employees);
+
         return $employees;
     }
 

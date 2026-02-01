@@ -26,9 +26,13 @@
                         <div class="col-12 col-md-6 mb-4">
                             <label class="mb-2" for="eligible">Eligible <span class="text-danger">*</span></label>
                             <select wire:model="eligible" id="eligible" class="form-select">
-                                <option value=""> - CHOOSE - </option>
-                                <option value="1">Regular Contractual</option>
-                                <option value="2">Contract of Service (COS)</option>
+                            <option value=""> - CHOOSE - </option>
+
+                                @foreach ($employmentTypes as $type)
+                                    <option value="{{ $type->id }}">
+                                        {{ $type->name }}
+                                    </option>
+                                @endforeach
                             </select>
                             <div class="error-field">
                                 @error('eligible') <span class="text-danger">{{ $message }}</span> @enderror

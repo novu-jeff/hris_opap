@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings\Tranches;
 
 use App\Models\Tranche;
 use App\Models\TrancheItems;
+use App\Models\EmployementTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +26,8 @@ class Edit extends Component
     public $is_active;
     public $availableYears = [];
 
+    public $employmentTypes = [];
+
     public function mount() {
         
 
@@ -38,6 +41,9 @@ class Edit extends Component
 
        // $this->year = null; // <--- Important, initially empty
         $this->year = $records->year;
+
+        // ✅ dynamic employment types
+        $this->employmentTypes = EmployementTypes::orderBy('name')->get(); 
     }
 
     public function loadRecords() {
@@ -194,9 +200,9 @@ class Edit extends Component
         try {
 
              // Deactivate all other tranches for the same eligible type if this is active
-            // if ($this->is_active) {
+            if ($this->is_active) {
                  Tranche::where('eligible', $this->eligible)->update(['is_active' => 0]);
-            // }
+             }
 
              // deactivate other tranches for the same year
             // Tranche::where('year', $this->year)->update([

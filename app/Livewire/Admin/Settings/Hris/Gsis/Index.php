@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin\Settings\Hris\Gsis;
 
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+
 use App\Imports\SocialSecurityBillingImports;
 use App\Models\SocialSecurityBilling;
 use App\Models\SocialSecurityBillingItems;
@@ -142,21 +144,33 @@ class Index extends Component
                 throw new \Exception('Invalid imported file, format does not match to what\'s expected.');
             }
 
-            $billingMonth = Carbon::createFromFormat('m/Y', $sheet[2][1])->format('m/Y');
+            $rawBillingDate = $sheet[2][1];
+
+            if (is_numeric($rawBillingDate)) {
+                // Excel date (most common)
+                $billingDate = Carbon::instance(
+                    ExcelDate::excelToDateTimeObject($rawBillingDate)
+                )->format('Y-m-d');
+            } else {
+                // String date (01/31/2026, 2026-01-31, etc.)
+                $billingDate = Carbon::parse($rawBillingDate)->format('Y-m-d');
+            }
+
+           // $billingMonth = Carbon::createFromFormat('m/Y', $sheet[2][1])->format('m/Y');
 
             // Find or create the GSIS billing record
             $SocialSecurityBilling = SocialSecurityBilling::updateOrCreate(
-                ['billing_month' => $billingMonth], // condition to check existing record
+                ['billing_month' => $billingDate], // condition to check existing record
                 [ // data to update or insert
                     'remitting_agency' => $expectedNotNullable['remitting_agency'],
                     'office_code' => $expectedNotNullable['office_code'],
-                    'billing_month' => $expectedNotNullable['billing_month'],
+                    'billing_month' => $billingDate,
                     'date_uploaded' => Carbon::now(),
                 ]
             );
 
             // Determine success message
-            $message = 'GSIS Billing for month ' . $billingMonth . ' was ' . ($SocialSecurityBilling->wasRecentlyCreated ? 'added' : 'updated') . ' successfully.';
+            $message = 'GSIS Billing for month ' . $billingDate . ' was ' . ($SocialSecurityBilling->wasRecentlyCreated ? 'added' : 'updated') . ' successfully.';
 
             // Process items starting from the 6th row (index 5) 
             foreach (array_slice($sheet, 5) as $row) {
