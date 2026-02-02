@@ -291,14 +291,18 @@ foreach ($sections as $sectionName => $employees) {
     $filename = "PAYROLL_{$employmentType}{$salaryMethod}_{$payrollDate}_" .
         now()->format('His') . ".xlsx";
 
-    $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');    
+    $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');  
+    $chiefadministrativeOfficer = $this->getEmployeeByPosition('Chief Administrative Officer'); 
+    
+   
 
     return Excel::download(
         new PayrollExport(
             $this->payroll,
             $this->filterSalaryMethod,
             $this->searchName,
-            $supervisingOfficer
+            $supervisingOfficer,
+            $chiefadministrativeOfficer
         ),
         $filename
     );
