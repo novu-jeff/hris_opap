@@ -44,8 +44,8 @@
     @endphp
     @if($product == 'government')
         @if($records['payroll']['employment_type']['id'] == '1')
-            <div class="table-responsive pb-3">
-                <table>
+            <div class="table-responsive pb-3 ">
+                <table class="table-striped payroll-table">
                     <thead>
                         <tr>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
@@ -63,7 +63,7 @@
                         <tr>
                             <th colspan="2" class="vertical-text green">RLIP</th>
                             <th colspan="2" class="vertical-text yellow">HDMF</th>
-                            <th colspan="2" class="vertical-text skyblue">PHIL HEALTH</th>
+                            <th colspan="2" class="vertical-text skyblue">PHILHEALTH</th>
                             <th colspan="2" class="vertical-text green">CONSOLOAN</th>
                             <th colspan="2" class="vertical-text green">EMERGYLN</th>
                             <th colspan="2" class="vertical-text green">PLREG</th>
@@ -78,11 +78,11 @@
                             <th class="vertical-text grey">AUT</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
-                            <th colspan="2" class="vertical-text grey">DBP</th>
+                            <th colspan="2" class="vertical-text grey">DBP BRANCH</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
                             <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
-                            <th colspan="4" class="text-center">First Half</th>
-                            <th colspan="4" class="text-center">Second Half</th>
+                            <th colspan="4" class="text-center">1st Half</th>
+                            <th colspan="4" class="text-center">2nd Half</th>
                         </tr>
                     </thead>
 
@@ -313,8 +313,8 @@
                             <th colspan="2" class="vertical-text grey">DBP</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
                             <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
-                            <th colspan="4" class="text-center">First Half</th>
-                            <th colspan="4" class="text-center">Second Half</th>
+                            <th colspan="4" class="text-center">1st Half</th>
+                            <th colspan="4" class="text-center">2nd Half</th>
                         </tr>
                     </thead>
 

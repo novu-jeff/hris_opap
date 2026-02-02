@@ -144,7 +144,7 @@ class HRISProcessingService extends Controller
 
        
         $salary = $getdata['salary'];   
-        $wtax = $getdata['w_tax'];
+        $wtax = $getdata['w_tax'] ?? 0;
 
 \Log::info('Saving employee information data', $data, ['salary' => $salary, 'w_tax' => $wtax]);
         if ($record) {
@@ -152,6 +152,7 @@ class HRISProcessingService extends Controller
                 'section_id' => $data['section_id'] ? $data['section_id'] : null,
                 'position_id' => $data['position_id'],
                 'job_completion' => $data['job_completion'],
+                'date_hired' => $data['date_hired'],
                 'bsd_no' => $data['biometrics_id'],
                 'shift_id' => $data['shift_schedule'] ? $data['shift_schedule'] : null,
                 'schedule_id' => $data['employee_schedule'] ? $data['employee_schedule'] : null,
@@ -805,7 +806,9 @@ class HRISProcessingService extends Controller
                         $query->where('salary_grade', $salaryGrade)
                             ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
                     }])
-                    ->where('eligible', $eligible)
+                     ->where('eligible', $eligible)
+                    ->where('is_active', 1)
+                    ->latest('year')
                     ->first();
                 
                 $salary = ($activeTranche && $activeTranche->items->isNotEmpty()) 
@@ -824,7 +827,7 @@ class HRISProcessingService extends Controller
             }
         } else {
             $data['salary'];
-            $data['w_tax'];
+            //$data['w_tax'];
             return $data;
         }
         

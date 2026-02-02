@@ -141,6 +141,10 @@
                 <a href="{{ route('reports.dtr') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Daily Time Record</a>
                 @endcan
+                @can('read dtr')
+                <a href="{{ route('reports.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Payroll Record</a>
+                @endcan
                 @if($product == 'private')
                     <a href="{{ route('reports.bir') }}" class="submenu-item">
                         <i class="fa-solid fa-file-lines"></i> BIR</a>

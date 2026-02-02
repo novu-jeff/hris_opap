@@ -40,7 +40,7 @@ class Show extends Component
             'ess' => [
                 'leave', 'obs', 'atro', 'time-adjustments', 'payslip-request', 'announcements', 
                 'employee-profile-approval', 'messages', 'faqs'],
-            'reports' => ['dtr', 'bir-2316'],
+            'reports' => ['dtr', 'payroll-report', 'bir-2316'],
             'settings' => [
                 'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
@@ -87,6 +87,7 @@ class Show extends Component
                     }
                 } else {
                     // For other modules, set both 'read' and 'write' to false (default behavior)
+                    //dd('here');
                     $this->selectedPermissions["$module.$action"] = [
                         'read' => false,
                         'write' => false,
@@ -118,8 +119,11 @@ class Show extends Component
                 // Generate the key for selectedPermissions like "recruitment.jobs"
                 $permissionKey = "$permission->module_name.$moduleAction"; // e.g., "jobs.read"
                 // Ensure the module-action exists in the selectedPermissions
+               // dd($this->selectedPermissions);
+               \Log::info('Checking permission', ['key' => $permissionKey, 'action' => $action]);
                 if (isset($this->selectedPermissions[$permissionKey])) {
                     // Set the corresponding action (read/write/delete) to true
+                    \Log::info('Setting permission', ['key' => $permissionKey, 'action' => $action]);
                     $this->selectedPermissions[$permissionKey][$action] = true;
                 }
             }
@@ -203,7 +207,7 @@ class Show extends Component
                 'status' => 'error',
                 'title' => 'Oops!',
                 'showAlert' => true,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => 'An error occurredss: ' . $e->getMessage()
             ]);
         }
     }

@@ -38,6 +38,11 @@ class ModelActivityObserver
      */
     protected function logChange(Model $model, string $action)
     {
+        // Skip trail logging when running in console (e.g. queue worker) to avoid permission issues
+        if (app()->runningInConsole()) {
+            return;
+        }
+
         $baseDirectory = storage_path('logs/trails/');
         $path = request()->path();
 
@@ -50,7 +55,15 @@ class ModelActivityObserver
         }
 
         if (!File::exists($directory)) {
-            File::makeDirectory($directory, 0777, true, true);
+            try {
+                File::makeDirectory($directory, 0775, true, true);
+            } catch (\Throwable $e) {
+                \Log::warning('ModelActivityObserver: could not create trails directory', [
+                    'directory' => $directory,
+                    'message' => $e->getMessage(),
+                ]);
+                return;
+            }
         }
 
         $filename = now()->format('m-d-y') . '.log';
@@ -73,6 +86,13 @@ class ModelActivityObserver
             json_encode($model->getAttributes(), JSON_PRETTY_PRINT)
         );
 
-        File::append($directory . $filename, $logEntry);
+        try {
+            File::append($directory . $filename, $logEntry);
+        } catch (\Throwable $e) {
+            \Log::warning('ModelActivityObserver: could not write trail log', [
+                'path' => $directory . $filename,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 }

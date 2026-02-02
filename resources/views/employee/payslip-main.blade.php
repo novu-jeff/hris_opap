@@ -62,9 +62,10 @@
                     <div class="value ms-2">PHP {{ number_format($payslip['pera'], 2)}}</div>
                 </div>
                 <div class="d-flex align-items-start border-bottom py-1">
-                    <div class="label">Overtime:</div>
-                    <div class="value ms-2">PHP 0.00</div>
+                    <div class="label">Gross Amount Earned:</div>
+                    <div class="value ms-2">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</div>
                 </div>
+               
             </div>
 
             {{-- DEDUCTIONS --}}
@@ -142,8 +143,8 @@
 
             {{-- ISSUED BY --}}
             <div class="info border-section p-3 mt-3 text-center">
-                <div>Issued by: <span class="text-decoration-underline">____________________</span></div>
-                <div>___________________________</div>
+                <div>Issued by: <span class="text-decoration-underline">{{ $supervisingOfficer['full_name'] }}</span></div>
+                <div>{{ $supervisingOfficer['position_name'] }}</div>
             </div>
 
         </div>

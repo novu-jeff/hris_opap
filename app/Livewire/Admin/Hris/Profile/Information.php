@@ -138,6 +138,12 @@ class Information extends Component
         $position_id = $info['position_id'] ?? null;
         $step_id     = $info['step_id'] ?? null;
 
+        \Log::info('Handling salary...', [
+            'eligible'    => $eligible,
+            'position_id' => $position_id,
+            'step_id'     => $step_id,
+        ]);
+
         if (config('app.product') !== 'government') {
             $this->isGovernment = false;
             $this->positions = Positions::all();
@@ -157,9 +163,9 @@ class Information extends Component
         }
 
         /* EDIT MODE → do NOT recompute */
-        if ($this->isEditing) {
+       /* if ($this->isEditing) {
             return;
-        }
+        }*/
 
         /* Require all fields */
         if (!$eligible || !$position_id || !$step_id) {
@@ -169,6 +175,11 @@ class Information extends Component
 
         $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
         $stepColumn  = 'step_' . $step_id;
+
+        \Log::info('Computing salary...', [
+            'salary_grade' => $salaryGrade,
+            'step_column'  => $stepColumn,
+        ]);
 
         $activeTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn) {
                 $query->where('salary_grade', $salaryGrade)
@@ -248,7 +259,7 @@ class Information extends Component
             'records.employee_information.section_id'    => 'required|exists:sections,id',
             'records.employee_information.type'          => 'required|exists:employment_types,id',
             'records.employee_information.position_id'   => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id',
-            'records.employee_information.step_id'       => 'required|in:1,2,3,4,5,6,7,8',
+            //'records.employee_information.step_id'       => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.salary'        => 'required|numeric|gt:1000',
             'records.employee_information.salary_method' => 'nullable|in:cash,land bank atm',
         ];
