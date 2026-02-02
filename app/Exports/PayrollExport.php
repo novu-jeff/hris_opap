@@ -265,18 +265,18 @@ class PayrollExport implements FromCollection, WithEvents
             $footerRow = $sheet->getHighestRow() + 3;
 
             $sheet->setCellValue("A{$footerRow}", 'Prepared by:');
-            $sheet->setCellValue("F{$footerRow}", 'Certified Correct by:');
+            $sheet->setCellValue("E{$footerRow}", 'Certified Correct by:');
 
             $sheet->setCellValue("A" . ($footerRow + 2), $preparedByName);
-            $sheet->setCellValue("F" . ($footerRow + 2), $certifiedByName);
+            $sheet->setCellValue("E" . ($footerRow + 2), $certifiedByName);
 
             $sheet->setCellValue("A" . ($footerRow + 3), $preparedByPosition);
-            $sheet->setCellValue("F" . ($footerRow + 3), $certifiedByPosition);
+            $sheet->setCellValue("E" . ($footerRow + 3), $certifiedByPosition);
 
             $sheet->getStyle("A{$footerRow}")->getFont()->setBold(true);
-            $sheet->getStyle("F{$footerRow}")->getFont()->setBold(true);
+            $sheet->getStyle("E{$footerRow}")->getFont()->setBold(true);
             $sheet->getStyle("A" . ($footerRow + 2))->getFont()->setBold(true);
-            $sheet->getStyle("F" . ($footerRow + 2))->getFont()->setBold(true);
+            $sheet->getStyle("E" . ($footerRow + 2))->getFont()->setBold(true);
 
             /* ================= AUTO WIDTH ================= */
 

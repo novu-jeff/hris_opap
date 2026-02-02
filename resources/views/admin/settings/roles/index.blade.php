@@ -12,6 +12,7 @@
         <div class="action">
             <div class="d-md-flex gap-3">
                 <a href="{{route('users.access.create')}}" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</a>
+                
             </div>
         </div>
     </div>
