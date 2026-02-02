@@ -24,7 +24,7 @@ class PayrollExport implements FromCollection, WithEvents
     protected $certifiedByName;
     protected $certifiedByPosition;
 
-    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '', $searchName = '', $supervisingOfficer = null)
+    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '', $searchName = '', $supervisingOfficer = null, $chiefadministrativeOfficer = null)
     {
         $this->payroll = $payroll;
         $this->filterSalaryMethod = $filterSalaryMethod;
@@ -32,6 +32,8 @@ class PayrollExport implements FromCollection, WithEvents
         $this->supervisingOfficer = $supervisingOfficer;
         $this->preparedByName = $supervisingOfficer['full_name'] ?: 'Prepared By';
         $this->preparedByPosition = $supervisingOfficer['position_name'] ?: '';
+        $this->certifiedByName = $chiefadministrativeOfficer['full_name'] ?: 'Certified Correct By';
+        $this->certifiedByPosition = $chiefadministrativeOfficer['position_name'] ?: '';
     }
 
     /**
@@ -259,8 +261,8 @@ class PayrollExport implements FromCollection, WithEvents
            $preparedByName = $this->preparedByName;
             $preparedByPosition = $this->preparedByPosition;
 
-            $certifiedByName = 'MARIA SANTOS';
-            $certifiedByPosition = 'Finance Manager';
+            $certifiedByName = $this->certifiedByName;
+            $certifiedByPosition = $this->certifiedByPosition;
 
             $footerRow = $sheet->getHighestRow() + 3;
 
