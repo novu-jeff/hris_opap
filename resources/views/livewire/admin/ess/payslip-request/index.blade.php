@@ -135,6 +135,16 @@
                                             <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
+                                            @if($record->status == 'approved')
+                                            <button
+                                                class="btn btn-info btn-sm"
+                                                title="Download Payslip"
+                                                wire:click="download({{ $record->id }})"
+                                            >
+                                                <i class="fa-solid fa-download"></i>
+                                            </button>
+
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

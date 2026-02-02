@@ -51,6 +51,27 @@ tfoot tr.table-total-row {
         text-align: right;
         white-space: nowrap;
     }
+.payroll-table-wrapper {
+    max-height: 600px; /* Adjust the table height */
+    overflow-y: auto;
+    position: relative;
+}
+
+.table-header th {
+    position: sticky;
+    top: 50;
+    z-index: 10;
+}
+
+.table-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.table-footer td {
+    background-color: #f8f9fa; /* Same as table-footer bg-light */
+}
 
 
 </style>

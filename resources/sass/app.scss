@@ -408,12 +408,37 @@ input[type="radio"]:disabled:not(:checked) {
   }
 }
 
+/* Base container for all screen sizes */
+.container {
+    width: 100%;
+    max-width: 100%; /* base */
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 0 auto;
+}
+
 @media (min-width: 1200px) {
     .container {
-        max-width: 1220px !important;
-        /* styles here */
+        width: 90%;        /* fluid scaling */
+        max-width: 1400px; /* caps moderately wide screens */
     }
 }
+
+@media (min-width: 1920px) {
+    .container {
+        width: 95%;        /* more fluid on ultra-wide */
+        max-width: 2000px; /* cap for really wide screens */
+    }
+}
+
+@media (min-width: 2560px) {
+    .container {
+        width: 98%;
+        max-width: 2400px; /* just shy of full width */
+    }
+}
+
+
 
 /*.modal-dialog.custom-modal {
     max-width: 996px; 

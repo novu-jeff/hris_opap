@@ -244,6 +244,76 @@
                 </div> 
             </div>
             <div class="accordion-item mb-4">
+            <h2 class="accordion-header">
+                <button class="accordion-button text-uppercase fw-bold" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#flush-government-ids"
+                        aria-expanded="false"
+                        aria-controls="flush-government-ids">
+                    Government ID Numbers
+                </button>
+            </h2>
+
+            <div id="flush-government-ids" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                    <div class="row">
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">GSIS No.</label>
+                            <input type="text" readonly
+                                wire:model="records.gsis_no.new"
+                                class="restricted form-control {{ $records['gsis_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.gsis_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">Pag-IBIG No.</label>
+                            <input type="text" readonly
+                                wire:model="records.pagibig_no.new"
+                                class="restricted form-control {{ $records['pagibig_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.pagibig_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">PhilHealth No.</label>
+                            <input type="text" readonly
+                                wire:model="records.philhealth_no.new"
+                                class="restricted form-control {{ $records['philhealth_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.philhealth_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">SSS No.</label>
+                            <input type="text" readonly
+                                wire:model="records.sss_no.new"
+                                class="restricted form-control {{ $records['sss_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.sss_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">TIN</label>
+                            <input type="text" readonly
+                                wire:model="records.tin_no.new"
+                                class="restricted form-control {{ $records['tin_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.tin_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <div class="accordion-item mb-4">
                 <h2 class="accordion-header">
                     <button class="accordion-button text-uppercase fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-appearance" aria-expanded="false" aria-controls="flush-appearance">
                         Appearance
