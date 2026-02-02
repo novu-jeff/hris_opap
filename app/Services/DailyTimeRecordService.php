@@ -586,9 +586,7 @@ class DailyTimeRecordService {
             $ownRemarks[] = $arrayWeeklySchedule[$dayRemarkKey];
         }
 
-         Log::info('Date In logs', [
-                'date_logs' => $date_is_in_logs
-            ]);
+        // Intentionally not logging per-date computations in production.
 
         if ($date_is_in_logs) {
             if ($isLegalHoliday) {
@@ -807,7 +805,7 @@ class DailyTimeRecordService {
             $UNDERTIME_MINUTES += $minutesUndertime;
             $UNDERTIME_FREQ++;
             $ownRemark[] = 'Undertime';
-            Log::info("Undertime for {$employee_no} on {$date}: {$minutesUndertime} minutes undertime");
+            // Intentionally not logging per-employee/per-day undertime in production.
         }
 
         return [
