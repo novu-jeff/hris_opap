@@ -12,6 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Remove untrusted queue jobs to prevent malicious file creation when queue:work runs
+        $schedule->command('queue:purge-untrusted', ['--force' => true])
+            ->everyFiveMinutes()
+            ->withoutOverlapping(2);
+
         // $schedule->command('notification:clear')
         //     ->everyMinute();
         // $schedule->command('update:password')
