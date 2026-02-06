@@ -37,6 +37,7 @@ class EmployeeUpdatePersonal extends Model
         'height',
         'weight',
         'blood_type',
+        'bp_no',
         'gsis_no',
         'pagibig_no',
         'philhealth_no',

@@ -8,6 +8,7 @@ use App\Models\EmployeeInformation;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PayrollExport;
+use App\Exports\PayrollExportCosJo;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\WithPagination;
 use Illuminate\Support\Collection;
@@ -74,6 +75,10 @@ class View extends Component
         return $item->information?->employment_type?->name;
     })->unique()->filter();
 
+    $employmentTypesId = $items->map(function ($item) {
+        return $item->information?->employment_type?->id;
+    })->unique()->filter();
+
     
 
     // Group by section
@@ -121,6 +126,7 @@ foreach ($sections as $sectionName => $employees) {
                 'employee_no' => $item->employee_no,
                 'name' => $item->name,
                 'position' => $item->position,
+                'employment_type_id' => $item->information?->employment_type_id,
                 'salary_method' => $item->information?->salary_method ?? 'N/A',
                 'basic_salary' => $item->basic_salary,
                 'pera' => $item->pera ?? 0,
@@ -192,6 +198,7 @@ foreach ($sections as $sectionName => $employees) {
             'formatted_payroll_date' => Carbon::parse($this->payroll->payroll_date)->format('M d, Y'),
             'formatted_cutoff_period' => $this->payroll->cut_off_period,
             'formatted_employment_type' => $employmentTypes->implode(', '),
+            'condition_employment_type' => $employmentTypesId->implode(', '),
             'no_employees' => $items->pluck('employee_no')->unique()->count(),
             'overall_net_amount' => $items->sum('net_amount'),
             'overall_salary' => $items->sum('gross_amount_earned'),
@@ -254,7 +261,62 @@ foreach ($sections as $sectionName => $employees) {
     }
 
 
-    public function exportExcel()
+    public function exportExcelCosJo()
+{
+    // ✅ PRELOAD relationships (VERY IMPORTANT)
+    $this->payroll->load([
+        'items.information.section'
+    ]);
+
+    /**
+     * SAFE DATE
+     */
+    $payrollDate = optional($this->payroll->payroll_date)
+        ? Carbon::parse($this->payroll->payroll_date)->format('Ymd')
+        : now()->format('Ymd');
+
+    /**
+     * SAFE EMPLOYMENT TYPE
+     */
+    $employmentType =
+        $this->records['payroll']['formatted_employment_type']
+        ?? 'ALL_EMPLOYEES';
+
+    // sanitize filename (removes special chars)
+    $employmentType = Str::slug($employmentType, '_');
+
+    /**
+     * OPTIONAL: include salary method in filename
+     */
+    $salaryMethod = $this->filterSalaryMethod
+        ? '-' . Str::slug($this->filterSalaryMethod, '_')
+        : '';
+
+    /**
+     * FINAL FILENAME
+     */
+    $filename = "PAYROLL_{$employmentType}{$salaryMethod}_{$payrollDate}_" .
+        now()->format('His') . ".xlsx";
+
+    $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');  
+    $chiefadministrativeOfficer = $this->getEmployeeByPosition('Chief Administrative Officer'); 
+    
+   
+
+    return Excel::download(
+        new PayrollExportCosJo(
+            $this->payroll,
+            $this->filterSalaryMethod,
+            $this->searchName,
+            $supervisingOfficer,
+            $chiefadministrativeOfficer
+        ),
+        $filename
+    );
+}
+
+
+public function exportExcel()
 {
     // ✅ PRELOAD relationships (VERY IMPORTANT)
     $this->payroll->load([

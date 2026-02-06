@@ -109,7 +109,7 @@ class Personal extends Component
             'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
             'present_address', 'present_province', 'present_city', 'permanent_address',
             'permanent_province', 'permanent_city', 'mobile_number', 'tel_no', 'height',
-            'weight', 'blood_type', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
+            'weight', 'blood_type','bp_no', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
             'tin_no', 'email' 
         ];
     

@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-class PayrollExport implements FromCollection, WithEvents
+class PayrollExportCosJo implements FromCollection, WithEvents
 {
     protected $payroll;
     protected $filterSalaryMethod;
@@ -23,17 +23,34 @@ class PayrollExport implements FromCollection, WithEvents
     protected $preparedByPosition;
     protected $certifiedByName;
     protected $certifiedByPosition;
+    protected $approvedByName;
+    protected $approvedByPosition;
+    protected $secondCertifiedName;
+    protected $secondCertifiedPosition;
 
-    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '', $searchName = '', $supervisingOfficer = null, $chiefadministrativeOfficer = null)
+
+    public function __construct(SalaryPayroll $payroll, $filterSalaryMethod = '', $searchName = '', $supervisingOfficer = null, $chiefadministrativeOfficer = null, $approvedOfficer = null,
+    $secondCertifiedOfficer = null)
     {
         $this->payroll = $payroll;
         $this->filterSalaryMethod = $filterSalaryMethod;
         $this->searchName = $searchName;
         $this->supervisingOfficer = $supervisingOfficer;
-        $this->preparedByName = $supervisingOfficer['full_name'] ?: 'Prepared By';
-        $this->preparedByPosition = $supervisingOfficer['position_name'] ?: '';
-        $this->certifiedByName = $chiefadministrativeOfficer['full_name'] ?: 'Certified Correct By';
-        $this->certifiedByPosition = $chiefadministrativeOfficer['position_name'] ?: '';
+        $this->preparedByName = $supervisingOfficer['full_name'] ?? 'Prepared By';
+        $this->preparedByPosition = $supervisingOfficer['position_name'] ?? '';
+
+        $this->certifiedByName = $chiefadministrativeOfficer['full_name'] ?? 'Certified Correct By';
+        $this->certifiedByPosition = $chiefadministrativeOfficer['position_name'] ?? '';
+
+        $this->approvedByName = $approvedOfficer['full_name'] ?? 'PA ARNUFO R. PAJARILLO';
+        $this->approvedByPosition = $approvedOfficer['position_name']
+            ?? 'Presidential Assistant for Internal Management Cluster';
+
+        $this->secondCertifiedName = $secondCertifiedOfficer['full_name']
+            ?? 'CHARLIEZ JANE R. SORIANO';
+        $this->secondCertifiedPosition = $secondCertifiedOfficer['position_name']
+            ?? 'OIC, DIRECTOR IV-FMS';
+
     }
 
     /**
@@ -60,9 +77,8 @@ class PayrollExport implements FromCollection, WithEvents
 
     // ✅ PUSH HEADER ONCE
     $headers = [
-        'NAME','POSITION','BASIC SALARY','PERA','GROSS AMOUNT EARNED',
-        'RLIP','HDMF','PHILHEALTH','CONSOLOAN','EMERGYLN','PLREG',
-        'MPL','MPL LITE','CPL','MP2','MPL STLMS','CIR375, CIR449',
+        'NAME','POSITION','BASIC SALARY','HDMF','PHILHEALTH',
+        'MPL','MPL LITE','MP2','MPL STLMS','CIR375, CIR449',
         'W/TAX','UCA','AUT','TOTAL DED','NET AMOUNT','DBP BRANCH',
         'KAWANI','LBP PAYROLL ACCOUNT','1st Half','2nd Half',
     ];
@@ -79,17 +95,10 @@ class PayrollExport implements FromCollection, WithEvents
                 $item->name,
                 $item->position,
                 $item->basic_salary,
-                $item->pera ?? 0,
-                $item->gross_amount_earned,
-                $item->rlip ?? 0,
                 $item->hdmf ?? 0,
                 $item->philhealth ?? 0,
-                $item->consoloan ?? 0,
-                $item->emergency_loan ?? 0,
-                $item->plreg ?? 0,
                 $item->mpl ?? 0,
                 $item->mpl_lite ?? 0,
-                $item->cpl ?? 0,
                 $item->mp2 ?? 0,
                 $item->mplstlms ?? 0,
                 $item->cir375_cir449 ?? 0,
@@ -110,17 +119,10 @@ class PayrollExport implements FromCollection, WithEvents
         $rows->push([
             'SECTION TOTAL','',
             $employees->sum('basic_salary'),
-            $employees->sum('pera'),
-            $employees->sum('gross_amount_earned'),
-            $employees->sum('rlip'),
             $employees->sum('hdmf'),
             $employees->sum('philhealth'),
-            $employees->sum('consoloan'),
-            $employees->sum('emergency_loan'),
-            $employees->sum('plreg'),
             $employees->sum('mpl'),
             $employees->sum('mpl_lite'),
-            $employees->sum('cpl'),
             $employees->sum('mp2'),
             $employees->sum('mplstlms'),
             $employees->sum('cir375_cir449'),
@@ -143,17 +145,10 @@ class PayrollExport implements FromCollection, WithEvents
     $rows->push([
         'GRAND TOTAL','',
         $items->sum('basic_salary'),
-        $items->sum('pera'),
-        $items->sum('gross_amount_earned'),
-        $items->sum('rlip'),
         $items->sum('hdmf'),
         $items->sum('philhealth'),
-        $items->sum('consoloan'),
-        $items->sum('emergency_loan'),
-        $items->sum('plreg'),
         $items->sum('mpl'),
         $items->sum('mpl_lite'),
-        $items->sum('cpl'),
         $items->sum('mp2'),
         $items->sum('mplstlms'),
         $items->sum('cir375_cir449'),
@@ -173,7 +168,7 @@ class PayrollExport implements FromCollection, WithEvents
 }
 
 
-  /**
+    /**
      * STYLE EXCEL
      */
   public function registerEvents(): array
@@ -275,9 +270,6 @@ class PayrollExport implements FromCollection, WithEvents
             $secondCertifiedName = $this->secondCertifiedName ?? 'CHARLIEZ JANE R. SORIANO';
             $secondCertifiedPosition = $this->secondCertifiedPosition ?? 'OIC, DIRECTOR IV-FMS';
 
-            $secondCertifiedByName = $this->secondCertifiedByName ?? 'ALEX C. ORENDAIN';
-            $secondCertifiedByPosition = $this->secondCertifiedByPosition ?? 'Administrative Officer V';
-
             $startRow = $sheet->getHighestRow() + 3;
 
             /* ===== ROW B MUST BE DEFINED EARLY ===== */
@@ -349,8 +341,8 @@ class PayrollExport implements FromCollection, WithEvents
             $sheet->mergeCells("K" . ($rowB + 3) . ":M" . ($rowB + 3)); // Prepared
             $sheet->mergeCells("K" . ($rowB + 4) . ":M" . ($rowB + 4)); // Prepared
 
-            $sheet->setCellValue("K" . ($rowB + 3), $secondCertifiedByName);
-            $sheet->setCellValue("K" . ($rowB + 4), $secondCertifiedPosition);
+            $sheet->setCellValue("K" . ($rowB + 3), $certifiedByName);
+            $sheet->setCellValue("K" . ($rowB + 4), $certifiedByPosition);
 
             $sheet->mergeCells("O" . ($rowB + 3) . ":P" . ($rowB + 3)); // Prepared
             $sheet->mergeCells("O" . ($rowB + 4) . ":P" . ($rowB + 4)); // Prepared

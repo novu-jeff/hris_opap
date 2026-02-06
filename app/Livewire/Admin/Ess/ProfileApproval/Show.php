@@ -246,7 +246,7 @@ class Show extends Component
                 'present_address', 'present_province', 'present_city',
                 'permanent_address', 'permanent_province', 'permanent_city',
                 'mobile_number', 'tel_no', 'height', 'weight', 'blood_type',
-                'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
+                'bp_no', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
             ];
 
             Log::info('Personal data BEFORE SAVE', [
@@ -257,7 +257,7 @@ class Show extends Component
                     'present_address', 'present_province', 'present_city',
                     'permanent_address', 'permanent_province', 'permanent_city',
                     'mobile_number', 'tel_no', 'height', 'weight', 'blood_type',
-                    'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
+                    'bp_no', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
                 ]),
                 'update_personal' => $update?->only([
                      'firstname', 'middlename', 'lastname', 'suffix', 'birthday', 'age',
@@ -265,7 +265,7 @@ class Show extends Component
                     'present_address', 'present_province', 'present_city',
                     'permanent_address', 'permanent_province', 'permanent_city',
                     'mobile_number', 'tel_no', 'height', 'weight', 'blood_type',
-                    'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
+                    'bp_no', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no', 'tin_no'
                     ]),
             ]);
 

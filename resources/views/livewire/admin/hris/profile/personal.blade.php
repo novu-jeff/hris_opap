@@ -255,6 +255,17 @@
                     <div class="row">
 
                         <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2" for="gsis_no">BP No.</label>
+                            <input type="text"
+                                wire:model="records.bp_no"
+                                id="bp_no"
+                                class="form-control">
+                            @error('records.bp_no')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="mb-2" for="gsis_no">GSIS No.</label>
                             <input type="text"
                                 wire:model="records.gsis_no"

@@ -259,6 +259,16 @@
                     <div class="row">
 
                         <div class="col-12 col-md-6 mb-3">
+                            <label class="mb-2">BP No.</label>
+                            <input type="text" readonly
+                                wire:model="records.bp_no.new"
+                                class="restricted form-control {{ $records['bp_no']['changed'] ? 'border-danger border-3' : '' }}">
+                            @error('records.bp_no.new')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="mb-2">GSIS No.</label>
                             <input type="text" readonly
                                 wire:model="records.gsis_no.new"
