@@ -353,11 +353,19 @@ class SalaryService extends Controller {
 
                 //$current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
                 $current_date = Carbon::parse($payroll->payroll_date)->format('Y-m-d');
+
+                Log::info('Social security query parameterssss', [
+                    'employee_no' => $employee_no,
+                    'bp_no' => $employee['bp_no'],
+                    'current_date' => $current_date,
+                ]);
+
+
                 $social_security = $hasDeductions
                     ? DB::table('social_security as gb')
                         ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
                         ->where('gb.billing_month', $current_date)
-                        ->where('gi.crn_no', $employee['gsis_no'])
+                        ->where('gi.bp_no', $employee['bp_no'])
                         ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.mpl_lite', 'gi.cpl')
                         ->first() ?? (object) []
                     : (object) [];
@@ -368,9 +376,14 @@ class SalaryService extends Controller {
                 $gross = round($basic_salary + $pera, 2);
 
               //  dd($hasDeductions, $social_security->consoloan );
-
+                if($eligible !== 2 && $eligible !== 3) {
+                    // DEDUCTION FOR GOVERNMENT EMPLOYEES
+                    $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                }else{
+                    $rlip =  0;
+                }
                 // Deductions (based on flag)
-                $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                
                // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
                $philhealth = $hasDeductions
                     ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
@@ -397,12 +410,29 @@ class SalaryService extends Controller {
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
 
-                Log::info('GW TAX BEFORE COMPUTE', [
+                Log::info('GW TAX BEFORE COMPUTEss', [
                     'employee_no' => $employee_no,
                     'gw_tax_before_round' => $gw_tax,
                     'has_deductions' => $hasDeductions,
                     'deductions_count' => count($deductions),
                     'deductions' => $deductions,
+                    'rlip' => $rlip,
+                    'hdmf' => $hdmf,
+                    'philhealth' => $philhealth,
+                    'consoloan' => $consoloan,
+                    'emergency_loan' => $emergency_loan,
+                    'plreg' => $plreg,
+                    'mpl' => $mpl,
+                    'mpl_lite' => $mpl_lite,
+                    'cpl' => $cpl,
+                    'mp2' => $mp2,
+                    'mplstlms' => $mplstlms,
+                    'cir375_cir449' => $cir,
+                    'w_tax' => $w_tax,
+                    'uca' => $uca,
+                    'aut' => $aut,
+                    'total_deduction' => $total_deduction,
+
                 ]);
 
                 $net = round($gross - $total_deduction, 2);

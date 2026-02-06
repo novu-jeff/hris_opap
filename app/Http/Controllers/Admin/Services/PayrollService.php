@@ -52,6 +52,7 @@ class PayrollService extends Controller {
                 'ei.salary_type',
                 'p.firstname',
                 'p.lastname',
+                'p.bp_no',
                 'p.gsis_no',
                 'po.name as position_name',
                 'po.salary_grade',

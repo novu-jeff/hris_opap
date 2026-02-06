@@ -122,7 +122,7 @@ class Personal extends Component
             'civil_status', 'sex', 'citizenship', 'citizenship_type', 'country',
             'present_address', 'present_province', 'present_city', 'permanent_address',
             'permanent_province', 'permanent_city', 'mobile_number', 'tel_no', 'height',
-            'weight', 'blood_type', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
+            'weight', 'blood_type','bp_no', 'gsis_no', 'pagibig_no', 'philhealth_no', 'sss_no',
             'tin_no', 'email' 
         ];
     
@@ -285,6 +285,7 @@ class Personal extends Component
                 'height' => $data['height'] ?? null,
                 'weight' => $data['weight'] ?? null,
                 'blood_type' => $data['blood_type'] ?? null,
+                'bp_no' => $data['bp_no'] ?? null,
                 'gsis_no' => $data['gsis_no'] ?? null,
                 'pagibig_no' => $data['pagibig_no'] ?? null,
                 'philhealth_no' => $data['philhealth_no'] ?? null,
@@ -321,6 +322,7 @@ class Personal extends Component
                 'height' => $data['height'] ?? null,
                 'weight' => $data['weight'] ?? null,
                 'blood_type' => $data['blood_type'] ?? null,
+                'bp_no' => $data['bp_no'] ?? null,
                 'gsis_no' => $data['gsis_no'] ?? null,
                 'pagibig_no' => $data['pagibig_no'] ?? null,
                 'philhealth_no' => $data['philhealth_no'] ?? null,
