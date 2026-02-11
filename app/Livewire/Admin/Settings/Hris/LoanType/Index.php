@@ -20,7 +20,15 @@ class Index extends Component
 
     public function remove(bool $isNotify = true, int $id = null) {
 
-       
+        if (Gate::denies('write employment-type')) {
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Access Denied!',
+                'showAlert' => true,
+                'message' => 'You do not have permission to perform this action.',
+            ]);
+            return;
+        }
 
         if($isNotify) {
 

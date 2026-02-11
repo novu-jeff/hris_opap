@@ -181,8 +181,7 @@ class Edit extends Component
 
     public function save() {
         
-
-       /* if (Gate::denies('write tranches')) {
+        if (Gate::denies('write tranches')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -190,7 +189,7 @@ class Edit extends Component
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
-        }*/
+        }
 
 
         $this->validate();
@@ -221,7 +220,6 @@ class Edit extends Component
             // );
 
 
-//dd($this->id);
             // Update tranche basic info
             $tranche = Tranche::findOrFail($this->id);
             $tranche->name = $this->name;

@@ -228,15 +228,30 @@ foreach ($sections as $sectionName => $employees) {
     public function highlightSearchTerm(string $text): string
     {
         if (!$this->searchName) {
-            return $text;
+            return e($text);
         }
 
-        $escapedSearch = preg_quote($this->searchName, '/'); // escape special characters
-        return preg_replace(
-            "/($escapedSearch)/i",
-            '<span class="bg-primary text-white fw-bold">$1</span>',
-            $text
-        );
+        $pattern = '/' . preg_quote($this->searchName, '/') . '/iu';
+        $parts = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        if ($parts === false) {
+            return e($text);
+        }
+
+        $safeOutput = '';
+        foreach ($parts as $part) {
+            if ($part === '') {
+                continue;
+            }
+
+            if (preg_match($pattern, $part)) {
+                $safeOutput .= '<span class="bg-primary text-white fw-bold">' . e($part) . '</span>';
+            } else {
+                $safeOutput .= e($part);
+            }
+        }
+
+        return $safeOutput;
     }
 
 

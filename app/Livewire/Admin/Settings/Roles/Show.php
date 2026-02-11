@@ -119,11 +119,8 @@ class Show extends Component
                 // Generate the key for selectedPermissions like "recruitment.jobs"
                 $permissionKey = "$permission->module_name.$moduleAction"; // e.g., "jobs.read"
                 // Ensure the module-action exists in the selectedPermissions
-               // dd($this->selectedPermissions);
-               \Log::info('Checking permission', ['key' => $permissionKey, 'action' => $action]);
                 if (isset($this->selectedPermissions[$permissionKey])) {
                     // Set the corresponding action (read/write/delete) to true
-                    \Log::info('Setting permission', ['key' => $permissionKey, 'action' => $action]);
                     $this->selectedPermissions[$permissionKey][$action] = true;
                 }
             }

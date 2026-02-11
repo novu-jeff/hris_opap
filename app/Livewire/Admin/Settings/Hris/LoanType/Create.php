@@ -16,7 +16,7 @@ class Create extends Component
 
     public function save() {
         
-        /*if (Gate::denies('write employment-type')) {
+        if (Gate::denies('write employment-type')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
@@ -24,7 +24,7 @@ class Create extends Component
                 'message' => 'You do not have permission to perform this action.',
             ]);
             return;
-        }*/
+        }
 
         $this->validate();
 

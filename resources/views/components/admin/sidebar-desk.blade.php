@@ -132,6 +132,7 @@
 
         @canany([
             'read dtr',
+            'read payroll-report',
             'read bir-2316'
         ])
         <div class="menu-group">
@@ -141,7 +142,7 @@
                 <a href="{{ route('reports.dtr') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Daily Time Record</a>
                 @endcan
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Payroll Record</a>
                 @endcan
@@ -180,7 +181,7 @@
                     <a class="submenu-item" href="{{route('scheduler.index')}}">
                          <i class="fa-solid fa-calendar"></i> Scheduler</a>
                 @endcan
-                 @can('read scheduler')
+                 @can('read tranches')
                     <a class="submenu-item" href="{{route('tranches.index')}}">
                         <i class="fa-solid fa-layer-group"></i> Tranches</a>
                 @endcan

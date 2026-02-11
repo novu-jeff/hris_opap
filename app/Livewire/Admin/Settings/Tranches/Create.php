@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
-use Illuminate\Support\Facades\Log;
 use App\Models\EmployementTypes;
 
 class Create extends Component
@@ -162,16 +161,15 @@ class Create extends Component
 
     public function save() {
         
-
-     /*   if (Gate::denies('write tranches')) {
+        if (Gate::denies('write tranches')) {
             $this->dispatch('alert', [
                 'status' => 'error',
                 'title' => 'Access Denied!', 
                 'showAlert' => true,
-                'message' => 'You do not have permission to perform this action.ss',
+                'message' => 'You do not have permission to perform this action.',
             ]);
             return;
-        } */
+        }
 
 
        $this->validate();

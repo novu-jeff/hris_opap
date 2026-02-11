@@ -139,14 +139,12 @@ class HRISProcessingService extends Controller
 
         $record = EmployeeInformation::where('employee_no', $employee_no)
             ->first();
-//\Log::info('Saving employee information data', $data);
         $getdata = $this->handleSalary($data);
 
        
         $salary = $getdata['salary'];   
         $wtax = $getdata['w_tax'] ?? 0;
 
-\Log::info('Saving employee information data', $data, ['salary' => $salary, 'w_tax' => $wtax]);
         if ($record) {
             $record->fill([
                 'section_id' => $data['section_id'] ? $data['section_id'] : null,

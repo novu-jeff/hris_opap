@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Admin\Reports\Payroll;
 
 use App\Http\Controllers\Controller;
-use App\Models\SalaryItemsPayroll;
 use Illuminate\Http\Request;
 
 class PayrollReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:read payroll-report');
+    }
+
     /**
      * Show payroll report
      */

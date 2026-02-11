@@ -181,7 +181,13 @@ class Index extends Component
         } elseif($current_status == 'onboarding') {
             $this->set_hired(true);
         } else {
-            dd('why are you here?');
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'isRemoveRowDT' => false,
+                'message' => 'Unable to process applicant due to an invalid status.',
+            ]);
         }
     }
 

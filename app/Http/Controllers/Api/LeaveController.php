@@ -63,8 +63,7 @@ class LeaveController extends Controller
                 ->where('status', false)
                 ->count();
     
-            $max_pending = 5; //env('MAX_PENDING_LEAVE_APPLICATION', 5);
-            dd($pending, $max_pending);
+            $max_pending = max(1, (int) env('MAX_PENDING_LEAVE_APPLICATION', 5));
             if ($pending >= $max_pending) {
                 return response()->json([
                     'status' => 'error',

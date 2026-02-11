@@ -9,8 +9,8 @@ class LoanTypeController extends Controller
 {
    
     public function __construct() {
-        //$this->middleware('permission:read employment-type')->only('index');
-        //$this->middleware('permission:write employment-type')->only(['create', 'edit']);
+        $this->middleware('permission:read employment-type')->only('index');
+        $this->middleware('permission:write employment-type')->only(['create', 'edit']);
     }
 
     public function index()

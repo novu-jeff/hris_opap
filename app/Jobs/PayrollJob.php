@@ -33,9 +33,6 @@ class PayrollJob implements ShouldQueue
 
     public function handle()
 {
-   \Log::info('PayrollJob handle() STARTED', [
-        'payroll_id' => $this->payrollId
-    ]);
     $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
 
    if (!$payroll) {
@@ -58,22 +55,12 @@ if (!method_exists($instance, 'computePayroll')) {
 }
 
 
-  \Log::info('Processing payroll here', [
-        'payroll_id' => $this->payrollId,
-        'employees_count' => count($this->employees)
-    ]);
-
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
-//dd($data);
     foreach ($data as $item) {
-       // dd($item);
-       \Log::info('Saving payroll item', $item);
         $payrollItem = $process['models']['child']::updateOrCreate([
                 'payroll_id'  => $item['payroll_id'],
                 'employee_no' => $item['employee_no'],
             ], $item);
-
-        \Log::info('Saved payroll item', $payrollItem->toArray());    
 
         if (!empty($item['loan_deductions'])) {
             foreach ($item['loan_deductions'] as &$loanDeduction) {
@@ -102,6 +89,6 @@ if (!method_exists($instance, 'computePayroll')) {
 }
 
     public function failed(Throwable $exception) {
-        \Log::info('Error Processing Info: ' . $exception->getMessage());
+        \Log::error('Payroll job failed: ' . $exception->getMessage());
     }
 }

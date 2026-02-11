@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 class TranchesController extends Controller
 {
     public function __construct() {
-       // $this->middleware('permission:read tranches')->only(['index', 'show']);
+        $this->middleware('permission:read tranches')->only(['index', 'show']);
+        $this->middleware('permission:write tranches')->only(['create', 'edit']);
     }
 
     public function index()

@@ -145,6 +145,6 @@ class TestController extends Controller
             }
         }
     
-        dd($final);
+        return response()->json($final);
     }
 }
