@@ -439,7 +439,7 @@ $fixedWidths = [
     'X' => 20,
     'Y' => 25,
     'Z' => 25,
-    'AA' => 25,
+    'AA' => 24,
 ];
 
 foreach ($fixedWidths as $col => $width) {
