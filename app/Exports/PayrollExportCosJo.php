@@ -270,6 +270,9 @@ class PayrollExportCosJo implements FromCollection, WithEvents
             $secondCertifiedName = $this->secondCertifiedName ?? 'CHARLIEZ JANE R. SORIANO';
             $secondCertifiedPosition = $this->secondCertifiedPosition ?? 'OIC, DIRECTOR IV-FMS';
 
+            $secondCertifiedByName = $this->secondCertifiedByName ?? 'ALEX C. ORENDAIN';
+            $secondCertifiedByPosition = $this->secondCertifiedByPosition ?? 'Administrative Officer V';
+
             $startRow = $sheet->getHighestRow() + 3;
 
             /* ===== ROW B MUST BE DEFINED EARLY ===== */
@@ -341,8 +344,8 @@ class PayrollExportCosJo implements FromCollection, WithEvents
             $sheet->mergeCells("K" . ($rowB + 3) . ":M" . ($rowB + 3)); // Prepared
             $sheet->mergeCells("K" . ($rowB + 4) . ":M" . ($rowB + 4)); // Prepared
 
-            $sheet->setCellValue("K" . ($rowB + 3), $certifiedByName);
-            $sheet->setCellValue("K" . ($rowB + 4), $certifiedByPosition);
+            $sheet->setCellValue("K" . ($rowB + 3), $secondCertifiedByName);
+            $sheet->setCellValue("K" . ($rowB + 4), $secondCertifiedPosition);
 
             $sheet->mergeCells("O" . ($rowB + 3) . ":P" . ($rowB + 3)); // Prepared
             $sheet->mergeCells("O" . ($rowB + 4) . ":P" . ($rowB + 4)); // Prepared
