@@ -1,4 +1,10 @@
-@if($records['payroll']['condition_employment_type'] !== '2, 3')
+
+@php
+$types = explode(',', $records['payroll']['condition_employment_type']);
+@endphp
+
+@if(!in_array('2', $types) && !in_array('3', $types))
+
 
 <div>
     <div class="action mb-4"></div>
