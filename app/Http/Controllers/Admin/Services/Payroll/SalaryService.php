@@ -276,12 +276,17 @@ class SalaryService extends Controller {
                 $ceiling = 100000;
                 $stepId = $employee['step_id'];
 
+                $latestTranche = null;
+                $latestTrancheItem = null;
+                $salaryGrade = null;
+                $stepColumn = null;
+                $stepColumnTax = null;
+
                 if (!empty($stepId)) {
 
+                $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
 
-               $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
-
-               $stepColumn = "step_" . ($employee['step_id'] ?? '');
+                $stepColumn = "step_" . ($employee['step_id'] ?? '');
                 $stepColumnTax = "step_" . ($employee['step_id'] ?? '') . "_wtax";
 
                 // Get the latest tranche for this eligible type
@@ -295,6 +300,8 @@ class SalaryService extends Controller {
                 ->first();
                 
 
+                $latestTrancheItem = $latestTranche?->items?->first();
+
                 \Log::info('Latest Tranche fetched', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
@@ -302,8 +309,8 @@ class SalaryService extends Controller {
                     'salary_grade' => $salaryGrade,
                     'step_column' => $stepColumn,
                     'step_column_tax' => $stepColumnTax,
-                    'latest_tranche_items' => $latestTranche->items->first()->$stepColumn ?? null,
-                    'latest_tranche_items_tax' => $latestTranche->items->first()->$stepColumnTax ?? null,
+                    'latest_tranche_items' => $latestTrancheItem?->{$stepColumn},
+                    'latest_tranche_items_tax' => $latestTrancheItem?->{$stepColumnTax},
                 ]);
 
 
@@ -323,7 +330,7 @@ class SalaryService extends Controller {
                 Log::info('Tranche computationss', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
-                    'tranche_id' => $latestTranche->id,
+                    'tranche_id' => $latestTranche->id ?? null,
                     'salary_grade' => $salaryGrade,
                     'basic_salary' => $salary,
                     'w_tax' => $wtax,

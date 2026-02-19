@@ -61,13 +61,21 @@ class UserTrails extends Component
 
     public function viewLog($filename)
     {
-        $path = storage_path("logs/trails/$filename");
-
-        if (!file_exists($path)) {
+        $filename = basename($filename);
+        if ($filename === '' || preg_match('/[\/\\\\]/', $filename)) {
+            return session()->flash('error', 'Invalid filename.');
+        }
+        $baseDir = realpath(storage_path('logs/trails'));
+        if ($baseDir === false) {
+            return session()->flash('error', 'Log file not found.');
+        }
+        $path = $baseDir . DIRECTORY_SEPARATOR . $filename;
+        $realPath = realpath($path);
+        if ($realPath === false || !str_starts_with($realPath, $baseDir)) {
             return session()->flash('error', 'Log file not found.');
         }
 
-        $content = file_get_contents($path);
+        $content = file_get_contents($realPath);
 
         return response()->streamDownload(
             fn () => print($content),
@@ -77,12 +85,20 @@ class UserTrails extends Component
 
     public function downloadLog($filename)
     {
-        $path = storage_path("logs/trails/$filename");
-
-        if (!file_exists($path)) {
+        $filename = basename($filename);
+        if ($filename === '' || preg_match('/[\/\\\\]/', $filename)) {
+            return session()->flash('error', 'Invalid filename.');
+        }
+        $baseDir = realpath(storage_path('logs/trails'));
+        if ($baseDir === false) {
+            return session()->flash('error', 'File not found.');
+        }
+        $path = $baseDir . DIRECTORY_SEPARATOR . $filename;
+        $realPath = realpath($path);
+        if ($realPath === false || !str_starts_with($realPath, $baseDir)) {
             return session()->flash('error', 'File not found.');
         }
 
-        return response()->download($path);
+        return response()->download($realPath, $filename);
     }
 }
