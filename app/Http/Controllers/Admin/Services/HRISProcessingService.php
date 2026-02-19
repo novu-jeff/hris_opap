@@ -265,6 +265,7 @@ class HRISProcessingService extends Controller
             'height' => $data['height'] ?? null,
             'weight' => $data['weight'] ?? null,
             'blood_type' => $data['blood_type'] ?? null,
+            'bp_no' => $data['bp_no'],
             'gsis_no' => $data['gsis_no'] ?? null,
             'pagibig_no' => $data['pagibig_no'] ?? null,
             'philhealth_no' => $data['philhealth_no'] ?? null,
