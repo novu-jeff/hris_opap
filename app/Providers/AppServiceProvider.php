@@ -5,11 +5,36 @@ namespace App\Providers;
 use App\Observers\ModelActivityObserver;
 use App\Services\DailyTimeRecordService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Temporary queue lockdown: only allow payroll jobs.
+     */
+    private const ALLOWED_QUEUE_JOB_CLASSES = [
+        'App\Jobs\PayrollJob',
+    ];
+
+    /**
+     * Block obvious payload indicators of queue poisoning.
+     */
+    private const BLOCKED_QUEUE_PAYLOAD_MARKERS = [
+        'batosay1337',
+        '$_env',
+        'getenv(',
+        'php_uname',
+        'shell_exec(',
+        'passthru(',
+        'system(',
+        'printenv',
+    ];
+
     /**
      * Register any application services.
      */
@@ -25,6 +50,35 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Queue::before(function (JobProcessing $event): void {
+            $payload = $event->job->payload();
+            $jobClass = $payload['data']['commandName'] ?? $payload['displayName'] ?? 'unknown';
+            $rawPayload = json_encode($payload);
+
+            $hasBlockedMarker = false;
+            if (is_string($rawPayload) && $rawPayload !== '') {
+                $lowerPayload = strtolower($rawPayload);
+                foreach (self::BLOCKED_QUEUE_PAYLOAD_MARKERS as $marker) {
+                    if (str_contains($lowerPayload, $marker)) {
+                        $hasBlockedMarker = true;
+                        break;
+                    }
+                }
+            }
+
+            $isAllowed = in_array($jobClass, self::ALLOWED_QUEUE_JOB_CLASSES, true);
+            if ($isAllowed && !$hasBlockedMarker) {
+                return;
+            }
+
+            Log::warning('Blocked non-payroll queued job during temporary lockdown.', [
+                'queue_job_class' => $jobClass,
+                'queue_job_id' => method_exists($event->job, 'getJobId') ? $event->job->getJobId() : null,
+            ]);
+
+            $event->job->delete();
+            throw new RuntimeException('Blocked queued job by security lockdown.');
+        });
 
         view()->share('product', config('app.product'));
         $provider = env('APP_PROVIDER', 'novulutions');

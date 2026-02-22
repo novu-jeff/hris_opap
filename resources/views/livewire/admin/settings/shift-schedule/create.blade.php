@@ -1,3 +1,4 @@
+
 <form wire:submit.prevent="save">
     <div class="row">
         <div class="col-12">
@@ -29,6 +30,7 @@
                             <select wire:model="shift_duration" wire:change="onSelect('shift_duration')" id="shift_duration" class="form-select">
                                 <option value=""> - CHOOSE - </option>
                                 <option value="flexible">Flexible (8 Hours)</option>
+                                <option value="flexible-in-out">Flexible Shift In and Out only (8 Hours)</option>
                                 <option value="standard">Standard Shift (8 Hours)</option>
                                 <option value="extended">Extended Shift (12 Hours)</option>
                                 <option value="full-day">Full-Day Shift (24 Hours)</option>
@@ -39,20 +41,21 @@
                                 @error('shift_duration') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                    
                         
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}">
-                                {{ $isFlexible ? 'Earliest In' : 'Shift Start' }} <span class="text-danger">*</span>
+                            <label class="mb-2" for="{{ ($isFlexible || $isFlexibleInOut) ? 'earliest_in' : 'start_shift' }}">
+                                {{ ($isFlexible || $isFlexibleInOut) ? 'Earliest In' : 'Shift Start' }} <span class="text-danger">*</span>
                             </label>
-                            <input type="time" wire:model="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}" 
-                                   id="{{ $isFlexible ? 'earliest_in' : 'start_shift' }}" class="form-control">
+                            <input type="time" wire:model="{{ ($isFlexible || $isFlexibleInOut) ? 'earliest_in' : 'start_shift' }}" 
+                                   id="{{ ($isFlexible ||  $isFlexibleInOut) ? 'earliest_in' : 'start_shift' }}" class="form-control">
                             <div class="error-field">
-                                @error($isFlexible ? 'earliest_in' : 'start_shift') 
+                                @error(($isFlexible || $isFlexibleInOut) ? 'earliest_in' : 'start_shift') 
                                     <span class="text-danger">{{ $message }}</span> 
                                 @enderror
                             </div>
                         </div>
-                        
+                        @if(!$isFlexibleInOut)
                         <div class="col-12 col-md-3 mb-3">
                             <label class="mb-2" for="break_out">Lunch Out <span class="text-danger">*</span></label>
                             <input type="time" wire:model="break_out" id="break_out" class="form-control">
@@ -68,15 +71,15 @@
                                 @error('break_in') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        
+                        @endif
                         <div class="col-12 col-md-3 mb-3">
-                            <label class="mb-2" for="{{ $isFlexible ? 'latest_in' : 'end_shift' }}">
-                                {{ $isFlexible ? 'Latest In' : 'End Shift' }} <span class="text-danger">*</span>
+                            <label class="mb-2" for="{{ ($isFlexible || $isFlexibleInOut) ? 'latest_in' : 'end_shift' }}">
+                                {{ ($isFlexible || $isFlexibleInOut) ? 'Latest In' : 'End Shift' }} <span class="text-danger">*</span>
                             </label>
-                            <input type="time" wire:model="{{ $isFlexible ? 'latest_in' : 'end_shift' }}" 
-                                   id="{{ $isFlexible ? 'latest_in' : 'end_shift' }}" class="form-control">
+                            <input type="time" wire:model="{{ ($isFlexible || $isFlexibleInOut) ? 'latest_in' : 'end_shift' }}" 
+                                   id="{{ ($isFlexible || $isFlexibleInOut) ? 'latest_in' : 'end_shift' }}" class="form-control">
                             <div class="error-field">
-                                @error($isFlexible ? 'latest_in' : 'end_shift') 
+                                @error(($isFlexible || $isFlexibleInOut) ? 'latest_in' : 'end_shift') 
                                     <span class="text-danger">{{ $message }}</span> 
                                 @enderror
                             </div>
@@ -163,3 +166,4 @@
         </div>
     </div>
 </form>
+

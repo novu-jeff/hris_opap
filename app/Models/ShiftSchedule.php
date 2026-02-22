@@ -14,6 +14,7 @@ class ShiftSchedule extends Model
         'name',
         'description',
         'shift_duration',
+        'is_breaktime_required',
         'earliest_in',
         'latest_in',
         'start_shift',

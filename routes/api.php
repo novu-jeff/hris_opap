@@ -61,4 +61,5 @@ Route::middleware(['auth:sanctum', 'api_employee'])->group(function() {
 
 
 
-Route::post('test', [MonitoringController::class, 'post']);
+// SECURITY: Unauthenticated POST was removed to prevent abuse. Use auth or a secret token if you need monitoring.
+// Route::post('test', [MonitoringController::class, 'post']);

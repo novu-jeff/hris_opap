@@ -19,7 +19,8 @@ class ClockInOutService
     {
         $timeMark = Carbon::parse($toProcess['timestamp']);
         $shift = app(DailyTimeRecordService::class)->getShiftSchedule($employee_no);
-        $hasBreakTime = $shift->is_breaktime_required;
+        $isFlexibleInOut = ($shift->shift_duration ?? '') === 'flexible-in-out';
+        $hasBreakTime = !$isFlexibleInOut && ($shift->is_breaktime_required ?? false);
 
         return match (true) {
             $hasBreakTime => match ($entry) {
@@ -40,7 +41,7 @@ class ClockInOutService
 
     private function validateClockIn(Carbon $timeMark, $shift): array
     {
-        if ($shift->shift_duration === 'flexible') {
+        if (in_array($shift->shift_duration ?? '', ['flexible', 'flexible-in-out'])) {
             $earliest = Carbon::parse($shift->earliest_in);
             $latest = Carbon::parse($shift->latest_in);
 
@@ -71,12 +72,13 @@ class ClockInOutService
 
     private function validateClockOut(Carbon $timeMark, $shift, string $timestamp, string $employee_no): array
     {
-        $expectedOut = $shift->shift_duration === 'flexible'
+        $duration = $shift->shift_duration ?? '';
+        $expectedOut = in_array($duration, ['flexible', 'flexible-in-out'])
             ? optional($this->getFirstLog($timestamp, $employee_no))['timestamp'] ?? null
             : Carbon::parse($shift->end_shift);
 
         if (is_string($expectedOut)) {
-            $expectedOut = Carbon::parse($expectedOut)->addHours(9);
+            $expectedOut = Carbon::parse($expectedOut)->addHours($duration === 'flexible-in-out' ? 8 : 9);
         }
 
         return $timeMark->lt($expectedOut)

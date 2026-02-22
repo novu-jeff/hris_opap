@@ -64,7 +64,7 @@ class Show extends Component
             $bio_id = !$this->bsd_emp_identical ? $data->bsd_no : $data->employee_no;
 
             $monthDate = $this->dtrDate->format('m-Y');
-            $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate);
+            $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate, true);
 
             $hasLeaveCard = $this->leaveCardService->getLeaveCard($employee_no);
             $this->hasLeaveCard = $hasLeaveCard->isNotEmpty() ? true : false;

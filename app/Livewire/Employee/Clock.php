@@ -209,7 +209,8 @@ class Clock extends Component
     {
         $service = app(DailyTimeRecordService::class);
         $shiftSchedule = $service->getShiftSchedule($this->employee_no);
-        $hasBreaktime = $shiftSchedule->is_breaktime_required ?? false;
+        $isFlexibleInOut = ($shiftSchedule->shift_duration ?? '') === 'flexible-in-out';
+        $hasBreaktime = !$isFlexibleInOut && ($shiftSchedule->is_breaktime_required ?? false);
 
         $timestamp = now()->format('Y-m-d');
         $bsd_no = $this->bsd_emp_identical ? $this->employee_no : $service->getBsdNo($this->employee_no);
