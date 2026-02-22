@@ -14,7 +14,7 @@ class Create extends Component
     public $name;
     public $description;
     public $shift_duration = '';
-    public $earliest_in = '07:00';
+    public $earliest_in = '06:00';
     public $latest_in = '09:00';
     public $start_shift = '07:00';
     public $break_out = '12:00';
@@ -22,6 +22,7 @@ class Create extends Component
     public $end_shift = '16:00';
     public $work_setup;
     public $isFlexible = false;
+    public $isFlexibleInOut = false;
     public $isHybrid = false;
     public $min_ot_mins = '120';
     public $max_ot_time = '22:00';
@@ -36,6 +37,8 @@ class Create extends Component
     {
         if ($property === 'shift_duration') {
             $this->isFlexible = ($this->shift_duration === 'flexible');
+            $this->isFlexibleInOut = ($this->shift_duration === 'flexible-in-out');
+           // dd($this->isFlexibleInOut);
         }
     }
 
@@ -55,28 +58,31 @@ class Create extends Component
         $rules = [
             'name' => 'required|string',
             'description' => 'required|string',
-            'shift_duration' => 'required|in:flexible,standard,extended,full-day,compressed,part-time',
+            'shift_duration' => 'required|in:flexible,flexible-in-out,standard,extended,full-day,compressed,part-time',
             'work_setup' => 'required|in:onsite,hybrid',
-            'break_in' => 'required|date_format:H:i',
-            'break_out' => 'required|date_format:H:i',
         ];
+
+        if (!$this->isFlexibleInOut) {
+            $rules['break_in'] = 'required|date_format:H:i';
+            $rules['break_out'] = 'required|date_format:H:i';
+        }
     
-        if (!$this->isFlexible) {
+        if (!$this->isFlexible && !$this->isFlexibleInOut) {
             $rules = array_merge($rules, [
                 'start_shift' => 'required|date_format:H:i',
                 'end_shift' => 'required|date_format:H:i|after:start_shift', // Ensure end shift is after start shift
             ]);
         } else {
-            // Add specific rules for flexible shifts
+            // Add specific rules for flexible / flexible-in-out shifts
             $rules = array_merge($rules, [
                 'earliest_in' => 'required|date_format:H:i',
                 'latest_in' => 'required|date_format:H:i|after:earliest_in', // Ensure latest_in is after earliest_in
             ]);
         }
     
-        // Custom validator to handle shift duration and break times
+        // Custom validator to handle shift duration and break times (not for flexible or flexible-in-out)
         $this->withValidator(function ($validator) {
-            if (!$this->isFlexible) {
+            if (!$this->isFlexible && !$this->isFlexibleInOut) {
                 $validator->after(function ($validator) {
                     // Validate presence of start and end shift times
                     if (!$this->start_shift || !$this->end_shift) {
@@ -203,6 +209,10 @@ class Create extends Component
                 if ($this->isFlexible) {
                     $data['earliest_in'] = $this->earliest_in;
                     $data['latest_in'] = $this->latest_in;
+                } else if ($this->isFlexibleInOut) {
+                    $data['earliest_in'] = $this->earliest_in;
+                    $data['latest_in'] = $this->latest_in;
+                    $data['is_breaktime_required'] = 0;
                 } else {
                     $data = array_merge($data, [
                         'start_shift' => $this->start_shift,
@@ -238,6 +248,7 @@ class Create extends Component
 
     public function render()
     {
+        //dd($this->isFlexibleInOut);
         return view('livewire.admin.settings.shift-schedule.create');
     }
 }

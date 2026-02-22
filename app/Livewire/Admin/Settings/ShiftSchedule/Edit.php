@@ -23,6 +23,7 @@ class Edit extends Component
     public $end_shift = '16:00';
     public $work_setup;
     public $isFlexible = false;
+    public $isFlexibleInOut = false;
     public $isHybrid = false;
     public $min_ot_mins = '120';
     public $max_ot_time = '22:00';
@@ -49,6 +50,8 @@ class Edit extends Component
         $this->description = $records->description ?? '';
         $this->shift_duration = $records->shift_duration ?? '';
         $this->start_shift = $records->start_shift ?? '';
+        $this->earliest_in = $records->earliest_in ?? '';
+        $this->latest_in = $records->latest_in ?? '';
         $this->break_out = $records->break_out ?? '';
         $this->break_in = $records->break_in ?? '';
         $this->end_shift = $records->end_shift ?? '';
@@ -65,6 +68,9 @@ class Edit extends Component
         if($this->shift_duration === 'flexible') {
             $this->onSelect('shift_duration');
         }
+        if($this->shift_duration === 'flexible-in-out') {
+            $this->onSelect('shift_duration');
+        }
 
     }
 
@@ -72,6 +78,7 @@ class Edit extends Component
     {
         if ($property === 'shift_duration') {
             $this->isFlexible = ($this->shift_duration === 'flexible');
+            $this->isFlexibleInOut = ($this->shift_duration === 'flexible-in-out');
         }
     }
 
@@ -91,28 +98,31 @@ class Edit extends Component
         $rules = [
             'name' => 'required|string',
             'description' => 'required|string',
-            'shift_duration' => 'required|in:flexible,standard,extended,full-day,compressed,part-time',
+            'shift_duration' => 'required|in:flexible,flexible-in-out,standard,extended,full-day,compressed,part-time',
             'work_setup' => 'required|in:onsite,hybrid',
-            'break_in' => 'required|date_format:H:i',
-            'break_out' => 'required|date_format:H:i',
         ];
+
+        if (!$this->isFlexibleInOut) {
+            $rules['break_in'] = 'required|date_format:H:i';
+            $rules['break_out'] = 'required|date_format:H:i';
+        }
     
-        if (!$this->isFlexible) {
+        if (!$this->isFlexible && !$this->isFlexibleInOut) {
             $rules = array_merge($rules, [
                 'start_shift' => 'required|date_format:H:i',
                 'end_shift' => 'required|date_format:H:i|after:start_shift', // Ensure end shift is after start shift
             ]);
         } else {
-            // Add specific rules for flexible shifts
+            // Add specific rules for flexible / flexible-in-out shifts
             $rules = array_merge($rules, [
                 'earliest_in' => 'required|date_format:H:i',
                 'latest_in' => 'required|date_format:H:i|after:earliest_in', // Ensure latest_in is after earliest_in
             ]);
         }
     
-        // Custom validator to handle shift duration and break times
+        // Custom validator to handle shift duration and break times (not for flexible or flexible-in-out)
         $this->withValidator(function ($validator) {
-            if (!$this->isFlexible) {
+            if (!$this->isFlexible && !$this->isFlexibleInOut) {
                 $validator->after(function ($validator) {
                     // Validate presence of start and end shift times
                     if (!$this->start_shift || !$this->end_shift) {
@@ -249,6 +259,10 @@ class Edit extends Component
                     $data['latest_in'] = $this->latest_in;
                     $data['start_shift'] = null;
                     $data['end_shift'] = null;
+                } else if ($this->isFlexibleInOut) {
+                    $data['earliest_in'] = $this->earliest_in;
+                    $data['latest_in'] = $this->latest_in;
+                    $data['is_breaktime_required'] = 0;
                 } else {
                     $data = array_merge($data, [
                         'earliest_in' => null,

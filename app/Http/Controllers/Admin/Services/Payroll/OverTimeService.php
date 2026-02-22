@@ -178,7 +178,7 @@ class OverTimeService extends Controller {
                 $position = $employee['position_name'];
                 $basic_salary = $employee['salary'];
 
-                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $payroll->period);
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $payroll->period, true);
 
                 $totalDays = $dtr['summary']['total_days'];
                 $workedDays = $dtr['summary']['worked_days'];
