@@ -25,6 +25,7 @@ class DailyTimeRecordService {
      * @param array|string $dateInput Either:
      *      - An array with two elements [startDate, endDate] (e.g. ['2025-07-01', '2025-07-31']), or
      *      - A string in the format 'mm-YYYY' (e.g. '07-2025').
+     * @param bool $mergeBothSources If true, fetches logs from both system timelogs and biometrics attendances (use for payroll).
      *
      * @return array An associative array containing:
      *      - 'logs' => array of daily formatted logs
@@ -32,7 +33,7 @@ class DailyTimeRecordService {
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException If the input date format is invalid.
      */
-    public function getDailyTimeRecord($employee_no, $dateInput)
+    public function getDailyTimeRecord($employee_no, $dateInput, $mergeBothSources = false)
     {
         try {
 
@@ -59,18 +60,30 @@ class DailyTimeRecordService {
 
         $today = now()->toDateString();
 
-        $logs = EmployeeTimelogs::where('employee_id', $bsd_no)
-            ->whereBetween('timestamp', [$startDate, $endDate])
-            ->orderBy('timestamp')
-            ->get();
+        if ($mergeBothSources) {
+           
+            $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources($bsd_no, $startDate, $endDate);
 
-       
+            Log::info('logsBothSources', [$logs]);
+        } else {
+            $logs = EmployeeTimelogs::where('employee_id', $bsd_no)
+                ->whereBetween('timestamp', [$startDate, $endDate])
+                ->orderBy('timestamp')
+                ->get();
+
+                Log::info('logsSingleSource', [$logs]);
+        }
+        
+
 
         $employee = EmployeePersonal::where('employee_no', $employee_no)
             ->first()
             ->toArray() ?? [];
 
+
         $logs = $this->processLogs($employee, $logs);
+        Log::info('logsProcessed', [$logs]);
+        Log::info('dateInput', [$dateInput]);
         $dtr = $this->computeDTR($employee_no, $logs, $dateInput);
 
         return [
@@ -138,11 +151,12 @@ class DailyTimeRecordService {
         # weekly schedule only on first log
         $firstScheduleId = collect($logs)->first()['schedule_id'] ?? null;
 
-       
-//dd($logs);
+  
         $firstLog = reset($logs); // Always gets FIRST element regardless of keys
-        $firstScheduleId = $firstLog['schedule_id'] ?? 1;
-      //  dd($firstScheduleId);
+        //dd($firstLog);
+        $firstScheduleId = $firstLog['shift_id'] ?? 1;
+       //dd($firstScheduleId);
+     //$firstScheduleId = 5;
         
 
         $employeeSchedule = $this->getShiftScheduleById($firstScheduleId);
@@ -579,11 +593,15 @@ class DailyTimeRecordService {
         }
 
         $arrayWeeklySchedule = (array) $weeklySchedule;
+       // dd($arrayWeeklySchedule);
+       Log::info('arrayWeeklySchedule', [$arrayWeeklySchedule]);
 
         if (!$arrayWeeklySchedule[$dayName] && !$isHoliday) {
             $dayRemarkKey = $dayName . '_remarks';
+           Log::info('dayRemarkKey', [$dayRemarkKey]);
+           Log::info('arrayWeeklySchedule', [$arrayWeeklySchedule]);
             $restDays = true;
-            $ownRemarks[] = $arrayWeeklySchedule[$dayRemarkKey];
+            $ownRemarks[] = $arrayWeeklySchedule[$dayRemarkKey] ?? 'Rest Day';
         }
 
         // Intentionally not logging per-date computations in production.
@@ -772,7 +790,7 @@ class DailyTimeRecordService {
                 $ownRemark[] = 'Discrepancy';
             }
         } else {
-            $timeIn = $log['clocn_in'];
+            $timeIn = $log['clock_in'];
             $timeOut = $log['clock_out'];
             $breakOut = $breakIn = null;
             if($timeIn == null || $timeOut == null) {
@@ -786,6 +804,12 @@ class DailyTimeRecordService {
         # Get scheduled shift
         [$scheduledIn, $scheduledOut, $scheduledBreakIn, $scheduledBreakOut] = $this->getScheduledInOut($employeeSchedule, $date, $firstLog);
 
+       // dd($scheduledIn, $scheduledOut, $firstLog, $lastLog);
+        Log::info('scheduledIn', [$scheduledIn]);
+        Log::info('scheduledOut', [$scheduledOut]);
+        Log::info('firstLog', [$firstLog]);
+        Log::info('lastLog', [$lastLog]);
+        
         if (!$scheduledIn || !$scheduledOut) {
             Log::warning("Missing schedule for {$employee_no} on {$date}");
         }
@@ -846,6 +870,9 @@ class DailyTimeRecordService {
             }
 
             $out = (clone $in)->addHours($schedule->work_hours + 1);
+
+            Log::info('in', [$in]);
+            Log::info('out', [$out]);
 
             $breakOut = Carbon::parse("{$date} {$schedule->break_out}");
             $breakIn = Carbon::parse("{$date} {$schedule->break_in}");

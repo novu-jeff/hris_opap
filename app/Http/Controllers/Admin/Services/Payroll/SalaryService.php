@@ -235,7 +235,7 @@ class SalaryService extends Controller {
 
         if ($this->product == 'government') {
 
-                    \Log::info('Start computePayroll Governmentsss', [
+                    \Log::info('Start computePayroll Government', [
             'payroll_id' => $payroll->id,
             'employees_count' => count($employees),
             'type' => $type,
@@ -276,17 +276,12 @@ class SalaryService extends Controller {
                 $ceiling = 100000;
                 $stepId = $employee['step_id'];
 
-                $latestTranche = null;
-                $latestTrancheItem = null;
-                $salaryGrade = null;
-                $stepColumn = null;
-                $stepColumnTax = null;
-
                 if (!empty($stepId)) {
 
-                $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
 
-                $stepColumn = "step_" . ($employee['step_id'] ?? '');
+               $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
+
+               $stepColumn = "step_" . ($employee['step_id'] ?? '');
                 $stepColumnTax = "step_" . ($employee['step_id'] ?? '') . "_wtax";
 
                 // Get the latest tranche for this eligible type
@@ -300,8 +295,6 @@ class SalaryService extends Controller {
                 ->first();
                 
 
-                $latestTrancheItem = $latestTranche?->items?->first();
-
                 \Log::info('Latest Tranche fetched', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
@@ -309,8 +302,8 @@ class SalaryService extends Controller {
                     'salary_grade' => $salaryGrade,
                     'step_column' => $stepColumn,
                     'step_column_tax' => $stepColumnTax,
-                    'latest_tranche_items' => $latestTrancheItem?->{$stepColumn},
-                    'latest_tranche_items_tax' => $latestTrancheItem?->{$stepColumnTax},
+                    'latest_tranche_items' => $latestTranche->items->first()->$stepColumn ?? null,
+                    'latest_tranche_items_tax' => $latestTranche->items->first()->$stepColumnTax ?? null,
                 ]);
 
 
@@ -330,7 +323,7 @@ class SalaryService extends Controller {
                 Log::info('Tranche computationss', [
                     'employee_no' => $employee_no,
                     'eligible' => $eligible,
-                    'tranche_id' => $latestTranche->id ?? null,
+                    'tranche_id' => $latestTranche->id,
                     'salary_grade' => $salaryGrade,
                     'basic_salary' => $salary,
                     'w_tax' => $wtax,
@@ -347,9 +340,11 @@ class SalaryService extends Controller {
                 $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
                 $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
 
-                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period, true);
 
                 $dtr_summary  = $dtr['summary'];
+
+                Log::info('dtr_summaryss', [$dtr_summary]);
 
                 $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
                 
@@ -361,7 +356,7 @@ class SalaryService extends Controller {
                 //$current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
                 $current_date = Carbon::parse($payroll->payroll_date)->format('Y-m-d');
 
-                Log::info('Social security query parameterssss', [
+                Log::info('Social security query parameter', [
                     'employee_no' => $employee_no,
                     'bp_no' => $employee['bp_no'],
                     'current_date' => $current_date,
@@ -461,7 +456,7 @@ class SalaryService extends Controller {
               //  $secondHalf = round($net - $firstHalf, 2);
 
               if (!$isFirstHalf) {
-                Log::warning('Missing first-half payrollss', [
+                Log::warning('Missing first-half payrollsss', [
                     'employee_no' => $employee_no,
                     'payroll_id' => $payroll->id
                 ]);
@@ -572,9 +567,11 @@ class SalaryService extends Controller {
 
                 $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
 
-                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period);
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period, true);
 
                 $dtr_summary  = $dtr['summary'];
+
+                Log::info('dtr_summary', [$dtr_summary]);
 
                 $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
                 

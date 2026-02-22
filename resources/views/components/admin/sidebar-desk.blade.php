@@ -291,6 +291,21 @@
                 </div>
                 @endcanany
 
+                <!-- Timekeeping -->
+                @canany(['read shift-schedule', 'read employee-schedule'])
+                <div class="submenu-subgroup">
+                    <p class="submenu-subtitle"><i class="fa-solid fa-id-card-clip"></i> Timekeeping</p>
+                    @can('read shift-schedule')
+                    <a href="{{ route('shift-schedule.index') }}" class="submenu-item">
+                        <i class="fa-solid fa-briefcase"></i> Shift Schedule</a>
+                    @endcan
+                    @can('read employee-schedule')
+                    <a href="{{ route('employee-schedule.index') }}" class="submenu-item">
+                        <i class="fa-solid fa-briefcase"></i> Employee Schedule</a>
+                    @endcan
+                
+                </div>
+                @endcanany
             </div>
         </div>
      @endcanany 

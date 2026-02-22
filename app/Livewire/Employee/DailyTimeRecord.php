@@ -8,6 +8,7 @@ use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class DailyTimeRecord extends Component
 {
@@ -52,6 +53,7 @@ class DailyTimeRecord extends Component
             $monthDate = $this->dtrDate->format('m-Y');
             $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate);
 
+            Log::info('dtrlogs', [$logs]);
             $this->logs = [
                 'employee_account' => [
                     'bsd_no' => $data->bio_id,

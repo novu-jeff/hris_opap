@@ -29,6 +29,7 @@
                             <select wire:model="shift_duration" id="shift_duration" class="form-select">
                                 <option value=""> - CHOOSE - </option>
                                 <option value="flexible">Flexible (8 Hours)</option>
+                                <option value="flexible-in-out">Flexible Shift In and Out only (8 Hours)</option>
                                 <option value="standard">Standard Shift (8 Hours)</option>
                                 <option value="extended">Extended Shift (12 Hours)</option>
                                 <option value="full-day">Full-Day Shift (24 Hours)</option>
