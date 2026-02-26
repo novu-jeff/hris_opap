@@ -38,7 +38,7 @@
                         <tr data-id="{{$record->id}}">
                             <td>{{$record->name}}</td>
                             <td>
-                                @if($record->shift_duration !== 'flexible')
+                                @if($record->shift_duration !== 'flexible' && $record->shift_duration !== 'flexible-in-out')
                                     {{ \Carbon\Carbon::parse($record->start_shift)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($record->end_shift)->format('h:i A') }}
                                 @else
                                     <p class="text-muted fst-italic mb-0">Flexible 8 Hours</p>
