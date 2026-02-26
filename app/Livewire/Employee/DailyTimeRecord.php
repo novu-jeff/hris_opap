@@ -51,7 +51,7 @@ class DailyTimeRecord extends Component
             $data = $this->getEmployeeInfo($employee_no);
 
             $monthDate = $this->dtrDate->format('m-Y');
-            $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate);
+            $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate, true);
 
             Log::info('dtrlogs', [$logs]);
             $this->logs = [
