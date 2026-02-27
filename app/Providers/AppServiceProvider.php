@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     private const ALLOWED_QUEUE_JOB_CLASSES = [
         'App\Jobs\PayrollJob',
         'App\Jobs\EmployeeUpload',
+        'App\Jobs\ChangeEmployeeNoJob',
     ];
 
     /**
