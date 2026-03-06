@@ -126,7 +126,7 @@
                         </div>
                     </div>
                     @if($isGovernment)
-                        @if(in_array($records['employee_information']['type'], ['1', '2']))
+                        @if(in_array($records['employee_information']['type'], ['1', '2', '6']))
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
                                 <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
@@ -216,7 +216,10 @@
                     @if($isGovernment)
                         <div class="col-md-3 mb-3">
                             <label class="mb-2" for="salary">Monthly Rate <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : 'readonly'}}>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{ in_array($records['employee_information']['type'], [3,4]) ? '' : 'restricted' }}"
+        {{ in_array($records['employee_information']['type'], [3,4]) ? '' : 'readonly' }}
+    >
+
                         <div class="error-field">
                                 @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
