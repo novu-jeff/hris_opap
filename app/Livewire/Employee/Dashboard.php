@@ -218,7 +218,7 @@ class Dashboard extends Component
          $this->dailyTimeRecordService = app(DailyTimeRecordService::class);
 
          $monthDate = $this->dtrDate->format('m-Y');
-         $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate);
+         $logs = $this->dailyTimeRecordService->getDailyTimeRecord($employee_no, $monthDate, true);
 
          $this->logs = [
                 
