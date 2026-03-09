@@ -166,7 +166,7 @@ class Manual extends Component
             'records.employee_information.step_id' => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.salary_type' => 'required|in:monthly,daily',    
             'records.employee_information.salary' => 'required|numeric|gt:1000',
-            'records.employee_information.salary_method' => 'required|in:cash,bank transfer,paycheck,e-wallet',
+            'records.employee_information.salary_method' => 'nullable|in:cash,land bank atm',
             'records.employee_information.shift_schedule' => 'required|exists:sections,id',
             'records.employee_information.employee_schedule' => 'required|exists:sections,id',
         ];
@@ -200,7 +200,7 @@ class Manual extends Component
             'records.employee_information.salary.numeric' => 'The salary rate must be numbers',
             'records.employee_information.salary.gt' => 'The salary rate must be greather than 1000',
             'records.employee_information.salary_method.required' => 'The salary method is required.',
-            'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash, bank transfer, paycheck, or e-wallet.',
+            'records.employee_information.salary_method.in' => 'The salary method must be one of the following: cash,land bank atm.',
             'records.employee_information.type.required' => 'The employment type is required',
             'records.employee_information.type.exists' => 'The selected employment type does not exists.',
             'records.employee_information.shift_schedule.required' => 'The shift schedule field is required.',

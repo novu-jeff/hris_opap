@@ -62,7 +62,7 @@ class DailyTimeRecordService {
 
         if ($mergeBothSources) {
            
-            $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources($bsd_no, $startDate, $endDate);
+            $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources($employee_no, $startDate, $endDate);
 
             Log::info('logsBothSources', [$logs]);
         } else {

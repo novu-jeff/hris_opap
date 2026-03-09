@@ -50,7 +50,7 @@ class EmployeeUploadService extends Controller
     public function uploadEmployeeInformation(array $rows, array $schedules)
     {
         if (count($rows) === 0) {
-            Log::warning('Employee Information sheet is empty');
+            Log::warning('Employee Information sheet is emptyssss');
             return;
         }
 
@@ -61,7 +61,7 @@ class EmployeeUploadService extends Controller
         $expectedHeaders = [
             'employee no.', 'bsd no.', 'lastname', 'firstname', 'middlename',
             'address', 'sex', 'civil status', 'birthday', 'age',
-            'gsis id', 'pagibig id', 'sss id', 'philhealth id', 'tin id',
+            'bp no', 'gsis id', 'pagibig id', 'sss id', 'philhealth id', 'tin id',
             'bank account no.', 'date hired', 'position', 'monthly salary',
             'job category', 'email', 'unit'
         ];
@@ -145,6 +145,7 @@ class EmployeeUploadService extends Controller
                     'civil_status' => strtolower($data['civil status'] ?? ''),
                     'birthday' => $this->transformDate($data['birthday']),
                     'age' => $data['age'],
+                    'bp_no' => $data['bp no'],
                     'gsis_no' => $data['gsis id'],
                     'pagibig_no' => $data['pagibig id'],
                     'sss_no' => $data['sss id'],

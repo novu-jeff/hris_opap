@@ -16,27 +16,29 @@ class EmployeeTimelogs extends Model
      * Get timelogs from both sources (system timelogs + biometrics attendances) for a period.
      * Use this when generating payroll so attendance from both DBs is included.
      *
-     * @param string|int $employeeId Employee ID (bsd_no when bsd_emp_identical is false, else employee_no)
+     * @param string|int $employeeNo Employee number (HRIS employee_no, e.g. "OP-21-226")
      * @param string $startDate Start datetime (Y-m-d H:i:s)
      * @param string $endDate End datetime (Y-m-d H:i:s)
      * @return Collection Collection of objects with timestamp, shift_id, schedule_id, isWeb, etc. (sorted by timestamp)
      */
-    public static function getLogsForPeriodFromBothSources($employeeId, $startDate, $endDate): Collection
+    public static function getLogsForPeriodFromBothSources($employeeNo, $startDate, $endDate): Collection
     {
         $normalized = collect();
+        $bsd_no = self::getBsdNo($employeeNo);
+        $shiftId = EmployeeInformation::where('employee_no', $employeeNo)->value('shift_id');
+        if ($shiftId === null && $bsd_no !== null) {
+            $shiftId = EmployeeInformation::where('bsd_no', $bsd_no)->value('shift_id');
+        }
 
-        // 1) System timelogs (mysql.timelogs)
-        $employeNo = self::getBsdNo($employeeId);
-        $shiftId = EmployeeInformation::where('employee_no', $employeeId)
-            ->value('shift_id'); 
+        // 1) System timelogs (mysql.timelogs) – uses employee_no
         $fromTimelogs = DB::connection('mysql')
             ->table('timelogs')
-            ->where('employee_id', $employeeId)
+            ->where('employee_id', $employeeNo)
             ->whereBetween('timestamp', [$startDate, $endDate])
             ->orderBy('timestamp')
             ->get();
 
-            Log::info('employeeId', [$employeeId]);
+            Log::info('employeeNo', [$employeeNo]);
             Log::info('startDate', [$startDate]);
             Log::info('endDate', [$endDate]);
             Log::info('fromTimelogs', [$fromTimelogs]);
@@ -54,17 +56,11 @@ class EmployeeTimelogs extends Model
             ]);
         }
 
-        // 2) Biometrics attendances (mysql2.attendances)
-        $employeNo = self::getBsdNo($employeeId);
-        $shiftId = EmployeeInformation::where('employee_no', $employeeId)
-            ->value('shift_id');    
-
-        Log::info('employeNo', [$employeNo]);
-        Log::info('startDate', [$startDate]);
-        Log::info('endDate', [$endDate]);
+        // 2) Biometrics attendances (mysql2.attendances / oppap_logs) – uses bsd_no
+        $attendancesId = $bsd_no ?? $employeeNo;
         $fromAttendances = DB::connection('mysql2')
             ->table('attendances')
-            ->where('employee_id', $employeNo)
+            ->where('employee_id', $attendancesId)
             ->whereBetween('timestamp', [$startDate, $endDate])
             ->orderBy('timestamp')
             ->get();
@@ -76,7 +72,7 @@ class EmployeeTimelogs extends Model
             $normalized->push((object) [
                 'timestamp' => $row->timestamp,
                 'employee_id' => $row->employee_id,
-                'shift_id' => $shiftId,
+                'shift_id' => $shiftId ?? 1,
                 'schedule_id' => 1,
                 'isWeb' => $row->isWeb ?? null,
                 'captured_image' => $row->captured_image ?? null,
