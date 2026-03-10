@@ -176,17 +176,20 @@ class EmployeeUploadService extends Controller
         $generate = new Generate;
         $email_id = $generate->email($employeeNo, $firstName, $lastName);
 
-        $user = EmployeeAccount::updateOrCreate(
-            ['employee_no' => $employeeNo],
-            [
+        // If an account already exists for this employee number, don't update it
+        $user = EmployeeAccount::where('employee_no', $employeeNo)->first();
+
+        if ($user) {
+            Log::notice('Existing employee account found, skipping update', [
+                'employee_no' => $employeeNo,
+            ]);
+        } else {
+            $user = EmployeeAccount::create([
+                'employee_no' => $employeeNo,
                 'email' => $email,
                 'email_id' => $email_id,
-                'password' => bcrypt('password')
-            ]
-        );
-
-        if (!$user->wasRecentlyCreated) {
-            Log::notice('Duplicate employee account', ['employee_no' => $employeeNo]);
+                'password' => bcrypt('password'),
+            ]);
         }
 
         $user->assignRole('employee');

@@ -268,7 +268,7 @@ class Manual extends Component
             'section_id' => $data['section_id'] ?? null,
             'shift_id' => $data['shift_schedule'] ?? null,
             'schedule_id' => $data['employee_schedule'] ?? null,
-            'position_id' => $data['position_id'] ?? null,
+            'position_id' => $data['position_id'] ?: null,
             'date_hired' => $data['date_hired'] ?? null,
             'bsd_no' => $data['biometrics_id'] ?? null,
             'date_resignation' => $data['date_resignation'] ?? null,
