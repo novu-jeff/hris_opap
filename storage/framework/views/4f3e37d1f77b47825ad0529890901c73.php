@@ -31,7 +31,7 @@ $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>" 
-                                   name="email" value="<?php echo e(old('email')); ?>" placeholder="carl@novulutions.com">
+                                   name="email" value="<?php echo e(old('email')); ?>" placeholder="hello@peace.gov.ph">
                             <div class="error mt-2">
                                 <?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');

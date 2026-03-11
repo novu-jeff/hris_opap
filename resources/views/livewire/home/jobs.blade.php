@@ -21,7 +21,7 @@
     <div>
         @if ($search_result && $search_term && !$isEmptySearch)
             <div class="searched-query text-muted mt-5" wire:ignore>
-                <p class="m-0">You're searching for: <span>{{$search_result['parameter']}}</span></p>
+                <p class="m-0">You're searching for: <span>{{ is_array($search_result['parameter']) ? implode(', ', $search_result['parameter']) : $search_result['parameter'] }}</span></p>
                 <p class="m-0">Returned <span>{{$search_result['total']}} result/s</span></p>
             </div>
             <hr class="mt-4">

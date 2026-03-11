@@ -1,0 +1,11 @@
+[2026-03-11 08:33:03] production.INFO: PayrollJob started {"payroll_id":229,"type":"salary","employees_count":6} 
+[2026-03-11 08:33:03] production.ERROR: PayrollJob failed {"payroll_id":229,"type":"salary","error":"Attempt to read property \"items\" on null"} 
+[2026-03-11 08:41:09] production.INFO: Payroll batch prepared {"payroll_id":229,"type":"salary","jobs_count":1} 
+[2026-03-11 08:41:10] production.INFO: PayrollJob started {"payroll_id":229,"type":"salary","employees_count":6} 
+[2026-03-11 08:41:11] production.INFO: PayrollJob completed {"payroll_id":229,"type":"salary","employees_count":6,"payroll_items_saved":6,"loan_deductions_inserted":0,"duration_ms":1193} 
+[2026-03-11 08:41:11] production.INFO: PayrollJob started {"payroll_id":229,"type":"salary","employees_count":6} 
+[2026-03-11 08:41:12] production.INFO: PayrollJob completed {"payroll_id":229,"type":"salary","employees_count":6,"payroll_items_saved":6,"loan_deductions_inserted":0,"duration_ms":1172} 
+[2026-03-11 08:42:04] production.INFO: PayrollJob started {"payroll_id":230,"type":"salary","employees_count":6} 
+[2026-03-11 08:42:05] production.INFO: PayrollJob completed {"payroll_id":230,"type":"salary","employees_count":6,"payroll_items_saved":6,"loan_deductions_inserted":0,"duration_ms":1157} 
+[2026-03-11 19:37:32] production.INFO: PayrollJob started {"payroll_id":231,"type":"salary","employees_count":1} 
+[2026-03-11 19:37:32] production.ERROR: PayrollJob failed: payroll not found {"payroll_id":231,"type":"salary"} 

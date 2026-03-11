@@ -72,10 +72,10 @@ class AdminAccountSeeder extends Seeder
         } 
 
         $admins[] =  [
-            'name' => 'Carl Llemos', 
+            'name' => 'Novu Admin', 
             'username' => 'dev01',
             'role' => 'superadmin',
-            'email' => 'carl@novulutions.com', 
+            'email' => 'jeff@novulutions.com', 
             'password' => Hash::make('password')
         ];
         

@@ -14,35 +14,28 @@ class ChangeEmployeeNoJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
 
     protected string $model;
+    protected string $column;
     protected string $oldEmployeeNo;
     protected string $newEmployeeNo;
 
-    public function __construct(string $model, string $oldEmployeeNo, string $newEmployeeNo)
+    public function __construct(string $model, string $oldEmployeeNo, string $newEmployeeNo, string $column = 'employee_no')
     {
-
-        \Log::info("rey {$model}:  found");
-           
         $this->model = $model;
+        $this->column = $column;
         $this->oldEmployeeNo = $oldEmployeeNo;
         $this->newEmployeeNo = $newEmployeeNo;
     }
 
     public function handle(): void
     {
-
-        \Log::info("reynaldo here hadle {$this->model}:  found");
-
-        if($this->model == 'App\Models\EmployeeTimelogs'){
-            $this->model::where('employee_id', $this->oldEmployeeNo)
-            ->update(['employee_id' => $this->newEmployeeNo]);
-        }else{
-            $this->model::where('employee_no', $this->oldEmployeeNo)
-            ->update(['employee_no' => $this->newEmployeeNo]);
+        // External biometrics attendances uses numeric employee_id (BSD no).
+        // Changing employee_no must not rewrite that numeric key with alphanumeric values.
+        if ($this->model === 'App\Models\EmployeeTimelogs' && config('app.external_timelogs')) {
+            return;
         }
 
-        //event(new \App\Events\EmployeeMigrationProgress($this->model));
-       // $this->model::where('employee_no', $this->oldEmployeeNo)
-      //      ->update(['employee_no' => $this->newEmployeeNo]);
+        $this->model::where($this->column, $this->oldEmployeeNo)
+            ->update([$this->column => $this->newEmployeeNo]);
     }
     
 }

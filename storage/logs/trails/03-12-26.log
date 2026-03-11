@@ -1,0 +1,18 @@
+[2026-03-12 07:46:16] App\Models\EmployeeAccount UPDATED by [System]: {
+    "id": 813,
+    "employee_no": "OCS-659",
+    "applicant_id": null,
+    "email_id": "katheryn.baes@hris.com",
+    "email": null,
+    "password": "$2y$12$WWqXAVxZWluBWPMsLC3W6uhiICbmU85d1Y1X5t9xBPE5WFebk1MVi",
+    "isLoggedIn": 0,
+    "token": null,
+    "isNew": "0",
+    "isToUpdatePassword": 0,
+    "last_password_updated": "2026-01-02 22:13:19",
+    "isLocked": false,
+    "locked_at": null,
+    "login_attempts": 0,
+    "created_at": null,
+    "updated_at": null
+}

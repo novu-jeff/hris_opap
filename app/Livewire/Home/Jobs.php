@@ -192,29 +192,34 @@ class Jobs extends Component
 
     public function find()
     {
-        $this->isEmptySearch = empty($this->search_query);
-        $this->dispatch('navigateToSearch', $this->search_query);
-        $this->search_term = $this->search_query;
+        $normalizedSearch = $this->normalizeSearchValue($this->search_query);
+        $this->search_query = $normalizedSearch;
+        $this->isEmptySearch = ($normalizedSearch === '');
+        $this->dispatch('navigateToSearch', $normalizedSearch);
+        $this->search_term = $normalizedSearch;
     }
 
     public function render()
     {
+        $searchTerm = $this->normalizeSearchValue($this->search_term ?? $this->search_query);
+        $this->search_term = $searchTerm;
+
         $model = JobPosts::with('applicants', 'employment_type');
 
-        if ($this->search_term) {
+        if ($searchTerm !== '') {
             $this->resetPage();
 
             $model->where(function ($query) {
-                $query->where('position', 'like', '%' . $this->search_query . '%')
-                    ->orWhere('company_name', 'like', '%' . $this->search_query . '%')
-                    ->orWhere('location', 'like', '%' . $this->search_query . '%')
-                    ->orWhere('setup', 'like', '%' . $this->search_query . '%')
+                $query->where('position', 'like', '%' . $this->search_term . '%')
+                    ->orWhere('company_name', 'like', '%' . $this->search_term . '%')
+                    ->orWhere('location', 'like', '%' . $this->search_term . '%')
+                    ->orWhere('setup', 'like', '%' . $this->search_term . '%')
                     ->orWhereHas('employment_type', function ($query) {
-                        $query->where('name', 'like', '%' . $this->search_query . '%');
+                        $query->where('name', 'like', '%' . $this->search_term . '%');
                     })
-                    ->orWhere('min_salary', 'like', '%' . $this->search_query . '%')
-                    ->orWhere('max_salary', 'like', '%' . $this->search_query . '%')
-                    ->orWhere('slots', 'like', '%' . $this->search_query . '%');
+                    ->orWhere('min_salary', 'like', '%' . $this->search_term . '%')
+                    ->orWhere('max_salary', 'like', '%' . $this->search_term . '%')
+                    ->orWhere('slots', 'like', '%' . $this->search_term . '%');
             });
         }
 
@@ -222,12 +227,24 @@ class Jobs extends Component
 
         $this->search_result = [
             'isEmpty' => $records->total() === 0,
-            'parameter' => $this->search_term,
+            'parameter' => $searchTerm,
             'total' => $records->total()
         ];
 
         return view('livewire.home.jobs', [
             'records' => $records
         ]);
+    }
+
+    private function normalizeSearchValue($value): string
+    {
+        if (is_array($value)) {
+            $value = implode(' ', array_filter(array_map(
+                static fn ($item) => trim((string) $item),
+                $value
+            )));
+        }
+
+        return trim((string) $value);
     }
 }

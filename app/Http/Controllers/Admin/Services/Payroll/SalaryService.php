@@ -280,13 +280,21 @@ class SalaryService extends Controller {
                 ->first();
                 
 
-                $salary = ($latestTranche && $latestTranche->items->isNotEmpty()) 
-                        ? $latestTranche->items->first()->$stepColumn 
-                        : 0;
-                    
-                $wtax = ($latestTranche && $latestTranche->items->isNotEmpty()) 
-                    ? $latestTranche->items->first()->$stepColumnTax 
-                    : 0;
+                $trancheItem = $latestTranche?->items?->first();
+
+                if (!$trancheItem) {
+                    logger()->warning('Missing active tranche item for payroll computation', [
+                        'payroll_id' => $payroll->id,
+                        'employee_no' => $employee_no,
+                        'position_id' => $position_id,
+                        'salary_grade' => $salaryGrade,
+                        'eligible' => $eligible,
+                        'step_id' => $employee['step_id'] ?? null,
+                    ]);
+                }
+
+                $salary = $trancheItem ? data_get($trancheItem, $stepColumn, 0) : 0;
+                $wtax = $trancheItem ? data_get($trancheItem, $stepColumnTax, 0) : 0;
 
                 } else {
                     $wtax = data_get($employee, 'w_tax', 0);
