@@ -114,15 +114,7 @@
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
-                                @if($payroll->status !== 'pending')
-                                <button
-                                    wire:click="downloadPayroll({{ $payroll->id }})"
-                                    class="btn btn-info btn-sm"
-                                    title="Download Payroll"
-                                >
-                                    <i class="fa-solid fa-download"></i>
-                                </button>
-                                 @endif
+                               
                                 @if($payroll->status !== 'approved')
                                     <button wire:click="remove(true, {{ $payroll->id }})" class="btn btn-danger btn-sm">
                                         <i class="fa-solid fa-trash"></i>
