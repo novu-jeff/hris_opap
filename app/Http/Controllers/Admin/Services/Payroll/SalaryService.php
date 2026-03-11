@@ -261,7 +261,7 @@ class SalaryService extends Controller {
                 $ceiling = 100000;
                 $stepId = $employee['step_id'];
 
-                if (!empty($stepId)) {
+                if ($employee['employment_type_id'] != 3) {
 
 
                $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
