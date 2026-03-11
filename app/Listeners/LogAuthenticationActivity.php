@@ -30,6 +30,10 @@ class LogAuthenticationActivity
      */
     protected function logActivity($user, $action)
     {
+        if (!$user || !is_object($user)) {
+            return;
+        }
+
         $role = $this->getRole(get_class($user));
 
         $directory = storage_path('logs/trails/' . strtolower($role) . '/');
@@ -59,8 +63,6 @@ class LogAuthenticationActivity
             $name,
             $action,
         );
-
-        File::append($directory . $filename, $logEntry);
 
         File::append($directory . $filename, $logEntry);
     }

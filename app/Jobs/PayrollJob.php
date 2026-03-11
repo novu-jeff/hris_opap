@@ -13,6 +13,7 @@ use Illuminate\Bus\Batchable;
 use App\Models\PayrollItems;
 use Throwable;
 use App\Models\Loan;
+use Illuminate\Support\Facades\Log;
 
 class PayrollJob implements ShouldQueue
 {
@@ -33,13 +34,22 @@ class PayrollJob implements ShouldQueue
 
     public function handle()
 {
-   \Log::info('PayrollJob handle() STARTED', [
-        'payroll_id' => $this->payrollId
+    $startedAt = microtime(true);
+    $employeesCount = count($this->employees);
+
+    Log::channel('payroll')->info('PayrollJob started', [
+        'payroll_id' => $this->payrollId,
+        'type' => $this->type,
+        'employees_count' => $employeesCount,
     ]);
+
     $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
 
    if (!$payroll) {
-       \Log::error('PayrollJob: Payroll not found', ['payroll_id' => $this->payrollId]);
+       Log::channel('payroll')->error('PayrollJob failed: payroll not found', [
+           'payroll_id' => $this->payrollId,
+           'type' => $this->type,
+       ]);
        return;
    }
 
@@ -50,36 +60,33 @@ $instance = app($process['service']);
 
 // Check if computePayroll exists
 if (!method_exists($instance, 'computePayroll')) {
-    \Log::error('computePayroll method does not exist on instance', [
+    Log::channel('payroll')->error('PayrollJob failed: computePayroll missing on service', [
+        'payroll_id' => $this->payrollId,
+        'type' => $this->type,
         'instance_class' => get_class($instance),
-        'process' => $process
+        'service' => $process['service'] ?? null,
     ]);
     return; // or throw exception
 }
 
 
-  \Log::info('Processing payroll here', [
-        'payroll_id' => $this->payrollId,
-        'employees_count' => count($this->employees)
-    ]);
-
     $data = $instance->computePayroll($payroll, $this->employees, $this->type);
-//dd($data);
+    $savedItems = 0;
+    $loanDeductions = 0;
+
     foreach ($data as $item) {
-       // dd($item);
-       \Log::info('Saving payroll item', $item);
         $payrollItem = $process['models']['child']::updateOrCreate([
                 'payroll_id'  => $item['payroll_id'],
                 'employee_no' => $item['employee_no'],
             ], $item);
-
-        \Log::info('Saved payroll item', $payrollItem->toArray());    
+        $savedItems++;
 
         if (!empty($item['loan_deductions'])) {
             foreach ($item['loan_deductions'] as &$loanDeduction) {
                 $loanDeduction['payroll_item_id'] = $payrollItem->id;
             }
             DB::table('payroll_salary_deductions')->insert($item['loan_deductions']);
+            $loanDeductions += count($item['loan_deductions']);
         }
 
         // Update loan table
@@ -99,9 +106,22 @@ if (!method_exists($instance, 'computePayroll')) {
             }
         }
     }
+
+    Log::channel('payroll')->info('PayrollJob completed', [
+        'payroll_id' => $this->payrollId,
+        'type' => $this->type,
+        'employees_count' => $employeesCount,
+        'payroll_items_saved' => $savedItems,
+        'loan_deductions_inserted' => $loanDeductions,
+        'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
+    ]);
 }
 
     public function failed(Throwable $exception) {
-        \Log::info('Error Processing Info: ' . $exception->getMessage());
+        Log::channel('payroll')->error('PayrollJob failed', [
+            'payroll_id' => $this->payrollId,
+            'type' => $this->type,
+            'error' => $exception->getMessage(),
+        ]);
     }
 }

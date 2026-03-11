@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class EmployeeTimelogs extends Model
 {
@@ -38,11 +37,6 @@ class EmployeeTimelogs extends Model
             ->orderBy('timestamp')
             ->get();
 
-            Log::info('employeeNo', [$employeeNo]);
-            Log::info('startDate', [$startDate]);
-            Log::info('endDate', [$endDate]);
-            Log::info('fromTimelogs', [$fromTimelogs]);
-
         foreach ($fromTimelogs as $row) {
             $normalized->push((object) [
                 'timestamp' => $row->timestamp,
@@ -56,17 +50,21 @@ class EmployeeTimelogs extends Model
             ]);
         }
 
-        // 2) Biometrics attendances (mysql2.attendances / oppap_logs) – uses bsd_no
-        $attendancesId = $bsd_no ?? $employeeNo;
-        $fromAttendances = DB::connection('mysql2')
-            ->table('attendances')
-            ->where('employee_id', $attendancesId)
-            ->whereBetween('timestamp', [$startDate, $endDate])
-            ->orderBy('timestamp')
-            ->get();
-
-            logger('fromAttendances', [$fromAttendances]);
-            Log::info('fromAttendances', [$fromAttendances]);
+        // 2) Biometrics attendances (mysql2.attendances / oppap_logs)
+        // employee_id is BIGINT, so only query numeric ids to avoid string->0 coercion
+        $attendancesIds = array_values(array_unique(array_filter(
+            [$bsd_no, $employeeNo],
+            fn($v) => $v !== null && $v !== '' && preg_match('/^\d+$/', (string) $v)
+        )));
+        $fromAttendances = collect();
+        if (!empty($attendancesIds)) {
+            $fromAttendances = DB::connection('mysql2')
+                ->table('attendances')
+                ->whereIn('employee_id', $attendancesIds)
+                ->whereBetween('timestamp', [$startDate, $endDate])
+                ->orderBy('timestamp')
+                ->get();
+        }
 
         foreach ($fromAttendances as $row) {
             $normalized->push((object) [

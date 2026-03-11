@@ -63,15 +63,11 @@ class DailyTimeRecordService {
         if ($mergeBothSources) {
            
             $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources($employee_no, $startDate, $endDate);
-
-            Log::info('logsBothSources', [$logs]);
         } else {
             $logs = EmployeeTimelogs::where('employee_id', $bsd_no)
                 ->whereBetween('timestamp', [$startDate, $endDate])
                 ->orderBy('timestamp')
                 ->get();
-
-                Log::info('logsSingleSource', [$logs]);
         }
         
 
@@ -82,8 +78,6 @@ class DailyTimeRecordService {
 
 
         $logs = $this->processLogs($employee, $logs);
-        Log::info('logsProcessed', [$logs]);
-        Log::info('dateInput', [$dateInput]);
         $dtr = $this->computeDTR($employee_no, $logs, $dateInput);
 
         return [
@@ -593,13 +587,9 @@ class DailyTimeRecordService {
         }
 
         $arrayWeeklySchedule = (array) $weeklySchedule;
-       // dd($arrayWeeklySchedule);
-       Log::info('arrayWeeklySchedule', [$arrayWeeklySchedule]);
 
         if (!$arrayWeeklySchedule[$dayName] && !$isHoliday) {
             $dayRemarkKey = $dayName . '_remarks';
-           Log::info('dayRemarkKey', [$dayRemarkKey]);
-           Log::info('arrayWeeklySchedule', [$arrayWeeklySchedule]);
             $restDays = true;
             $ownRemarks[] = $arrayWeeklySchedule[$dayRemarkKey] ?? 'Rest Day';
         }
@@ -685,15 +675,6 @@ class DailyTimeRecordService {
             ->where('isDeleted', false)
             ->where('date', $monthDay)
             ->first();
-
-        if ($holiday) {
-            Log::info('Holiday matched', [
-                'input_date' => $date,
-                'lookup_key' => $monthDay,
-                'holiday_name' => $holiday->name,
-                'holiday_type' => $holiday->type,
-            ]);
-        }
 
         return $holiday;
     }
@@ -804,12 +785,6 @@ class DailyTimeRecordService {
         # Get scheduled shift
         [$scheduledIn, $scheduledOut, $scheduledBreakIn, $scheduledBreakOut] = $this->getScheduledInOut($employeeSchedule, $date, $firstLog);
 
-       // dd($scheduledIn, $scheduledOut, $firstLog, $lastLog);
-        Log::info('scheduledIn', [$scheduledIn]);
-        Log::info('scheduledOut', [$scheduledOut]);
-        Log::info('firstLog', [$firstLog]);
-        Log::info('lastLog', [$lastLog]);
-        
         if (!$scheduledIn || !$scheduledOut) {
             Log::warning("Missing schedule for {$employee_no} on {$date}");
         }
@@ -820,7 +795,6 @@ class DailyTimeRecordService {
             $TARDINESS_MINUTES += $minutesLate;
             $TARDINESS_FREQ++;
             $ownRemark[] = 'Late';
-            Log::info("Tardiness for {$employee_no} on {$date}: {$minutesLate} minutes late");
         }
 
         # Undertime
@@ -870,9 +844,6 @@ class DailyTimeRecordService {
             }
 
             $out = (clone $in)->addHours($schedule->work_hours + 1);
-
-            Log::info('in', [$in]);
-            Log::info('out', [$out]);
 
             $breakOut = Carbon::parse("{$date} {$schedule->break_out}");
             $breakIn = Carbon::parse("{$date} {$schedule->break_in}");

@@ -58,7 +58,11 @@ class Salary extends Component
                 'salary'       // payroll type
             );
         }
-   \Log::info("regenerate count jobs payroll", ['count' => count($jobs)]);
+   \Log::channel('payroll')->info('Payroll batch prepared', [
+       'payroll_id' => $payroll->id,
+       'type' => 'salary',
+       'jobs_count' => count($jobs),
+   ]);
         // 6️⃣ Dispatch jobs as a batch
         $batch = \Illuminate\Support\Facades\Bus::batch($jobs)
             ->name('Regenerate Payroll #' . $payroll->id)

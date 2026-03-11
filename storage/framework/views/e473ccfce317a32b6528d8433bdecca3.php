@@ -1,0 +1,377 @@
+<form wire:submit.prevent="save" wire:target="save">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow p-4">
+                <div class="card-header bg-transparent border-0">
+                    <p class="text-muted mb-0 text-uppercase fst-italic">All <span class="text-danger">*</span> is required</p>
+                    <ul class="calendar-legend mt-5 text-uppercase fw-bold">
+                        <li><span class="legend-color available"></span>Available</li>
+                        <li><span class="legend-color selected"></span>Selected</li>
+                        <li><span class="legend-color pending"></span>Pending</li>
+                        <li><span class="legend-color approved"></span>Approved</li>
+                        <li><span class="legend-color holiday"></span>Holiday</li>
+                        <li><span class="legend-color unavailable"></span>Unavailable</li>
+                    </ul>
+                </div>
+                <hr class="mx-3">
+                <div class="card-body">
+                    <div class="row">
+                        <!--[if BLOCK]><![endif]--><?php if(!is_null($this->type)): ?>
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-end">
+                                    <h6 class="text-uppercase fw-bold">Remaining Leave Credits: <?php echo e($this->remaining_credits); ?></h6>
+                                </div>
+                            </div>
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="type">Type <span class="text-danger">*</span></label>
+                            <select wire:model.live="type" wire:change="handleLeaveCredits" id="type" class="form-select text-uppercase">
+                                <option value=""> - CHOOSE - </option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $leaveTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $leave): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($leave->id); ?>"><?php echo e($leave->code . ' - ' . $leave->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                            </select>
+                            <div class="error-field">
+                                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['type'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
+                        </div>
+
+                        <!--[if BLOCK]><![endif]--><?php if(in_array($type, [1,2])): ?>
+                            <div class="col-12 col-md-12 mb-4">
+                                <label class="mb-2" for="duration">Leave Duration <span class="text-danger">*</span></label>
+                                <select wire:model.live="duration"  id="duration" class="form-select text-uppercase">
+                                    <option value=""> - CHOOSE - </option>
+                                    <option value="wholeday">Whole Day</option>
+                                    <option value="halfday_morning">Half Day - Morning</option>
+                                    <option value="halfday_afternoon">Half Day - Afternoon</option>
+                                </select>
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['duration'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                        <div class="col-12 col-md-12 mb-4">
+                            <div id="calendar-container" wire:ignore></div>
+                            <div class="error-field">
+                                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['selectedDates'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
+                        </div>
+
+                        <!--[if BLOCK]><![endif]--><?php if($type == 1): ?>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="location">Location <span class="text-danger">*</span></label>
+                                <select wire:model.live="location" id="location" class="form-select text-uppercase">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="ph">Within Philippines</option>
+                                    <option value="abroad">Abroad</option>
+                                </select>
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['location'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="location_specific">Specific Location</label>
+                                <input type="text" wire:model="location_specific" id="location_specific" class="form-control">
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['location_specific'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+
+                        <?php elseif($type == 2): ?>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="confinement">Patient Type <span class="text-danger">*</span></label>
+                                <select wire:model="confinement" id="confinement" class="form-select text-uppercase">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="hospital">In Hospital</option>
+                                    <option value="out-patient">Out Patient</option>
+                                </select>
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['confinement'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-4">
+                                <label class="mb-2" for="illness">Illness (Specify)</label>
+                                <input type="text" wire:model="illness" id="illness" class="form-control">
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['illness'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                        <?php elseif($type == 8): ?>
+                            <div class="col-12 <?php echo e($study == '' || $study != 'others' ? 'col-md-12' : 'col-md-4'); ?> mb-4">
+                                <label class="mb-2" for="study">Purpose <span class="text-danger">*</span></label>
+                                <select wire:model.live="study" id="study" class="form-select text-uppercase">
+                                    <option value=""> - CHOOSE -</option>
+                                    <option value="completion_masters">Completion of Master's Degree</option>
+                                    <option value="examination">Bar/Board Examination Review</option>
+                                    <option value="others">Other Purpose</option>
+                                </select>
+                                <div class="error-field">
+                                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['study'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                            <!--[if BLOCK]><![endif]--><?php if($study == 'others'): ?>
+                                <div class="col-12 col-md-8 mb-4">
+                                    <label class="mb-2" for="study_other_purpose">Other Purpose (Specify) <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="study_other_purpose" id="study_other_purpose" class="form-control">
+                                    <div class="error-field">
+                                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['study_other_purpose'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        <div class="col-12 col-md-12 mb-4">
+                            <label class="mb-2" for="commutation">Commutation <span class="text-danger">*</span></label>
+                            <select wire:model="commutation" id="commutation" class="form-select text-uppercase">
+                                <option value=""> - CHOOSE -</option>
+                                <option value="no">Not Requested</option>
+                                <option value="yes">Requested</option>
+                            </select>
+                            <div class="error-field">
+                                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['commutation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-danger"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="mx-3">
+                <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
+                        <span wire:loading.remove wire:target="save">Proceed <i class="fa-solid fa-arrow-right ms-2"></i></span>
+                        <span wire:loading wire:target="save">Proceeding <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+$(function () {
+    const scheduledDates = <?php echo json_encode($scheduledDates, 15, 512) ?>;
+    const isEdit = <?php echo json_encode($isEdit, 15, 512) ?>;
+    const presetSelectedDates = <?php echo json_encode($selectedDates ?? [], 15, 512) ?>;
+    const currentYear = parseInt('<?php echo e($currentYear); ?>');
+
+    setTimeout(() => {
+        const calendarEl = document.getElementById('calendar-container');
+        if (!calendarEl || $(calendarEl).data('calendar-initialized')) return;
+
+        const today = new Date();
+        let selectedDates = isEdit ? presetSelectedDates.map(d => d.date) : [];
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            selectable: true,
+            weekends: false,
+            headerToolbar: {
+                center: 'title',
+            },
+            dateClick(info) {
+                const ymd = formatToYMD(info.date);
+                if (isToggleable(ymd)) {
+                    toggleDate(ymd);
+                }
+            },
+            eventClick(info) {
+                info.jsEvent.preventDefault();
+                const ymd = formatToYMD(info.event.start);
+                if (isToggleable(ymd)) {
+                    toggleDate(ymd);
+                }
+            },
+            datesSet() {
+                renderEvents();
+            }
+        });
+
+        function formatToYMD(date) {
+            const d = new Date(date);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function formatToMMDD(date) {
+            const d = new Date(date);
+            return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function isBlocked(ymd, mmdd) {
+            return scheduledDates.some(item =>
+                (item.type === 'holiday' && item.date === mmdd) ||
+                (item.type === 'leave' && item.date === ymd)
+            );
+        }
+
+        function isToggleable(ymd) {
+            const date = new Date(ymd);
+            const mmdd = formatToMMDD(date);
+
+            const future = date > today;
+            const yearLimit = date.getFullYear() <= currentYear;
+            const blocked = isBlocked(ymd, mmdd);
+
+            if (!future || !yearLimit) return false;
+
+            if (isEdit) return true;
+
+            return !blocked;
+        }
+
+        function toggleDate(ymd) {
+            const index = selectedDates.indexOf(ymd);
+            if (index !== -1) {
+                selectedDates.splice(index, 1); // unselect
+            } else {
+                selectedDates.push(ymd); // select
+            }
+            renderEvents();
+        }
+
+        function renderEvents() {
+            const start = calendar.view.activeStart;
+            const end = calendar.view.activeEnd;
+            const events = [];
+
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+                const date = new Date(d);
+                const ymd = formatToYMD(date);
+                const mmdd = formatToMMDD(date);
+
+                // Unavailable if before today or after currentYear
+                if (date <= today || date.getFullYear() > currentYear) {
+                    if (date.getFullYear() > currentYear) {
+                        events.push({
+                            title: 'Unavailable',
+                            start: ymd,
+                            backgroundColor: '#777',
+                            borderColor: '#777',
+                            textColor: '#fff',
+                            classNames: ['fc-sticky', 'fc-event-title'],
+                        });
+                    }
+                    continue;
+                }
+
+                const holiday = scheduledDates.find(e => e.type === 'holiday' && e.date === mmdd);
+                const leave = scheduledDates.find(e => e.type === 'leave' && e.date === ymd);
+                const isSelected = selectedDates.includes(ymd);
+                const isBlockedDate = isBlocked(ymd, mmdd);
+                const isPreset = presetSelectedDates.some(d => d.date === ymd);
+
+                if (holiday) {
+                    events.push({
+                        title: holiday.name,
+                        start: ymd,
+                        backgroundColor: '#8A0303',
+                        borderColor: '#8A0303',
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
+                } else if (leave && !(isEdit && isPreset)) {
+                    const color = leave.status === 'pending' ? '#e67e22' : '#6dbfb8';
+                    events.push({
+                        title: leave.name,
+                        start: ymd,
+                        backgroundColor: color,
+                        borderColor: color,
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
+                } else {
+                    const isAvailable = !isBlockedDate || (isEdit && isPreset);
+                    const isClickable = isToggleable(ymd);
+                    const bg = isSelected ? '#225f8b' : '#175850';
+
+                    events.push({
+                        title: isSelected ? 'Selected' : 'Available',
+                        start: ymd,
+                        backgroundColor: bg,
+                        borderColor: bg,
+                        textColor: '#fff',
+                        classNames: ['fc-sticky', 'fc-event-title'],
+                    });
+                }
+            }
+
+            calendar.removeAllEvents();
+            calendar.addEventSource(events);
+
+            Livewire.dispatch('setSelectedDates', [selectedDates]);
+        }
+
+        calendar.render();
+        $(calendarEl).data('calendar-initialized', true);
+    }, 300);
+});
+</script>
+
+<?php /**PATH /var/www/html/oppapru_hris/resources/views/livewire/employee/leave/apply.blade.php ENDPATH**/ ?>

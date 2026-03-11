@@ -18,7 +18,6 @@ use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class PayrollService extends Controller {
 
@@ -274,10 +273,6 @@ class PayrollService extends Controller {
         $undertime_mins = $summary['undertime'];        # Minutes
 
         $TOTAL_AUT = 0;
-
-        Log::info('summary', [$summary]);
-        Log::info('salary', [$salary]);
-        Log::info('payType', [$payType]);
 
         if ($payType === 'monthly') {
             # DOLE standard: 22 or 26 working days per month
