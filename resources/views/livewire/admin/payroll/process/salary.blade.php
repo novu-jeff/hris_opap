@@ -275,7 +275,7 @@
             </div>
         @endif
 
-        @if($records['payroll']['employment_type']['id'] == '2')
+        @if($records['payroll']['employment_type']['id'] == '2' || $records['payroll']['employment_type']['id'] == '6')
             <div class="table-responsive pb-3">
                 <table>
                     <thead>

@@ -124,7 +124,7 @@
                                     @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>      
-                        @elseif($records['employee_information']['type'] == 3)    
+                        @elseif($records['employee_information']['type'] == 3 || $records['employee_information']['type'] == 4)    
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                 <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
@@ -200,7 +200,8 @@
                     @if($isGovernment)
                         <div class="col-md-3 mb-3">
                             <label class="mb-2" for="salary">Salary Amount <span class="text-danger">*</span></label>
-                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{$records['employee_information']['type'] == 3 ? '' : 'restricted'}}" {{$records['employee_information']['type'] == 3 ? '' : ''}}>
+                            <input type="text" wire:model="records.employee_information.salary" id="records.employee_information.salary" class="form-control {{ in_array($records['employee_information']['type'], [3,4]) ? '' : 'restricted' }}" {{ in_array($records['employee_information']['type'], [3,4]) ? '' : 'readonly' }}
+                            >
                         <div class="error-field">
                                 @error('records.employee_information.salary') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>

@@ -126,7 +126,7 @@
                         </div>
                     </div>
                     @if($isGovernment)
-                        @if(in_array($records['employee_information']['type'], ['1', '2', '6']))
+                        @if(in_array($records['employee_information']['type'], ['1', '2']))
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
                                 <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
@@ -151,7 +151,7 @@
                                     @error('records.employee_information.step_id') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>      
-                        @elseif($records['employee_information']['type'] == 3)    
+                        @elseif($records['employee_information']['type'] == 3 || $records['employee_information']['type'] == 4)    
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                 <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">

@@ -18,6 +18,7 @@ use App\Services\DailyTimeRecordService;
 use App\Models\Loan;
 use App\Models\Positions;
 use App\Models\Tranche;
+use Illuminate\Support\Facades\Log;
 
 class SalaryService extends Controller {
 
@@ -223,7 +224,7 @@ class SalaryService extends Controller {
 
         $hasDeductions = $payroll->hasDeductions ?? false;
 
-      
+     
 
 
         if ($this->product == 'government') {
@@ -261,7 +262,9 @@ class SalaryService extends Controller {
                 $ceiling = 100000;
                 $stepId = $employee['step_id'];
 
-                if ($employee['employment_type_id'] != 3) {
+              //  dd($employee['employment_type_id']);
+
+                if ($employee['employment_type_id'] != 3 && $employee['employment_type_id'] != 4) {
 
 
                $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
@@ -291,7 +294,9 @@ class SalaryService extends Controller {
                 } else {
                     $wtax = data_get($employee, 'w_tax', 0);
                     $salary = data_get($employee, 'salary', 0);
-                }    
+                }  
+                
+               // dd($salary, $wtax);
 
                 $basic_salary = round(floatval($salary), 2);
                 $salary_type = $employee['salary_type'];
@@ -332,8 +337,9 @@ class SalaryService extends Controller {
                 $gross = round($basic_salary + $pera, 2);
 
               //  dd($hasDeductions, $social_security->consoloan );
-                if($eligible !== 2 && $eligible !== 3) {
+                if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
                     // DEDUCTION FOR GOVERNMENT EMPLOYEES
+                    //dd('here');
                     $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                 }else{
                     $rlip =  0;
