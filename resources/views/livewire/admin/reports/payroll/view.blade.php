@@ -3,7 +3,7 @@
 $types = explode(',', $records['payroll']['condition_employment_type']);
 @endphp
 
-@if(!in_array('2', $types) && !in_array('3', $types))
+@if(!in_array('2', $types) && !in_array('3', $types) && !in_array('4', $types))
 
 
 <div>
