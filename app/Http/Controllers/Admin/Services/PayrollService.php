@@ -18,6 +18,7 @@ use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PayrollService extends Controller {
 
@@ -36,7 +37,8 @@ class PayrollService extends Controller {
         $cosId = EmployementTypes::where('code', 'COS')->value('id');
         $joId  = EmployementTypes::where('code', 'JO')->value('id');
 
-     //  dd( $cosId , $joId, $employment_type );
+      // dd( $cosId , $joId, $employment_type );
+     
 
         $results = DB::table('employee_information as ei')
             ->select(
@@ -65,8 +67,10 @@ class PayrollService extends Controller {
 
                 if ($employment_type == $cosId) {
                     // COS payroll must include JO employees
+                    Log::info('COS payroll must include JO employees');
                     $query->whereIn('ei.employment_type_id', [$cosId, $joId]);
                 } else {
+                    Log::info('COS2 payroll must include JO employees');
                     $query->where('ei.employment_type_id', $employment_type);
                 }
 
@@ -74,6 +78,10 @@ class PayrollService extends Controller {
             ->where('ei.status', 'active')
             ->where('ei.isDeleted', 0)
             ->get();
+
+            Log::info('results', [
+                'results' => $results
+            ]);
 
         
 
@@ -102,11 +110,12 @@ class PayrollService extends Controller {
                     $reasons[] = 'no BSD number';
                 }
 
-                if($row->employment_type_id != $joId) {
+                if ($row->employment_type_id != $joId && $row->employment_type_id != 4) {
+                   
                     if (empty($row->position_id)) {
                         $reasons[] = 'no position assigned';
                     }
-                }    
+                }   
 
                 if ($type === 'mid_year') {
                     $may15 = Carbon::create($currentYear, 5, 15);
