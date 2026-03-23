@@ -11,6 +11,7 @@ use App\Models\Positions;
 use App\Models\Sections;
 use App\Models\ShiftSchedule;
 use App\Models\Tranche;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -32,7 +33,7 @@ class Manual extends Component
     public function mount()
     {
         $this->sections = Sections::all();
-        $this->positions = Positions::all();
+        $this->positions = new EloquentCollection();
         $this->employmentTypes = EmployementTypes::all();
         $this->shiftSchedule = ShiftSchedule::all();
         $this->employeeSchedule = EmployeeSchedule::all();
@@ -124,6 +125,18 @@ class Manual extends Component
         $position_id = $this->records['employee_information']['position_id'] ?? '';
         $step_id = $this->records['employee_information']['step_id'] ?? '';
 
+        if ($eligible === '' || $eligible === null) {
+            $this->positions = new EloquentCollection();
+            $this->records['employee_information']['position_id'] = '';
+        } else {
+            $this->positions = Positions::where('type', (string) $eligible)->get();
+            $validIds = $this->positions->pluck('id')->map(fn ($id) => (string) $id)->all();
+            $pid = (string) ($this->records['employee_information']['position_id'] ?? '');
+            if ($pid !== '' && ! in_array($pid, $validIds, true)) {
+                $this->records['employee_information']['position_id'] = '';
+            }
+            $position_id = $this->records['employee_information']['position_id'] ?? '';
+        }
 
         if ($this->isGovernment) {
             if ($eligible != 3 && $eligible && $position_id && $step_id) {
@@ -139,9 +152,12 @@ class Manual extends Component
             } else {
                 $this->records['employee_information']['salary'] = 0;
             }
-        } else {
-            $this->positions = Positions::all();
         }
+    }
+
+    public function updatedRecordsEmployeeInformationType(): void
+    {
+        $this->handleSalary();
     }
 
     protected function rules(?string $employee_no = null)
@@ -269,6 +285,7 @@ class Manual extends Component
             'shift_id' => $data['shift_schedule'] ?? null,
             'schedule_id' => $data['employee_schedule'] ?? null,
             'position_id' => $data['position_id'] ?: null,
+            'job_completion' => $data['job_completion'] ?? null,
             'date_hired' => $data['date_hired'] ?? null,
             'bsd_no' => $data['biometrics_id'] ?? null,
             'date_resignation' => $data['date_resignation'] ?? null,
