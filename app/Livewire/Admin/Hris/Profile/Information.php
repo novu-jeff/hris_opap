@@ -158,7 +158,7 @@ class Information extends Component
         }
 
         /* JOB ORDER → salary from DB */
-        if ($eligible == 3 || $eligible == 4) {
+        if ($eligible == 3 ||  $eligible == 4) {
             return;
         }
 
