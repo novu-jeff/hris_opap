@@ -276,10 +276,12 @@ class PayrollService extends Controller {
 
     public function computeAutDeduction(array $summary, $salary, $payType)
     {
+        //dd($summary, $salary, $payType);
         $totalAbsences = $summary['absences'];          # Days
         $workPerWeek = $summary['workingDaysPerWeek'];  # 5 or 6 days
         $tardiness_mins = $summary['tardiness'];        # Minutes
         $undertime_mins = $summary['undertime'];        # Minutes
+        $workingDaysInCutoff = $summary['total_days_of_work'];
 
         $TOTAL_AUT = 0;
 
@@ -291,7 +293,14 @@ class PayrollService extends Controller {
             $hourly_rate = $daily_rate / 8; # 8 hours per day
             $minute_rate = $hourly_rate / 60;
 
-            $absenceDeduction = $daily_rate * $totalAbsences;
+            // --- Cutoff-based rate (for absences)
+            $semiMonthlySalary = $salary / 2;
+
+            // 🔥 FIX: use actual working days in cutoff
+            $cutoff_daily_rate = round($semiMonthlySalary / $workingDaysInCutoff, 6);
+
+
+            $absenceDeduction = $cutoff_daily_rate  * $totalAbsences;
             $tardinessDeduction = $minute_rate * $tardiness_mins;
             $undertimeDeduction = $minute_rate * $undertime_mins;
 
