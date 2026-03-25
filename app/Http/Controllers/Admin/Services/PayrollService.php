@@ -277,6 +277,9 @@ class PayrollService extends Controller {
     public function computeAutDeduction(array $summary, $salary, $payType)
     {
         //dd($summary, $salary, $payType);
+        Log::info('summary_aut_deduction', [
+            'summary' => $summary
+        ]);
         $totalAbsences = $summary['absences'];          # Days
         $workPerWeek = $summary['workingDaysPerWeek'];  # 5 or 6 days
         $tardiness_mins = $summary['tardiness'];        # Minutes
