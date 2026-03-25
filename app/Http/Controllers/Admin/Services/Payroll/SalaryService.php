@@ -300,6 +300,7 @@ class SalaryService extends Controller {
                 $wtax = $trancheItem ? data_get($trancheItem, $stepColumnTax, 0) : 0;
 
                 } else {
+                   // dd('here');
                     $wtax = data_get($employee, 'w_tax', 0);
                     $salary = data_get($employee, 'salary', 0);
                 }  
@@ -380,20 +381,39 @@ class SalaryService extends Controller {
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
 
+                $total_lbp =  $dbp +  $kawani;  
+
+
                 $net = round($gross - $total_deduction, 2);
+
+                if(!empty($total_lbp)){
+                    $lbp = $net - $total_lbp;
+                }else{
+                    $lbp = $net;
+                }
                 $half = round($net / 2, 2);
                 if ($isFirstHalf) {
-
+                  //  dd($lbp);
                     // FIRST HALF PAYROLL (01–15)
-                    $firstHalf  = floor(($net / 2) * 100) / 100;
-                    $secondHalf = round($net - $firstHalf, 2);
+                    if(!empty($total_lbp)){
+                       // dd($net);
+                        $firstHalf  = floor(($net  / 2) * 100) / 100;
+                       // dd($firstHalf);
+                        $firstHalf =  $firstHalf - $total_lbp;
+                        $secondHalf = round($lbp - $firstHalf, 2);
+                        
+                    }else{
+                        $firstHalf  = floor(($net  / 2) * 100) / 100;
+                        $secondHalf = round($net - $firstHalf, 2);
+                    }
+                   
 
                 } else {
 
                     // SECOND HALF PAYROLL (16–end)
                     $firstHalf = $this->getFirstHalfNetAmount($employee_no, $payroll);
 
-                    $secondHalf = round($net - $firstHalf, 2);
+                    $secondHalf = round($lbp - $firstHalf, 2);
                 }
               //  $firstHalf  = floor(($net / 2) * 100) / 100;
               //  $secondHalf = round($net - $firstHalf, 2);
@@ -426,7 +446,7 @@ class SalaryService extends Controller {
                     'net_amount' => $net,
                     'dbp' => $dbp,
                     'kawani' => $kawani,
-                    'lbp_payroll_account' => $net,
+                    'lbp_payroll_account' => $lbp,
                     'salary' => $half,
                     'net_first_half' => $firstHalf,
                     'net_second_half' => $secondHalf,

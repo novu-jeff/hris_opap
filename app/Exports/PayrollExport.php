@@ -43,17 +43,34 @@ class PayrollExport implements FromCollection, WithEvents
 {
     $items = $this->payroll
         ->items()
-        ->with('information.section')
+        ->with('information.section.department')
         ->get();
 
-    // Group by section
-    $grouped = $items
-        ->sortBy(fn($item) => optional($item->information->section)->name)
+    // Group by department first, then by section (nested output order)
+    $groupedByDepartment = $items
+        ->sortBy(function ($item) {
+            $department = optional($item->information->section?->department);
+            $code = $department->code ?? '';
+
+            // Custom department ordering:
+            // - `EO` first
+            // - then `P1`, `P2`, `P3`, ... in numeric order
+            if ($code === 'EO') return 0;
+
+            if (preg_match('/^P(\d+)/', $code, $matches)) {
+                return 1 + (int) $matches[1];
+            }
+
+            return 9999;
+        })
         ->groupBy(function ($item) {
-            $section = optional($item->information->section);
-            return $section->name
-                ? "{$section->code} - {$section->name}"
-                : 'NO SECTION';
+            $department = optional($item->information->section?->department);
+
+            return $department->name
+                ? ($department->code
+                    ? "{$department->code} - {$department->name}"
+                    : $department->name)
+                : 'None';
         });
 
     $rows = collect();
@@ -69,74 +86,126 @@ class PayrollExport implements FromCollection, WithEvents
 
     $rows->push($headers);
 
-    foreach ($grouped as $section => $employees) {
+    // Running employee count across the entire report
+    $employeeCount = 1;
 
-        // SECTION LABEL ROW
-        $rows->push(["SECTION: {$section}"]);
+    foreach ($groupedByDepartment as $department => $departmentEmployees) {
+        // DEPARTMENT LABEL ROW
+        $rows->push(["DEPARTMENT {$department}"]);
 
-        foreach ($employees as $item) {
+        // Group within department by section
+        $groupedBySection = $departmentEmployees
+            ->sortBy(fn ($item) => optional($item->information->section)->name)
+            ->groupBy(function ($item) {
+                $section = optional($item->information->section);
+
+                return $section->name
+                    ? "{$section->code} - {$section->name}"
+                    : 'NO SECTION';
+            });
+
+        foreach ($groupedBySection as $section => $employees) {
+            // SECTION LABEL ROW
+            $rows->push(["SECTION: {$section}"]);
+            foreach ($employees as $item) {
+                $rows->push([
+                    "{$employeeCount}. {$item->name}",
+                    $item->position,
+                    $item->basic_salary,
+                    $item->pera ?? 0,
+                    $item->gross_amount_earned,
+                    $item->rlip ?? 0,
+                    $item->hdmf ?? 0,
+                    $item->philhealth ?? 0,
+                    $item->consoloan ?? 0,
+                    $item->emergency_loan ?? 0,
+                    $item->plreg ?? 0,
+                    $item->mpl ?? 0,
+                    $item->mpl_lite ?? 0,
+                    $item->cpl ?? 0,
+                    $item->mp2 ?? 0,
+                    $item->mplstlms ?? 0,
+                    $item->cir375_cir449 ?? 0,
+                    $item->w_tax ?? 0,
+                    $item->uca ?? 0,
+                    $item->aut ?? 0,
+                    $item->total_deductions ?? 0,
+                    $item->net_amount ?? 0,
+                    $item->dbp ?? '',
+                    $item->kawani ?? '',
+                    $item->lbp_payroll_account ?? '',
+                    $item->net_first_half ?? 0,
+                    $item->net_second_half ?? 0,
+                ]);
+
+                $employeeCount++;
+            }
+
+            // ✅ SECTION TOTAL
             $rows->push([
-                $item->name,
-                $item->position,
-                $item->basic_salary,
-                $item->pera ?? 0,
-                $item->gross_amount_earned,
-                $item->rlip ?? 0,
-                $item->hdmf ?? 0,
-                $item->philhealth ?? 0,
-                $item->consoloan ?? 0,
-                $item->emergency_loan ?? 0,
-                $item->plreg ?? 0,
-                $item->mpl ?? 0,
-                $item->mpl_lite ?? 0,
-                $item->cpl ?? 0,
-                $item->mp2 ?? 0,
-                $item->mplstlms ?? 0,
-                $item->cir375_cir449 ?? 0,
-                $item->w_tax ?? 0,
-                $item->uca ?? 0,
-                $item->aut ?? 0,
-                $item->total_deductions ?? 0,
-                $item->net_amount ?? 0,
-                $item->dbp ?? '',
-                $item->kawani ?? '',
-                $item->lbp_payroll_account ?? '',
-                $item->net_first_half ?? 0,
-                $item->net_second_half ?? 0,
+                'SECTION TOTAL','',
+                $employees->sum('basic_salary'),
+                $employees->sum('pera'),
+                $employees->sum('gross_amount_earned'),
+                $employees->sum('rlip'),
+                $employees->sum('hdmf'),
+                $employees->sum('philhealth'),
+                $employees->sum('consoloan'),
+                $employees->sum('emergency_loan'),
+                $employees->sum('plreg'),
+                $employees->sum('mpl'),
+                $employees->sum('mpl_lite'),
+                $employees->sum('cpl'),
+                $employees->sum('mp2'),
+                $employees->sum('mplstlms'),
+                $employees->sum('cir375_cir449'),
+                $employees->sum('w_tax'),
+                $employees->sum('uca'),
+                $employees->sum('aut'),
+                $employees->sum('total_deductions'),
+                $employees->sum('net_amount'),
+                $employees->sum('dbp'),
+                $employees->sum('kawani'),
+                $employees->sum('lbp_payroll_account'),
+                $employees->sum('net_first_half'),
+                $employees->sum('net_second_half'),
             ]);
+
+            $rows->push([]); // spacer
         }
 
-        // ✅ SECTION TOTAL
+        // ✅ DEPARTMENT SUB TOTAL
         $rows->push([
-            'SECTION TOTAL','',
-            $employees->sum('basic_salary'),
-            $employees->sum('pera'),
-            $employees->sum('gross_amount_earned'),
-            $employees->sum('rlip'),
-            $employees->sum('hdmf'),
-            $employees->sum('philhealth'),
-            $employees->sum('consoloan'),
-            $employees->sum('emergency_loan'),
-            $employees->sum('plreg'),
-            $employees->sum('mpl'),
-            $employees->sum('mpl_lite'),
-            $employees->sum('cpl'),
-            $employees->sum('mp2'),
-            $employees->sum('mplstlms'),
-            $employees->sum('cir375_cir449'),
-            $employees->sum('w_tax'),
-            $employees->sum('uca'),
-            $employees->sum('aut'),
-            $employees->sum('total_deductions'),
-            $employees->sum('net_amount'),
-            $employees->sum('dbp'),
-            $employees->sum('kawani'),
-            $employees->sum('lbp_payroll_account'),
-            $employees->sum('net_first_half'),
-            $employees->sum('net_second_half'),
+            "SUB-TOTAL for {$department}",'',
+            $departmentEmployees->sum('basic_salary'),
+            $departmentEmployees->sum('pera'),
+            $departmentEmployees->sum('gross_amount_earned'),
+            $departmentEmployees->sum('rlip'),
+            $departmentEmployees->sum('hdmf'),
+            $departmentEmployees->sum('philhealth'),
+            $departmentEmployees->sum('consoloan'),
+            $departmentEmployees->sum('emergency_loan'),
+            $departmentEmployees->sum('plreg'),
+            $departmentEmployees->sum('mpl'),
+            $departmentEmployees->sum('mpl_lite'),
+            $departmentEmployees->sum('cpl'),
+            $departmentEmployees->sum('mp2'),
+            $departmentEmployees->sum('mplstlms'),
+            $departmentEmployees->sum('cir375_cir449'),
+            $departmentEmployees->sum('w_tax'),
+            $departmentEmployees->sum('uca'),
+            $departmentEmployees->sum('aut'),
+            $departmentEmployees->sum('total_deductions'),
+            $departmentEmployees->sum('net_amount'),
+            $departmentEmployees->sum('dbp'),
+            $departmentEmployees->sum('kawani'),
+            $departmentEmployees->sum('lbp_payroll_account'),
+            $departmentEmployees->sum('net_first_half'),
+            $departmentEmployees->sum('net_second_half'),
         ]);
 
-        $rows->push([]); // spacer
+        $rows->push([]); // spacer between departments
+        $rows->push([]); // extra spacer (visual separation)
     }
 
     // ✅ GRAND TOTAL
@@ -251,13 +320,20 @@ class PayrollExport implements FromCollection, WithEvents
 
             /* ================= FREEZE HEADER ================= */
 
-           $sheet->freezePane('C7');
+           $sheet->freezePane('H7');
 
             /* ================= BIGGER DATA FONT ================= */
 
             // All rows below header = employee rows
             $sheet->getStyle("A" . ($headerRow + 1) . ":{$highestColumn}{$highestRow}")
                 ->getFont()->setSize(12);
+
+            $sheet->getStyle("A6:{$highestColumn}6")
+            ->getAlignment()
+            ->setWrapText(true);  
+            
+            $sheet->getStyle("A6:{$highestColumn}6")
+    ->getFont()->setSize(11); // instead of 15
 
             /* ================= SIGNATORIES ================= */
 
@@ -438,14 +514,14 @@ $fixedWidths = [
     'R' => 14,
     'S' => 14,
     'T' => 20,
-    'U' => 25,
-    'V' => 25,
-    'W' => 20,
-    'X' => 20,
-    'Y' => 25,
-    'Z' => 25,
-    'AA' => 24,
-];
+    'U' => 16,
+    'V' => 16,
+    'W' => 14,
+    'X' => 14,
+    'Y' => 18,
+    'Z' => 14,
+    'AA' => 14,
+    ];
 
 foreach ($fixedWidths as $col => $width) {
     $sheet->getColumnDimension($col)->setWidth($width);
@@ -477,33 +553,53 @@ foreach ($fixedWidths as $col => $width) {
                         ->getStartColor()->setRGB('D9EAD3');
                 }
 
+                /* DEPARTMENT ROW */
+                if (str_contains($value, 'DEPARTMENT')) {
+                    $sheet->mergeCells("A{$row}:{$highestColumn}{$row}");
+
+                    $sheet->getStyle("A{$row}")
+                        ->getFont()->setBold(true)->setSize(13);
+
+                    $sheet->getStyle("A{$row}")
+                        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+                    $sheet->getStyle("A{$row}")
+                        ->getFill()->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('D9E1F2');
+                }
+
+                
+                
                
                         /* GRAND TOTAL (SPECIAL COLOR) */
-            if (str_contains($value, 'GRAND TOTAL')) {
+                if (str_contains($value, 'GRAND TOTAL')) {
 
-                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
-                    ->getFont()->setBold(true)->setSize(13);
+                    $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                        ->getFont()->setBold(true)->setSize(13);
 
-                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
-                    ->getFill()->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB('F4CCCC'); // light red
+                    $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                        ->getFill()->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('F4CCCC'); // light red
 
-                // DOUBLE BORDER
-                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
-                    ->getBorders()->getOutline()
-                    ->setBorderStyle(Border::BORDER_DOUBLE);    
-                    }
+                    // DOUBLE BORDER
+                    $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                        ->getBorders()->getOutline()
+                        ->setBorderStyle(Border::BORDER_DOUBLE);    
+                        }
 
-            /* SECTION TOTAL */
-            elseif (str_contains($value, 'TOTAL')) {
+                /* SECTION TOTAL */
+                elseif (str_contains($value, 'TOTAL')) {
 
-                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
-                    ->getFont()->setBold(true);
+                    $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                        ->getFont()->setBold(true);
 
-                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
-                    ->getFill()->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB('FFF2CC'); // yellow
-            }
+                    $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                        ->getFill()->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('FFF2CC'); // yellow
+
+                
+                }
+                
             }
 
             /* ================= BORDERS ================= */
@@ -558,14 +654,14 @@ foreach ($fixedWidths as $col => $width) {
                     }
 
             /* SECTION TOTAL */
-            elseif (str_contains($value, 'TOTAL')) {
+            elseif (str_contains($value, 'SUB-TOTAL')) {
 
                 $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
                     ->getFont()->setBold(true);
 
                 $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
                     ->getFill()->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB('FFF2CC'); // yellow
+                    ->getStartColor()->setRGB('d37eb1'); // yellow
             }
             }
 
@@ -602,6 +698,8 @@ foreach ($fixedWidths as $col => $width) {
 
             // Repeat header row when printing
             $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, $headerRow);
+
+            $sheet->getPageSetup()->setScale(90); // or 85 if still wide
 
             // Center horizontally
             $sheet->getPageSetup()->setHorizontalCentered(true);
