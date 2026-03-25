@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class Salary extends Component
@@ -165,25 +166,46 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $bankTotal = round(($payrollItem['dbp'] ?? 0) + ($payrollItem['kawani'] ?? 0), 2);
     $lbpPayroll = round($netAmount - $bankTotal, 2);
 
+   // dd($payrollItem['dbp']);
+
+    $hasDbp = array_key_exists('dbp', $original)
+        && $original['dbp'] !== null
+        && floatval($original['dbp']) != 0;
+    $hasKawani = array_key_exists('kawani', $original)
+        && $original['kawani'] !== null
+        && floatval($original['kawani']) != 0;
+    $hasAny = $hasDbp || $hasKawani;
+
     // -------------------------------
     // Determine cutoff and recompute halves
     // -------------------------------
     $isFirstHalf = $this->isFirstHalf();
 
-    if ($isFirstHalf) {
+    if ($hasAny) {
+        // If dbp/kawani already exist in DB, keep the stored first half
+        // and recompute only the second half.
+        $firstHalf = $original['net_first_half'] ?? null;
+        if ($firstHalf === null) {
+            $firstHalf = $this->getFirstHalfFromPreviousPayroll($payrollItem);
+        }
+        $firstHalf = round((float) $firstHalf, 2);
+        $secondHalf = round($lbpPayroll - $firstHalf, 2);
+    } elseif ($isFirstHalf) {
         // First cutoff (1–15): recompute first half ONLY
-        //$firstHalf  = round($lbpPayroll / 2, 2);
         $firstHalf  = floor(($lbpPayroll / 2) * 100) / 100;
-        //$secondHalf = $original['net_second_half'] ?? 0;
         $secondHalf = round($lbpPayroll - $firstHalf, 2);
     } else {
         // Second cutoff (16–end): recompute second half ONLY
-        $firstHalf  = $original['net_first_half'] ?? 0;
+        $firstHalf  = round((float) ($original['net_first_half'] ?? 0), 2);
         $secondHalf = round($lbpPayroll - $firstHalf, 2);
     }
 
     // HARD LOCK: prevent editing wrong half
-    if ($isFirstHalf) {
+    if ($hasAny) {
+        // Keep first half fixed when dbp/kawani already exist
+        unset($this->manualEdits[$sectionIndex][$employeeIndex]['net_second_half']);
+        $this->manualEdits[$sectionIndex][$employeeIndex]['net_first_half'] = true;
+    } elseif ($isFirstHalf) {
         // First cutoff → second half must NEVER change
         $this->manualEdits[$sectionIndex][$employeeIndex]['net_second_half'] = true;
     } else {
@@ -268,7 +290,7 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                     $row['net_first_half'] = $this->net_first_half[$sectionIndex][$employeeIndex] ?? $row['net_first_half'];
                     $row['net_second_half'] = $this->net_second_half[$sectionIndex][$employeeIndex] ?? $row['net_second_half'];
 
-                    \Log::Debug('Updating Payroll Item ID: ' . $row['id'], $row);
+                    Log::Debug('Updating Payroll Item ID: ' . $row['id'], $row);
 
                     SalaryItemsPayroll::where('id', $row['id'])->update([
                         'hdmf' => $row['hdmf'],
