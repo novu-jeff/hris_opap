@@ -375,9 +375,21 @@ class SalaryService extends Controller {
                 $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
 
                 // Optional deductions
-                $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
-                $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
+               // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
+               // $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
+                $dbp = 0;
+                $kawani = 0;
+
+                if ($hasDeductions) {
+                    $filteredDeductions = collect($deductions)->filter(function ($item) use ($cutoffEndDate) {
+                        return empty($item['valid_until']) || $item['valid_until'] >= $cutoffEndDate;
+                    });
+
+                    $dbp = round(floatval($filteredDeductions->firstWhere('code', 'DBP')['amount'] ?? 0), 2);
+                    $kawani = round(floatval($filteredDeductions->firstWhere('code', 'Kawani')['amount'] ?? 0), 2);
+                }
+                
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
 
