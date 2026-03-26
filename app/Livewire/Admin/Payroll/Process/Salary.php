@@ -183,22 +183,32 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
     if ($hasAny) {
 
-        $firstHalf  = floor(($netAmount / 2) * 100) / 100;
-                       // dd($firstHalf);
-        $firstHalf =  $firstHalf - $bankTotal ;
-        $firstHalf = round((float) $firstHalf, 2);
-        $secondHalf = round($lbpPayroll - $firstHalf, 2);
-        // If dbp/kawani already exist in DB, keep the stored first half
-        // and recompute only the second half.
-        /*$firstHalf = $original['net_first_half'] ?? null;
+      
+        if($this->isSecondCutoff){
+
+            $firstHalf = $original['net_first_half'] ?? null;
        
-        if ($firstHalf === null) {
-            $firstHalf = $this->getFirstHalfFromPreviousPayroll($payrollItem);
-           
+            if ($firstHalf === null) {
+                $firstHalf = $this->getFirstHalfFromPreviousPayroll($payrollItem);
+            
+            }
+
+            $firstHalf = round((float) $firstHalf, 2);
+            $secondHalf = round($lbpPayroll - $firstHalf, 2);
+        }else{
+
+            $firstHalf  = floor(($netAmount / 2) * 100) / 100;
+                       // dd($firstHalf);
+            $firstHalf =  $firstHalf - $bankTotal ;
+            $firstHalf = round((float) $firstHalf, 2);
+            $secondHalf = round($lbpPayroll - $firstHalf, 2);
+
         }
 
-        $firstHalf = round((float) $firstHalf, 2);
-        $secondHalf = round($lbpPayroll - $firstHalf, 2);*/
+        
+        // If dbp/kawani already exist in DB, keep the stored first half
+        // and recompute only the second half.
+        
     } elseif ($isFirstHalf) {
         // First cutoff (1–15): recompute first half ONLY
         $firstHalf  = floor(($lbpPayroll / 2) * 100) / 100;
