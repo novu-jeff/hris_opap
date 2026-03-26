@@ -43,7 +43,7 @@ class PayrollExport implements FromCollection, WithEvents
 {
     $items = $this->payroll
         ->items()
-        ->with('information.section.department')
+        ->with('information.section.department', 'information.positions')
         ->get();
 
     // Group by department first, then by section (nested output order)
@@ -106,11 +106,19 @@ class PayrollExport implements FromCollection, WithEvents
 
         foreach ($groupedBySection as $section => $employees) {
             // SECTION LABEL ROW
+
             $rows->push(["SECTION: {$section}"]);
             foreach ($employees as $item) {
+                // Salary grade is stored on `positions` through `employee_information` relationship.
+                $salaryGrade = $item->salary_grade
+                    ?? optional($item->information?->positions)->salary_grade
+                    ?? '';
+                $positionWithSalaryGrade = $salaryGrade !== ''
+                    ? "{$item->position} (SG{$salaryGrade})"
+                    : $item->position;
                 $rows->push([
                     "{$employeeCount}. {$item->name}",
-                    $item->position,
+                    $positionWithSalaryGrade,
                     $item->basic_salary,
                     $item->pera ?? 0,
                     $item->gross_amount_earned,
@@ -205,7 +213,7 @@ class PayrollExport implements FromCollection, WithEvents
         ]);
 
         $rows->push([]); // spacer between departments
-        $rows->push([]); // extra spacer (visual separation)
+        $rows->push([' ']); // extra spacer (visual separation)
     }
 
     // ✅ GRAND TOTAL
@@ -276,7 +284,7 @@ class PayrollExport implements FromCollection, WithEvents
 
             $sheet->insertNewRowBefore(1, 5);
 
-            $sheet->setCellValue('A1', 'PAYROLL REPORT');
+            $sheet->setCellValue('A1', 'OFFICE OF THE PRESIDENTIAL ADVISER ON PEACE, RECONCILIATION AND UNITY');
             $sheet->setCellValue('A2', 'For the Period: ' . $formattedCutoff);
             $sheet->setCellValue('A3', 'Payroll Date: ' .
                 Carbon::parse($this->payroll->payroll_date)->format('M d, Y'));
@@ -287,8 +295,8 @@ class PayrollExport implements FromCollection, WithEvents
             $sheet->mergeCells("A3:{$highestColumn}3");
             $sheet->mergeCells("A4:{$highestColumn}4");
 
-            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(24);
-            $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(15);
+            $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(13);
             $sheet->getStyle('A3:A4')->getFont()->setSize(12);
 
             $sheet->getStyle("A1:{$highestColumn}4")
@@ -494,15 +502,15 @@ class PayrollExport implements FromCollection, WithEvents
 
             // ===== FIX COLUMN WIDTHS (PREVENT HEADER STRETCHING) =====
 $fixedWidths = [
-    'A' => 20,  // NAME
-    'B' => 20,  // POSITION
-    'C' => 20,
+    'A' => 28,  // NAME
+    'B' => 32,  // POSITION
+    'C' => 15,
     'D' => 12,
-    'E' => 28,
+    'E' => 18,
     'F' => 12,
     'G' => 12,
     'H' => 18,
-    'I' => 18,
+    'I' => 14,
     'J' => 14,
     'K' => 12,
     'L' => 12,
@@ -510,7 +518,7 @@ $fixedWidths = [
     'N' => 12,  // CPL
     'O' => 14,
     'P' => 16,
-    'Q' => 22,
+    'Q' => 18,
     'R' => 14,
     'S' => 14,
     'T' => 20,
@@ -662,6 +670,11 @@ foreach ($fixedWidths as $col => $width) {
                 $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
                     ->getFill()->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setRGB('d37eb1'); // yellow
+
+                // Solid bottom border for SUB-TOTAL rows
+                $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                    ->getBorders()->getBottom()
+                    ->setBorderStyle(Border::BORDER_THICK);
             }
             }
 
