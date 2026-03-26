@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeTimelogs extends Model
 {
@@ -22,6 +24,8 @@ class EmployeeTimelogs extends Model
      */
     public static function getLogsForPeriodFromBothSources($employeeNo, $startDate, $endDate): Collection
     {
+       
+      // dd($employeeNo, $startDate, $endDate);
         $normalized = collect();
         $bsd_no = self::getBsdNo($employeeNo);
         $shiftId = EmployeeInformation::where('employee_no', $employeeNo)->value('shift_id');
@@ -80,6 +84,35 @@ class EmployeeTimelogs extends Model
         }
 
         return $normalized->sortBy('timestamp')->values();
+    }
+
+    /**
+     * True if mysql2 (e.g. oppap_logs / opapp_logs) `attendances` has any row for this employee on the given date
+     * (biometric / device punches). Only numeric employee_id values are queried; string IDs cannot match BIGINT.
+     */
+    public static function hasExternalAttendanceOnDate(string $employeeNo, ?Carbon $date = null): bool
+    {
+        $date = $date ?? Carbon::now();
+        $bsdNo = self::getBsdNo($employeeNo);
+        $ids = array_values(array_unique(array_filter(
+            [$bsdNo, $employeeNo],
+            fn ($v) => $v !== null && $v !== '' && preg_match('/^\d+$/', (string) $v)
+        )));
+        if ($ids === []) {
+            return false;
+        }
+
+        try {
+            return DB::connection('mysql2')
+                ->table('attendances')
+                ->whereIn('employee_id', $ids)
+                ->whereDate('timestamp', $date->format('Y-m-d'))
+                ->exists();
+        } catch (\Throwable $e) {
+            Log::warning('EmployeeTimelogs::hasExternalAttendanceOnDate: '.$e->getMessage());
+
+            return false;
+        }
     }
 
     public function __construct(array $attributes = [])
