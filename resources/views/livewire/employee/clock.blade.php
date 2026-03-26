@@ -11,8 +11,12 @@
                     <div class="col-12 col-md-5">
                         <div class="row">
                             <div class="col-12 mb-3">
+                                @php
+                                    $hideClockCard = $hideClockInDueToExternalLog;
+                                @endphp
+                                @if(!$hideClockCard)
                                 <div data-status="{{ $status }}"
-                                    class="clock-process card border-3 
+                                    class="@if(!$hideClockCard)clock-process @endif card border-3 
                                         {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
                                         {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
                                         {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
@@ -27,20 +31,19 @@
                                                 </span>
                                             </div>
                                             <div class="text-center fw-bold text-uppercase mt-1">
-                                                <span wire:loading.remove wire:target="capture">{{$status}}</span>
+                                                <span wire:loading.remove wire:target="capture"> {{$status}}</span>
                                                 <span wire:loading wire:target="capture">Saving...</span>
                                             </div>
                                         </div>
                                     </div>      
-                                </div>  
-                                @if (in_array($status, ['Lunch Out']))
-                                    <div class="text-center mt-3">
-                                        <button style="border-radius: 15px" class="clock-process-forced btn btn-primary border-3 w-100 py-3 text-uppercase fw-bold">
-                                            Clock Out
-                                        </button>
-                                    </div>     
-                                @endif       
+                                </div>
+                                @endif
+                                @if ($hideClockCard)
+                                    <p class="text-center small text-muted mt-2 mb-0">Attendance already recorded today (device/biometric). Web clock logs is not available.</p>
+                                @endif
+                               
                             </div>
+                            @if(!$hideClockCard)
                             <div class="col-12 mb-3">
                                 <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs" wire:target="showLogs">
                                     <div class="card-body d-flex align-items-center">
@@ -61,6 +64,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                     <div class="col-12 col-md-7">
@@ -77,6 +81,9 @@
                         </div>
                         <div class="text-muted text-center text-muted text-uppercase mt-3 fst-italic">
                             <small>Please ensure your face is clearly visible before proceeding.</small>
+                            @if($geofenceActive)
+                                <br><small class="text-warning">Clock In requires GPS: you must be within {{ (int) round($geofenceRadiusM) }} m of the office.</small>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -29,6 +29,18 @@ class Clock extends Component
     public $entry;
     public $imageCaptured;
     public $isForcedOut = false;
+    /** Web clock-in disabled: biometric row already exists today in mysql2.attendances */
+    public bool $hideClockInDueToExternalLog = false;
+
+    /** When true, Clock In requires GPS within CLOCK_GEOFENCE_* center + radius */
+    public bool $geofenceActive = false;
+
+    public ?float $geofenceLat = null;
+
+    public ?float $geofenceLng = null;
+
+    public float $geofenceRadiusM = 200;
+
     public $accomplishment;
     public $logs = [];
     public $manipulate_timestamp = '07:00';
@@ -54,6 +66,7 @@ class Clock extends Component
        
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $this->employee_no = Auth::user()->employee_no;
+       // dd($this->bsd_emp_identical);
 
         $employee = EmployeeInformation::where('employee_no', $this->employee_no)->first();
         if (!$employee) {
@@ -68,6 +81,8 @@ class Clock extends Component
 
         $this->employee_id = $this->bsd_emp_identical ? $employee->employee_no : $employee->bsd_no;
 
+        $this->hideClockInDueToExternalLog = EmployeeTimelogs::hasExternalAttendanceOnDate($this->employee_no);
+
         $this->toggleStatus();
     }
 
@@ -77,6 +92,7 @@ class Clock extends Component
       
         $this->employee_no = Auth::user()->employee_no;
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
+        
     }
 
    public function getLocation($lng, $lat, $isToHide = false)
@@ -253,6 +269,16 @@ class Clock extends Component
 
    public function triggerClock()
     {
+        if ($this->hideClockInDueToExternalLog && $this->status === 'Clock In') {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'info',
+                'title' => 'Already checked in',
+                'message' => 'Your attendance was already recorded today (e.g. biometric device).',
+            ]);
+
+            return;
+        }
 
         if($this->status == 'Done') {
             $this->dispatch('alert', [
