@@ -211,7 +211,12 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         
     } elseif ($isFirstHalf) {
         // First cutoff (1–15): recompute first half ONLY
-        $firstHalf  = floor(($lbpPayroll / 2) * 100) / 100;
+       
+        $firstHalf  = floor(($netAmount / 2) * 100) / 100;
+        // dd($firstHalf);
+        //dd($firstHalf , $bankTotal);
+        $firstHalf =  $firstHalf - $bankTotal ;
+        $firstHalf = round((float) $firstHalf, 2);
         $secondHalf = round($lbpPayroll - $firstHalf, 2);
     } else {
         // Second cutoff (16–end): recompute second half ONLY
