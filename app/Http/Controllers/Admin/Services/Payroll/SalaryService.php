@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
+use App\Models\SalaryItemsPayroll;
 use App\Services\ContributionsService;
 use App\Services\SummaryServices;
 use Carbon\Carbon;
@@ -219,6 +220,25 @@ class SalaryService extends Controller {
             ->net_first_half ?? 0;
     }
 
+    private function getFirstHalfPayrollItem($employee_no, $payroll)
+    {
+        return SalaryItemsPayroll::query()
+            ->where('employee_no', $employee_no)
+            ->whereHas('payroll', function ($q) use ($payroll) {
+    
+                $q->whereYear('payroll_date', \Carbon\Carbon::parse($payroll->payroll_date)->year)
+                  ->whereMonth('payroll_date', \Carbon\Carbon::parse($payroll->payroll_date)->month)
+    
+                  // FIRST HALF ONLY
+                  ->where('cut_off_period', 'like', '%01%15%')
+    
+                  // optional but recommended
+                  ->where('status', 'approved');
+            })
+            ->latest('id') // get latest record
+            ->first();
+    }
+
 
     public function computePayroll($payroll, $employees, $type) {
 
@@ -427,9 +447,54 @@ class SalaryService extends Controller {
                 } else {
 
                     // SECOND HALF PAYROLL (16–end)
-                    $firstHalf = $this->getFirstHalfNetAmount($employee_no, $payroll);
+                    //$firstHalf = $this->getFirstHalfNetAmount($employee_no, $payroll);
 
-                    $secondHalf = round($lbp - $firstHalf, 2);
+                    //$secondHalf = round($lbp - $firstHalf, 2);
+                   
+
+                    $firstHalfRecord = $this->getFirstHalfPayrollItem($employee_no, $payroll);
+
+                   // dd($firstHalfRecord );
+
+                    if ($firstHalfRecord) {
+
+                        // 🔥 USE FIRST HALF VALUES (NOT recomputed)
+                        $basic_salary = $firstHalfRecord->basic_salary;
+                        $pera = $firstHalfRecord->pera;
+                        $gross = $firstHalfRecord->gross_amount_earned;
+
+                        $rlip = $firstHalfRecord->rlip;
+                        $hdmf = $firstHalfRecord->hdmf;
+                        $philhealth = $firstHalfRecord->philhealth;
+                        $consoloan = $firstHalfRecord->consoloan;
+                        $emergency_loan = $firstHalfRecord->emergency_loan;
+                        $plreg = $firstHalfRecord->plreg;
+                        $mpl = $firstHalfRecord->mpl;
+                        $mpl_lite = $firstHalfRecord->mpl_lite;
+                        $cpl = $firstHalfRecord->cpl;
+                        $mp2 = $firstHalfRecord->mp2;
+                        $mplstlms = $firstHalfRecord->mplstlms;
+                        $cir = $firstHalfRecord->cir375_cir449;
+                        $w_tax = $firstHalfRecord->w_tax;
+                        $uca = $firstHalfRecord->uca;
+                        $aut = $firstHalfRecord->aut;
+
+                        $total_deduction = $firstHalfRecord->total_deductions;
+                        $net = $firstHalfRecord->net_amount;
+
+                        $dbp = $firstHalfRecord->dbp;
+                        $kawani = $firstHalfRecord->kawani;
+                        $lbp = $firstHalfRecord->lbp_payroll_account;
+
+                        $firstHalf = $firstHalfRecord->net_first_half; // 👉 17506.00
+                        $secondHalf = round($lbp - $firstHalf, 2);
+
+                    } else {
+
+                        // fallback (optional)
+                        $firstHalf = 0;
+                        $secondHalf = $lbp;
+                    }
                 }
               //  $firstHalf  = floor(($net / 2) * 100) / 100;
               //  $secondHalf = round($net - $firstHalf, 2);

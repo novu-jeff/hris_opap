@@ -224,6 +224,24 @@
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-2" for="tax_type">Tax Type (COS)</label>
+                        <select wire:model="records.employee_information.tax_type"
+                                id="records.employee_information.tax_type"
+                                class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            <option value="TAX_1">1%</option>
+                            <option value="TAX_5">5%</option>
+                            <option value="TAX_6">6%</option>
+                            <option value="TAX_11">11%</option>
+                        </select>
+                    
+                        <div class="error-field">
+                            @error('records.employee_information.tax_type')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                     @if($isGovernment)
                         <div class="col-md-3 mb-3">
                             <label class="mb-2" for="salary">Monthly Rate <span class="text-danger">*</span></label>
