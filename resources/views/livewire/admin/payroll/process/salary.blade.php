@@ -356,7 +356,11 @@
                                         </a>
                                     </td>
                                     <td>{{ $record['position'] }}</td>
-                                    <td>{{ number_format($record['basic_salary'], 2) }}</td>
+                                    <td>
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="basic_salary.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
+                                    </td>
                                     <td colspan="2">
                                         <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
