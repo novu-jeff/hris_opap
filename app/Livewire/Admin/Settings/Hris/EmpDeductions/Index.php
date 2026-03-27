@@ -22,7 +22,7 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
     public $employees;
-    public $page;     
+    public $formPage;    
     public $toUpdate;         
     public $file;
 
@@ -46,7 +46,7 @@ class Index extends Component
     {
 
 
-        $this->page = $page;
+        $this->formPage = $page;
         $this->toUpdate = $toUpdate;
 
        
@@ -71,7 +71,7 @@ class Index extends Component
     public function getEmployees()
     {
 
-         return ($this->page === 'create')
+         return ($this->formPage === 'create')
         ? EmployeeInformation::with('personal')
             ->whereHas('personal')
             ->whereDoesntHave('deductions', function ($q) {
