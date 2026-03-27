@@ -46,6 +46,28 @@ class PayrollExport implements FromCollection, WithEvents
         ->with('information.section.department', 'information.positions')
         ->get();
 
+        if ($this->filterSalaryMethod) {
+            $items = $items->filter(function ($item) {
+                return $item->information
+                    && strcasecmp(
+                        $item->information->salary_method,
+                        $this->filterSalaryMethod
+                    ) === 0;
+            });
+        }
+
+         // --- Filter by Employee Name ---
+        if ($this->searchName) {
+            $items = $items->filter(function ($item) {
+                return str_contains(
+                    strtolower($item->name),
+                    strtolower($this->searchName)
+                );
+            });
+        }
+
+       
+
     // Group by department first, then by section (nested output order)
     $groupedByDepartment = $items
         ->sortBy(function ($item) {
@@ -260,11 +282,16 @@ class PayrollExport implements FromCollection, WithEvents
         AfterSheet::class => function (AfterSheet $event) {
 
      
-
+            
 
             $sheet = $event->sheet->getDelegate();
             $highestRow = $sheet->getHighestRow();
             $highestColumn = $sheet->getHighestColumn();
+
+            $sheet->getStyle("A1:{$highestColumn}{$highestRow}")
+            ->getFont()
+            ->setName('Calibri')   // Excel default
+            ->setSize(11);
 
             /* ================= FORMAT CUTOFF ================= */
 
@@ -282,53 +309,62 @@ class PayrollExport implements FromCollection, WithEvents
 
             /* ================= BIG REPORT HEADER ================= */
 
-            $sheet->insertNewRowBefore(1, 5);
+            $sheet->insertNewRowBefore(1, 6);
 
-            $sheet->setCellValue('A1', 'OFFICE OF THE PRESIDENTIAL ADVISER ON PEACE, RECONCILIATION AND UNITY');
-            $sheet->setCellValue('A2', 'For the Period: ' . $formattedCutoff);
-            $sheet->setCellValue('A3', 'Payroll Date: ' .
-                Carbon::parse($this->payroll->payroll_date)->format('M d, Y'));
-            $sheet->setCellValue('A4', 'Generated on: ' . now()->format('M d, Y h:i A'));
+            $sheet->setCellValue('A1', 'Republic of the Philippines');
+            $sheet->setCellValue('A2', 'OFFICE OF THE PRESIDENTIAL ADVISER ON PEACE, RECONCILIATION AND UNITY');
+            $sheet->setCellValue('A3', 'PAYROLL');
+            $sheet->setCellValue('A4', 'For the Period: ' . $formattedCutoff);
+            $sheet->setCellValue('A5', 'Payroll Date: ' . Carbon::parse($this->payroll->payroll_date)->format('F d, Y'));
 
-            $sheet->mergeCells("A1:{$highestColumn}1");
-            $sheet->mergeCells("A2:{$highestColumn}2");
-            $sheet->mergeCells("A3:{$highestColumn}3");
-            $sheet->mergeCells("A4:{$highestColumn}4");
+            foreach (range(1,5) as $row) {
+                $sheet->mergeCells("A{$row}:{$highestColumn}{$row}");
+            }
 
-            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(15);
-            $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(13);
-            $sheet->getStyle('A3:A4')->getFont()->setSize(12);
+            /* ALIGNMENT */
+            $sheet->getStyle("A1:A5")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+                ->setVertical(Alignment::VERTICAL_CENTER);
 
-            $sheet->getStyle("A1:{$highestColumn}4")
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            /* FONT SIZES (MATCH TEMPLATE HIERARCHY) */
+            $sheet->getStyle('A1')->getFont()->setSize(11);
+            $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('A3')->getFont()->setBold(true)->setSize(14);
+            $sheet->getStyle('A4:A5')->getFont()->setSize(11);
 
-            $sheet->getStyle("A1:{$highestColumn}4")
-                ->getFill()->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()->setRGB('E7F1FF');
+            /* ROW HEIGHTS (IMPORTANT FOR PIXEL MATCH) */
+            $sheet->getRowDimension(1)->setRowHeight(18);
+            $sheet->getRowDimension(2)->setRowHeight(18);
+            $sheet->getRowDimension(3)->setRowHeight(22);
+            $sheet->getRowDimension(4)->setRowHeight(18);
+            $sheet->getRowDimension(5)->setRowHeight(18);
 
             /* ================= TABLE HEADER STYLE ================= */
 
-            $headerRow = 6; // after inserting 5 rows
+            $headerRow = 7;
 
             $sheet->getStyle("A{$headerRow}:{$highestColumn}{$headerRow}")
-                ->getFont()->setBold(true)->setSize(15);
+                ->getFont()->setBold(true)->setSize(10);
 
             $sheet->getStyle("A{$headerRow}:{$highestColumn}{$headerRow}")
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                ->setVertical(Alignment::VERTICAL_CENTER);
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(true);
 
+            /* EXACT HEIGHT */
+            $sheet->getRowDimension($headerRow)->setRowHeight(32);
+
+            /* LIGHT GRAY HEADER (NOT BLUE) */
             $sheet->getStyle("A{$headerRow}:{$highestColumn}{$headerRow}")
                 ->getFill()
                 ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()
-                ->setRGB('BDD7EE');
-
-            $sheet->getRowDimension($headerRow)->setRowHeight(28);
+                ->getStartColor()->setRGB('D9D9D9');
 
             /* ================= FREEZE HEADER ================= */
 
-           $sheet->freezePane('H7');
+           $sheet->freezePane('H8');
 
             /* ================= BIGGER DATA FONT ================= */
 
@@ -350,17 +386,17 @@ class PayrollExport implements FromCollection, WithEvents
             $preparedByName = $this->preparedByName;
             $preparedByPosition = $this->preparedByPosition;
 
-            $certifiedByName = $this->certifiedByName;
-            $certifiedByPosition = $this->certifiedByPosition;
+            $certifiedByName = 'DIR. FRANCISCO F. MENDOZA,  JR';
+            $certifiedByPosition = 'HEAD, HRMS';
 
             $approvedByName = $this->approvedByName ?? 'PA ARNUFO R. PAJARILLO';
             $approvedByPosition = $this->approvedByPosition ?? 'Presidential Assistant for Internal Management Cluster';
 
-            $secondCertifiedName = $this->secondCertifiedName ?? 'CHARLIEZ JANE R. SORIANO';
+            $secondCertifiedName = $this->secondCertifiedName ?? 'JENNIE CLAIRE L. MORDENO';
             $secondCertifiedPosition = $this->secondCertifiedPosition ?? 'OIC, DIRECTOR IV-FMS';
 
             $secondCertifiedByName = $this->secondCertifiedByName ?? 'ALEX C. ORENDAIN';
-            $secondCertifiedByPosition = $this->secondCertifiedByPosition ?? 'Administrative Officer V';
+            $secondCertifiedByPosition = 'Administrative Officer V';
 
             $startRow = $sheet->getHighestRow() + 3;
 
@@ -369,8 +405,8 @@ class PayrollExport implements FromCollection, WithEvents
 
 
             /* ===== ROW A ===== */
-            $sheet->mergeCells("A{$startRow}:F" . ($startRow));   // Prepared
-            $sheet->mergeCells("G{$startRow}:I" . ($startRow));   // Certified
+            $sheet->mergeCells("A{$startRow}:D" . ($startRow));   // Prepared
+            $sheet->mergeCells("E{$startRow}:G" . ($startRow));   // Certified
             $sheet->mergeCells("K{$startRow}:R" . ($startRow));   // Approved
 
             // FORCE ROW HEIGHT (VERY IMPORTANT)
@@ -390,9 +426,9 @@ class PayrollExport implements FromCollection, WithEvents
                 ->setWrapText(true);
 
 
-            $sheet->setCellValue("A{$startRow}", "A  PREPARED BY:");
-            $sheet->setCellValue("G{$startRow}", "CERTIFIED: Services duly rendered as stated.");
-            $sheet->setCellValue("K{$startRow}", "APPROVED FOR PAYMENT:");
+            $sheet->setCellValue("A{$startRow}", "A: PREPARED BY:");
+            $sheet->setCellValue("E{$startRow}", "CERTIFIED: Services duly rendered as stated.");
+            $sheet->setCellValue("K{$startRow}", "C: APPROVED FOR PAYMENT:");
 
             $sheet->mergeCells("A" . ($startRow + 4) . ":B" . ($startRow + 4)); // Prepared
             $sheet->mergeCells("A" . ($startRow + 5) . ":B" . ($startRow + 5)); // Prepared
@@ -400,11 +436,21 @@ class PayrollExport implements FromCollection, WithEvents
             $sheet->setCellValue("A" . ($startRow + 4), $preparedByName ?: ' ');
             $sheet->setCellValue("A" . ($startRow + 5), $preparedByPosition ?: '');
 
-            $sheet->mergeCells("G" . ($startRow + 4) . ":I" . ($startRow + 4)); // Certified
-            $sheet->mergeCells("G" . ($startRow + 5) . ":I" . ($startRow + 5)); // Certified
+            $sheet->mergeCells("C" . ($startRow + 4) . ":D" . ($startRow + 4)); 
+            $sheet->mergeCells("C" . ($startRow + 5). ":D" . ($startRow + 5));  
 
-            $sheet->setCellValue("G" . ($startRow + 4), $certifiedByName ?: '');
-            $sheet->setCellValue("G" . ($startRow + 5), $certifiedByPosition ?: '');
+            $sheet->setCellValue("C" . ($startRow + 4), "______________");
+            $sheet->setCellValue("C" . ($startRow + 5), "Date");
+
+            $sheet->mergeCells("E" . ($startRow + 4) . ":G" . ($startRow + 4)); // Certified
+            $sheet->mergeCells("E" . ($startRow + 5) . ":G" . ($startRow + 5)); // Certified
+
+            $sheet->setCellValue("E" . ($startRow + 4), $certifiedByName ?: '');
+            $sheet->setCellValue("E" . ($startRow + 5), $certifiedByPosition ?: '');
+ 
+
+            $sheet->setCellValue("I" . ($startRow + 4), "______________");
+            $sheet->setCellValue("I" . ($startRow + 5), "Date");
 
             $sheet->mergeCells("K" . ($startRow + 4) . ":N" . ($startRow + 4)); // Certified
             $sheet->mergeCells("K" . ($startRow + 5) . ":N" . ($startRow + 5)); // Certified
@@ -412,65 +458,105 @@ class PayrollExport implements FromCollection, WithEvents
             $sheet->setCellValue("K" . ($startRow + 4), $approvedByName ?: '');
             $sheet->setCellValue("K" . ($startRow + 5), $approvedByPosition ?: '');
 
+            $sheet->setCellValue("P" . ($startRow + 4), "______________");
+            $sheet->setCellValue("P" . ($startRow + 5), "Date");
+
             /* ===== ROW B ===== */
             $rowB = $startRow + 7;
 
-            $sheet->mergeCells("A{$rowB}:J" . ($rowB));
-            $sheet->mergeCells("K{$rowB}:R" . ($rowB));
+            $sheet->mergeCells("A{$rowB}:D" . ($rowB));
+            $sheet->mergeCells("E{$rowB}:I" . ($rowB));
             
 
-            $sheet->setCellValue("A{$rowB}", "B  CERTIFIED: Supporting documents complete and proper.");
-            $sheet->setCellValue("K{$rowB}", "CERTIFIED: Each employee whose name appears on the payroll hass been paid the amount as indicated opposite his/her name.");
+            $sheet->setCellValue("A{$rowB}", "B:  CERTIFIED: Supporting documents complete and proper; and cash available in the amount of ");
+            $sheet->setCellValue("A" . ($rowB + 1), "₱ __________.");
+            $sheet->setCellValue("E{$rowB}", "D: CERTIFIED: Each employee whose name appears on the payroll hass been paid the amount as indicated opposite his/her name.");
            
 
 
-            $sheet->mergeCells("A" . ($rowB + 3) . ":B" . ($rowB + 3)); // Prepared
             $sheet->mergeCells("A" . ($rowB + 4) . ":B" . ($rowB + 4)); // Prepared
+            $sheet->mergeCells("A" . ($rowB + 5) . ":B" . ($rowB + 5)); // Prepared
 
-            $sheet->setCellValue("A" . ($rowB + 3), $secondCertifiedName);
-            $sheet->setCellValue("A" . ($rowB + 4), $secondCertifiedPosition);
+            $sheet->setCellValue("A" . ($rowB + 4), $secondCertifiedName);
+            $sheet->setCellValue("A" . ($rowB + 5), $secondCertifiedPosition);
 
-            $sheet->mergeCells("K" . ($rowB + 3) . ":M" . ($rowB + 3)); // Prepared
-            $sheet->mergeCells("K" . ($rowB + 4) . ":M" . ($rowB + 4)); // Prepared
+            $sheet->mergeCells("E" . ($rowB + 4) . ":G" . ($rowB + 4)); 
+            $sheet->mergeCells("E" . ($rowB + 5) . ":G" . ($rowB + 5)); 
 
-            $sheet->setCellValue("K" . ($rowB + 3), $secondCertifiedByName);
-            $sheet->setCellValue("K" . ($rowB + 4), $secondCertifiedPosition);
+           // Prepared
 
-            $sheet->mergeCells("O" . ($rowB + 3) . ":P" . ($rowB + 3)); // Prepared
-            $sheet->mergeCells("O" . ($rowB + 4) . ":P" . ($rowB + 4)); // Prepared
+            $sheet->setCellValue("E" . ($rowB + 4), $secondCertifiedByName);
+            $sheet->setCellValue("E" . ($rowB + 5), $secondCertifiedByPosition);
 
-            $sheet->setCellValue("O" . ($rowB + 3), "______________");
-            $sheet->setCellValue("O" . ($rowB + 4), "Date");
+            $sheet->mergeCells("L" . ($rowB + 1) . ":N" . ($rowB + 1)); 
+            $sheet->mergeCells("L" . ($rowB + 2) . ":N" . ($rowB + 2)); 
+            $sheet->mergeCells("L" . ($rowB + 3) . ":N" . ($rowB + 3)); // Prepared
+            $sheet->mergeCells("L" . ($rowB + 4) . ":N" . ($rowB + 4)); 
+
+            $sheet->setCellValue("L" . ($rowB + 1), "ORS/BURS No.:________________");
+            $sheet->setCellValue("L" . ($rowB + 2), "DATE:________________");
+            $sheet->setCellValue("L" . ($rowB + 3), "JEV No.:________________");
+            $sheet->setCellValue("L" . ($rowB + 4), "DATE:________________");
+
+
+            $sheet->mergeCells("C" . ($rowB + 4) . ":D" . ($rowB + 4)); 
+            $sheet->mergeCells("C" . ($rowB + 5). ":D" . ($rowB + 5));  
+
+            $sheet->setCellValue("C" . ($rowB + 4), "______________");
+            $sheet->setCellValue("C" . ($rowB + 5), "Date");
+
+            $sheet->setCellValue("I" . ($rowB + 4), "______________");
+            $sheet->setCellValue("I" . ($rowB + 5), "Date");
 
             /* ===== ALIGNMENT ===== */
            
-
-         $sheet->getStyle("G" . ($startRow) . ":H" . ($startRow))
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-
-        $sheet->getStyle("A" . ($startRow + 4) . ":F" . ($startRow + 5))
+          
+         $sheet->getStyle("E" . ($startRow) . ":I" . ($startRow))
             ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-         $sheet->getStyle("G" . ($startRow + 4) . ":I" . ($startRow + 5))
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);   
+        $sheet->getStyle("A" . ($startRow + 4) . ":E" . ($startRow + 5))
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+         $sheet->getStyle("E" . ($startRow + 4) . ":G" . ($startRow + 5))
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);   
             
          $sheet->getStyle("J" . ($startRow + 4) . ":R" . ($startRow + 5))
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);    
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+            
+        $sheet->getStyle("C" . ($startRow + 5) . ":D" . ($startRow + 5))
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+        $sheet->getStyle("C" . ($startRow + 5))->getFont()->setBold(true);  
+        
+        $sheet->getStyle("C" . ($rowB + 5) . ":D" . ($rowB + 5))
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+        $sheet->getStyle("C" . ($rowB + 5))->getFont()->setBold(true); 
+
+        $sheet->getStyle("I" . ($startRow + 5))
+        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+    $sheet->getStyle("I" . ($startRow + 5))->getFont()->setBold(true); 
+
+    $sheet->getStyle("P" . ($startRow + 5))
+        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+    $sheet->getStyle("P" . ($startRow + 5))->getFont()->setBold(true); 
 
     
-        $sheet->getStyle("A" . ($rowB + 3) . ":I" . ($rowB + 4))
+        $sheet->getStyle("A" . ($rowB + 4) . ":I" . ($rowB + 5))
             ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); 
             
-        $sheet->getStyle("J" . ($rowB + 3) . ":R" . ($rowB + 4))
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);     
+     
+            
+        $sheet->getStyle("I" . ($rowB + 5))
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);  
+        $sheet->getStyle("I" . ($rowB + 5))->getFont()->setBold(true);     
 
 
             /* ===== BORDERS ===== */
             $blocks = [
-                "A{$startRow}:F" . ($startRow + 5),
-                "G{$startRow}:J" . ($startRow + 5),
+                "A{$startRow}:D" . ($startRow + 5),
+                "E{$startRow}:J" . ($startRow + 5),
                 "K{$startRow}:R" . ($startRow + 5),
-                "A{$rowB}:J" . ($rowB + 5),
+                "A{$rowB}:D" . ($rowB + 5),
+                "E{$rowB}:J" . ($rowB + 5),
                 "K{$rowB}:R" . ($rowB + 5),
             ];
 
@@ -486,11 +572,11 @@ class PayrollExport implements FromCollection, WithEvents
             $sheet->getStyle("A{$rowB}:R{$rowB}")->getFont()->setBold(true);
 
             $sheet->getStyle("A" . ($startRow + 4))->getFont()->setBold(true);
-            $sheet->getStyle("G" . ($startRow + 4))->getFont()->setBold(true);
+            $sheet->getStyle("E" . ($startRow + 4))->getFont()->setBold(true);
             $sheet->getStyle("K" . ($startRow + 4))->getFont()->setBold(true);
-            $sheet->getStyle("A" . ($rowB + 3))->getFont()->setBold(true);
+            $sheet->getStyle("A" . ($rowB + 4))->getFont()->setBold(true);
             $sheet->getStyle("J" . ($rowB + 3))->getFont()->setBold(true);
-            $sheet->getStyle("K" . ($rowB + 3))->getFont()->setBold(true);
+            $sheet->getStyle("E" . ($rowB + 4))->getFont()->setBold(true);
 
 
             /* ================= AUTO WIDTH ================= */
@@ -502,14 +588,14 @@ class PayrollExport implements FromCollection, WithEvents
 
             // ===== FIX COLUMN WIDTHS (PREVENT HEADER STRETCHING) =====
 $fixedWidths = [
-    'A' => 28,  // NAME
-    'B' => 32,  // POSITION
+    'A' => 30,  // NAME
+    'B' => 35,  // POSITION
     'C' => 15,
     'D' => 12,
     'E' => 18,
     'F' => 12,
     'G' => 12,
-    'H' => 18,
+    'H' => 14,
     'I' => 14,
     'J' => 14,
     'K' => 12,
