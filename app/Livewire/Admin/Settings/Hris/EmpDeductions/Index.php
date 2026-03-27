@@ -255,13 +255,23 @@ class Index extends Component
         }
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedEntries()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+       
         $records = EmployeeDeductions::with('personal')
             ->where('deduction_id', $this->id);
 
         if ($this->search) {
-            $this->resetPage();
             $records = $records->where(function ($query) {
                 $query->where('employee_no', 'like', '%'.$this->search.'%')
                     ->orWhereHas('personal', function ($q) {
