@@ -28,6 +28,7 @@ class EmployeeInformation extends Model
         'salary_method',
         'salary',
         'w_tax',
+        'tax_type',
         'step_id',
         'salary_type',
         'bank_account_no',

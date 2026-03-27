@@ -222,6 +222,7 @@ class Information extends Component
             'salary_method'          => $data->salary_method,
             'salary'                 => $data->salary,
             'payroll_account_number' => $data->payroll_account_number,
+            'tax_type'               => $data->tax_type,
         ];
     }
 

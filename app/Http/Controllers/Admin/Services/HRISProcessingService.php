@@ -137,6 +137,8 @@ class HRISProcessingService extends Controller
             return $record;
         }
 
+       
+
         $record = EmployeeInformation::where('employee_no', $employee_no)
             ->first();
 //\Log::info('Saving employee information data', $data);
@@ -162,6 +164,7 @@ class HRISProcessingService extends Controller
                 'salary_method' => $data['salary_method'],
                 'salary' => $salary,
                 'w_tax' => $wtax,
+                'tax_type' => $data['tax_type'] ?? null,
                 'step_id' => $data['step_id'],
                 'payroll_account_number' => $data['payroll_account_number'],
             ]);

@@ -127,6 +127,13 @@ class PayrollExport implements FromCollection, WithEvents
             });
 
         foreach ($groupedBySection as $section => $employees) {
+
+            // ✅ SORT BY SALARY GRADE (HIGHEST → LOWEST)
+                $employees = $employees->sortByDesc(function ($item) {
+                    return $item->salary_grade
+                        ?? optional($item->information?->positions)->salary_grade
+                        ?? 0;
+                });
             // SECTION LABEL ROW
 
             $rows->push(["SECTION: {$section}"]);

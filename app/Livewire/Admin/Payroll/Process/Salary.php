@@ -16,6 +16,9 @@ class Salary extends Component
     public $employment_type;
     public $payroll_id;
 
+    public $basic_salary = [];
+    public $pera = [];
+    public $gross_amount_earned = [];
     public $hdmf = [];
     public $uca = [];
     public $dbp = [];
@@ -94,6 +97,7 @@ class Salary extends Component
         foreach ($records['payroll_items'] as $s => $section) {
             foreach ($section['employees'] as $e => $row) {
                 foreach ([
+                    'basic_salary', 'pera', 'gross_amount_earned',
                     'hdmf','uca','dbp','kawani','rlip','philhealth','consoloan',
                     'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
                     'mplstlms','cir375_cir449','w_tax','aut',
@@ -130,6 +134,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // Sync user-editable fields
     // -------------------------------
     $editableFields = [
+        'basic_salary', 'pera',
         'hdmf','uca','dbp','kawani','philhealth','consoloan',
         'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
         'mplstlms','cir375_cir449','w_tax','aut','rlip'
@@ -138,6 +143,19 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     foreach ($editableFields as $f) {
         $payrollItem[$f] = round(floatval($this->{$f}[$sectionIndex][$employeeIndex] ?? 0), 2);
     }
+
+    // -------------------------------
+    // Compute GROSS dynamically
+    // -------------------------------
+    $basic = floatval($payrollItem['basic_salary'] ?? 0);
+    $pera  = floatval($payrollItem['pera'] ?? 0);
+
+    // If pera exists, add it
+    $gross = round($basic + $pera, 2);
+
+    // Override gross
+    $payrollItem['gross_amount_earned'] = $gross;
+    $this->gross_amount_earned[$sectionIndex][$employeeIndex] = $gross;
 
     // -------------------------------
     // Compute total deductions
@@ -317,6 +335,9 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                     Log::Debug('Updating Payroll Item ID: ' . $row['id'], $row);
 
                     SalaryItemsPayroll::where('id', $row['id'])->update([
+                        'basic_salary' => $row['basic_salary'],
+                        'pera' => $row['pera'],
+                        'gross_amount_earned' => $row['gross_amount_earned'],
                         'hdmf' => $row['hdmf'],
                         'uca' => $row['uca'],
                         'dbp' => $row['dbp'],
