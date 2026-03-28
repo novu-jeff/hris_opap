@@ -97,7 +97,131 @@
     text-align: center;
 }
 
+.payroll-table-wrapper {
+    max-height: 75vh;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+}
 
+/* Table base */
+.payroll-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 13px;
+}
+
+/* Header */
+.payroll-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8f9fa;
+    color: #333;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+    padding: 6px;
+    white-space: nowrap;
+}
+
+/* Second header row adjustment */
+.payroll-table thead tr:nth-child(2) th {
+    top: 38px;
+    z-index: 11;
+}
+
+/* Body */
+.payroll-table tbody td {
+    border: 1px solid #e5e7eb;
+    padding: 4px;
+    white-space: nowrap;
+    background: #fff;
+}
+
+/* Zebra rows */
+.payroll-table tbody tr:nth-child(even) td {
+    background: #fafafa;
+}
+
+/* Hover */
+.payroll-table tbody tr:hover td {
+    background: #eef6ff;
+}
+
+/* Sticky first columns */
+.payroll-table th:nth-child(1),
+.payroll-table td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 12;
+    background: #fff;
+}
+
+.payroll-table th:nth-child(2),
+.payroll-table td:nth-child(2) {
+    position: sticky;
+    left: 50px;
+    z-index: 12;
+    background: #fff;
+}
+
+.payroll-table th:nth-child(3),
+.payroll-table td:nth-child(3) {
+    position: sticky;
+    left: 110px;
+    z-index: 12;
+    background: #fff;
+}
+
+/* Section header */
+.section-header {
+    position: sticky;
+    top: 76px;
+    z-index: 9;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Inputs */
+.payroll-table input {
+    border: 1px solid #ced4da;
+    font-size: 12px;
+    padding: 2px 4px;
+    height: 28px;
+}
+
+.payroll-table input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 2px rgba(13,110,253,.5);
+}
+
+/* Vertical text fix */
+.vertical-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: center;
+}
+
+/* Colors (cleaned) */
+.green { background: #e6f4ea !important; color: #dee2e6 !important}
+.yellow { background: #fff8e1 !important; color: #dee2e6 !important}
+.skyblue { background: #e3f2fd !important; color: #dee2e6 !important}
+.red { background: #fdecea !important;  color: #dee2e6 !important}
+.grey { background: #f1f3f5 !important; color: #dee2e6 !important}
+.section-c{background: #e3f2fd !important; color:#343a40 !important}
+.f-green{color: hsl(111, 36%, 12%) !important}
+
+.payroll-table th,
+.payroll-table td {
+    min-width: 80px;
+}
+
+.payroll-table td:nth-child(3) {
+    min-width: 180px; /* Name */
+}
 
 </style>
 
