@@ -411,22 +411,22 @@ class SalaryService extends Controller {
       
                           switch ($taxType) {
                               case 'TAX_1':
-                                     $t1 = $gross - $aut;  
+                                     $t1 = $basic_salary - $aut;  
                                   $tax_1 = round($t1 * 0.01, 2);
                                   break;
       
                               case 'TAX_5':
-                                    $t2 = $gross - $aut;  
+                                    $t2 = $basic_salary - $aut;  
                                   $tax_5 = round($t2 * 0.05, 2);
                                   break;
       
                               case 'TAX_6':
-                                    $t6 = $gross - $aut; 
+                                    $t6 = $basic_salary - $aut; 
                                   $tax_6 = round($t6 * 0.06, 2);
                                   break;
       
                               case 'TAX_11':
-                                    $t11 = $gross - $aut; 
+                                    $t11 = $basic_salary - $aut; 
                                   $tax_11 = round($t11 * 1.1, 2);
                                   break;
                           }
