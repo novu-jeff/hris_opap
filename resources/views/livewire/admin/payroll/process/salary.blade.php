@@ -44,8 +44,8 @@
     @endphp
     @if($product == 'government')
         @if($records['payroll']['employment_type']['id'] == '1')
-            <div class="table-responsive pb-3 ">
-                <table class="table-striped payroll-table">
+        <div class="payroll-table-wrapper">
+            <table class="payroll-table">
                     <thead>
                         <tr>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
@@ -88,7 +88,7 @@
 
                     <tbody>
                         @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
-                            <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
+                           <tr class="section-header section-c">
                                 <td colspan="100%">
                                     <div class="d-flex justify-content-between w-100 px-5">
                                         <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
@@ -288,8 +288,8 @@
         @endif
 
         @if($records['payroll']['employment_type']['id'] == '2' || $records['payroll']['employment_type']['id'] == '4')
-            <div class="table-responsive pb-3">
-                <table>
+        <div class="payroll-table-wrapper">
+            <table class="payroll-table">
                     <thead>
                         <tr>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
@@ -329,7 +329,7 @@
 
                     <tbody>
                         @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
-                            <tr class="fw-bold bg-primary text-white sticky-top" style="top: 55px; z-index: 9;">
+                        <tr class="section-header section-c">
                                 <td colspan="100%">
                                     <div class="d-flex justify-content-between w-100 px-5">
                                         <span>{{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
