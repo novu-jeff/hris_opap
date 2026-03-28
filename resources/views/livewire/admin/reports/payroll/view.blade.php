@@ -1,6 +1,7 @@
 
 @php
 $types = explode(',', $records['payroll']['condition_employment_type']);
+//dd($types);
 @endphp
 
 @if(!in_array('2', $types) && !in_array('3', $types) && !in_array('4', $types))
@@ -102,159 +103,182 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
         <table class="table table-bordered table-striped table-hover">
             <thead>
                 <tr class="bg-primary text-white sticky-top">
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Salary Method</th> 
-                    <th>Basic Salary</th>
-                    
-                    <th>Pera</th>
-                    <th>Gross</th>
-                    <th>Rlip</th>
-                    <th>HDMF</th>
-                    <th>Philhealth</th>
-                    <th>Consoloan</th>
-                    <th>mergency Loan</th>
-                    <th>Plreg</th>
+                    <th rowspan="2" class="sticky-col text-start">Name</th>
+                    <th rowspan="2" class="sticky-col-2 text-start">Position</th>
+                    <th rowspan="2">Method</th>
+    
+                    <th colspan="3">EARNINGS</th>
+                    <th colspan="14">DEDUCTIONS</th>
+                    <th colspan="2">NET</th>
+                    <th colspan="5">DISTRIBUTION</th>
+                </tr>
+    
+                <tr class="sub-header text-center">
+    
+                    <!-- Earnings -->
+                    <th title="Basic Salary">Basic</th>
+                    <th title="Personnel Economic Relief Allowance">PERA</th>
+                    <th title="Gross Earnings">Gross</th>
+    
+                    <!-- Deductions -->
+                    <th title="Retirement Life Insurance Premium">RLIP</th>
+                    <th title="Pag-IBIG Contribution">HDMF</th>
+                    <th title="PhilHealth">PHIC</th>
+                    <th>Conso</th>
+                    <th>Emerg</th>
+                    <th>PLReg</th>
                     <th>MPL</th>
-                    <th>MPL lite</th>
+                    <th>MPL Lite</th>
                     <th>CPL</th>
                     <th>MP2</th>
-                    <th>MPLSTLMS</th>
-                    <th>Cir375, Cir449</th>
+                    <th>MPL STL</th>
+                    <th>CIR</th>
                     <th>Tax</th>
                     <th>UCA</th>
                     <th>AUT</th>
-                    <th>Total Deductions</th>
-                    <th>Net Amount</th>
+    
+                    <!-- Net -->
+                    <th>Total Ded</th>
+                    <th>Net</th>
+    
+                    <!-- Distribution -->
                     <th>DBP</th>
-                    <th>KAWANI</th>
-                    <th>LBP Payroll Account</th>
-                    <th>First Half</th>
-                    <th>Second Half</th>
+                    <th>Kawani</th>
+                    <th>LBP</th>
+                    <th>1st</th>
+                    <th>2nd</th>
                 </tr>
             </thead>
+    
             <tbody>
-                @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
-                    <tr class="fw-bold text-white" style="background-color:#0d6efd;">
+            @forelse($records['payroll_items'] as $sectionGroup)
+    
+                <!-- SECTION HEADER -->
+                <tr class="section-row">
                     <td colspan="29">
-                       
-                        <div class="d-flex justify-content-between w-100 px-5">
-                                        <span> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                        <span class="text-center flex-grow-1"> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                        <span> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                    </div>
+                        {{ strtoupper($sectionGroup['section_name'] ?? 'UNKNOWN SECTION') }}
                     </td>
                 </tr>
-
-                    @foreach($sectionGroup['employees'] as $employeeIndex => $item)
-                        @php
-                            // Determine which half is considered first/second based on payroll cutoff
-                            $cutoff = $records['payroll']['formatted_cutoff_period'];
-                            $dayStart = intval(explode(' to ', $cutoff)[0]);
-                            $isFirstHalf = $dayStart <= 15;
-                        @endphp
-                        <tr>
-                            <td>{!! $this->highlightSearchTerm($item['name']) !!}</td>
-                            <td>{{ $item['position'] }}</td>
-                            <td>{{ $item['salary_method'] ?? 'N/A' }}</td> <!-- NEW -->
-                            <td>{{ number_format($item['basic_salary'], 2) }}</td>
-                            <td>{{ number_format($item['pera'], 2) }}</td>
-                            <td>{{ number_format($item['gross_amount_earned'], 2) }}</td>
-                            <td>{{ number_format($item['rlip'], 2) }}</td>
-                            <td>{{ number_format($item['hdmf'], 2) }}</td>
-                            <td>{{ number_format($item['philhealth'], 2) }}</td>
-                            <td>{{ number_format($item['consoloan'], 2) }}</td>
-                            <td>{{ number_format($item['emergency_loan'], 2) }}</td>
-                            <td>{{ number_format($item['plreg'], 2) }}</td>
-                            <td>{{ number_format($item['mpl'], 2) }}</td>
-                            <td>{{ number_format($item['mpl_lite'], 2) }}</td>
-                            <td>{{ number_format($item['cpl'], 2) }}</td>
-                            <td>{{ number_format($item['mp2'], 2) }}</td>
-                            <td>{{ number_format($item['mplstlms'], 2) }}</td>
-                            <td>{{ number_format($item['cir375_cir449'], 2) }}</td>
-                            <td>{{ number_format($item['w_tax'], 2) }}</td>
-                            <td>{{ number_format($item['uca'], 2) }}</td>
-                            <td>{{ number_format($item['aut'], 2) }}</td>
-                            <td>{{ number_format($item['total_deductions'], 2) }}</td>
-                            <td class="fw-bold text-success">{{ number_format($item['net_amount'], 2) }}</td>
-                            <td>{{ number_format($item['dbp'], 2) }}</td>
-                            <td>{{ number_format($item['kawani'], 2) }}</td>
-                            <td class="fw-bold text-success">{{ number_format($item['lbp_payroll_account'], 2) }}</td>
-                            <td>{{ number_format($item['net_first_half'], 2) }}</td>
-                            <td>{{ number_format($item['net_second_half'], 2) }}</td>
-                        </tr>
-                    @endforeach
-                    @if(isset($sectionGroup['section_totals']))
-                    <tr class="table-warning fw-bold">
+    
+                @foreach($sectionGroup['employees'] as $item)
+                <tr>
+    
+                    <!-- Sticky Columns -->
+                    <td class="sticky-col fw-semibold">
+                        {!! $this->highlightSearchTerm($item['name']) !!}
+                    </td>
+    
+                    <td class="sticky-col-2">
+                        {{ $item['position'] }}
+                    </td>
+    
+                    <td class="text-center small">
+                        {{ $item['salary_method'] ?? 'N/A' }}
+                    </td>
+    
+                    <!-- Earnings -->
+                    <td class="text-end">{{ number_format($item['basic_salary'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['pera'], 2) }}</td>
+                    <td class="text-end fw-semibold">
+                        {{ number_format($item['gross_amount_earned'], 2) }}
+                    </td>
+    
+                    <!-- Deductions -->
+                    <td class="text-end">{{ number_format($item['rlip'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['hdmf'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['philhealth'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['consoloan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['emergency_loan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['plreg'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mpl_lite'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mp2'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mplstlms'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
+                    <td class="text-end text-danger fw-semibold">
+                        {{ number_format($item['w_tax'], 2) }}
+                    </td>
+                    <td class="text-end">{{ number_format($item['uca'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['aut'], 2) }}</td>
+    
+                    <!-- Net -->
+                    <td class="text-end fw-semibold">
+                        {{ number_format($item['total_deductions'], 2) }}
+                    </td>
+    
+                    <td class="text-end fw-bold text-success">
+                        {{ number_format($item['net_amount'], 2) }}
+                    </td>
+    
+                    <!-- Distribution -->
+                    <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['kawani'], 2) }}</td>
+                    <td class="text-end fw-bold text-primary">
+                        {{ number_format($item['lbp_payroll_account'], 2) }}
+                    </td>
+                    <td class="text-end">{{ number_format($item['net_first_half'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['net_second_half'], 2) }}</td>
+    
+                </tr>
+                @endforeach
+    
+                <!-- SECTION TOTAL -->
+                @if(isset($sectionGroup['section_totals']))
+                <tr class="section-total">
                     <td colspan="3" class="text-end">SECTION TOTAL</td>
+    
                     <td>{{ number_format($sectionGroup['section_totals']['basic_salary'], 2) }}</td>
                     <td>{{ number_format($sectionGroup['section_totals']['pera'], 2) }}</td>
                     <td>{{ number_format($sectionGroup['section_totals']['gross'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['rlip'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['hdmf'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['philhealth'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['consoloan'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['emergency_loan'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['plreg'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mpl'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mpl_lite'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['cpl'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mp2'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mplstlms'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['cir375_cir449'], 2) }}</td>
+    
+                    <td colspan="11"></td>
+    
                     <td>{{ number_format($sectionGroup['section_totals']['w_tax'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['uca'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['aut'], 2) }}</td>
+                    <td colspan="2"></td>
+    
                     <td>{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
-                    <td class="text-success">{{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['dbp'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['kawani'], 2) }}</td>
-                    <td class="text-success">{{ number_format($sectionGroup['section_totals']['lbp_payroll_account'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['net_first_half'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['net_second_half'], 2) }}</td>
+                    <td class="text-success">
+                        {{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}
+                    </td>
+    
+                    <td colspan="5"></td>
                 </tr>
                 @endif
-                @empty
-                    <tr>
-                        <td colspan="9" class="text-muted text-center py-3">No payroll data found.</td>
-                    </tr>
-                @endforelse
+    
+            @empty
+                <tr>
+                    <td colspan="29" class="text-center text-muted py-4">
+                        No payroll data found.
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
+    
+            <!-- GRAND TOTAL -->
             <tfoot>
-            <tr class="table-total-row">
-                <td colspan="3" class="text-end">TOTAL</td>
-                <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
-                <td>{{ number_format($records['totals']['pera'], 2) }}</td>
-                <td>{{ number_format($records['totals']['gross'], 2) }}</td>
-                <td>{{ number_format($records['totals']['rlip'], 2) }}</td>
-                <td>{{ number_format($records['totals']['hdmf'], 2) }}</td>
-                <td>{{ number_format($records['totals']['philhealth'], 2) }}</td>
-                <td>{{ number_format($records['totals']['consoloan'], 2) }}</td>
-                <td>{{ number_format($records['totals']['emergency_loan'], 2) }}</td>
-                <td>{{ number_format($records['totals']['plreg'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mpl'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mpl_lite'], 2) }}</td>
-                <td>{{ number_format($records['totals']['cpl'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mp2'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mplstlms'], 2) }}</td>
-                <td>{{ number_format($records['totals']['cir375_cir449'], 2) }}</td>
-                <td>{{ number_format($records['totals']['w_tax'], 2) }}</td>
-                <td>{{ number_format($records['totals']['uca'], 2) }}</td>
-                <td>{{ number_format($records['totals']['aut'], 2) }}</td>
-                <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
-                <td class="text-success">
-                    {{ number_format($records['totals']['net_amount'], 2) }}
-                </td>
-                <td>{{ number_format($records['totals']['dbp'], 2) }}</td>
-                <td>{{ number_format($records['totals']['kawani'], 2) }}</td>
-                <td class="text-success">{{ number_format($records['totals']['lbp_payroll_account'], 2) }}</td>
-                <td>{{ number_format($records['totals']['net_first_half'], 2) }}</td>
-                <td>{{ number_format($records['totals']['net_second_half'], 2) }}</td>
-            </tr>
-        </tfoot>
-
+                <tr class="grand-total">
+                    <td colspan="3" class="text-end">GRAND TOTAL</td>
+    
+                    <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['pera'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['gross'], 2) }}</td>
+    
+                    <td colspan="11"></td>
+    
+                    <td>{{ number_format($records['totals']['w_tax'], 2) }}</td>
+                    <td colspan="2"></td>
+    
+                    <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
+                    <td class="text-success">
+                        {{ number_format($records['totals']['net_amount'], 2) }}
+                    </td>
+    
+                    <td colspan="5"></td>
+                </tr>
+            </tfoot>
+    
         </table>
-       
     </div>
 </div>
 
@@ -357,133 +381,184 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
         <table class="table table-bordered table-striped table-hover">
             <thead>
                 <tr class="bg-primary text-white sticky-top">
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Salary Method</th> 
-                    <th>Basic Salary</th>
+                    <th rowspan="2" class="sticky-col text-start">Name</th>
+                    <th rowspan="2" class="sticky-col-2 text-start">Position</th>
+                    <th rowspan="2">Method</th>
+    
+                    <th colspan="1">EARNINGS</th>
+                    <th colspan="9">DEDUCTIONS</th>
+                    <th colspan="4">TAX BREAKDOWN</th>
+                    <th colspan="2">NET</th>
+                    <th colspan="5">DISTRIBUTION</th>
+                </tr>
+    
+                <tr class="sub-header text-center">
+    
+                    <!-- Earnings -->
+                    <th>Basic</th>
+    
+                    <!-- Deductions -->
                     <th>HDMF</th>
-                    <th>Philhealth</th>
+                    <th>PHIC</th>
                     <th>MPL</th>
-                    <th>MPL lite</th>
                     <th>MP2</th>
-                    <th>MPLSTLMS</th>
-                    <th>Cir375, Cir449</th>
-                    <th>Tax</th>
+                    <th>MPL STL</th>
+                    <th>CIR</th>
                     <th>UCA</th>
                     <th>AUT</th>
-                    <th>Total Deductions</th>
-                    <th>Net Amount</th>
+                    <th>Overpay</th>
+    
+                    <!-- Tax -->
+                    <th>1%</th>
+                    <th>5%</th>
+                    <th>6%</th>
+                    <th>11%</th>
+    
+                    <!-- Net -->
+                    <th>Total Ded</th>
+                    <th>Net</th>
+    
+                    <!-- Distribution -->
                     <th>DBP</th>
-                    <th>KAWANI</th>
-                    <th>LBP Payroll Account</th>
-                    <th>First Half</th>
-                    <th>Second Half</th>
+                    <th>Kawani</th>
+                    <th>LBP</th>
+                    <th>1st</th>
+                    <th>2nd</th>
                 </tr>
             </thead>
+    
             <tbody>
-                @forelse($records['payroll_items'] as $sectionIndex => $sectionGroup)
-                    <tr class="fw-bold text-white" style="background-color:#0d6efd;">
-                    <td colspan="29">
-                       
-                        <div class="d-flex justify-content-between w-100 px-5">
-                                        <span> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                        <span class="text-center flex-grow-1"> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                        <span> SECTION: {{ $sectionGroup['section_name'] ?? 'Unknown Section' }}</span>
-                                    </div>
+            @forelse($records['payroll_items'] as $sectionGroup)
+    
+                <!-- SECTION -->
+                <tr class="section-row">
+                    <td colspan="24">
+                        {{ strtoupper($sectionGroup['section_name'] ?? 'UNKNOWN SECTION') }}
                     </td>
                 </tr>
-
-                    @foreach($sectionGroup['employees'] as $employeeIndex => $item)
-                        @php
-                            // Determine which half is considered first/second based on payroll cutoff
-                            $cutoff = $records['payroll']['formatted_cutoff_period'];
-                            $dayStart = intval(explode(' to ', $cutoff)[0]);
-                            $isFirstHalf = $dayStart <= 15;
-                        @endphp
-                        <tr>
-                            <td>{!! $this->highlightSearchTerm($item['name']) !!}</td>
-                            <td>{{ $item['position'] }}</td>
-                            <td>{{ $item['salary_method'] ?? 'N/A' }}</td> <!-- NEW -->
-                            <td>{{ number_format($item['basic_salary'], 2) }}</td>
-                            <td>{{ number_format($item['hdmf'], 2) }}</td>
-                            <td>{{ number_format($item['philhealth'], 2) }}</td>
-                            <td>{{ number_format($item['mpl'], 2) }}</td>
-                            <td>{{ number_format($item['mpl_lite'], 2) }}</td>
-                            <td>{{ number_format($item['mp2'], 2) }}</td>
-                            <td>{{ number_format($item['mplstlms'], 2) }}</td>
-                            <td>{{ number_format($item['cir375_cir449'], 2) }}</td>
-                            <td>{{ number_format($item['w_tax'], 2) }}</td>
-                            <td>{{ number_format($item['uca'], 2) }}</td>
-                            <td>{{ number_format($item['aut'], 2) }}</td>
-                            <td>{{ number_format($item['total_deductions'], 2) }}</td>
-                            <td class="fw-bold text-success">{{ number_format($item['net_amount'], 2) }}</td>
-                            <td>{{ number_format($item['dbp'], 2) }}</td>
-                            <td>{{ number_format($item['kawani'], 2) }}</td>
-                            <td class="fw-bold text-success">{{ number_format($item['lbp_payroll_account'], 2) }}</td>
-                            <td>{{ number_format($item['net_first_half'], 2) }}</td>
-                            <td>{{ number_format($item['net_second_half'], 2) }}</td>
-                        </tr>
-                    @endforeach
-                    @if(isset($sectionGroup['section_totals']))
-                    <tr class="table-warning fw-bold">
+    
+                @foreach($sectionGroup['employees'] as $item)
+                <tr>
+    
+                    <td class="sticky-col fw-semibold">
+                        {!! $this->highlightSearchTerm($item['name']) !!}
+                    </td>
+    
+                    <td class="sticky-col-2">
+                        {{ $item['position'] }}
+                    </td>
+    
+                    <td class="text-center small">
+                        {{ $item['salary_method'] ?? 'N/A' }}
+                    </td>
+    
+                    <!-- Earnings -->
+                    <td class="text-end">
+                        {{ number_format($item['basic_salary'], 2) }}
+                    </td>
+    
+                    <!-- Deductions -->
+                    <td class="text-end">{{ number_format($item['hdmf'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['philhealth'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mp2'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mplstlms'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['uca'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['aut'], 2) }}</td>
+                    <td class="text-end text-warning">
+                        {{ number_format($item['overpayment'], 2) }}
+                    </td>
+    
+                    <!-- TAX BREAKDOWN -->
+                    <td class="text-end text-danger">{{ number_format($item['tax_1'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($item['tax_5'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($item['tax_6'], 2) }}</td>
+                    <td class="text-end text-danger fw-semibold">
+                        {{ number_format($item['tax_11'], 2) }}
+                    </td>
+    
+                    <!-- Net -->
+                    <td class="text-end fw-semibold">
+                        {{ number_format($item['total_deductions'], 2) }}
+                    </td>
+    
+                    <td class="text-end fw-bold text-success">
+                        {{ number_format($item['net_amount'], 2) }}
+                    </td>
+    
+                    <!-- Distribution -->
+                    <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['kawani'], 2) }}</td>
+                    <td class="text-end fw-bold text-primary">
+                        {{ number_format($item['lbp_payroll_account'], 2) }}
+                    </td>
+                    <td class="text-end">{{ number_format($item['net_first_half'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['net_second_half'], 2) }}</td>
+    
+                </tr>
+                @endforeach
+    
+                <!-- SECTION TOTAL -->
+                @if(isset($sectionGroup['section_totals']))
+                <tr class="section-total">
                     <td colspan="3" class="text-end">SECTION TOTAL</td>
+    
                     <td>{{ number_format($sectionGroup['section_totals']['basic_salary'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['hdmf'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['philhealth'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mpl'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mpl_lite'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mp2'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['mplstlms'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['cir375_cir449'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['w_tax'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['uca'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['aut'], 2) }}</td>
+    
+                    <td colspan="8"></td>
+    
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_1'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_5'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_6'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_11'], 2) }}</td>
+    
                     <td>{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
-                    <td class="text-success">{{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['dbp'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['kawani'], 2) }}</td>
-                    <td class="text-success">{{ number_format($sectionGroup['section_totals']['lbp_payroll_account'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['net_first_half'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['net_second_half'], 2) }}</td>
+                    <td class="text-success">
+                        {{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}
+                    </td>
+    
+                    <td colspan="5"></td>
                 </tr>
                 @endif
-                @empty
-                    <tr>
-                        <td colspan="9" class="text-muted text-center py-3">No payroll data found.</td>
-                    </tr>
-                @endforelse
+    
+            @empty
+                <tr>
+                    <td colspan="24" class="text-center text-muted py-4">
+                        No payroll data found.
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
+    
+            <!-- GRAND TOTAL -->
             <tfoot>
-            <tr class="table-total-row">
-                <td colspan="3" class="text-end">TOTAL</td>
-                <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
-                <td>{{ number_format($records['totals']['hdmf'], 2) }}</td>
-                <td>{{ number_format($records['totals']['philhealth'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mpl'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mpl_lite'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mp2'], 2) }}</td>
-                <td>{{ number_format($records['totals']['mplstlms'], 2) }}</td>
-                <td>{{ number_format($records['totals']['cir375_cir449'], 2) }}</td>
-                <td>{{ number_format($records['totals']['w_tax'], 2) }}</td>
-                <td>{{ number_format($records['totals']['uca'], 2) }}</td>
-                <td>{{ number_format($records['totals']['aut'], 2) }}</td>
-                <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
-                <td class="text-success">
-                    {{ number_format($records['totals']['net_amount'], 2) }}
-                </td>
-                <td>{{ number_format($records['totals']['dbp'], 2) }}</td>
-                <td>{{ number_format($records['totals']['kawani'], 2) }}</td>
-                <td class="text-success">{{ number_format($records['totals']['lbp_payroll_account'], 2) }}</td>
-                <td>{{ number_format($records['totals']['net_first_half'], 2) }}</td>
-                <td>{{ number_format($records['totals']['net_second_half'], 2) }}</td>
-            </tr>
-        </tfoot>
-
+                <tr class="grand-total">
+                    <td colspan="3" class="text-end">GRAND TOTAL</td>
+    
+                    <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
+    
+                    <td colspan="8"></td>
+                    <td>{{ number_format($records['totals']['tax_1'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_5'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_6'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_11'], 2) }}</td>
+    
+                    <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
+                    <td class="text-success">
+                        {{ number_format($records['totals']['net_amount'], 2) }}
+                    </td>
+    
+                    <td colspan="5"></td>
+                </tr>
+            </tfoot>
+    
         </table>
-       
     </div>
 </div>
 
 
 
 @endif
+
+

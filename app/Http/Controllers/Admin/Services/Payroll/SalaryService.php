@@ -357,14 +357,7 @@ class SalaryService extends Controller {
                 $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
                 $gross = round($basic_salary + $pera, 2);
 
-              //  dd($hasDeductions, $social_security->consoloan );
-                if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
-                    // DEDUCTION FOR GOVERNMENT EMPLOYEES
-                    //dd('here');
-                    $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
-                }else{
-                    $rlip =  0;
-                }
+         
                 // Deductions (based on flag)
                 
                // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
@@ -376,8 +369,9 @@ class SalaryService extends Controller {
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                 $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
-                $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
-               $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
+               
+               
+                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
@@ -394,7 +388,58 @@ class SalaryService extends Controller {
                // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
                // $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
-                $dbp = 0;
+                      // ✅ COS TAX COMPUTATION
+                      $tax_1 = 0;
+                      $tax_5 = 0;
+                      $tax_6 = 0;
+                      $tax_11 = 0;
+      
+      
+      
+                    //  dd($hasDeductions, $social_security->consoloan );
+                      if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
+                          // DEDUCTION FOR GOVERNMENT EMPLOYEES
+                          //dd('here');
+                          $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                          $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
+      
+                      }else{
+      
+                          $taxType = $employee['tax_type'] ?? null;
+      
+                         
+      
+                          switch ($taxType) {
+                              case 'TAX_1':
+                                     $t1 = $gross - $aut;  
+                                  $tax_1 = round($t1 * 0.01, 2);
+                                  break;
+      
+                              case 'TAX_5':
+                                    $t2 = $gross - $aut;  
+                                  $tax_5 = round($t2 * 0.05, 2);
+                                  break;
+      
+                              case 'TAX_6':
+                                    $t6 = $gross - $aut; 
+                                  $tax_6 = round($t6 * 0.06, 2);
+                                  break;
+      
+                              case 'TAX_11':
+                                    $t11 = $gross - $aut; 
+                                  $tax_11 = round($t11 * 1.1, 2);
+                                  break;
+                          }
+      
+                          $rlip =  0;
+                          $w_tax = 0;
+                      }
+                
+               
+               
+               
+               
+               $dbp = 0;
                 $kawani = 0;
 
                 if ($hasDeductions) {
@@ -407,7 +452,8 @@ class SalaryService extends Controller {
                 }
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
-                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $uca + $aut;
+                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
+                    $tax_1 + $tax_5 + $tax_6 + $tax_11 +  $uca + $aut;
 
                 $total_lbp =  $dbp +  $kawani;  
 
@@ -471,6 +517,11 @@ class SalaryService extends Controller {
                         $uca = $firstHalfRecord->uca;
                         $aut = $firstHalfRecord->aut;
 
+                        $tax_1 = $firstHalfRecord->tax_1;
+                        $tax_5 = $firstHalfRecord->tax_5;
+                        $tax_6 = $firstHalfRecord->tax_6;
+                        $tax_11 = $firstHalfRecord->tax_11;
+
                         $total_deduction = $firstHalfRecord->total_deductions;
                         $net = $firstHalfRecord->net_amount;
 
@@ -525,6 +576,10 @@ class SalaryService extends Controller {
                     'net_second_half' => $secondHalf,
                     'is_first_half_locked' => $isFirstHalf ? 0 : 1,
                     'is_second_half_locked' => $isFirstHalf ? 1 : 0,
+                    'tax_1' => $tax_1,
+                    'tax_5' => $tax_5,
+                    'tax_6' => $tax_6,
+                    'tax_11' => $tax_11,
                 ];
             }
 

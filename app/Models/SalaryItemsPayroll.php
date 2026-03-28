@@ -58,6 +58,11 @@ class SalaryItemsPayroll extends Model
                 'net_second_half',
                 'is_first_half_locked',
                 'is_second_half_locked',
+                'tax_1',
+                'tax_5',
+                'tax_6',
+                'tax_11',
+                'overpayment'
             ];
         }
 
