@@ -407,7 +407,7 @@ class SalaryService extends Controller {
       
                           $taxType = $employee['tax_type'] ?? null;
       
-                         
+                         //dd($taxType);
       
                           switch ($taxType) {
                               case 'TAX_1':
@@ -582,6 +582,8 @@ class SalaryService extends Controller {
                     'tax_11' => $tax_11,
                 ];
             }
+
+            Log::info('Data to save in payroll items', ['data' => $data]);
 
             return $data;
 

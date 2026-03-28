@@ -46,6 +46,7 @@ class SalaryItemsPayroll extends Model
                 'mplstlms',
                 'cir375_cir449',
                 'w_tax',
+                'overpayment',
                 'uca',
                 'aut',
                 'total_deductions',
@@ -62,7 +63,7 @@ class SalaryItemsPayroll extends Model
                 'tax_5',
                 'tax_6',
                 'tax_11',
-                'overpayment'
+                
             ];
         }
 
