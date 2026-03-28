@@ -49,6 +49,7 @@ class PayrollService extends Controller {
                 'ei.salary',
                 'ei.bsd_no',
                 'ei.w_tax',
+                'ei.tax_type',
                 'ei.step_id',
                 'ei.position_id',
                 'ei.salary_type',

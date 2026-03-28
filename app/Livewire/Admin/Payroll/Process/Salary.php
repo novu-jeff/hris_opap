@@ -35,9 +35,15 @@ class Salary extends Component
     public $mplstlms = [];
     public $cir375_cir449 = [];
     public $w_tax = [];
+    public $overpayment = [];
     public $aut = [];
     public $net_first_half = [];
     public $net_second_half = [];
+
+    public $tax_1 = [];
+    public $tax_5 = [];
+    public $tax_6 = [];
+    public $tax_11 = [];
 
     public $total_deductions = [];
     public $net_amount = [];
@@ -100,7 +106,7 @@ class Salary extends Component
                     'basic_salary', 'pera', 'gross_amount_earned',
                     'hdmf','uca','dbp','kawani','rlip','philhealth','consoloan',
                     'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
-                    'mplstlms','cir375_cir449','w_tax','aut',
+                    'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut',
                     'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
                 ] as $f) {
                     $this->{$f}[$s][$e] = $row[$f] ?? 0;
@@ -130,6 +136,8 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $payrollItem = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
     $original    = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? [];
 
+   
+
     // -------------------------------
     // Sync user-editable fields
     // -------------------------------
@@ -137,7 +145,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         'basic_salary', 'pera',
         'hdmf','uca','dbp','kawani','philhealth','consoloan',
         'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
-        'mplstlms','cir375_cir449','w_tax','aut','rlip'
+        'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut','rlip'
     ];
 
     foreach ($editableFields as $f) {
@@ -149,6 +157,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // -------------------------------
     $basic = floatval($payrollItem['basic_salary'] ?? 0);
     $pera  = floatval($payrollItem['pera'] ?? 0);
+    $aut = floatval($payrollItem['aut'] ?? 0);
 
     // If pera exists, add it
     $gross = round($basic + $pera, 2);
@@ -157,13 +166,63 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $payrollItem['gross_amount_earned'] = $gross;
     $this->gross_amount_earned[$sectionIndex][$employeeIndex] = $gross;
 
+   /* $hasTax1 = array_key_exists('tax_1', $original)
+        && $original['tax_1'] !== null
+        && floatval($original['tax_1']) != 0;
+    
+    $hasTax5 = array_key_exists('tax_5', $original)
+        && $original['tax_5'] !== null
+        && floatval($original['tax_5']) != 0;
+
+    $hasTax6 = array_key_exists('tax_6', $original)
+        && $original['tax_6'] !== null
+        && floatval($original['tax_6']) != 0;
+        
+    $hasTax11 = array_key_exists('tax_11', $original)
+        && $original['tax_11'] !== null
+        && floatval($original['tax_11']) != 0;
+
+    //dd($hasTax1, $hasTax5 , $hasTax6, $hasTax11, $aut); 
+    
+    if($hasTax1){
+        $t1 = $basic - $aut;  
+        $ctax_1 = round($t1 * 0.01, 2);
+        $this->tax_1[$sectionIndex][$employeeIndex] = $ctax_1;
+        $totalDeductions = $ctax_1; 
+        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+    }
+
+    if($hasTax5){
+        $t5 = $basic - $aut;  
+        $ctax_5 = round($t5 * 0.05, 2);
+        $this->tax_5[$sectionIndex][$employeeIndex] = $ctax_5;
+        $totalDeductions = $ctax_5; 
+        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+    }
+
+    if($hasTax6){
+        $t6 = $basic - $aut;  
+        $ctax_6 = round($t6 * 0.06, 2);
+        $this->tax_6[$sectionIndex][$employeeIndex] = $ctax_6;
+        $totalDeductions = $ctax_6; 
+        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+    }
+
+    if($hasTax11){
+        $t11 = $basic - $aut;  
+        $ctax_11 = round($t11 * 1.1, 2);
+        $this->tax_11[$sectionIndex][$employeeIndex] = $ctax_11;
+        $totalDeductions = $ctax_11; 
+        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+    }*/
+
     // -------------------------------
     // Compute total deductions
     // -------------------------------
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
         'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449',
-        'uca','w_tax','aut'
+        'uca','w_tax','overpayment','tax_1', 'tax_5', 'tax_6','tax_11','aut'
     ];
 
     $totalDeductions = 0;
@@ -361,6 +420,11 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                         'net_first_half' => $row['net_first_half'],
                         'net_second_half' => $row['net_second_half'],
                         'salary' => $row['salary'],
+                        'overpayment' => $row['overpayment'],
+                        'tax_1' => $row['tax_1'],
+                        'tax_5' => $row['tax_5'],
+                        'tax_6' => $row['tax_6'],
+                        'tax_11' => $row['tax_11'],
                     ]);
                 }
             }
