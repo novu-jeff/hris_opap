@@ -216,7 +216,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
     if($hasTax10){
         $t10 = $basic - $aut;  
-        $ctax_10 = round($t10 * 1.10, 2);
+        $ctax_10 = round($t10 * 0.10, 2);
         $this->tax_10[$sectionIndex][$employeeIndex] = $ctax_10;
         $totalDeductions = $ctax_10; 
         $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
