@@ -135,6 +135,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>CIR</th>
                     <th>Tax</th>
                     <th>UCA</th>
+                    <th>DISALLOWANCE</th>
                     <th>AUT</th>
     
                     <!-- Net -->
@@ -200,6 +201,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                         {{ number_format($item['w_tax'], 2) }}
                     </td>
                     <td class="text-end">{{ number_format($item['uca'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['disallowance'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['aut'], 2) }}</td>
     
                     <!-- Net -->
@@ -225,24 +227,42 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
     
                 <!-- SECTION TOTAL -->
                 @if(isset($sectionGroup['section_totals']))
-                <tr class="section-total">
+                <tr class="section-total fw-bold bg-light">
                     <td colspan="3" class="text-end">SECTION TOTAL</td>
-    
-                    <td>{{ number_format($sectionGroup['section_totals']['basic_salary'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['pera'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['gross'], 2) }}</td>
-    
-                    <td colspan="11"></td>
-    
-                    <td>{{ number_format($sectionGroup['section_totals']['w_tax'], 2) }}</td>
-                    <td colspan="2"></td>
-    
-                    <td>{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
-                    <td class="text-success">
-                        {{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}
-                    </td>
-    
-                    <td colspan="5"></td>
+                
+                    <!-- Earnings -->
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['basic_salary'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['pera'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['gross'], 2) }}</td>
+                
+                    <!-- Deductions -->
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['rlip'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['hdmf'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['philhealth'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['consoloan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['emergency_loan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['plreg'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['mpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['mpl_lite'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['mp2'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['mplstlms'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['cir375_cir449'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($sectionGroup['section_totals']['w_tax'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['uca'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['disallowance'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['aut'], 2) }}</td>
+                
+                    <!-- Net -->
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
+                    <td class="text-end text-success">{{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}</td>
+                
+                    <!-- Distribution -->
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['dbp'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['kawani'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['lbp_payroll_account'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['net_first_half'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['net_second_half'], 2) }}</td>
                 </tr>
                 @endif
     
@@ -257,26 +277,44 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
     
             <!-- GRAND TOTAL -->
             <tfoot>
-                <tr class="grand-total">
+                <tr class="grand-total fw-bold bg-dark text-white">
                     <td colspan="3" class="text-end">GRAND TOTAL</td>
-    
-                    <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
-                    <td>{{ number_format($records['totals']['pera'], 2) }}</td>
-                    <td>{{ number_format($records['totals']['gross'], 2) }}</td>
-    
-                    <td colspan="11"></td>
-    
-                    <td>{{ number_format($records['totals']['w_tax'], 2) }}</td>
-                    <td colspan="2"></td>
-    
-                    <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
-                    <td class="text-success">
-                        {{ number_format($records['totals']['net_amount'], 2) }}
-                    </td>
-    
-                    <td colspan="5"></td>
+                
+                    <!-- Earnings -->
+                    <td class="text-end">{{ number_format($records['totals']['basic_salary'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['pera'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['gross'], 2) }}</td>
+                
+                    <!-- Deductions -->
+                    <td class="text-end">{{ number_format($records['totals']['rlip'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['hdmf'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['philhealth'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['consoloan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['emergency_loan'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['plreg'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['mpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['mpl_lite'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['mp2'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['mplstlms'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['cir375_cir449'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($records['totals']['w_tax'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['uca'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['disallowance'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['aut'], 2) }}</td>
+                
+                    <!-- Net -->
+                    <td class="text-end">{{ number_format($records['totals']['total_deductions'], 2) }}</td>
+                    <td class="text-end text-success">{{ number_format($records['totals']['net_amount'], 2) }}</td>
+                
+                    <!-- Distribution -->
+                    <td class="text-end">{{ number_format($records['totals']['dbp'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['kawani'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['lbp_payroll_account'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['net_first_half'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['net_second_half'], 2) }}</td>
                 </tr>
-            </tfoot>
+                </tfoot>
     
         </table>
     </div>

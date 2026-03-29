@@ -36,6 +36,7 @@ class Salary extends Component
     public $cir375_cir449 = [];
     public $w_tax = [];
     public $overpayment = [];
+    public $disallowance = [];
     public $aut = [];
     public $net_first_half = [];
     public $net_second_half = [];
@@ -104,7 +105,7 @@ class Salary extends Component
             foreach ($section['employees'] as $e => $row) {
                 foreach ([
                     'basic_salary', 'pera', 'gross_amount_earned',
-                    'hdmf','uca','dbp','kawani','rlip','philhealth','consoloan',
+                    'hdmf','uca', 'disallowance', 'dbp','kawani','rlip','philhealth','consoloan',
                     'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
                     'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut',
                     'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
@@ -143,7 +144,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // -------------------------------
     $editableFields = [
         'basic_salary', 'pera',
-        'hdmf','uca','dbp','kawani','philhealth','consoloan',
+        'hdmf','uca', 'disallowance', 'dbp','kawani','philhealth','consoloan',
         'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
         'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut','rlip'
     ];
@@ -222,7 +223,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
         'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449',
-        'uca','w_tax','overpayment','tax_1', 'tax_5', 'tax_6','tax_11','aut'
+        'uca','disallowance', 'w_tax','overpayment','tax_1', 'tax_5', 'tax_6','tax_11','aut'
     ];
 
     $totalDeductions = 0;
@@ -413,6 +414,7 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                         'cir375_cir449' => $row['cir375_cir449'],
                         'w_tax' => $row['w_tax'],
                         'aut' => $row['aut'],
+                        'disallowance' => $row['disallowance'],
                         'kawani' => $row['kawani'],
                         'total_deductions' => $row['total_deductions'],
                         'net_amount' => $row['net_amount'],
