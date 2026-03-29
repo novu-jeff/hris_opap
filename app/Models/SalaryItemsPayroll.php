@@ -27,6 +27,7 @@ class SalaryItemsPayroll extends Model
             return [
                 'payroll_id',
                 'employee_no',
+                'employment_type_id',
                 'name',
                 'position',
                 'basic_salary',
@@ -60,8 +61,11 @@ class SalaryItemsPayroll extends Model
                 'is_first_half_locked',
                 'is_second_half_locked',
                 'tax_1',
+                'tax_3',
                 'tax_5',
                 'tax_6',
+                'tax_8',
+                'tax_10',
                 'tax_11',
                 
             ];

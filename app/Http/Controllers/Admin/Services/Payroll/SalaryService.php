@@ -274,6 +274,7 @@ class SalaryService extends Controller {
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $position_id = $employee['position_id'];
+                $employment_type_id = $employee['employment_type_id'];
                 $eligible = $employee['employment_type_id'];
                 //$basic_salary = round(floatval($employee['salary']), 2);
                 $salary_type = $employee['salary_type'];
@@ -397,10 +398,10 @@ class SalaryService extends Controller {
                // $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
 
                       // ✅ COS TAX COMPUTATION
-                      $tax_1 = 0;
+                      $tax_3 = 0;
                       $tax_5 = 0;
-                      $tax_6 = 0;
-                      $tax_11 = 0;
+                      $tax_8 = 0;
+                      $tax_10 = 0;
       
       
       
@@ -417,27 +418,28 @@ class SalaryService extends Controller {
       
                          //dd($taxType);
       
-                          switch ($taxType) {
-                              case 'TAX_1':
-                                     $t1 = $basic_salary - $aut;  
-                                  $tax_1 = round($t1 * 0.01, 2);
-                                  break;
-      
-                              case 'TAX_5':
-                                    $t2 = $basic_salary - $aut;  
-                                  $tax_5 = round($t2 * 0.05, 2);
-                                  break;
-      
-                              case 'TAX_6':
-                                    $t6 = $basic_salary - $aut; 
-                                  $tax_6 = round($t6 * 0.06, 2);
-                                  break;
-      
-                              case 'TAX_11':
-                                    $t11 = $basic_salary - $aut; 
-                                  $tax_11 = round($t11 * 1.1, 2);
-                                  break;
-                          }
+                         $tax_3 = $tax_5 = $tax_8 = $tax_10 = 0;
+
+                    $taxBase = max(0, $basic_salary - $aut);
+
+                    switch ($taxType) {
+
+                        case 'TAX_3': // 3%
+                            $tax_3 = round($taxBase * 0.03, 2);
+                            break;
+
+                        case 'TAX_5': // 5%
+                            $tax_5 = round($taxBase * 0.05, 2);
+                            break;
+
+                        case 'TAX_8': // 8%
+                            $tax_8 = round($taxBase * 0.08, 2);
+                            break;
+
+                        case 'TAX_10': // 10%
+                            $tax_10 = round($taxBase * 0.10, 2);
+                            break;
+                    }
       
                           $rlip =  0;
                           $w_tax = 0;
@@ -461,12 +463,15 @@ class SalaryService extends Controller {
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
-                    $tax_1 + $tax_5 + $tax_6 + $tax_11 +  $uca + $aut;
+                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut;
 
                 $total_lbp =  $dbp +  $kawani;  
 
-
-                $net = round($gross - $total_deduction, 2);
+                if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
+                    $net = round($gross - $total_deduction, 2);
+                }else{
+                    $net = round($basic_salary - $total_deduction, 2);
+                }
 
                 if(!empty($total_lbp)){
                     $lbp = $net - $total_lbp;
@@ -525,10 +530,10 @@ class SalaryService extends Controller {
                         $uca = $firstHalfRecord->uca;
                         $aut = $firstHalfRecord->aut;
 
-                        $tax_1 = $firstHalfRecord->tax_1;
+                        $tax_3 = $firstHalfRecord->tax_3;
                         $tax_5 = $firstHalfRecord->tax_5;
-                        $tax_6 = $firstHalfRecord->tax_6;
-                        $tax_11 = $firstHalfRecord->tax_11;
+                        $tax_8 = $firstHalfRecord->tax_8;
+                        $tax_10 = $firstHalfRecord->tax_10;
 
                         $total_deduction = $firstHalfRecord->total_deductions;
                         $net = $firstHalfRecord->net_amount;
@@ -553,6 +558,7 @@ class SalaryService extends Controller {
                 $data[] = [
                     'payroll_id' => $payroll->id,
                     'employee_no' => $employee_no,
+                    'employment_type_id' => $employment_type_id,
                     'name' => $name,
                     'position' => $position,
                     'basic_salary' => $basic_salary,
@@ -584,10 +590,10 @@ class SalaryService extends Controller {
                     'net_second_half' => $secondHalf,
                     'is_first_half_locked' => $isFirstHalf ? 0 : 1,
                     'is_second_half_locked' => $isFirstHalf ? 1 : 0,
-                    'tax_1' => $tax_1,
+                    'tax_3' => $tax_3,
                     'tax_5' => $tax_5,
-                    'tax_6' => $tax_6,
-                    'tax_11' => $tax_11,
+                    'tax_8' => $tax_8,
+                    'tax_10' => $tax_10,
                 ];
             }
 

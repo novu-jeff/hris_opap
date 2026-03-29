@@ -319,10 +319,10 @@
                             <th class="vertical-text grey">AUT</th>
                             <th colspan="2" class="vertical-text red">UCA</th>
                             <th colspan="2" class="vertical-text red">Over payment</th>
-                            <th class="vertical-text red">TAX (1%)</th>
+                            <th class="vertical-text red">TAX (3%)</th>
                             <th class="vertical-text red">TAX (5%)</th>
-                            <th class="vertical-text red">TAX (6%)</th>
-                            <th class="vertical-text red">TAX (11%)</th>
+                            <th class="vertical-text red">TAX (8%)</th>
+                            <th class="vertical-text red">TAX (10%)</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
                             <th colspan="2" class="vertical-text grey">DBP</th>
@@ -372,83 +372,83 @@
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="hdmf.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="philhealth.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>    
                                         
                                       </td>
                                     
                                     <td colspan="2">
-                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                             <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mpl.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                           
                                         </td>
                                   
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mp2.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                     </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mplstlms.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }}" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="cir375_cir449.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                     <td>
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                         wire:model="aut.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                         class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
                                     
                                     </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                     </td>
                                     <td colspan="2">
-                                        <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="overpayment.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                         <td>
-                                            <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                                wire:model="tax_1.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                wire:model="tax_3.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                         
                                         <td>
-                                            <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                                 wire:model="tax_5.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                         
                                         <td>
-                                            <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                                wire:model="tax_6.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                wire:model="tax_8.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>
                                         
                                         <td>
-                                            <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                                wire:model="tax_11.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                wire:model="tax_10.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
                                         </td>

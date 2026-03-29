@@ -220,6 +220,7 @@ class Information extends Component
             'type'                   => $data->employment_type_id,
             'status'                 => $data->status,
             'salary_method'          => $data->salary_method,
+            'salary_type'            => $data->salary_type,
             'salary'                 => $data->salary,
             'payroll_account_number' => $data->payroll_account_number,
             'tax_type'               => $data->tax_type,

@@ -153,7 +153,7 @@
                                 </div>
                             </div> 
                             @endif
-                            @if($records['employee_information']['type'] == 3 || $records['employee_information']['type'] == 6)    
+                            @if($records['employee_information']['type'] == 3 || $records['employee_information']['type'] == 4)    
                                 <div class="col-md-4 mb-3">
                                     <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                     <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
@@ -162,7 +162,7 @@
                                     </div>
                                 </div>     
                             @endif
-                        @elseif($records['employee_information']['type'] == 6 )    
+                        @elseif($records['employee_information']['type'] == 4 )    
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                 <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
@@ -225,15 +225,26 @@
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
+                        <label class="mb-2" for="salary_type">Salary Type <span class="text-danger"></span></label>
+                        <select wire:model="records.employee_information.salary_type" id="records.employee_information.salary_type" class="form-select">
+                            <option value=""> - CHOOSE - </option>
+                            <option value="monthly">Monthly Rate</option>
+                            <option value="salary">Daily Rate</option>
+                        </select>
+                        <div class="error-field">
+                            @error('records.employee_information.salary_type') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <label class="mb-2" for="tax_type">Tax Type (COS)</label>
                         <select wire:model="records.employee_information.tax_type"
                                 id="records.employee_information.tax_type"
                                 class="form-select">
                             <option value=""> - CHOOSE - </option>
-                            <option value="TAX_1">1%</option>
+                            <option value="TAX_3">3%</option>
                             <option value="TAX_5">5%</option>
-                            <option value="TAX_6">6%</option>
-                            <option value="TAX_11">11%</option>
+                            <option value="TAX_8">8%</option>
+                            <option value="TAX_10">10%</option>
                         </select>
                     
                         <div class="error-field">
