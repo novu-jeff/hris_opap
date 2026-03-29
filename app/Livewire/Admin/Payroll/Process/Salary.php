@@ -193,33 +193,33 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     if($hasTax3){
         $t3 = $basic - $aut;  
         $ctax_3 = round($t3 * 0.03, 2);
+    
         $this->tax_3[$sectionIndex][$employeeIndex] = $ctax_3;
-        $totalDeductions = $ctax_3; 
-        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+        $payrollItem['tax_3'] = $ctax_3; // ✅ IMPORTANT
     }
-
+    
     if($hasTax5){
         $t5 = $basic - $aut;  
         $ctax_5 = round($t5 * 0.05, 2);
+    
         $this->tax_5[$sectionIndex][$employeeIndex] = $ctax_5;
-        $totalDeductions = $ctax_5; 
-        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+        $payrollItem['tax_5'] = $ctax_5; // ✅
     }
-
+    
     if($hasTax8){
         $t8 = $basic - $aut;  
         $ctax_8 = round($t8 * 0.08, 2);
+    
         $this->tax_8[$sectionIndex][$employeeIndex] = $ctax_8;
-        $totalDeductions = $ctax_8; 
-        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+        $payrollItem['tax_8'] = $ctax_8; // ✅
     }
-
+    
     if($hasTax10){
         $t10 = $basic - $aut;  
         $ctax_10 = round($t10 * 0.10, 2);
+    
         $this->tax_10[$sectionIndex][$employeeIndex] = $ctax_10;
-        $totalDeductions = $ctax_10; 
-        $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
+        $payrollItem['tax_10'] = $ctax_10; // ✅
     }
 
     // -------------------------------
@@ -228,7 +228,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
         'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449',
-        'uca','disallowance', 'w_tax','overpayment','tax_3', 'tax_5', 'tax_8','tax_10','aut'
+        'uca','disallowance', 'w_tax','aut','overpayment','tax_3', 'tax_5', 'tax_8','tax_10'
     ];
 
     $totalDeductions = 0;
@@ -236,6 +236,8 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $totalDeductions += floatval($payrollItem[$f] ?? 0);
     }
     $totalDeductions = round($totalDeductions, 2);
+
+    Log::info('total', ['totalDeductions' => $totalDeductions]);
 
     // -------------------------------
     // Compute net amount
