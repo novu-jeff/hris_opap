@@ -41,10 +41,10 @@ class Salary extends Component
     public $net_first_half = [];
     public $net_second_half = [];
 
-    public $tax_1 = [];
+    public $tax_3 = [];
     public $tax_5 = [];
-    public $tax_6 = [];
-    public $tax_11 = [];
+    public $tax_8 = [];
+    public $tax_10 = [];
 
     public $total_deductions = [];
     public $net_amount = [];
@@ -107,7 +107,7 @@ class Salary extends Component
                     'basic_salary', 'pera', 'gross_amount_earned',
                     'hdmf','uca', 'disallowance', 'dbp','kawani','rlip','philhealth','consoloan',
                     'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
-                    'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut',
+                    'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut',
                     'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
                 ] as $f) {
                     $this->{$f}[$s][$e] = $row[$f] ?? 0;
@@ -146,7 +146,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         'basic_salary', 'pera',
         'hdmf','uca', 'disallowance', 'dbp','kawani','philhealth','consoloan',
         'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
-        'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_1', 'tax_5', 'tax_6', 'tax_11', 'aut','rlip'
+        'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut','rlip'
     ];
 
     foreach ($editableFields as $f) {
@@ -161,7 +161,12 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $aut = floatval($payrollItem['aut'] ?? 0);
 
     // If pera exists, add it
-    $gross = round($basic + $pera, 2);
+   //dd($payrollItem['employment_type_id'] );
+   if($payrollItem['employment_type_id'] !== 2 && $payrollItem['employment_type_id'] !== 3 && $payrollItem['employment_type_id'] !== 4) {
+        $gross = round($basic + $pera, 2);
+   }else{
+        $gross = round($basic, 2);
+   }
 
     // Override gross
     $payrollItem['gross_amount_earned'] = $gross;
@@ -223,7 +228,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
         'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449',
-        'uca','disallowance', 'w_tax','overpayment','tax_1', 'tax_5', 'tax_6','tax_11','aut'
+        'uca','disallowance', 'w_tax','overpayment','tax_3', 'tax_5', 'tax_8','tax_10','aut'
     ];
 
     $totalDeductions = 0;
@@ -423,10 +428,10 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                         'net_second_half' => $row['net_second_half'],
                         'salary' => $row['salary'],
                         'overpayment' => $row['overpayment'],
-                        'tax_1' => $row['tax_1'],
+                        'tax_1' => $row['tax_3'],
                         'tax_5' => $row['tax_5'],
-                        'tax_6' => $row['tax_6'],
-                        'tax_11' => $row['tax_11'],
+                        'tax_6' => $row['tax_8'],
+                        'tax_11' => $row['tax_10'],
                     ]);
                 }
             }

@@ -447,10 +447,10 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>Overpay</th>
     
                     <!-- Tax -->
-                    <th>1%</th>
+                    <th>3%</th>
                     <th>5%</th>
-                    <th>6%</th>
-                    <th>11%</th>
+                    <th>8%</th>
+                    <th>10%</th>
     
                     <!-- Net -->
                     <th>Total Ded</th>

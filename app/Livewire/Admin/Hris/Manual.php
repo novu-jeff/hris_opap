@@ -294,6 +294,8 @@ class Manual extends Component
             'salary_method' => $data['salary_method'] ?? null,
             'salary_type' => $data['salary_type'] ?? null,
             'salary' => $data['salary'] ?? null,
+            'step_id' => $data['step_id'] ?? null,
+            'tax_type' => $data['tax_type'] ?? null,
             'payroll_account_number' => $data['payroll_account_number'] ?? null,
         ]);
     }
