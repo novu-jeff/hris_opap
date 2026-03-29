@@ -428,10 +428,10 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                         'net_second_half' => $row['net_second_half'],
                         'salary' => $row['salary'],
                         'overpayment' => $row['overpayment'],
-                        'tax_1' => $row['tax_3'],
+                        'tax_3' => $row['tax_3'],
                         'tax_5' => $row['tax_5'],
-                        'tax_6' => $row['tax_8'],
-                        'tax_11' => $row['tax_10'],
+                        'tax_8' => $row['tax_8'],
+                        'tax_10' => $row['tax_10'],
                     ]);
                 }
             }
