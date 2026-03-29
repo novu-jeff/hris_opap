@@ -509,12 +509,11 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     </td>
     
                     <!-- TAX BREAKDOWN -->
-                    <td class="text-end text-danger">{{ number_format($item['tax_1'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($item['tax_3'], 2) }}</td>
                     <td class="text-end text-danger">{{ number_format($item['tax_5'], 2) }}</td>
-                    <td class="text-end text-danger">{{ number_format($item['tax_6'], 2) }}</td>
-                    <td class="text-end text-danger fw-semibold">
-                        {{ number_format($item['tax_11'], 2) }}
-                    </td>
+                    <td class="text-end text-danger">{{ number_format($item['tax_8'], 2) }}</td>
+                    <td class="text-end text-danger">{{ number_format($item['tax_10'], 2) }}</td>
+                  
     
                     <!-- Net -->
                     <td class="text-end fw-semibold">
@@ -546,10 +545,10 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
     
                     <td colspan="8"></td>
     
-                    <td>{{ number_format($sectionGroup['section_totals']['tax_1'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_3'], 2) }}</td>
                     <td>{{ number_format($sectionGroup['section_totals']['tax_5'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['tax_6'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['tax_11'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_8'], 2) }}</td>
+                    <td>{{ number_format($sectionGroup['section_totals']['tax_10'], 2) }}</td>
     
                     <td>{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
                     <td class="text-success">
@@ -577,10 +576,10 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
     
                     <td colspan="8"></td>
-                    <td>{{ number_format($records['totals']['tax_1'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_3'], 2) }}</td>
                     <td>{{ number_format($records['totals']['tax_5'], 2) }}</td>
-                    <td>{{ number_format($records['totals']['tax_6'], 2) }}</td>
-                    <td>{{ number_format($records['totals']['tax_11'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_8'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['tax_10'], 2) }}</td>
     
                     <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
                     <td class="text-success">
