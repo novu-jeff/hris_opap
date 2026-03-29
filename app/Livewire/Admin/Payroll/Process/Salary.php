@@ -172,29 +172,29 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $payrollItem['gross_amount_earned'] = $gross;
     $this->gross_amount_earned[$sectionIndex][$employeeIndex] = $gross;
 
-   /* $hasTax1 = array_key_exists('tax_1', $original)
-        && $original['tax_1'] !== null
-        && floatval($original['tax_1']) != 0;
+    $hasTax3 = array_key_exists('tax_3', $original)
+        && $original['tax_3'] !== null
+        && floatval($original['tax_3']) != 0;
     
     $hasTax5 = array_key_exists('tax_5', $original)
         && $original['tax_5'] !== null
         && floatval($original['tax_5']) != 0;
 
-    $hasTax6 = array_key_exists('tax_6', $original)
-        && $original['tax_6'] !== null
-        && floatval($original['tax_6']) != 0;
+    $hasTax8 = array_key_exists('tax_8', $original)
+        && $original['tax_8'] !== null
+        && floatval($original['tax_8']) != 0;
         
-    $hasTax11 = array_key_exists('tax_11', $original)
-        && $original['tax_11'] !== null
-        && floatval($original['tax_11']) != 0;
+    $hasTax10 = array_key_exists('tax_10', $original)
+        && $original['tax_10'] !== null
+        && floatval($original['tax_10']) != 0;
 
     //dd($hasTax1, $hasTax5 , $hasTax6, $hasTax11, $aut); 
     
-    if($hasTax1){
-        $t1 = $basic - $aut;  
-        $ctax_1 = round($t1 * 0.01, 2);
-        $this->tax_1[$sectionIndex][$employeeIndex] = $ctax_1;
-        $totalDeductions = $ctax_1; 
+    if($hasTax3){
+        $t3 = $basic - $aut;  
+        $ctax_3 = round($t3 * 0.03, 2);
+        $this->tax_3[$sectionIndex][$employeeIndex] = $ctax_3;
+        $totalDeductions = $ctax_3; 
         $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
     }
 
@@ -206,21 +206,21 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
     }
 
-    if($hasTax6){
-        $t6 = $basic - $aut;  
-        $ctax_6 = round($t6 * 0.06, 2);
-        $this->tax_6[$sectionIndex][$employeeIndex] = $ctax_6;
-        $totalDeductions = $ctax_6; 
+    if($hasTax8){
+        $t8 = $basic - $aut;  
+        $ctax_8 = round($t8 * 0.08, 2);
+        $this->tax_8[$sectionIndex][$employeeIndex] = $ctax_8;
+        $totalDeductions = $ctax_8; 
         $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
     }
 
-    if($hasTax11){
-        $t11 = $basic - $aut;  
-        $ctax_11 = round($t11 * 1.1, 2);
-        $this->tax_11[$sectionIndex][$employeeIndex] = $ctax_11;
-        $totalDeductions = $ctax_11; 
+    if($hasTax10){
+        $t10 = $basic - $aut;  
+        $ctax_10 = round($t10 * 1.1, 2);
+        $this->tax_10[$sectionIndex][$employeeIndex] = $ctax_10;
+        $totalDeductions = $ctax_10; 
         $this->total_deductions[$sectionIndex][$employeeIndex] = $totalDeductions;
-    }*/
+    }
 
     // -------------------------------
     // Compute total deductions
