@@ -283,6 +283,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+
+        const saveBtn = document.querySelector('[wire\\:click="save"]');
+
+        if (saveBtn) {
+            console.log('Triggering save via button');
+            saveBtn.click(); // ✅ safest
+        } else {
+            console.warn('Save button not found (maybe no changes?)');
+        }
+    }
+});
 </script>
 
 
