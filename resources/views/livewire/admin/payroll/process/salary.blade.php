@@ -11,6 +11,53 @@
         @endif
     </div>
     <hr>
+    <button class="btn btn-success mb-3" wire:click="$set('showAddModal', true)">
+        + Add Employee
+    </button>
+
+    
+    @if($showAddModal)
+    <div class="card p-4 mb-3">
+        
+        <input type="text"
+        wire:keyup="searchEmployeeAction($event.target.value)"
+        class="form-control mb-2"
+        placeholder="Search employee name or ID">
+
+        <div>
+          
+            @foreach($employeeResults ?? [] as $emp)
+            <div class="border p-2 mb-1 cursor-pointer"
+                wire:click="selectEmployee({{ $emp->id }})">
+                {{ $emp->employee_no }} - {{ $emp->name }}
+            </div>
+        @endforeach
+        </div>
+
+        @if($selectedEmployee)
+            <div class="mt-3 p-3 border">
+                <strong>{{ $selectedEmployee['name'] }}</strong><br>
+                {{ $selectedEmployee['position'] ?? 'N/A' }}
+            </div>
+            @if(!$showDuploicateLabel)
+            <button class="btn btn-primary mt-2" wire:click="confirmAddEmployee">
+                Confirm Add
+            </button>
+            @endif
+            @if($showDuploicateLabel)
+                <div class="border border-danger rounded p-2 mt-2 bg-light">
+                    <span class="text-danger fw-semibold">
+                        ⚠ Employee already exists in payroll
+                    </span>
+                </div>
+            @endif
+        @endif
+    
+        <button class="btn btn-secondary mt-2" wire:click="$set('showAddModal', false)">
+            Cancel
+        </button>
+    </div>
+    @endif
     <div class="row">
         <div class="col-12 col-md-6">
             <div class="text-uppercase fw-bold">
@@ -48,6 +95,7 @@
             <table class="payroll-table">
                     <thead>
                         <tr>
+                            <th rowspan="2" class="vertical-text text-dark">Action</th>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
                             <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
@@ -101,6 +149,15 @@
 
                             @foreach($sectionGroup['employees'] as $employeeIndex => $record)
                                 <tr>
+                                    <td>
+                                        @if(!$isApproved)
+                                            <button 
+                                                wire:click="confirmDelete({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="btn btn-sm btn-danger">
+                                                Delete
+                                            </button>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="marked-changed">
                                             @if(in_array($record['id'], $updatedItems))
@@ -298,6 +355,7 @@
             <table class="payroll-table">
                     <thead>
                         <tr>
+                            <th rowspan="2" class="vertical-text text-dark">Action</th>
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
                             <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
@@ -347,6 +405,15 @@
 
                             @foreach($sectionGroup['employees'] as $employeeIndex => $record)
                                 <tr>
+                                    <td>
+                                        @if(!$isApproved)
+                                            <button 
+                                                wire:click="confirmDelete({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="btn btn-sm btn-danger">
+                                                Delete
+                                            </button>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="marked-changed">
                                             @if(in_array($record['id'], $updatedItems))
@@ -612,7 +679,7 @@
     </div>
     @endif
 
-    @if($hasChanges)
+    @if($hasChanges || !empty($newItems))
         <div class="d-flex justify-content-end mt-5">
             <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" wire:click="save">
                 <span wire:loading.remove wire:target="save">Save Changes</span>
@@ -634,5 +701,7 @@
         </div>
     @endif
 </div>
+
+
 
 

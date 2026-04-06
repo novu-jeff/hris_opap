@@ -63,7 +63,18 @@ class Salary extends Component
     public bool $isFirstCutoff = false;
     public bool $isSecondCutoff = false;
 
-    protected $listeners = ['save', 'approve'];
+    public $deleteSectionIndex;
+    public $deleteEmployeeIndex;
+
+    public $showAddModal = false;
+    public $searchEmployee = '';
+    public $employeeResults = [];
+    public $selectedEmployee = null;
+    public $showDuploicateLabel = false;
+
+    public array $newItems = [];
+
+    protected $listeners = ['save', 'approve', 'deleteEmployee'];
 
     /* ======================================================
      * MOUNT
@@ -369,6 +380,222 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
     $this->hasChanges = true;
 }
 
+public function confirmDelete($sectionIndex, $employeeIndex)
+{
+    $this->deleteSectionIndex = $sectionIndex;
+    $this->deleteEmployeeIndex = $employeeIndex;
+
+    $this->dispatch('showConfirmation', [
+        'title' => 'Delete employee?',
+        'message' => 'This will permanently remove this employee from payroll.',
+        'action' => 'deleteEmployee'
+    ]);
+}
+
+public function deleteEmployee()
+{
+    $sectionIndex = $this->deleteSectionIndex;
+    $employeeIndex = $this->deleteEmployeeIndex;
+
+    if ($this->isApproved) return;
+
+    $employee = $this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+
+    DB::transaction(function () use ($employee, $sectionIndex, $employeeIndex) {
+
+        SalaryItemsPayroll::where('id', $employee['id'])->delete();
+
+        unset($this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex]);
+
+        $this->records['payroll_items'][$sectionIndex]['employees'] = array_values(
+            $this->records['payroll_items'][$sectionIndex]['employees']
+        );
+    });
+
+    $this->dispatch('alert', [
+        'status' => 'success',
+        'title' => 'Deleted',
+        'message' => 'Employee removed from payroll'
+    ]);
+}
+
+
+public function searchEmployeeAction($value)
+{
+    $this->searchEmployee = $value;
+
+    if (trim($value) === '') {
+        $this->employeeResults = [];
+        return;
+    }
+
+    $this->employeeResults = DB::table('employee_information as ei')
+        ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
+        ->where('ei.isDeleted', 0)
+        ->where(function ($q) use ($value) {
+            $q->where('ei.employee_no', 'like', '%' . $value . '%')
+              ->orWhere('ep.firstname', 'like', '%' . $value . '%')
+              ->orWhere('ep.lastname', 'like', '%' . $value . '%');
+        })
+        ->limit(10)
+        ->select(
+            'ei.id',
+            'ei.employee_no',
+            DB::raw("CONCAT(COALESCE(ep.firstname,''), ' ', COALESCE(ep.lastname,'')) as name")
+        )
+        ->get();
+
+        $this->showDuploicateLabel = false;    
+}
+
+public function selectEmployee($id)
+{
+    $emp = DB::table('employee_information as ei')
+        ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
+        ->where('ei.id', $id)
+        ->select(
+            'ei.employee_no',
+            'ei.salary',
+            'ei.position_id',
+            'ei.section_id',
+            'ei.employment_type_id',
+            DB::raw("CONCAT(ep.firstname, ' ', ep.lastname) as name")
+        )
+        ->first();
+
+        $this->showDuploicateLabel = false;    
+
+    $this->selectedEmployee = [
+        'employee_no' => $emp->employee_no,
+        'name' => $emp->name,
+        'position_id' => $emp->position_id,
+        'position' => $this->getPositionName($emp->position_id), // ✅ ADD THIS
+        'section_id' => $emp->section_id,
+        'employment_type_id' => $emp->employment_type_id,
+        'basic_salary' => $emp->salary ?? 0,
+    ];
+}
+
+private function getPositionName($positionId)
+{
+    return DB::table('positions')
+        ->where('id', $positionId)
+        ->value('name') ?? 'N/A';
+}
+
+private function getSectionName($sectionId)
+{
+    return DB::table('sections')
+        ->where('id', $sectionId)
+        ->value('name') ?? 'Unknown Section';
+}
+
+public function confirmAddEmployee()
+{
+    if (!$this->selectedEmployee) return;
+
+    $exists = SalaryItemsPayroll::where('payroll_id', $this->payroll_id)
+        ->where('employee_no', $this->selectedEmployee['employee_no'])
+        ->exists();
+
+    if ($exists) {
+
+        //dd('duplicate');
+        $this->showDuploicateLabel = true;
+
+        $this->dispatch('alert', [
+            'status' => 'error',
+            'title' => 'Duplicate',
+            'message' => 'Employee already exists in payroll'
+        ]);
+        return;
+    }
+
+    DB::transaction(function () {
+
+        $positionName = $this->getPositionName($this->selectedEmployee['position_id']);
+        $sectionName  = $this->getSectionName($this->selectedEmployee['section_id']);
+
+        $new = SalaryItemsPayroll::create([
+            'payroll_id' => $this->payroll_id,
+            'employee_no' => $this->selectedEmployee['employee_no'],
+            'employment_type_id' => $this->selectedEmployee['employment_type_id'],
+            'name' => $this->selectedEmployee['name'],
+            'position' => $positionName,
+
+            'basic_salary' => $this->selectedEmployee['basic_salary'],
+            'salary' => $this->selectedEmployee['basic_salary'],
+            'pera' => 0,
+            'gross_amount_earned' => 0,
+
+            'hdmf' => 0,
+            'philhealth' => 0,
+            'w_tax' => 0,
+            'uca' => 0,
+            'aut' => 0,
+
+            'total_deductions' => 0,
+            'net_amount' => 0,
+            'net_first_half' => 0,
+            'net_second_half' => 0,
+        ]);
+
+        $newItem = $new->toArray();
+
+        $sectionIndex = $this->findOrCreateSection([
+            'section_name' => $sectionName
+        ]);
+
+        $this->records['payroll_items'][$sectionIndex]['employees'][] = $newItem;
+
+        $employeeIndex = count($this->records['payroll_items'][$sectionIndex]['employees']) - 1;
+
+        // init fields
+        foreach ([
+            'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
+            'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms',
+            'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
+            'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
+        ] as $field) {
+            $this->{$field}[$sectionIndex][$employeeIndex] = 0;
+        }
+
+       
+
+        $this->recompute($sectionIndex, $employeeIndex);
+        $this->newItems[] = $new->id;
+        $this->hasChanges = true;
+    });
+
+    $this->reset(['selectedEmployee', 'searchEmployee', 'employeeResults', 'showAddModal', 'showDuploicateLabel']);
+
+    $this->dispatch('alert', [
+        'status' => 'success',
+        'title' => 'Added',
+        'message' => 'Employee added to payroll'
+    ]);
+}
+
+private function findOrCreateSection($data)
+{
+    $sectionName = $data['section_name'] ?? 'Unknown Section';
+
+    // 1. Try to find existing section
+    foreach ($this->records['payroll_items'] as $index => $section) {
+        if (($section['section_name'] ?? '') === $sectionName) {
+            return $index;
+        }
+    }
+
+    // 2. Create new section if not found
+    $this->records['payroll_items'][] = [
+        'section_name' => $sectionName,
+        'employees' => []
+    ];
+
+    return count($this->records['payroll_items']) - 1;
+}
+
 
 
 
@@ -428,7 +655,7 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
                         'lbp_payroll_account' => $row['lbp_payroll_account'],
                         'net_first_half' => $row['net_first_half'],
                         'net_second_half' => $row['net_second_half'],
-                        'salary' => $row['salary'],
+                        'salary' => $row['salary'] ?? $row['basic_salary'] ?? 0,
                         'overpayment' => $row['overpayment'],
                         'tax_3' => $row['tax_3'],
                         'tax_5' => $row['tax_5'],
@@ -439,7 +666,7 @@ public function manualEdit($sectionIndex, $employeeIndex, $field)
             }
         });
 
-
+        $this->newItems = [];
         $this->updatedItems = [];
         $this->hasChanges = false;
 
