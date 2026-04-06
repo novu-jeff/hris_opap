@@ -11,10 +11,11 @@
         @endif
     </div>
     <hr>
+    @if(!$isApproved)
     <button class="btn btn-success mb-3" wire:click="$set('showAddModal', true)">
         + Add Employee
     </button>
-
+    @endif
     
     @if($showAddModal)
     <div class="card p-4 mb-3">
@@ -95,7 +96,9 @@
             <table class="payroll-table">
                     <thead>
                         <tr>
+                            @if(!$isApproved)
                             <th rowspan="2" class="vertical-text text-dark">Action</th>
+                            @endif
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
                             <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
@@ -149,15 +152,17 @@
 
                             @foreach($sectionGroup['employees'] as $employeeIndex => $record)
                                 <tr>
+                                    @if(!$isApproved)
                                     <td>
-                                        @if(!$isApproved)
+                                        
                                             <button 
                                                 wire:click="confirmDelete({{ $sectionIndex }}, {{ $employeeIndex }})"
                                                 class="btn btn-sm btn-danger">
                                                 Delete
                                             </button>
-                                        @endif
+                                       
                                     </td>
+                                    @endif
                                     <td>
                                         <div class="marked-changed">
                                             @if(in_array($record['id'], $updatedItems))
@@ -355,7 +360,9 @@
             <table class="payroll-table">
                     <thead>
                         <tr>
-                            <th rowspan="2" class="vertical-text text-dark">Action</th>
+                            @if(!$isApproved)
+                            <th rowspan="2" class="vertical-text text-dark">Action</th> 
+                            @endif
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
                             <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
@@ -405,15 +412,17 @@
 
                             @foreach($sectionGroup['employees'] as $employeeIndex => $record)
                                 <tr>
+                                    @if(!$isApproved)
                                     <td>
-                                        @if(!$isApproved)
+                                      
                                             <button 
                                                 wire:click="confirmDelete({{ $sectionIndex }}, {{ $employeeIndex }})"
                                                 class="btn btn-sm btn-danger">
                                                 Delete
                                             </button>
-                                        @endif
+                                       
                                     </td>
+                                    @endif
                                     <td>
                                         <div class="marked-changed">
                                             @if(in_array($record['id'], $updatedItems))
