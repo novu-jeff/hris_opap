@@ -389,7 +389,8 @@ class SalaryService extends Controller {
                 $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
 
                 if ($employee['employment_type_id'] != 1){
-                    $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
+                   // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
+                   $aut = 0;
                 }else{
                     $aut = 0;
                 }
