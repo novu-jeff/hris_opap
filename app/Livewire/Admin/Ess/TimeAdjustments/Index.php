@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 
 class Index extends Component
 {
@@ -81,116 +82,205 @@ class Index extends Component
         }
     }
 
-    public function approved(bool $isNotify = true) {
+    public function approved(bool $isNotify = true)
+{
+    if ($isNotify) {
 
-        if($isNotify) {
+        $this->dispatch('showConfirmation', [
+            'title' => 'Are you sure to continue?',
+            'message' => 'Please be informed that you are about to approve this request timelog application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>.',
+            'action' => 'approved'
+        ]);
 
-            $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to approve this request timelog application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'approved';
-            $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
-            ]);
+        return;
+    }
 
-        } else {
+    $record = EmployeeTimeAdjustments::with('employee.personal')
+        ->where('id', $this->selected_id)
+        ->where('status', 'pending')
+        ->first();
 
-            $record = EmployeeTimeAdjustments::with('employee.personal')
-                ->where('id', $this->selected_id)
-                ->where('status', 'pending')
-                ->first();
+    if (!$record) {
+        return redirect()->route('ess.time-adjustments.index');
+    }
 
-                
-            if(is_null($record)) {
-                return redirect()->route('ess.time-adjustments.index');
-            }
+    $employeeNo = $record->employee->employee_no;
+    $date = Carbon::parse($record->date)->format('Y-m-d');
 
-            $record->action_by_id = Auth::user()->id;
+    // ✅ Normalize requested timestamps
+    // ================================
+// STEP 1: Prepare logs
+// ================================
+$newLogs = collect([
+    ['time' => $record->clock_in,  'type' => 0],
+    ['time' => $record->break_out, 'type' => 1],
+    ['time' => $record->break_in,  'type' => 0],
+    ['time' => $record->clock_out, 'type' => 1],
+])
+->filter(fn ($t) => !empty($t['time']))
+->map(function ($t) use ($date) {
+    return [
+        'timestamp' => Carbon::parse($t['time'])->format("{$date} H:i:s"),
+        'type' => $t['type'],
+    ];
+})
+->sortBy('timestamp')
+->values();
 
-            $clock_in_am = Carbon::parse($record->clock_in)->format('H:i:s');
-            $clock_out_am = Carbon::parse($record->break_out)->format('H:i:s');
-            $clock_in_pm = Carbon::parse($record->break_in)->format('H:i:s');
-            $clock_out_pm = Carbon::parse($record->clock_out)->format('H:i:s');
-            $date = Carbon::parse($record->date)->format('Y-m-d');
 
-           // dd($clock_in_am, $clock_out_am, $clock_in_pm, $clock_out_pm, $date );
+// ================================
+// STEP 2: Resolve attendance IDs
+// ================================
+$attendanceIds = array_filter([
+    EmployeeTimelogs::getBsdNo($employeeNo),
+    $employeeNo
+], fn ($v) => is_numeric($v));
 
-            $rawTimestamps = [
-                'clock_in' => [
-                    'timestamp' => $clock_in_am,
-                    'type' => 0,
-                ],
-                'lunch_out' => [
-                    'timestamp' => $clock_out_am,
-                    'type' => 1,
-                ],
-                'lunch_in' => [
-                    'timestamp' => $clock_in_pm,
-                    'type' => 0,
-                ],
-                'clock_out' => [
-                    'timestamp' => $clock_out_pm,
-                    'type' => 1,
-                ]
-            ];
 
-          //  dd($rawTimestamps);
-            
-            $logs = collect($rawTimestamps)->map(function ($time) use ($date, $record) {
-                return [
-                    'employee_id' => $record->employee->id, // ✅ integer FK
+// ================================
+// STEP 3: Check if attendance exists (WHOLE DAY)
+// ================================
+$attendanceExists = false;
+$existingAttendanceLogs = collect();
+
+if (!empty($attendanceIds)) {
+
+    $existingAttendanceLogs = DB::connection('mysql2')
+        ->table('attendances')
+        ->whereIn('employee_id', $attendanceIds)
+        ->whereDate('timestamp', $date)
+        ->orderBy('timestamp')
+        ->get()
+        ->values();
+
+    $attendanceExists = $existingAttendanceLogs->isNotEmpty();
+}
+
+
+// ================================
+// ✅ CASE 1: ATTENDANCE EXISTS
+// ================================
+if ($attendanceExists) {
+
+    foreach ($newLogs as $index => $newLog) {
+
+        $newTime = Carbon::parse($newLog['timestamp']);
+
+        // Try sequence match first
+        $existing = $existingAttendanceLogs[$index] ?? null;
+
+        // fallback: closest match + same type
+        if (!$existing) {
+            $existing = $existingAttendanceLogs->first(function ($log) use ($newTime, $newLog) {
+                return $log->status1 == $newLog['type'] &&
+                    abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
+            });
+        }
+
+        if ($existing) {
+            // 🔄 UPDATE
+            DB::connection('mysql2')
+                ->table('attendances')
+                ->where('id', $existing->id)
+                ->update([
+                    'timestamp' => $newLog['timestamp'],
+                    'status1' => $newLog['type'],
                     'isWeb' => true,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            // ➕ INSERT missing logs
+            DB::connection('mysql2')
+                ->table('attendances')
+                ->insert([
+                    'employee_id' => $attendanceIds[0],
                     'sn' => 'RUU5242500021',
                     'table' => 'ATTLOG',
                     'stamp' => '9999',
-                    'timestamp' => "$date {$time['timestamp']}",
-                    'status1' => $time['type'],
-                ];
-            })->sortBy('timestamp')->values()->all();
-            
-            $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->id)
-                ->where('timestamp', 'LIKE', "{$date}%")
-                ->orderBy('timestamp', 'asc')
-                ->get();
-
-          /*  $existingLogs = EmployeeTimelogs::where('employee_id', $record->employee->bsd_no)
-                ->where('timestamp', 'LIKE', "{$date}%")
-                ->orderBy('timestamp', 'asc')
-                ->get();*/
-              
-           // dd($logs, $existingLogs, $rawTimestamps );
-            foreach ($logs as $key => $log) {
-                if (isset($existingLogs[$key])) {
-                    $existingLogs[$key]->timestamp = $log['timestamp'];
-                    $existingLogs[$key]->captured_image = '';
-                    $existingLogs[$key]->captured_location = '';
-                    $existingLogs[$key]->save();
-                } else {
-                  
-                    EmployeeTimelogs::create($log);
-                }
-            }            
-            
-            $record->update([
-                'status' => 'approved'
-            ]);
-            $this->dispatch('alert', [
-                'id' => $this->selected_id,
-                'showAlert' => true,
-                'status' => 'success',
-                'title' => 'Success', 
-                'isRemoveRowDT' => true,
-                'message' => 'Application has been approved'
-            ]);
-
-            $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('success', 'You\'re request timelog application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>. Click this notification to view more details.', route('employee.time-adjustments'), 'employee'));
-
-            return;
-
+                    'timestamp' => $newLog['timestamp'],
+                    'status1' => $newLog['type'],
+                    'isWeb' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
         }
     }
+
+    // 🚫 IMPORTANT: STOP HERE (no timelogs)
+   // return;
+}else{
+
+
+    // ================================
+    // ❌ CASE 2: NO ATTENDANCE → USE TIMELOGS
+    // ================================
+    foreach ($newLogs as $newLog) {
+
+        $newTime = Carbon::parse($newLog['timestamp']);
+
+        $existingTimelog = DB::connection('mysql')
+            ->table('timelogs')
+            ->where('employee_id', $employeeNo)
+            ->whereDate('timestamp', $date)
+            ->orderBy('timestamp')
+            ->get()
+            ->first(function ($log) use ($newTime, $newLog) {
+                return $log->status == $newLog['type'] &&
+                    abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
+            });
+
+        if ($existingTimelog) {
+            // 🔄 UPDATE
+            DB::connection('mysql')
+                ->table('timelogs')
+                ->where('id', $existingTimelog->id)
+                ->update([
+                    'timestamp' => $newLog['timestamp'],
+                    'captured_image' => '',
+                    'captured_location' => '',
+                    'isWeb' => true,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            // ➕ CREATE
+            DB::connection('mysql')
+                ->table('timelogs')
+                ->insert([
+                    'employee_id' => $employeeNo,
+                    'timestamp' => $newLog['timestamp'],
+                    'status' => $newLog['type'],
+                    'isWeb' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+        }
+    }
+}
+
+    // ✅ Finalize approval
+    $record->update([
+        'status' => 'approved',
+    ]);
+
+    // ✅ Notify
+    $user = EmployeeAccount::where('employee_no', $employeeNo)->first();
+    $user?->notify(new Notifications(
+        'success',
+        'You\'re request timelog application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>APPROVED</strong>.',
+        route('employee.time-adjustments'),
+        'employee'
+    ));
+
+    // ✅ UI feedback
+    $this->dispatch('alert', [
+        'id' => $this->selected_id,
+        'showAlert' => true,
+        'status' => 'success',
+        'title' => 'Success',
+        'isRemoveRowDT' => true,
+        'message' => 'Application has been approved'
+    ]);
+}
 
     public function remove(bool $isNotify = true, int $id = null) {
 
