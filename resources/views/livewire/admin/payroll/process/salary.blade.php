@@ -235,7 +235,7 @@
                                           
                                         </td>
                                     <td colspan="2">
-                                             <input type="number" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                             <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mpl_lite.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                           
