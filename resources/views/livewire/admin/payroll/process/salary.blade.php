@@ -100,7 +100,6 @@
                             <th rowspan="2" class="vertical-text text-dark">Action</th>
                             @endif
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
-                            <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
                             <th rowspan="2" class="text-center">Position</th>
                             <th rowspan="2" class="text-center">Basic Salary</th>
@@ -165,15 +164,14 @@
                                     @endif
                                     <td>
                                         <div class="marked-changed">
+                                            #{{ $employeeIndex + 1 }}
                                             @if(in_array($record['id'], $updatedItems))
                                                 <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
                                             @else
                                                 <i class="fa-solid fa-check ready" title="No changes made"></i>
                                             @endif
                                         </div>
-                                    </td>
-                                    <td>
-                                        #{{ $employeeIndex + 1 }}
+                                       
                                     </td>
                                     <td>
                                         <a href="{{ route('hris.show', ['employee_no' => $record['employee_no'], 'form' => 'information']) }}"
@@ -364,7 +362,6 @@
                             <th rowspan="2" class="vertical-text text-dark">Action</th> 
                             @endif
                             <th rowspan="2" class="vertical-text text-dark">Status</th>
-                            <th rowspan="2">No.</th>
                             <th rowspan="2" class="text-center">Name</th>
                             <th rowspan="2" class="text-center">Position</th>
                             <th rowspan="2" class="text-center">Basic Salary</th>
@@ -425,15 +422,13 @@
                                     @endif
                                     <td>
                                         <div class="marked-changed">
+                                            #{{ $employeeIndex + 1 }}
                                             @if(in_array($record['id'], $updatedItems))
                                                 <i class="fa-solid fa-triangle-exclamation unsaved" title="Unsaved changes"></i>
                                             @else
                                                 <i class="fa-solid fa-check ready" title="No changes made"></i>
                                             @endif
                                         </div>
-                                    </td>
-                                    <td>
-                                        #{{ $employeeIndex + 1 }}
                                     </td>
                                     <td>
                                         <a href="{{ route('hris.show', ['employee_no' => $record['employee_no'], 'form' => 'information']) }}"
