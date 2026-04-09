@@ -59,7 +59,13 @@ class Notifications extends Component
         $query = Notification::query();
 
         // Role-based filtering
-        if ($this->user->roles[0]->name === 'employee') {
+       /* if ($this->user->roles[0]->name === 'employee') {
+            $query->where('notifiable_id', $this->user->id)
+                  ->whereJsonContains('data->audience', 'employee');
+        } else {
+            $query->whereJsonContains('data->audience', 'admin');
+        }*/
+        if ($this->user->roles->contains('name', 'employee')) {
             $query->where('notifiable_id', $this->user->id)
                   ->whereJsonContains('data->audience', 'employee');
         } else {
