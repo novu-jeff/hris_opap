@@ -127,6 +127,14 @@ $newLogs = collect([
 ->sortBy('timestamp')
 ->values();
 
+$deleted = DB::connection('mysql')
+->table('timelogs')
+->where('employee_id', $employeeNo)
+->whereDate('timestamp', $date)
+->delete();
+
+Log::debug('deleted_rows', ['count' => $deleted]);
+
 
 // ================================
 // STEP 2: Resolve attendance IDs
@@ -237,19 +245,29 @@ if ($attendanceExists) {
 
         $newTime = Carbon::parse($newLog['timestamp']);
 
-        $existingTimelog = DB::connection('mysql')
+        /*$existingTimelog = DB::connection('mysql')
             ->table('timelogs')
             ->where('employee_id', $employeeNo)
             ->whereDate('timestamp', $date)
             ->orderBy('timestamp')
             ->get()
             ->first(function ($log) use ($newTime, $newLog) {
-                return $log->status == $newLog['type'] &&
-                    abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
-            });
+                return abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
+            });*/
+           
+
+            $existingTimelog = DB::connection('mysql')
+            ->table('timelogs')
+            ->where('employee_id', $employeeNo)
+            ->where('timestamp', $newLog['timestamp'])
+            ->first();    
 
         if ($existingTimelog) {
             // 🔄 UPDATE
+
+            Log::debug('existing', [
+                'timestamp' => $newLog['timestamp'],
+            ]);
             DB::connection('mysql')
                 ->table('timelogs')
                 ->where('id', $existingTimelog->id)
@@ -262,6 +280,10 @@ if ($attendanceExists) {
                 ]);
         } else {
             // ➕ CREATE
+            Log::debug('insert', [
+                'id' => $employeeNo,
+                'timestamp' => $newLog['timestamp'],
+            ]);
             DB::connection('mysql')
                 ->table('timelogs')
                 ->insert([
