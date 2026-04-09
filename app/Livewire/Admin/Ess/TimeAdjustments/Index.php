@@ -167,19 +167,28 @@ if ($attendanceExists) {
         $newTime = Carbon::parse($newLog['timestamp']);
 
         // Try sequence match first
-        $existing = $existingAttendanceLogs[$index] ?? null;
+        //$existing = $existingAttendanceLogs[$index] ?? null;
+
+        Log::debug('Timr Adjusment', [
+            'time' => $newTime,
+            'newlog' => $newLog,
+        ]);
 
         // fallback: closest match + same type
-        if (!$existing) {
+       // if (!$existing) {
             $existing = $existingAttendanceLogs->first(function ($log) use ($newTime, $newLog) {
                 return $log->status1 == $newLog['type'] &&
                     abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
             });
-        }
+      //  }
 
         if ($existing) {
             // 🔄 UPDATE
-            DB::connection('mysql2')
+            Log::debug('existing', [
+                'timestamp' => $newLog['timestamp'],
+            ]);
+
+            $affected =  DB::connection('mysql2')
                 ->table('attendances')
                 ->where('id', $existing->id)
                 ->update([
@@ -188,8 +197,18 @@ if ($attendanceExists) {
                     'isWeb' => true,
                     'updated_at' => now(),
                 ]);
+
+                Log::debug('update_result', [
+                    'id' => $existing->id,
+                    'affected' => $affected
+                ]);    
         } else {
             // ➕ INSERT missing logs
+
+            Log::debug('insert', [
+                'id' => $attendanceIds[0],
+                'timestamp' => $newLog['timestamp'],
+            ]);
             DB::connection('mysql2')
                 ->table('attendances')
                 ->insert([
