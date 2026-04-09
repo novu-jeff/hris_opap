@@ -438,9 +438,8 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <!-- Deductions -->
                     <th>HDMF</th>
                     <th>PHIC</th>
-                    <th>MPL</th>
                     <th>MP2</th>
-                    <th>MPL STL</th>
+                    <th>MPL</th>
                     <th>CIR</th>
                     <th>UCA</th>
                     <th>AUT</th>
@@ -498,9 +497,8 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <!-- Deductions -->
                     <td class="text-end">{{ number_format($item['hdmf'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['philhealth'], 2) }}</td>
-                    <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mp2'], 2) }}</td>
-                    <td class="text-end">{{ number_format($item['mplstlms'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['uca'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['aut'], 2) }}</td>
