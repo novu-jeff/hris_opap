@@ -371,8 +371,8 @@ if ($attendanceExists) {
 
             $records = $model->where(function ($query) {
                 $query->where('employee_no', 'like', '%' . $this->search . '%')
-                ->orWhereHas('employee', function ($subQuery) {
-                    $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
+                ->orWhereHas('employee.personal', function ($q) {
+                    $q->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
                 });
             });
         }
