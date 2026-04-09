@@ -372,7 +372,7 @@ class SalaryService extends Controller {
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
                
                
-                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Unliquidated_Cash_Advances')['amount'] ?? 0), 2) : 0;
+                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'UCA')['amount'] ?? 0), 2) : 0;
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
