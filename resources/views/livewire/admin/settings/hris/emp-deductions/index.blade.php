@@ -8,6 +8,9 @@
             <div class="card-body p-4">
                 <form wire:submit.prevent="save" wire:target="save">
                     <div class="row">
+                        @php
+                            $selectedEmployee = collect($employees)->firstWhere('employee_no', $fields['employee_no'][0] ?? null);
+                        @endphp
                         <div class="col-12 col-md-12 mb-3 w-100">
                             <label for="employee_no" class="form-label">Choose Employees</label>
                             <div wire:ignore>
@@ -21,9 +24,15 @@
                             </div>
                             @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
+                        @if(!empty($selectedEmployee->personal->firstname))
+                        <div class="col-12 col-md-12 mb-3 w-100">
+                            <label for="amount" class="form-label">Name: {{ $selectedEmployee->personal->firstname .' '.$selectedEmployee->personal->lastname ?? '' }}</label>
+                            
+                        </div>
+                        @endif
                         <div class="col-12 col-md-6 mb-3">
                             <label for="amount" class="form-label">Amount</label>
-                            <input type="number" id="amount" wire:model="fields.amount" class="form-control">
+                            <input type="text" id="amount" wire:model="fields.amount" class="form-control">
                             @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="col-12 col-md-6 mb-3">

@@ -24,7 +24,7 @@
                         </div>
                         <div class="col-12 col-md-12 mb-4">
                             <label class="mb-2" for="fields.amount">Amount <span class="text-danger">*</span></label>
-                            <input type="number" wire:model="fields.amount" id="fields.amount" class="form-control text-uppercase">
+                            <input type="text" wire:model="fields.amount" id="fields.amount" class="form-control text-uppercase">
                             <div class="error-field">
                                 @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
