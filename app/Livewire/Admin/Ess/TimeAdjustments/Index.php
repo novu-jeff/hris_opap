@@ -170,6 +170,14 @@ if (!empty($attendanceIds)) {
 // ================================
 if ($attendanceExists) {
 
+    $deleted = DB::connection('mysql2')
+->table('attendances')
+->where('employee_id', $attendanceIds[0])
+->whereDate('timestamp', $date)
+->delete();
+
+Log::debug('deleted_attendance rows', ['count' => $deleted, 'employee_no' => $attendanceIds[0]]);
+
     foreach ($newLogs as $index => $newLog) {
 
         $newTime = Carbon::parse($newLog['timestamp']);
@@ -177,41 +185,14 @@ if ($attendanceExists) {
         // Try sequence match first
         //$existing = $existingAttendanceLogs[$index] ?? null;
 
-        Log::debug('Timr Adjusment', [
-            'time' => $newTime,
-            'newlog' => $newLog,
-        ]);
-
         // fallback: closest match + same type
        // if (!$existing) {
-            $existing = $existingAttendanceLogs->first(function ($log) use ($newTime, $newLog) {
+           /* $existing = $existingAttendanceLogs->first(function ($log) use ($newTime, $newLog) {
                 return $log->status1 == $newLog['type'] &&
                     abs(Carbon::parse($log->timestamp)->diffInMinutes($newTime)) <= 120;
-            });
+            });*/
       //  }
 
-        if ($existing) {
-            // 🔄 UPDATE
-            Log::debug('existing', [
-                'timestamp' => $newLog['timestamp'],
-            ]);
-
-            $affected =  DB::connection('mysql2')
-                ->table('attendances')
-                ->where('id', $existing->id)
-                ->update([
-                    'timestamp' => $newLog['timestamp'],
-                    'status1' => $newLog['type'],
-                    'isWeb' => true,
-                    'updated_at' => now(),
-                ]);
-
-                Log::debug('update_result', [
-                    'id' => $existing->id,
-                    'affected' => $affected
-                ]);    
-        } else {
-            // ➕ INSERT missing logs
 
             Log::debug('insert', [
                 'id' => $attendanceIds[0],
@@ -230,7 +211,7 @@ if ($attendanceExists) {
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-        }
+       
     }
 
     // 🚫 IMPORTANT: STOP HERE (no timelogs)
@@ -256,29 +237,13 @@ if ($attendanceExists) {
             });*/
            
 
-            $existingTimelog = DB::connection('mysql')
+            /*$existingTimelog = DB::connection('mysql')
             ->table('timelogs')
             ->where('employee_id', $employeeNo)
             ->where('timestamp', $newLog['timestamp'])
-            ->first();    
-
-        if ($existingTimelog) {
-            // 🔄 UPDATE
-
-            Log::debug('existing', [
-                'timestamp' => $newLog['timestamp'],
-            ]);
-            DB::connection('mysql')
-                ->table('timelogs')
-                ->where('id', $existingTimelog->id)
-                ->update([
-                    'timestamp' => $newLog['timestamp'],
-                    'captured_image' => '',
-                    'captured_location' => '',
-                    'isWeb' => true,
-                    'updated_at' => now(),
-                ]);
-        } else {
+            ->first(); */
+            
+           
             // ➕ CREATE
             Log::debug('insert', [
                 'id' => $employeeNo,
@@ -294,7 +259,7 @@ if ($attendanceExists) {
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-        }
+       
     }
 }
 
