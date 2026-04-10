@@ -159,7 +159,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $payrollItem = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
     $original    = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? [];
 
-   
+    $this->hasChanges = true;
 
     // -------------------------------
     // Sync user-editable fields
@@ -803,7 +803,7 @@ public function confirmAddEmployee()
         ]);
         return;
     }
-
+    $this->hasChanges = true;
     DB::transaction(function () {
 
         $positionName = $this->getPositionName($this->selectedEmployee['position_id']);
@@ -881,7 +881,7 @@ public function confirmAddEmployee()
     });
 
     $this->reset(['selectedEmployee', 'searchEmployee', 'employeeResults', 'showAddModal', 'showDuploicateLabel']);
-
+    $this->hasChanges = true;
     $this->dispatch('alert', [
         'status' => 'success',
         'title' => 'Added',
