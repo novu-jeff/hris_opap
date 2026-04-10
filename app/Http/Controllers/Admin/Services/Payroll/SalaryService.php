@@ -410,37 +410,38 @@ class SalaryService extends Controller {
                       if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
                           // DEDUCTION FOR GOVERNMENT EMPLOYEES
                           //dd('here');
+                          $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
                           $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
-      
+                          $gsel = 0;
                           $taxType = $employee['tax_type'] ?? null;
       
                          //dd($taxType);
       
                          $tax_3 = $tax_5 = $tax_8 = $tax_10 = 0;
 
-                    $taxBase = max(0, $basic_salary - $aut);
+                            $taxBase = max(0, $basic_salary - $aut);
 
-                    switch ($taxType) {
+                            switch ($taxType) {
 
-                        case 'TAX_3': // 3%
-                            $tax_3 = round($taxBase * 0.03, 2);
-                            break;
+                                case 'TAX_3': // 3%
+                                    $tax_3 = round($taxBase * 0.03, 2);
+                                    break;
 
-                        case 'TAX_5': // 5%
-                            $tax_5 = round($taxBase * 0.05, 2);
-                            break;
+                                case 'TAX_5': // 5%
+                                    $tax_5 = round($taxBase * 0.05, 2);
+                                    break;
 
-                        case 'TAX_8': // 8%
-                            $tax_8 = round($taxBase * 0.08, 2);
-                            break;
+                                case 'TAX_8': // 8%
+                                    $tax_8 = round($taxBase * 0.08, 2);
+                                    break;
 
-                        case 'TAX_10': // 10%
-                            $tax_10 = round($taxBase * 0.10, 2);
-                            break;
-                    }
+                                case 'TAX_10': // 10%
+                                    $tax_10 = round($taxBase * 0.10, 2);
+                                    break;
+                            }
       
                           $rlip =  0;
                           $w_tax = 0;
@@ -450,7 +451,7 @@ class SalaryService extends Controller {
                
                
                
-               $dbp = 0;
+                $dbp = 0;
                 $kawani = 0;
 
                 if ($hasDeductions) {
@@ -464,7 +465,7 @@ class SalaryService extends Controller {
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
-                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut;
+                    $tax_3 + $tax_5 + $tax_8 + $tax_10 + $gsel + $uca + $aut;
 
                 $total_lbp =  $dbp +  $kawani;  
 

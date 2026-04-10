@@ -24,7 +24,7 @@
                             </div>
                             @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        @if(!empty($selectedEmployee->personal->firstname))
+                        @if(!empty($selectedEmployee->personal->firstname) && $formPage != 'create')
                         <div class="col-12 col-md-12 mb-3 w-100">
                             <label for="amount" class="form-label">Name: {{ $selectedEmployee->personal->firstname .' '.$selectedEmployee->personal->lastname ?? '' }}</label>
                             
