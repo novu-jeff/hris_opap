@@ -875,7 +875,7 @@ public function confirmAddEmployee()
 
        
 
-        $this->recompute($sectionIndex, $employeeIndex);
+       // $this->recompute($sectionIndex, $employeeIndex);
         $this->newItems[] = $new->id;
         $this->hasChanges = true;
     });
@@ -961,7 +961,7 @@ private function findOrCreateSection($data)
                         'cir375_cir449' => $row['cir375_cir449'],
                         'w_tax' => $row['w_tax'],
                         'aut' => $row['aut'],
-                        'disallowance' => $row['disallowance'],
+                        'disallowance' => $row['disallowance'] ?? 0,
                         'kawani' => $row['kawani'],
                         'total_deductions' => $row['total_deductions'],
                         'net_amount' => $row['net_amount'],
@@ -969,7 +969,7 @@ private function findOrCreateSection($data)
                         'net_first_half' => $row['net_first_half'],
                         'net_second_half' => $row['net_second_half'],
                         'salary' => $row['salary'] ?? $row['basic_salary'] ?? 0,
-                        'overpayment' => $row['overpayment'],
+                        'overpayment' => $row['overpayment'] ?? 0,
                         'tax_3' => $row['tax_3'],
                         'tax_5' => $row['tax_5'],
                         'tax_8' => $row['tax_8'],
