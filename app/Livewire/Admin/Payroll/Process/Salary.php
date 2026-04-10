@@ -2,10 +2,21 @@
 
 namespace App\Livewire\Admin\Payroll\Process;
 
+
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
+use App\Http\Controllers\Admin\Services\OtherServices;
+use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
+use App\Models\EmployementTypes;
+use App\Services\ContributionsService;
+use App\Services\SummaryServices;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use App\Services\DailyTimeRecordService;
+use App\Models\Positions;
+use App\Models\Tranche;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -183,7 +194,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $payrollItem['gross_amount_earned'] = $gross;
     $this->gross_amount_earned[$sectionIndex][$employeeIndex] = $gross;
 
-    $hasTax3 = array_key_exists('tax_3', $original)
+    /*$hasTax3 = array_key_exists('tax_3', $original)
         && $original['tax_3'] !== null
         && floatval($original['tax_3']) != 0;
     
@@ -197,9 +208,15 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         
     $hasTax10 = array_key_exists('tax_10', $original)
         && $original['tax_10'] !== null
-        && floatval($original['tax_10']) != 0;
+        && floatval($original['tax_10']) != 0;*/
+    
+    $hasTax3 = isset($payrollItem['tax_3']) && $payrollItem['tax_3'] > 0;
+    $hasTax5 = isset($payrollItem['tax_5']) && $payrollItem['tax_5'] > 0;
+    $hasTax8 = isset($payrollItem['tax_8']) && $payrollItem['tax_8'] > 0;
+    $hasTax10 = isset($payrollItem['tax_10']) && $payrollItem['tax_10'] > 0;
 
-    //dd($hasTax1, $hasTax5 , $hasTax6, $hasTax11, $aut); 
+   // dd($hasTax3, $hasTax5 , $hasTax8, $hasTax10, $aut); 
+   Log::info('hastax', ['tax3' => $hasTax3,'tax5' => $hasTax5,'tax8' => $hasTax8,'tax10' => $hasTax10, 'aut' => $aut]);
     
     if($hasTax3){
         $t3 = $basic - $aut;  
@@ -399,14 +416,32 @@ public function deleteEmployee()
 
     if ($this->isApproved) return;
 
+    $fields = [
+        'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
+        'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms',
+        'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
+        'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
+    ];
+
     $employee = $this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
 
-    DB::transaction(function () use ($employee, $sectionIndex, $employeeIndex) {
+    DB::transaction(function () use ($employee, $sectionIndex, $employeeIndex, $fields) {
 
         SalaryItemsPayroll::where('id', $employee['id'])->delete();
 
         unset($this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex]);
 
+        // ✅ REMOVE FROM ALL FIELD ARRAYS
+        foreach ($fields as $field) {
+            Log::info('check items', ['field' =>  $field, 'sectionIndex' => $sectionIndex, 'employeeIndex' => $employeeIndex ]);
+            unset($this->{$field}[$sectionIndex][$employeeIndex]);
+
+            // reindex each field
+            if (isset($this->{$field}[$sectionIndex])) {
+                $this->{$field}[$sectionIndex] = array_values($this->{$field}[$sectionIndex]);
+            }
+        }
+        
         $this->records['payroll_items'][$sectionIndex]['employees'] = array_values(
             $this->records['payroll_items'][$sectionIndex]['employees']
         );
@@ -450,6 +485,13 @@ public function searchEmployeeAction($value)
 
 public function selectEmployee($id)
 {
+    $hasDeductions = true;
+
+    $payroll = SalaryPayroll::find($this->payroll_id);
+
+    $cutOffPeriod = $payroll?->cut_off_period;
+    $taxType = '';
+   
     $emp = DB::table('employee_information as ei')
         ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
         ->where('ei.id', $id)
@@ -458,12 +500,229 @@ public function selectEmployee($id)
             'ei.salary',
             'ei.position_id',
             'ei.section_id',
+            'ei.bsd_no',
+            'ei.w_tax',
+            'ei.tax_type',
+            'ei.step_id',
+            'ei.salary_type',
             'ei.employment_type_id',
             DB::raw("CONCAT(ep.firstname, ' ', ep.lastname) as name")
         )
         ->first();
 
-        $this->showDuploicateLabel = false;    
+        $this->showDuploicateLabel = false; 
+
+        $other_service = new OtherServices;
+        $dtr_service = new DailyTimeRecordService;
+        $payroll_service = app(PayrollService::class);
+        
+        $employee_no = $emp->employee_no;
+        $name = $emp->name;
+        $position_id = $emp->position_id;
+        $employment_type_id = $emp->employment_type_id;
+        $eligible = $emp->employment_type_id;
+        //$basic_salary = round(floatval($employee['salary']), 2);
+        $salary_type = $emp->salary_type;
+        // $gw_tax = $employee['w_tax'];
+        $rate = 0.05;
+        $ceiling = 100000;
+        $stepId = $emp->step_id;
+
+        if ($employment_type_id != 3 && $employment_type_id != 4) {
+
+
+            $salaryGrade = Positions::where('id', $position_id)->value('salary_grade');
+
+            $stepColumn = "step_" . ($stepId  ?? '');
+             $stepColumnTax = "step_" . ($stepId  ?? '') . "_wtax";
+
+             // Get the latest tranche for this eligible type
+             $latestTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $stepColumnTax) {
+                 $query->where('salary_grade', $salaryGrade)
+                  ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
+             }])
+              ->where('eligible', $eligible)
+             ->where('is_active', 1)
+             ->latest('year')
+             ->first();
+             
+
+             $salary = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                     ? $latestTranche->items->first()->$stepColumn 
+                     : 0;
+                 
+             $wtax = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                 ? $latestTranche->items->first()->$stepColumnTax 
+                 : 0;
+
+        } else {
+        // dd('here');
+            $wtax = data_get($emp, 'w_tax', 0);
+            $salary = data_get($emp, 'salary', 0);
+        } 
+
+        $basic_salary = round(floatval($salary), 2);
+        $salary_type = $salary_type;
+        $gw_tax = $wtax;
+
+        [$startDate, $endDate] = explode(' to ', $payroll->cut_off_period);
+                $cutoffEndDate = Carbon::parse(trim($endDate))->toDateString(); 
+
+                $monthYear = Carbon::parse($payroll->payroll_date)->format('m-Y');
+                $cut_off_period = $other_service->splitDateRange($payroll->cut_off_period);
+
+                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $cut_off_period, true);
+
+                $dtr_summary  = $dtr['summary'];
+
+                $overtimeData = $payroll_service->computeOvertimePay($basic_salary, $dtr_summary['worked_days'], $dtr_summary['overtime_minues']);
+                
+                $overtime = $overtimeData['gross_ot_pay'];
+
+                $earnings = $other_service->earnings($employee_no);
+                $deductions = $hasDeductions ? $other_service->deductions($employee_no, $cutoffEndDate) : [];
+
+                //$current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
+                $current_date = Carbon::parse($payroll->payroll_date)->format('Y-m-d');
+
+                $social_security = $hasDeductions
+                    ? DB::table('social_security as gb')
+                        ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
+                        ->where('gb.billing_month', $current_date)
+                        ->where('gi.bp_no', $emp->bsd_no)
+                        ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.mpl_lite', 'gi.cpl')
+                        ->first() ?? (object) []
+                    : (object) [];
+
+        // Earnings
+        $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
+        $gross = round($basic_salary + $pera, 2);
+
+        $philhealth = $hasDeductions
+                    ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                    : 0;
+                $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'HDMF')['amount'] ?? 0), 2) : 0;
+                $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
+                $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
+                $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
+               // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
+               
+               
+                $uca = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'UCA')['amount'] ?? 0), 2) : 0;
+                $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
+                $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
+                $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
+                $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
+                $mpl_lite = $hasDeductions ? round(floatval($social_security->mpl_lite ?? 0), 2) : 0;
+                $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
+
+                if ($employment_type_id != 1){
+                   // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
+                   $aut = 0;
+                }else{
+                    $aut = 0;
+                }
+                // Optional deductions
+               // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
+               // $kawani = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'Kawani')['amount'] ?? 0), 2) : 0;
+
+                      // ✅ COS TAX COMPUTATION
+                      $tax_3 = 0;
+                      $tax_5 = 0;
+                      $tax_8 = 0;
+                      $tax_10 = 0;
+      
+      
+      
+                    //  dd($hasDeductions, $social_security->consoloan );
+                      if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
+                          // DEDUCTION FOR GOVERNMENT EMPLOYEES
+                         
+                          $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                          $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
+      
+                      }else{
+      
+                          $taxType = $emp->tax_type ?? null;
+      
+                         //dd($taxType);
+      
+                            $tax_3 = $tax_5 = $tax_8 = $tax_10 = 0;
+
+                            $taxBase = max(0, $basic_salary - $aut);
+
+                            switch ($taxType) {
+
+                                case 'TAX_3': // 3%
+                                    $tax_3 = round($taxBase * 0.03, 2);
+                                    break;
+
+                                case 'TAX_5': // 5%
+                                    $tax_5 = round($taxBase * 0.05, 2);
+                                    break;
+
+                                case 'TAX_8': // 8%
+                                    $tax_8 = round($taxBase * 0.08, 2);
+                                    break;
+
+                                case 'TAX_10': // 10%
+                                    $tax_10 = round($taxBase * 0.10, 2);
+                                    break;
+                            }
+      
+                          $rlip =  0;
+                          $w_tax = 0;
+                      }
+                
+               
+               
+               
+               
+               $dbp = 0;
+                $kawani = 0;
+
+                if ($hasDeductions) {
+                    $filteredDeductions = collect($deductions)->filter(function ($item) use ($cutoffEndDate) {
+                        return empty($item['valid_until']) || $item['valid_until'] >= $cutoffEndDate;
+                    });
+
+                    $dbp = round(floatval($filteredDeductions->firstWhere('code', 'DBP')['amount'] ?? 0), 2);
+                    $kawani = round(floatval($filteredDeductions->firstWhere('code', 'Kawani')['amount'] ?? 0), 2);
+                }
+                
+                $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
+                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
+                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut;
+
+                $total_lbp =  $dbp +  $kawani;  
+
+                if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
+                    $net = round($gross - $total_deduction, 2);
+                }else{
+                    $net = round($basic_salary - $total_deduction, 2);
+                }
+
+                if(!empty($total_lbp)){
+                    $lbp = $net - $total_lbp;
+                }else{
+                    $lbp = $net;
+                }
+                $half = round($net / 2, 2);
+               
+                  //  dd($lbp);
+                    // FIRST HALF PAYROLL (01–15)
+                    if(!empty($total_lbp)){
+                       // dd($net);
+                        $firstHalf  = floor(($net  / 2) * 100) / 100;
+                       // dd($firstHalf);
+                        $firstHalf =  $firstHalf - $total_lbp;
+                        $secondHalf = round($lbp - $firstHalf, 2);
+                        
+                    }else{
+                        $firstHalf  = floor(($net  / 2) * 100) / 100;
+                        $secondHalf = round($net - $firstHalf, 2);
+                    }
+
 
     $this->selectedEmployee = [
         'employee_no' => $emp->employee_no,
@@ -472,8 +731,42 @@ public function selectEmployee($id)
         'position' => $this->getPositionName($emp->position_id), // ✅ ADD THIS
         'section_id' => $emp->section_id,
         'employment_type_id' => $emp->employment_type_id,
-        'basic_salary' => $emp->salary ?? 0,
+        'basic_salary' => $basic_salary ?? 0,
+        'pera' => $pera,
+        'gross_amount_earned' => $gross,
+        'overtime_pay' => $overtime,
+        'rlip' => $rlip,
+        'hdmf' => $hdmf,
+        'philhealth' => $philhealth,
+        'consoloan' => $consoloan,
+        'emergency_loan' => $emergency_loan,
+        'plreg' => $plreg,
+        'mpl' => $mpl,
+        'mpl_lite' => $mpl_lite,
+        'cpl' => $cpl,
+        'mp2' => $mp2,
+        'mplstlms' => $mplstlms,
+        'cir375_cir449' => $cir,
+        'w_tax' => $w_tax,
+        'uca' => $uca,
+        'aut' => $aut,
+        'total_deductions' => $total_deduction,
+        'net_amount' => $net,
+        'dbp' => $dbp,
+        'kawani' => $kawani,
+        'lbp_payroll_account' => $lbp,
+        'salary' => $half,
+        'net_first_half' => $firstHalf,
+        'net_second_half' => $secondHalf,
+        'is_first_half_locked' => 1,
+        'is_second_half_locked' => 1,
+        'tax_3' => $tax_3,
+        'tax_5' => $tax_5,
+        'tax_8' => $tax_8,
+        'tax_10' => $tax_10,
     ];
+
+    Log::info('selected employee to save in payroll items', ['data' =>  $this->selectedEmployee]);
 }
 
 private function getPositionName($positionId)
@@ -522,25 +815,44 @@ public function confirmAddEmployee()
             'employment_type_id' => $this->selectedEmployee['employment_type_id'],
             'name' => $this->selectedEmployee['name'],
             'position' => $positionName,
-
             'basic_salary' => $this->selectedEmployee['basic_salary'],
+            'pera' => $this->selectedEmployee['pera'],
+            'gross_amount_earned' => $this->selectedEmployee['gross_amount_earned'],
+            'hdmf' => $this->selectedEmployee['hdmf'],
+            'uca' => $this->selectedEmployee['uca'],
+            'dbp' => $this->selectedEmployee['dbp'],
+            'rlip'  => $this->selectedEmployee['rlip'],
+            'philhealth' => $this->selectedEmployee['philhealth'],
+            'consoloan' => $this->selectedEmployee['consoloan'],
+            'emergency_loan' => $this->selectedEmployee['emergency_loan'],
+            'plreg' => $this->selectedEmployee['plreg'],
+            'mpl' => $this->selectedEmployee['mpl'],
+            'mpl_lite' => $this->selectedEmployee['mpl_lite'],
+            'cpl' => $this->selectedEmployee['cpl'],
+            'mp2' => $this->selectedEmployee['mp2'],
+            'mplstlms' => $this->selectedEmployee['mplstlms'],
+            'cir375_cir449' => $this->selectedEmployee['cir375_cir449'],
+            'w_tax' => $this->selectedEmployee['w_tax'],
+            'aut' => $this->selectedEmployee['aut'],
+            'disallowance' => 0,
+            'kawani' => $this->selectedEmployee['kawani'],
+            'total_deductions' => $this->selectedEmployee['total_deductions'],
+            'net_amount' => $this->selectedEmployee['net_amount'],
+            'lbp_payroll_account' => $this->selectedEmployee['lbp_payroll_account'],
+            'net_first_half' => $this->selectedEmployee['net_first_half'],
+            'net_second_half' => $this->selectedEmployee['net_second_half'],
             'salary' => $this->selectedEmployee['basic_salary'],
-            'pera' => 0,
-            'gross_amount_earned' => 0,
-
-            'hdmf' => 0,
-            'philhealth' => 0,
-            'w_tax' => 0,
-            'uca' => 0,
-            'aut' => 0,
-
-            'total_deductions' => 0,
-            'net_amount' => 0,
-            'net_first_half' => 0,
-            'net_second_half' => 0,
+            'overpayment' => 0,
+            'tax_3' => $this->selectedEmployee['tax_3'],
+            'tax_5' => $this->selectedEmployee['tax_5'],
+            'tax_8' => $this->selectedEmployee['tax_8'],
+            'tax_10' => $this->selectedEmployee['tax_10'],
         ]);
 
         $newItem = $new->toArray();
+
+       
+        Log::info('Add employee to salary', ['records' => $newItem]);
 
         $sectionIndex = $this->findOrCreateSection([
             'section_name' => $sectionName
@@ -557,7 +869,8 @@ public function confirmAddEmployee()
             'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
             'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
         ] as $field) {
-            $this->{$field}[$sectionIndex][$employeeIndex] = 0;
+            
+            $this->{$field}[$sectionIndex][$employeeIndex] = $newItem[$field] ?? 0;
         }
 
        
