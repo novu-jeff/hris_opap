@@ -750,7 +750,7 @@ public function selectEmployee($id)
         'w_tax' => $w_tax,
         'uca' => $uca,
         'aut' => $aut,
-        'total_deductions' => $total_deduction,
+        'total_deductions' => round($total_deduction, 2),
         'net_amount' => $net,
         'dbp' => $dbp,
         'kawani' => $kawani,
