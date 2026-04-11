@@ -372,9 +372,11 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // Track changes for save
     // -------------------------------
     if ($this->isChanged($payrollItem, $original)) {
+        Log::info('haschange1', ['payrollItem' => $payrollItem,'original' => $original]);
         $this->updatedItems[] = $payrollItem['id'];
         $this->updatedItems = array_unique($this->updatedItems);
     } else {
+        Log::info('haschange2', ['payrollItem' => $payrollItem,'original' => $original]);
         $this->updatedItems = array_diff($this->updatedItems, [$payrollItem['id']]);
     }
 
@@ -500,12 +502,12 @@ public function selectEmployee($id)
             'ei.salary',
             'ei.position_id',
             'ei.section_id',
-            'ei.bsd_no',
             'ei.w_tax',
             'ei.tax_type',
             'ei.step_id',
             'ei.salary_type',
             'ei.employment_type_id',
+            'ep.bp_no',
             DB::raw("CONCAT(ep.firstname, ' ', ep.lastname) as name")
         )
         ->first();
@@ -585,11 +587,13 @@ public function selectEmployee($id)
                 //$current_date = Carbon::parse($payroll->payroll_date)->format('m/Y');
                 $current_date = Carbon::parse($payroll->payroll_date)->format('Y-m-d');
 
+                
+
                 $social_security = $hasDeductions
                     ? DB::table('social_security as gb')
                         ->join('social_security_items as gi', 'gb.id', '=', 'gi.social_security_id')
                         ->where('gb.billing_month', $current_date)
-                        ->where('gi.bp_no', $emp->bsd_no)
+                        ->where('gi.bp_no', $emp->bp_no)
                         ->select('gi.consoloan', 'gi.emrgy_loan', 'gi.plreg', 'gi.mpl', 'gi.mpl_lite', 'gi.cpl')
                         ->first() ?? (object) []
                     : (object) [];
