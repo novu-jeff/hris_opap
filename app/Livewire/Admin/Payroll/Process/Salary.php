@@ -298,19 +298,22 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
       
         if($this->isSecondCutoff){
-
+           
             $firstHalf = $original['net_first_half'] ?? null;
        
             if ($firstHalf === null) {
                 $firstHalf = $this->getFirstHalfFromPreviousPayroll($payrollItem);
             
             }
+            Log::info('hasAny isSecondCutoff', ['firstHalf' => $firstHalf,'lbpPayroll' => $lbpPayroll ]);
 
             $firstHalf = round((float) $firstHalf, 2);
             $secondHalf = round($lbpPayroll - $firstHalf, 2);
         }else{
-
+           
             $firstHalf  = floor(($netAmount / 2) * 100) / 100;
+            Log::info('hasAny isSecondCutoff', ['firstHalf' => $firstHalf,'bankTotal' => $bankTotal,'netAmount' => $netAmount ]);
+
                        // dd($firstHalf);
             $firstHalf =  $firstHalf - $bankTotal ;
             $firstHalf = round((float) $firstHalf, 2);
@@ -324,7 +327,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         
     } elseif ($isFirstHalf) {
         // First cutoff (1–15): recompute first half ONLY
-       
+        Log::info('First cutoff (1–15)', ['netAmount' => $netAmount,'bankTotal' => $bankTotal]);
         $firstHalf  = floor(($netAmount / 2) * 100) / 100;
         // dd($firstHalf);
         //dd($firstHalf , $bankTotal);
@@ -333,7 +336,8 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $secondHalf = round($lbpPayroll - $firstHalf, 2);
     } else {
         // Second cutoff (16–end): recompute second half ONLY
-        $firstHalf  = round((float) ($original['net_first_half'] ?? 0), 2);
+        Log::info('Second cutoff (16–end)', ['originalfirstHalf' => $payrollItem['net_first_half'],'lbpPayroll' => $lbpPayroll]);
+        $firstHalf  = round((float) ($payrollItem['net_first_half'] ?? 0), 2);
         $secondHalf = round($lbpPayroll - $firstHalf, 2);
     }
 
@@ -469,6 +473,7 @@ public function searchEmployeeAction($value)
     $this->employeeResults = DB::table('employee_information as ei')
         ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
         ->where('ei.isDeleted', 0)
+        ->where('ei.status', 'active')
         ->where(function ($q) use ($value) {
             $q->where('ei.employee_no', 'like', '%' . $value . '%')
               ->orWhere('ep.firstname', 'like', '%' . $value . '%')
@@ -492,7 +497,7 @@ public function selectEmployee($id)
     $payroll = SalaryPayroll::find($this->payroll_id);
 
     $cutOffPeriod = $payroll?->cut_off_period;
-    $taxType = '';
+   // $taxType = '';
    
     $emp = DB::table('employee_information as ei')
         ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
@@ -698,6 +703,8 @@ public function selectEmployee($id)
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
                     $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut;
 
+                Log::info('selected employee total deductions', ['total_deductions' =>  $total_deduction]);    
+
                 $total_lbp =  $dbp +  $kawani;  
 
                 if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
@@ -713,65 +720,224 @@ public function selectEmployee($id)
                 }
                 $half = round($net / 2, 2);
                
+                $isFirstHalf = $this->isFirstHalf();
                   //  dd($lbp);
                     // FIRST HALF PAYROLL (01–15)
-                    if(!empty($total_lbp)){
-                       // dd($net);
-                        $firstHalf  = floor(($net  / 2) * 100) / 100;
-                       // dd($firstHalf);
-                        $firstHalf =  $firstHalf - $total_lbp;
-                        $secondHalf = round($lbp - $firstHalf, 2);
-                        
+                   if($isFirstHalf ){
+
+                        if(!empty($total_lbp)){
+                            // dd($net);
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            // dd($firstHalf);
+                            $firstHalf =  $firstHalf - $total_lbp;
+                            $secondHalf = round($lbp - $firstHalf, 2);
+                            
+                        }else{
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            $secondHalf = round($net - $firstHalf, 2);
+                        }
                     }else{
-                        $firstHalf  = floor(($net  / 2) * 100) / 100;
-                        $secondHalf = round($net - $firstHalf, 2);
-                    }
 
+                        if(!empty($total_lbp)){
+                            // dd($net);
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            // dd($firstHalf);
+                            $firstHalf =  $firstHalf;
+                           // $secondHalf =  round($firstHalf - $total_lbp, 2);
+                            $secondHalf = round($lbp - $firstHalf, 2);
+                            
+                        }else{
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            $secondHalf = round($net - $firstHalf, 2);
+                        }
 
-    $this->selectedEmployee = [
-        'employee_no' => $emp->employee_no,
-        'name' => $emp->name,
-        'position_id' => $emp->position_id,
-        'position' => $this->getPositionName($emp->position_id), // ✅ ADD THIS
-        'section_id' => $emp->section_id,
-        'employment_type_id' => $emp->employment_type_id,
-        'basic_salary' => $basic_salary ?? 0,
-        'pera' => $pera,
-        'gross_amount_earned' => $gross,
-        'overtime_pay' => $overtime,
-        'rlip' => $rlip,
-        'hdmf' => $hdmf,
-        'philhealth' => $philhealth,
-        'consoloan' => $consoloan,
-        'emergency_loan' => $emergency_loan,
-        'plreg' => $plreg,
-        'mpl' => $mpl,
-        'mpl_lite' => $mpl_lite,
-        'cpl' => $cpl,
-        'mp2' => $mp2,
-        'mplstlms' => $mplstlms,
-        'cir375_cir449' => $cir,
-        'w_tax' => $w_tax,
-        'uca' => $uca,
-        'aut' => $aut,
-        'total_deductions' => round($total_deduction, 2),
-        'net_amount' => $net,
-        'dbp' => $dbp,
-        'kawani' => $kawani,
-        'lbp_payroll_account' => $lbp,
-        'salary' => $half,
-        'net_first_half' => $firstHalf,
-        'net_second_half' => $secondHalf,
-        'is_first_half_locked' => 1,
-        'is_second_half_locked' => 1,
-        'tax_3' => $tax_3,
-        'tax_5' => $tax_5,
-        'tax_8' => $tax_8,
-        'tax_10' => $tax_10,
-    ];
+                    }   
+
+        $firstHalfRecord = $this->getFirstHalfPayrollItem($employee_no, $payroll);
+
+        if ($firstHalfRecord) {
+
+            $hasTax3 = isset($tax_3) && $tax_3 > 0;
+            $hasTax5 = isset($tax_5) && $tax_5 > 0;
+            $hasTax8 = isset($tax_8) && $tax_8 > 0;
+            $hasTax10 = isset($tax_10) && $tax_10 > 0;
+
+            $ctax_3 = 0;
+            $ctax_5 = 0;
+            $ctax_8 = 0;
+            $ctax_10 = 0;
+
+            if($hasTax3){
+                $t3 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;  
+                $ctax_3 = round($t3 * 0.03, 2);
+            
+            }
+            
+            if($hasTax5){
+                $t5 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                $ctax_5 = round($t5 * 0.05, 2);
+            }
+            
+            if($hasTax8){
+                $t8 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                $ctax_8 = round($t8 * 0.08, 2);
+            }
+            
+            if($hasTax10){
+                $t10 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                $ctax_10 = round($t10 * 0.10, 2);
+            }
+
+            $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
+            $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
+            $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment;
+
+            Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
+
+            if($firstHalfRecord->employment_type_id !== 2 && $firstHalfRecord->employment_type_id !== 3 && $firstHalfRecord->employment_type_id !== 4) {
+                $fh_net = round($firstHalfRecord->gross_amount_earned - $fh_total_deduction, 2);
+            }else{
+                $fh_net = round($firstHalfRecord->basic_salary - $fh_total_deduction, 2);
+            }
+
+            $fh_total_lbp =  $firstHalfRecord->dbp +  $firstHalfRecord->kawani;
+
+            if(!empty($fh_total_lbp)){
+                $fh_lbp = $fh_net - $fh_total_lbp;
+            }else{
+                $fh_lbp = $fh_net;
+            }
+
+           /* if(!empty($fh_total_lbp)){
+                // dd($net);
+                $firstHalf  = floor(($net  / 2) * 100) / 100;
+                // dd($firstHalf);
+                $firstHalf = $firstHalfRecord->net_first_half;
+                $secondHalf =  round($firstHalfRecord->net_first_half - $fh_total_lbp, 2);
+               // $secondHalf = round($lbp - $firstHalf, 2);
+                
+            }else{
+                $firstHalf  = floor(($net  / 2) * 100) / 100;
+                $secondHalf = round($fh_net  - $firstHalfRecord->net_first_half, 2);
+            }*/
+
+            $secondHalf =  round($fh_lbp - $firstHalfRecord->net_first_half, 2);
+           
+            
+            
+            $this->selectedEmployee = [
+                'employee_no' => $firstHalfRecord->employee_no,
+                'name' => $firstHalfRecord->name,
+                'position_id' => $emp->position_id,
+                'position' => $this->getPositionName($emp->position_id), // ✅ ADD THIS
+                'section_id' => $emp->section_id,
+                'employment_type_id' => $firstHalfRecord->employment_type_id,
+                'basic_salary' => $firstHalfRecord->basic_salary ?? 0,
+                'pera' => $firstHalfRecord->pera,
+                'gross_amount_earned' => $firstHalfRecord->gross_amount_earned,
+                'rlip' => $firstHalfRecord->rlip,
+                'hdmf' => $firstHalfRecord->hdmf,
+                'philhealth' => $firstHalfRecord->philhealth,
+                'consoloan' => $firstHalfRecord->consoloan,
+                'emergency_loan' => $firstHalfRecord->emergency_loan,
+                'plreg' => $firstHalfRecord->plreg,
+                'mpl' => $firstHalfRecord->mpl,
+                'mpl_lite' => $firstHalfRecord->mpl_lite,
+                'cpl' => $firstHalfRecord->cpl,
+                'mp2' => $firstHalfRecord->mp2,
+                'mplstlms' => $firstHalfRecord->mplstlms,
+                'cir375_cir449' => $firstHalfRecord->cir375_cir449,
+                'w_tax' => $firstHalfRecord->w_tax,
+                'uca' => $firstHalfRecord->uca,
+                'aut' => $firstHalfRecord->aut,
+                'disallowance' => $firstHalfRecord->disallowance,
+                'overpayment' => $firstHalfRecord->overpayment,
+                'total_deductions' => $fh_total_deduction,
+                'net_amount' => $fh_net,
+                'dbp' => $firstHalfRecord->dbp,
+                'kawani' => $firstHalfRecord->kawani,
+                'lbp_payroll_account' => round($fh_lbp, 2),
+                'salary' => $firstHalfRecord->salary,
+                'net_first_half' => $firstHalfRecord->net_first_half,
+                'net_second_half' => $secondHalf,
+                'is_first_half_locked' => 1,
+                'is_second_half_locked' => 1,
+                'tax_3' => $ctax_3,
+                'tax_5' => $ctax_5,
+                'tax_8' => $ctax_8,
+                'tax_10' => $ctax_10,
+            ];
+
+        }else{
+
+            $this->selectedEmployee = [
+                'employee_no' => $emp->employee_no,
+                'name' => $emp->name,
+                'position_id' => $emp->position_id,
+                'position' => $this->getPositionName($emp->position_id), // ✅ ADD THIS
+                'section_id' => $emp->section_id,
+                'employment_type_id' => $emp->employment_type_id,
+                'basic_salary' => $basic_salary ?? 0,
+                'pera' => $pera,
+                'gross_amount_earned' => $gross,
+                'overtime_pay' => $overtime,
+                'rlip' => $rlip,
+                'hdmf' => $hdmf,
+                'philhealth' => $philhealth,
+                'consoloan' => $consoloan,
+                'emergency_loan' => $emergency_loan,
+                'plreg' => $plreg,
+                'mpl' => $mpl,
+                'mpl_lite' => $mpl_lite,
+                'cpl' => $cpl,
+                'mp2' => $mp2,
+                'mplstlms' => $mplstlms,
+                'cir375_cir449' => $cir,
+                'w_tax' => $w_tax,
+                'uca' => $uca,
+                'aut' => $aut,
+                'disallowance' => 0,
+                'overpayment' => 0,
+                'total_deductions' => round($total_deduction, 2),
+                'net_amount' => $net,
+                'dbp' => $dbp,
+                'kawani' => $kawani,
+                'lbp_payroll_account' => $lbp,
+                'salary' => $half,
+                'net_first_half' => round($firstHalf, 2),
+                'net_second_half' => round($secondHalf, 2),
+                'is_first_half_locked' => 1,
+                'is_second_half_locked' => 1,
+                'tax_3' => $tax_3,
+                'tax_5' => $tax_5,
+                'tax_8' => $tax_8,
+                'tax_10' => $tax_10,
+            ];
+
+        } 
 
     Log::info('selected employee to save in payroll items', ['data' =>  $this->selectedEmployee]);
 }
+
+private function getFirstHalfPayrollItem($employee_no, $payroll)
+    {
+        return SalaryItemsPayroll::query()
+            ->where('employee_no', $employee_no)
+            ->whereHas('payroll', function ($q) use ($payroll) {
+    
+                $q->whereYear('payroll_date', \Carbon\Carbon::parse($payroll->payroll_date)->year)
+                  ->whereMonth('payroll_date', \Carbon\Carbon::parse($payroll->payroll_date)->month)
+    
+                  // FIRST HALF ONLY
+                  ->where('cut_off_period', 'like', '%01%15%')
+    
+                  // optional but recommended
+                  ->where('status', 'approved');
+            })
+            ->latest('id') // get latest record
+            ->first();
+    }
+
 
 private function getPositionName($positionId)
 {
@@ -838,7 +1004,7 @@ public function confirmAddEmployee()
             'cir375_cir449' => $this->selectedEmployee['cir375_cir449'],
             'w_tax' => $this->selectedEmployee['w_tax'],
             'aut' => $this->selectedEmployee['aut'],
-            'disallowance' => 0,
+            'disallowance' => $this->selectedEmployee['disallowance'],
             'kawani' => $this->selectedEmployee['kawani'],
             'total_deductions' => $this->selectedEmployee['total_deductions'],
             'net_amount' => $this->selectedEmployee['net_amount'],
@@ -846,7 +1012,7 @@ public function confirmAddEmployee()
             'net_first_half' => $this->selectedEmployee['net_first_half'],
             'net_second_half' => $this->selectedEmployee['net_second_half'],
             'salary' => $this->selectedEmployee['basic_salary'],
-            'overpayment' => 0,
+            'overpayment' => $this->selectedEmployee['overpayment'],
             'tax_3' => $this->selectedEmployee['tax_3'],
             'tax_5' => $this->selectedEmployee['tax_5'],
             'tax_8' => $this->selectedEmployee['tax_8'],
@@ -870,14 +1036,24 @@ public function confirmAddEmployee()
         foreach ([
             'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
             'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms',
-            'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
+            'cir375_cir449','w_tax','disallowance', 'overpayment','tax_3','tax_5','tax_8','tax_10','aut',
             'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
         ] as $field) {
             
             $this->{$field}[$sectionIndex][$employeeIndex] = $newItem[$field] ?? 0;
         }
 
-       
+        $payrollItem = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+        $original    = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? [];
+
+        if ($this->isChanged($payrollItem, $original)) {
+            Log::info('new employee haschange1', ['payrollItem' => $payrollItem,'original' => $original]);
+            $this->updatedItems[] = $payrollItem['id'];
+            $this->updatedItems = array_unique($this->updatedItems);
+        } else {
+            Log::info('new employee haschange2', ['payrollItem' => $payrollItem,'original' => $original]);
+            $this->updatedItems = array_diff($this->updatedItems, [$payrollItem['id']]);
+        }
 
        // $this->recompute($sectionIndex, $employeeIndex);
         $this->newItems[] = $new->id;

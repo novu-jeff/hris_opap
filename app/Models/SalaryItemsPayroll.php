@@ -50,6 +50,7 @@ class SalaryItemsPayroll extends Model
                 'overpayment',
                 'uca',
                 'aut',
+                'disallowance',
                 'total_deductions',
                 'net_amount',
                 'dbp',
@@ -67,6 +68,7 @@ class SalaryItemsPayroll extends Model
                 'tax_8',
                 'tax_10',
                 'tax_11',
+                'gsel',
                 
             ];
         }

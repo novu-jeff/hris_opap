@@ -511,6 +511,72 @@ class SalaryService extends Controller {
 
                     if ($firstHalfRecord) {
 
+                        $hasTax3 = isset($tax_3) && $tax_3 > 0;
+                        $hasTax5 = isset($tax_5) && $tax_5 > 0;
+                        $hasTax8 = isset($tax_8) && $tax_8 > 0;
+                        $hasTax10 = isset($tax_10) && $tax_10 > 0;
+
+                        $ctax_3 = 0;
+                        $ctax_5 = 0;
+                        $ctax_8 = 0;
+                        $ctax_10 = 0;
+
+                        if($hasTax3){
+                            $t3 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;  
+                            $ctax_3 = round($t3 * 0.03, 2);
+                       
+                        }
+                        
+                        if($hasTax5){
+                            $t5 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                            $ctax_5 = round($t5 * 0.05, 2);
+                        }
+                        
+                        if($hasTax8){
+                            $t8 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                            $ctax_8 = round($t8 * 0.08, 2);
+                        }
+                        
+                        if($hasTax10){
+                            $t10 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
+                            $ctax_10 = round($t10 * 0.10, 2);
+                        }
+
+                        $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
+                        $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
+                        $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment;
+
+                        Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
+
+                        if($firstHalfRecord->employment_type_id !== 2 && $firstHalfRecord->employment_type_id !== 3 && $firstHalfRecord->employment_type_id !== 4) {
+                            $fh_net = round($firstHalfRecord->gross_amount_earned - $fh_total_deduction, 2);
+                        }else{
+                            $fh_net = round($firstHalfRecord->basic_salary - $fh_total_deduction, 2);
+                        }
+
+                        $fh_total_lbp =  $firstHalfRecord->dbp +  $firstHalfRecord->kawani;
+
+                        if(!empty($fh_total_lbp)){
+                            $fh_lbp = $fh_net - $fh_total_lbp;
+                        }else{
+                            $fh_lbp = $fh_net;
+                        }
+
+                      /*  if(!empty($fh_total_lbp)){
+                            // dd($net);
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            // dd($firstHalf);
+                            $firstHalf = $firstHalfRecord->net_first_half;
+                            $secondHalf =  round($firstHalfRecord->net_first_half - $fh_total_lbp, 2);
+                        // $secondHalf = round($lbp - $firstHalf, 2);
+                            
+                        }else{
+                            $firstHalf  = floor(($net  / 2) * 100) / 100;
+                            $secondHalf = round($fh_net  - $firstHalfRecord->net_first_half, 2);
+                        }*/
+
+                        $secondHalf =  round($fh_lbp - $firstHalfRecord->net_first_half, 2);
+
                         // 🔥 USE FIRST HALF VALUES (NOT recomputed)
                         $basic_salary = $firstHalfRecord->basic_salary;
                         $pera = $firstHalfRecord->pera;
@@ -531,21 +597,23 @@ class SalaryService extends Controller {
                         $w_tax = $firstHalfRecord->w_tax;
                         $uca = $firstHalfRecord->uca;
                         $aut = $firstHalfRecord->aut;
+                        $disallowance = $firstHalfRecord->disallowance;
+                        $overpayment = $firstHalfRecord->overpayment;
 
-                        $tax_3 = $firstHalfRecord->tax_3;
-                        $tax_5 = $firstHalfRecord->tax_5;
-                        $tax_8 = $firstHalfRecord->tax_8;
-                        $tax_10 = $firstHalfRecord->tax_10;
+                        $tax_3 = $ctax_3;
+                        $tax_5 = $ctax_5;
+                        $tax_8 = $ctax_8;
+                        $tax_10 = $ctax_10;
 
-                        $total_deduction = $firstHalfRecord->total_deductions;
-                        $net = $firstHalfRecord->net_amount;
+                        $total_deduction = $fh_total_deduction;
+                        $net = $fh_net;
 
                         $dbp = $firstHalfRecord->dbp;
                         $kawani = $firstHalfRecord->kawani;
-                        $lbp = $firstHalfRecord->lbp_payroll_account;
+                        $lbp = round($fh_lbp, 2);
 
                         $firstHalf = $firstHalfRecord->net_first_half; // 👉 17506.00
-                        $secondHalf = round($lbp - $firstHalf, 2);
+                        $secondHalf = round($secondHalf, 2);
 
                     } else {
 
@@ -582,6 +650,8 @@ class SalaryService extends Controller {
                     'w_tax' => $w_tax,
                     'uca' => $uca,
                     'aut' => $aut,
+                    'disallowance' => $disallowance ?? 0,
+                    'overpayment' => $overpayment ?? 0,
                     'total_deductions' => $total_deduction,
                     'net_amount' => $net,
                     'dbp' => $dbp,
