@@ -86,7 +86,7 @@ class Salary extends Component
 
     public array $newItems = [];
 
-    protected $listeners = ['save', 'approve', 'deleteEmployee'];
+    protected $listeners = ['save', 'approve', 'deleteEmployee', 'confirmSave'];
 
     /* ======================================================
      * MOUNT
@@ -1106,13 +1106,15 @@ private function findOrCreateSection($data)
             $this->dispatch('showConfirmation', [
                 'title' => 'Save changes?',
                 'message' => 'This will update payroll computations.',
-                'action' => 'save'
+                'action' => 'confirmSave'
             ]);
             return;
         }
+    }
 
-       
 
+     public function confirmSave()  
+{
         DB::transaction(function () {
             foreach ($this->records['payroll_items'] as $sectionIndex => $section) {
                 foreach ($section['employees'] as $employeeIndex => $row) {
