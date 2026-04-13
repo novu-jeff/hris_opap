@@ -120,6 +120,7 @@
                             <th colspan="2" class="vertical-text green">MPL</th>
                             <th colspan="2" class="vertical-text green">MPL LITE</th>
                             <th colspan="2" class="vertical-text green">CPL</th>
+                            <th colspan="2" class="vertical-text green">GSEL</th>
                             <th colspan="2" class="vertical-text yellow">MP2</th>
                             <th colspan="2" class="vertical-text yellow">MPL STLMS</th>
                             <th colspan="2" class="vertical-text yellow">CIR375, CIR449</th>
@@ -246,6 +247,14 @@
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                           
                                         </td>
+
+                                        <td colspan="2">
+                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                wire:model="gsel.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                          
+                                        </td>
+                                            
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mp2.{{ $sectionIndex }}.{{ $employeeIndex }}"

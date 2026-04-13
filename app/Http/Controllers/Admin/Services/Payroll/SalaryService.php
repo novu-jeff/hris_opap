@@ -377,6 +377,8 @@ class SalaryService extends Controller {
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                 $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
+                $mplCos = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPL')['amount'] ?? 0), 2) : 0;
+                $auts = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2) : 0;
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
                
                
@@ -384,13 +386,15 @@ class SalaryService extends Controller {
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
-                $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
+                $mplss = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
                 $mpl_lite = $hasDeductions ? round(floatval($social_security->mpl_lite ?? 0), 2) : 0;
                 $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
 
+                $mpl = !empty($mplCos) ? $mplCos : $mplss;
+
                 if ($employee['employment_type_id'] != 1){
                    // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
-                   $aut = 0;
+                   $aut = $auts;
                 }else{
                     $aut = 0;
                 }
@@ -542,9 +546,11 @@ class SalaryService extends Controller {
                             $ctax_10 = round($t10 * 0.10, 2);
                         }
 
+                       
+
                         $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
                         $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
-                        $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment;
+                        $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel;
 
                         Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
 
@@ -597,6 +603,7 @@ class SalaryService extends Controller {
                         $w_tax = $firstHalfRecord->w_tax;
                         $uca = $firstHalfRecord->uca;
                         $aut = $firstHalfRecord->aut;
+                        $gsel = $firstHalfRecord->gsel;
                         $disallowance = $firstHalfRecord->disallowance;
                         $overpayment = $firstHalfRecord->overpayment;
 
@@ -644,6 +651,7 @@ class SalaryService extends Controller {
                     'mpl' => $mpl,
                     'mpl_lite' => $mpl_lite,
                     'cpl' => $cpl,
+                    'gsel' => $gsel,
                     'mp2' => $mp2,
                     'mplstlms' => $mplstlms,
                     'cir375_cir449' => $cir,
