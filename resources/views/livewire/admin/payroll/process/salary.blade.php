@@ -736,7 +736,7 @@
 
     <div 
         wire:loading.delay
-            wire:target="deleteEmployee,save,approve,confirmAddEmployee"
+            wire:target="deleteEmployee,save,approve,confirmAddEmployee,confirmSave,selectEmployee,searchEmployeeAction"
             wire:loading.class.remove="d-none"
             class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
             style="background: rgba(0,0,0,0.5); z-index: 9999;"
