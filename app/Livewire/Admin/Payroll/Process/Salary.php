@@ -42,6 +42,7 @@ class Salary extends Component
     public $mpl = [];
     public $mpl_lite= [];
     public $cpl = [];
+    public $gsel = [];
     public $mp2 = [];
     public $mplstlms = [];
     public $cir375_cir449 = [];
@@ -129,7 +130,7 @@ class Salary extends Component
                 foreach ([
                     'basic_salary', 'pera', 'gross_amount_earned',
                     'hdmf','uca', 'disallowance', 'dbp','kawani','rlip','philhealth','consoloan',
-                    'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
+                    'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel',
                     'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut',
                     'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
                 ] as $f) {
@@ -168,7 +169,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $editableFields = [
         'basic_salary', 'pera',
         'hdmf','uca', 'disallowance', 'dbp','kawani','philhealth','consoloan',
-        'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2',
+        'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel',
         'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut','rlip'
     ];
 
@@ -256,7 +257,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // -------------------------------
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
-        'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449',
+        'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449','gsel',
         'uca','disallowance', 'w_tax','aut','overpayment','tax_3', 'tax_5', 'tax_8','tax_10'
     ];
 
@@ -428,7 +429,7 @@ public function deleteEmployee()
 
     $fields = [
         'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
-        'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms',
+        'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel',
         'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
         'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
     ];
@@ -619,6 +620,8 @@ public function selectEmployee($id)
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                 $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
+                $mplCos = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPL')['amount'] ?? 0), 2) : 0;
+                $auts = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2) : 0;
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
                
                
@@ -626,13 +629,15 @@ public function selectEmployee($id)
                 $consoloan = $hasDeductions ? round(floatval($social_security->consoloan ?? 0), 2) : 0;
                 $emergency_loan = $hasDeductions ? round(floatval($social_security->emrgy_loan ?? 0), 2) : 0;
                 $plreg = $hasDeductions ? round(floatval($social_security->plreg ?? 0), 2) : 0;
-                $mpl = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
+                $mplss = $hasDeductions ? round(floatval($social_security->mpl ?? 0), 2) : 0;
                 $mpl_lite = $hasDeductions ? round(floatval($social_security->mpl_lite ?? 0), 2) : 0;
                 $cpl = $hasDeductions ? round(floatval($social_security->cpl ?? 0), 2) : 0;
 
+                $mpl = !empty($mplCos) ? $mplCos : $mplss;
+
                 if ($employment_type_id != 1){
                    // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
-                   $aut = 0;
+                   $aut = $auts;
                 }else{
                     $aut = 0;
                 }
@@ -651,12 +656,12 @@ public function selectEmployee($id)
                     //  dd($hasDeductions, $social_security->consoloan );
                       if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
                           // DEDUCTION FOR GOVERNMENT EMPLOYEES
-                         
+                          $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
                           $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
-      
+                          $gsel = 0;
                           $taxType = $emp->tax_type ?? null;
       
                          //dd($taxType);
@@ -688,12 +693,8 @@ public function selectEmployee($id)
                           $w_tax = 0;
                       }
                 
-               
-               
-               
-               
                $dbp = 0;
-                $kawani = 0;
+               $kawani = 0;
 
                 if ($hasDeductions) {
                     $filteredDeductions = collect($deductions)->filter(function ($item) use ($cutoffEndDate) {
@@ -706,7 +707,7 @@ public function selectEmployee($id)
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
-                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut;
+                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut + $gsel;
 
                 Log::info('selected employee total deductions', ['total_deductions' =>  $total_deduction]);    
 
@@ -795,7 +796,7 @@ public function selectEmployee($id)
 
             $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
             $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
-            $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment;
+            $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel;
 
             Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
 
@@ -849,6 +850,7 @@ public function selectEmployee($id)
                 'mpl' => $firstHalfRecord->mpl,
                 'mpl_lite' => $firstHalfRecord->mpl_lite,
                 'cpl' => $firstHalfRecord->cpl,
+                'gsel' => $firstHalfRecord->gsel,
                 'mp2' => $firstHalfRecord->mp2,
                 'mplstlms' => $firstHalfRecord->mplstlms,
                 'cir375_cir449' => $firstHalfRecord->cir375_cir449,
@@ -895,6 +897,7 @@ public function selectEmployee($id)
                 'mpl' => $mpl,
                 'mpl_lite' => $mpl_lite,
                 'cpl' => $cpl,
+                'gsel' => $gsel,
                 'mp2' => $mp2,
                 'mplstlms' => $mplstlms,
                 'cir375_cir449' => $cir,
@@ -1004,6 +1007,7 @@ public function confirmAddEmployee()
             'mpl' => $this->selectedEmployee['mpl'],
             'mpl_lite' => $this->selectedEmployee['mpl_lite'],
             'cpl' => $this->selectedEmployee['cpl'],
+            'gsel' => $this->selectedEmployee['gsel'],
             'mp2' => $this->selectedEmployee['mp2'],
             'mplstlms' => $this->selectedEmployee['mplstlms'],
             'cir375_cir449' => $this->selectedEmployee['cir375_cir449'],
@@ -1040,7 +1044,7 @@ public function confirmAddEmployee()
         // init fields
         foreach ([
             'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
-            'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms',
+            'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel',
             'cir375_cir449','w_tax','disallowance', 'overpayment','tax_3','tax_5','tax_8','tax_10','aut',
             'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
         ] as $field) {
@@ -1143,6 +1147,7 @@ private function findOrCreateSection($data)
                         'mpl' => $row['mpl'],
                         'mpl_lite' => $row['mpl_lite'],
                         'cpl' => $row['cpl'],
+                        'gsel' => $row['gsel'],
                         'mp2' => $row['mp2'],
                         'mplstlms' => $row['mplstlms'],
                         'cir375_cir449' => $row['cir375_cir449'],
