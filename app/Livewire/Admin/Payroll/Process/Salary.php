@@ -74,6 +74,7 @@ class Salary extends Component
     public bool $isFirstCutoff = false;
     public bool $isSecondCutoff = false;
 
+    public $confirmingDelete = false;
     public $deleteSectionIndex;
     public $deleteEmployeeIndex;
 
@@ -381,7 +382,9 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $this->updatedItems = array_unique($this->updatedItems);
     } else {
         Log::info('haschange2', ['payrollItem' => $payrollItem,'original' => $original]);
-        $this->updatedItems = array_diff($this->updatedItems, [$payrollItem['id']]);
+       // $this->updatedItems = array_diff($this->updatedItems, [$payrollItem['id']]);
+        $this->updatedItems[] = $payrollItem['id'];
+        $this->updatedItems = array_unique($this->updatedItems);
     }
 
     $this->hasChanges = !empty($this->updatedItems);
@@ -407,12 +410,13 @@ public function confirmDelete($sectionIndex, $employeeIndex)
 {
     $this->deleteSectionIndex = $sectionIndex;
     $this->deleteEmployeeIndex = $employeeIndex;
+    $this->confirmingDelete = true;
 
-    $this->dispatch('showConfirmation', [
+   /* $this->dispatch('showConfirmation', [
         'title' => 'Delete employee?',
         'message' => 'This will permanently remove this employee from payroll.',
         'action' => 'deleteEmployee'
-    ]);
+    ]);*/
 }
 
 public function deleteEmployee()
@@ -452,6 +456,7 @@ public function deleteEmployee()
             $this->records['payroll_items'][$sectionIndex]['employees']
         );
     });
+    $this->confirmingDelete = false;
 
     $this->dispatch('alert', [
         'status' => 'success',
@@ -852,8 +857,8 @@ public function selectEmployee($id)
                 'aut' => $firstHalfRecord->aut,
                 'disallowance' => $firstHalfRecord->disallowance,
                 'overpayment' => $firstHalfRecord->overpayment,
-                'total_deductions' => $fh_total_deduction,
-                'net_amount' => $fh_net,
+                'total_deductions' => round($fh_total_deduction, 2),
+                'net_amount' => round($fh_net, 2),
                 'dbp' => $firstHalfRecord->dbp,
                 'kawani' => $firstHalfRecord->kawani,
                 'lbp_payroll_account' => round($fh_lbp, 2),

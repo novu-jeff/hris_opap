@@ -700,8 +700,53 @@
             </button>
         </div>
     @endif
-</div>
 
+     @if($confirmingDelete)
+        <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style="background: rgba(0,0,0,0.5); z-index: 10000;">
+
+            <div class="bg-white p-4 rounded shadow text-center" style="width: 400px;">
+                <h5 class="fw-bold mb-3">Delete Employee?</h5>
+                <p>This will permanently remove this employee from payroll.</p>
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary"
+                            wire:click="$set('confirmingDelete', false)">
+                        Cancel
+                    </button>
+
+                    <button 
+                        class="btn btn-danger"
+                        wire:click="deleteEmployee"
+                        wire:loading.attr="disabled"
+                        wire:target="deleteEmployee">
+
+                        <span wire:loading.remove wire:target="deleteEmployee">
+                            Confirm Delete
+                        </span>
+
+                        <span wire:loading wire:target="deleteEmployee">
+                            Deleting...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <div 
+        wire:loading.delay
+            wire:target="deleteEmployee,save,approve,confirmAddEmployee"
+            wire:loading.class.remove="d-none"
+            class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style="background: rgba(0,0,0,0.5); z-index: 9999;"
+        >
+        <div class="bg-white p-4 rounded shadow text-center">
+            <i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i>
+            <div class="fw-bold">Processing payroll...</div>
+        </div>
+    </div>
+</div>
 
 
 
