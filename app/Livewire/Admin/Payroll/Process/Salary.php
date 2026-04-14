@@ -659,14 +659,18 @@ public function selectEmployee($id)
                       if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
                           // DEDUCTION FOR GOVERNMENT EMPLOYEES
                           $philhealth = $hasDeductions
-                            ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                            ? floor((min($basic_salary, $ceiling) * $rate / 2) * 100) / 100
                             : 0;
                           $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
                           $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
-                          $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
+
+                        $philhealth = $hasDeductions
+                        ? floor(($basic_salary * 0.05) * 100) / 100
+                        : 0;
+                        
                           $gsel = 0;
                           $taxType = $emp->tax_type ?? null;
       
