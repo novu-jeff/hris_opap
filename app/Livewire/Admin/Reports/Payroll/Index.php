@@ -141,82 +141,75 @@ public function disapprove($id)
     }
 
 
+
     public function render()
     {
-        
-        $this->employmentTypes = EmployementTypes::all(); // fetch all types
-    
-       $query = SalaryPayroll::withCount('items')
+        $this->employmentTypes = EmployementTypes::all();
+
+        $query = SalaryPayroll::withCount('items')
             ->withSum('items', 'net_amount')
             ->with(['items.information'])
+            ->where('status', 'approved')
             ->orderBy('payroll_date', 'desc');
 
-        // Filter by employment type
+        // Employment Type Filter
         if ($this->filterEmploymentType) {
             $query->whereHas('items.information', function ($q) {
                 $q->where('employment_type_id', $this->filterEmploymentType);
             });
         }
 
-        // Filter by cutoff period
-        if ($this->cutoffPeriod) {
-            if ($this->cutoffPeriod === '01 to 15') {
-                $query->where('cut_off_period', 'like', '%-01 to %-15%');
-            }
-            if ($this->cutoffPeriod === '16 to end') {
-                $query->where('cut_off_period', 'like', '%-16 to %-31%');
-            }
-        }
-
-        // Filter by search
+        // Search
         if ($this->search) {
             $search = $this->search;
-
             $query->where(function ($q) use ($search) {
-                // Search in payroll fields
                 $q->where('id', 'like', "%{$search}%")
                 ->orWhere('batch_id', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%");
-
-                // Search in related items
-                $q->orWhereHas('items', function ($iq) use ($search) {
+                ->orWhereHas('items', function ($iq) use ($search) {
                     $iq->where('employee_no', 'like', "%{$search}%")
-                    ->orWhereHas('information.employment_type', function ($eq) use ($search) {
-                        $eq->where('name', 'like', "%{$search}%");
-                    });
+                        ->orWhereHas('information.employment_type', function ($eq) use ($search) {
+                            $eq->where('name', 'like', "%{$search}%");
+                        });
                 });
             });
         }
 
+        $payrolls = $query->get(); // ⚠️ use get() instead of paginate
 
-        $payrolls = $query->paginate($this->perPage);
+        // Transform
+        $payrolls->transform(function ($payroll) {
 
-        /**
-         * Compute totals PER PAYROLL (cutoff-aware)
-         */
-        $payrolls->getCollection()->transform(function ($payroll) {
+            $employmentTypes = $payroll->items->map(function ($item) {
+                return $item->information->employment_type->name ?? null;
+            })->unique()->filter();
 
-                // Collect unique employment types from items
-                $employmentTypes = $payroll->items->map(function ($item) {
-                    return $item->information->employment_type->name ?? null;
-                })->unique()->filter(); // remove nulls
+            $payroll->employment_types = $employmentTypes->implode(', ');
 
-                $payroll->employment_types = $employmentTypes->implode(', ');
+            $payroll->employee_count = $payroll->items
+                ->pluck('employee_no')
+                ->unique()
+                ->count();
 
-                // Count unique employees
-                $payroll->employee_count = $payroll->items
-                    ->pluck('employee_no')
-                    ->unique()
-                    ->count();
+            return $payroll;
+        });
 
-                return $payroll;
-    });
-    
+        // ✅ GROUPING LOGIC
+        $grouped = $payrolls->groupBy(function ($payroll) {
+            return Carbon::parse($payroll->payroll_date)->format('F Y'); // March 2026
+        })->map(function ($monthGroup) {
 
-  
+            return [
+                'first_half' => $monthGroup->filter(function ($p) {
+                    return Carbon::parse($p->payroll_date)->day <= 15;
+                }),
+                'second_half' => $monthGroup->filter(function ($p) {
+                    return Carbon::parse($p->payroll_date)->day >= 16;
+                }),
+            ];
+        });
 
         return view('livewire.admin.reports.payroll.index', [
-            'payrolls' => $payrolls,
+            'groupedPayrolls' => $grouped,
             'cutOffPeriods' => $this->cutoffPeriods,
             'salaryMethods' => $this->salaryMethods,
         ]);

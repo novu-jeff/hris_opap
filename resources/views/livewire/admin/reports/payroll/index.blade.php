@@ -39,101 +39,106 @@
     </div>
 
     <!-- Payroll Table -->
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered w-100">
-            <thead>
-                <tr>
-                    <th>Payroll ID</th>
-                    <th>Employement Type</th>
-                    <th>Cut-off Period</th>
-                    <th>Payroll Date</th>
-                    <th>No. of Employees</th>  
-                    <th>Status</th>               
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($payrolls as $payroll)
-                    <tr>
-                        <td>{{ $payroll->id }}</td>
-                        <td
-                        @php
-                            $typeColors = [
-                                'Contractual' => 'bg-primary text-white fw-bold',         // yellow
-                                'Contract of Service' => 'bg-info text-white fw-bold',   // blue
-                                'Job Order' => 'bg-danger text-white fw-bold',          // red
-                            ];
+    <div class="accordion" id="payrollAccordion">
 
-                            $types = explode(', ', $payroll->employment_types ?? '');
-                            $classes = collect($types)->map(function($type) use ($typeColors) {
-                                return $typeColors[$type] ?? '';
-                            })->filter()->implode(' '); // combine classes if multiple types
-                        @endphp
-                        class="{{ $classes }}"
-                    >
-                        {{ $payroll->employment_types ?? '-' }}
-                    </td>
-                        <td>{{ $payroll->cut_off_period }}</td>
-                        <td>{{ \Carbon\Carbon::parse($payroll->payroll_date)->format('M j, Y') }}</td>
-                        <td>{{ $payroll->items_count }}</td>
-                        <td>
-                        @if($payroll->status === 'approved')
-                            <span class="badge bg-success">Approved</span>
-                        @elseif($payroll->status === 'disapproved')
-                            <span class="badge bg-danger">Disapproved</span>
-                        @else
-                            <span class="badge bg-secondary">Pending</span>
-                        @endif
-                    </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                @if($payroll->status !== 'pending')
-                                <a target="_blank"
-                                    href="{{ route('reports.payroll.view', $payroll->id) }}"
-                                    class="btn btn-primary btn-sm"
-                                    title="View Payroll">
-                                        <i class="fa-regular fa-folder-open"></i>
-                                </a>
-                                 @endif
-                                {{-- APPROVE --}}
-                                @if($payroll->status !== 'approved')
-                                    <button
-                                        wire:click="approve({{ $payroll->id }})"
-                                        class="btn btn-success btn-sm"
-                                        title="Approve Payroll">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
-                                @endif
-
-                                {{-- DISAPPROVE --}}
-                                @if($payroll->status !== 'pending')
-                                    <button
-                                        wire:click="disapprove({{ $payroll->id }})"
-                                        class="btn btn-warning btn-sm"
-                                        title="Pending Payroll">
-                                        <i class="fa-solid fa-ban"></i>
-                                    </button>
-                                @endif
-                               
-                                @if($payroll->status !== 'approved')
-                                    <button wire:click="remove(true, {{ $payroll->id }})" class="btn btn-danger btn-sm">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                @endif
+        @foreach($groupedPayrolls as $month => $halves)
+            @php
+                $monthKey = Str::slug($month);
+        
+                $firstTotal = $halves['first_half']->sum('items_sum_net_amount');
+                $secondTotal = $halves['second_half']->sum('items_sum_net_amount');
+        
+                $firstCount = $halves['first_half']->sum('employee_count');
+                $secondCount = $halves['second_half']->sum('employee_count');
+            @endphp
+        
+            <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+                
+                <!-- HEADER -->
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold fs-5"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#{{ $monthKey }}">
+                        
+                        <div class="d-flex justify-content-between w-100 pe-3">
+                            <span>{{ $month }}</span>
+        
+                            <span class="text-muted small">
+                                {{ $halves['first_half']->count() + $halves['second_half']->count() }} payrolls
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+        
+                <!-- BODY -->
+                <div id="{{ $monthKey }}"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#payrollAccordion">
+        
+                    <div class="accordion-body bg-light">
+        
+                        <!-- SUMMARY CARDS -->
+                        <div class="row mb-4 g-3">
+        
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="text-primary fw-bold">1st Half (1–15)</div>
+                                        <div class="fs-4 fw-bold">
+                                            ₱{{ number_format($firstTotal, 2) }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            {{ $firstCount }} employees
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="text-center fw-bold py-3">No payroll records found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        {{-- Pagination --}}
-        <div class="mt-4">
-            {{ $payrolls->links() }}
+        
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                        <div class="text-success fw-bold">2nd Half (16–end)</div>
+                                        <div class="fs-4 fw-bold">
+                                            ₱{{ number_format($secondTotal, 2) }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            {{ $secondCount }} employees
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+        
+                        </div>
+        
+                        <!-- FIRST HALF -->
+                        @if($halves['first_half']->count())
+                            <h6 class="fw-bold text-primary mb-2">
+                                1st Half (1–15)
+                            </h6>
+        
+                            @include('livewire.admin.reports.payroll.partials.payroll-table-modern', [
+                                'payrolls' => $halves['first_half'],
+                                'type' => 'first'
+                            ])
+                        @endif
+        
+                        <!-- SECOND HALF -->
+                        @if($halves['second_half']->count())
+                            <h6 class="fw-bold text-success mt-4 mb-2">
+                                2nd Half (16–end)
+                            </h6>
+        
+                            @include('livewire.admin.reports.payroll.partials.payroll-table-modern', [
+                                'payrolls' => $halves['second_half'],
+                                'type' => 'second'
+                            ])
+                        @endif
+        
+                    </div>
+                </div>
+            </div>
+        @endforeach
+        
         </div>
-    </div>
 </div>
