@@ -369,7 +369,7 @@ class SalaryService extends Controller {
          
                 // Deductions (based on flag)
                 
-                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
+              //  $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
               /* $philhealth = $hasDeductions
                     ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
                     : 0;*/
@@ -414,11 +414,16 @@ class SalaryService extends Controller {
                       if($eligible !== 2 && $eligible !== 3 && $eligible !== 4) {
                           // DEDUCTION FOR GOVERNMENT EMPLOYEES
                           //dd('here');
+                          $philhealth = $hasDeductions
+                            ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
+                            : 0;
                           $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
                           $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
+
+                          $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
                           $gsel = 0;
                           $taxType = $employee['tax_type'] ?? null;
       
