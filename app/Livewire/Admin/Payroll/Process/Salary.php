@@ -613,9 +613,11 @@ public function selectEmployee($id)
         $pera = round(floatval(collect($earnings)->firstWhere('code', 'PERA')['amount'] ?? 0), 2);
         $gross = round($basic_salary + $pera, 2);
 
-        $philhealth = $hasDeductions
+        /*$philhealth = $hasDeductions
                     ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
-                    : 0;
+                    : 0;*/
+                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
+                
                 $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'HDMF')['amount'] ?? 0), 2) : 0;
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;

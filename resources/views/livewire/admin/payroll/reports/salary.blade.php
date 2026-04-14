@@ -26,67 +26,141 @@
             </select>
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered w-100">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cut Off Period</th>
-                    <th>Payroll Date</th>
-                   <th>Has Deductions</th>
-                    <th>Status</th>
-                    <th style="max-width: 200px;">Action</th>
-                </tr>
-            </thead>                
-            <tbody>
-                @forelse($salary as $record)
-                    <tr data-id="{{$record->id}}">
-                        <td>#{{format_id($record->id, 6)}}</td>
-                        <td>
-                            @php
-                                $dates = explode(' to ', $record->cut_off_period);
-                                $startDate = \Carbon\Carbon::parse($dates[0])->format('F d, Y');
-                                $endDate = \Carbon\Carbon::parse($dates[1])->format('F d, Y');
-                            @endphp
+    <div class="accordion" id="salaryAccordion">
 
-                            {{ $startDate }} - {{ $endDate }}
-                        </td>
-                        <td>{{\Carbon\Carbon::parse($record->payroll_date)->format('F d, Y')}}</td>
-                        <td>
-                            <div class="alert {{ $record->hasDeductions ? 'alert-danger' : 'alert-primary' }} mb-0 py-2 px-3 text-uppercase fw-bold text-center">
-                                {{ $record->hasDeductions ? 'yes' : 'no' }}
+        @foreach($groupedSalary as $month => $records)
+        
+            @php
+                $monthKey = \Illuminate\Support\Str::slug($month);
+        
+                $approvedCount = $records->where('status', 'approved')->count();
+                $pendingCount = $records->where('status', 'pending')->count();
+            @endphp
+        
+            <div class="accordion-item border-0 shadow-sm mb-3 rounded-3">
+        
+                <!-- HEADER -->
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#{{ $monthKey }}">
+        
+                        <div class="d-flex justify-content-between w-100 pe-3">
+                            <span>{{ $month }}</span>
+        
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-success">
+                                    {{ $approvedCount }} Approved
+                                </span>
+                                <span class="badge bg-warning text-dark">
+                                    {{ $pendingCount }} Pending
+                                </span>
                             </div>
-                        </td>
-                        <td> <div class="alert {{ $record->status === 'approved' ? 'alert-success' : 'alert-danger' }} 
-        mb-0 py-2 px-3 text-uppercase fw-bold text-center">
-        {{ $record->status }}
-                            </div></td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="{{route('payroll.process', ['type' => $type, 'payroll_id' => $record->id])}}" title="View Payroll" class="btn btn-primary">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                @if($record->status !== 'approved')
-                                    <button class="btn btn-info" title="Regenerate Payroll"
-                                        wire:click="regeneratePayroll('{{$record->id}}')">
-                                        <i class="fa-solid fa-arrows-rotate fa-spin"></i>
-                                    </button>
-                                @endif
-
-                                <button class="btn btn-danger" title="Delete Payroll" wire:click="removePayroll('true', '{{$record->id}}')">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                    </tr> 
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                        </div>
+                    </button>
+                </h2>
+        
+                <!-- BODY -->
+                <div id="{{ $monthKey }}"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#salaryAccordion">
+        
+                    <div class="accordion-body bg-light">
+        
+                        <div class="table-responsive bg-white rounded-3 border">
+                            <table class="table table-hover align-middle mb-0">
+        
+                                <thead class="table-light position-sticky top-0">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cut Off</th>
+                                        <th>Date</th>
+                                        <th>Deductions</th>
+                                        <th>Status</th>
+                                        <th width="160">Action</th>
+                                    </tr>
+                                </thead>
+        
+                                <tbody>
+                                    @foreach($records as $record)
+        
+                                        @php
+                                            $dates = explode(' to ', $record->cut_off_period);
+                                            $startDate = \Carbon\Carbon::parse($dates[0])->format('M d');
+                                            $endDate = \Carbon\Carbon::parse($dates[1])->format('M d');
+        
+                                            $isApproved = $record->status === 'approved';
+                                        @endphp
+        
+                                        <tr>
+        
+                                            <td class="fw-bold">
+                                                #{{ format_id($record->id, 6) }}
+                                            </td>
+        
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $startDate }} - {{ $endDate }}
+                                                </span>
+                                            </td>
+        
+                                            <td>
+                                                {{ \Carbon\Carbon::parse($record->payroll_date)->format('M d, Y') }}
+                                            </td>
+        
+                                            <td>
+                                                <span class="badge {{ $record->hasDeductions ? 'bg-danger' : 'bg-info' }}">
+                                                    {{ $record->hasDeductions ? 'YES' : 'NO' }}
+                                                </span>
+                                            </td>
+        
+                                            <td>
+                                                <span class="badge 
+                                                    {{ $isApproved ? 'bg-success' : ($record->status === 'pending' ? 'bg-warning text-dark' : 'bg-danger') }}">
+                                                    {{ strtoupper($record->status) }}
+                                                </span>
+                                            </td>
+        
+                                            <!-- ✅ ACTIONS PRESERVED -->
+                                            <td>
+                                                <div class="d-flex gap-1">
+        
+                                                    <a href="{{route('payroll.process', ['type' => $type, 'payroll_id' => $record->id])}}"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fa fa-eye"></i>
+                                                    </a>
+        
+                                                    @if(!$isApproved)
+                                                        <button class="btn btn-sm btn-outline-info"
+                                                                wire:click="regeneratePayroll('{{ $record->id }}')">
+                                                            <i class="fa-solid fa-rotate"></i>
+                                                        </button>
+                                                    @endif
+        
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            wire:click="removePayroll('true', '{{ $record->id }}')">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+        
+                                                </div>
+                                            </td>
+        
+                                        </tr>
+        
+                                    @endforeach
+                                </tbody>
+        
+                            </table>
+                        </div>
+        
+                    </div>
+                </div>
+            </div>
+        
+        @endforeach
+        
+        </div>
     <div class="mt-4">
         {{ $salary->links(data: ['scrollTo' => false]) }}
     </div>
