@@ -130,6 +130,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>MPL</th>
                     <th>MPL Lite</th>
                     <th>CPL</th>
+                    <th>GSEL</th>
                     <th>MP2</th>
                     <th>MPL STL</th>
                     <th>CIR</th>
@@ -194,6 +195,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['gsel'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
@@ -245,6 +247,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['gsel'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['cir375_cir449'], 2) }}</td>
@@ -295,6 +298,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($records['totals']['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['cpl'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['gsel'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['cir375_cir449'], 2) }}</td>
