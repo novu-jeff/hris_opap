@@ -6,6 +6,7 @@ use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
 use Illuminate\Support\Facades\Bus;
 use Livewire\Component;
+use Carbon\Carbon;
 
 class Salary extends Component
 {
@@ -146,17 +147,24 @@ class Salary extends Component
         return;
     }
 
+
     public function render()
     {
-    
         $employment_type_id = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
         
         $records = SalaryPayroll::where('employment_type', $employment_type_id)
             ->when($this->status, fn($q) => $q->where('status', $this->status))
+            ->orderBy('payroll_date', 'desc')
             ->paginate($this->entries);
 
+        // ✅ GROUP ONLY CURRENT PAGE
+        $grouped = $records->getCollection()->groupBy(function ($item) {
+            return \Carbon\Carbon::parse($item->payroll_date)->format('F Y');
+        });
+
         return view('livewire.admin.payroll.reports.salary', [
-            'salary' => $records
+            'salary' => $records,
+            'groupedSalary' => $grouped
         ]);
     }
 }

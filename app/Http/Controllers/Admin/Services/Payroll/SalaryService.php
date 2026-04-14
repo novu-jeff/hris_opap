@@ -369,10 +369,10 @@ class SalaryService extends Controller {
          
                 // Deductions (based on flag)
                 
-               // $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05 / 2), 2) : 0;
-               $philhealth = $hasDeductions
+                $philhealth = $hasDeductions ? round(floatval($basic_salary * 0.05), 2) : 0;
+              /* $philhealth = $hasDeductions
                     ? round(min($basic_salary, $ceiling) * $rate / 2, 2)
-                    : 0;
+                    : 0;*/
                 $hdmf = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'HDMF')['amount'] ?? 0), 2) : 0;
                 $mp2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MP2')['amount'] ?? 0), 2) : 0;
                 $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
