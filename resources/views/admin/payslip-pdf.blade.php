@@ -3,89 +3,37 @@
 <head>
     <meta charset="utf-8">
     <title>Payslip</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             margin: 0;
-            padding: 0;
         }
 
         .inner-content {
-            max-width: 510px;
-            margin: 0 auto;
+            max-width: 750px;
+            margin: auto;
+            padding: 15px;
             position: relative;
-            padding: 20px;
         }
 
-        /* Watermark */
         .watermark {
             position: absolute;
-            top: 40%;
+            top: 50%;
             left: 50%;
-             transform: translate(-37%, -50%) rotate(-10deg);
-            font-size: 60px;
-            color: rgba(200, 200, 200, 0.2);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Watermark */
-        .watermark1 {
-            position: absolute;
-            top: 25%;
-            left: 50%;
-             transform: translate(-37%, -50%) rotate(-10deg);
-            font-size: 60px;
-            color: rgba(200, 200, 200, 0.2);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Watermark */
-        .watermark2 {
-            position: absolute;
-            top: 55%;
-            left: 50%;
-             transform: translate(-37%, -50%) rotate(-10deg);
-            font-size: 60px;
-            color: rgba(200, 200, 200, 0.2);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Watermark */
-        .watermark3 {
-            position: absolute;
-            top: 73%;
-            left: 50%;
-            transform: translate(-37%, -50%) rotate(-10deg);
-            font-size: 60px;
-            color: rgba(200, 200, 200, 0.2);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Watermark */
-        .watermark4 {
-            position: absolute;
-            top: 86%;
-            left: 50%;
-            transform: translate(-37%, -50%) rotate(-10deg);
-            font-size: 60px;
-            color: rgba(200, 200, 200, 0.2);
-            z-index: 0;
-            pointer-events: none;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 80px;
+            color: rgba(0,0,0,0.05);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .header img {
-            width: 100px;
-            margin-bottom: 10px;
+            width: 70px;
         }
 
         .header-text {
@@ -93,215 +41,255 @@
             font-size: 14px;
         }
 
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+        .grid {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
         }
 
-        .info-table td {
-            padding: 4px 8px;
-        }
-
-        .info-table td.label {
-            width: 50%;
-            font-weight: bold;
-        }
-
-        .info-table td.value {
-            width: 50%;
-            text-align: right;
+        .card {
+            flex: 1;
         }
 
         .section-title {
             font-weight: bold;
-            font-size: 13px;
-            background-color: #f0f0f0;
-            padding: 5px;
-            margin-top: 15px;
+            font-size: 12px;
+            border-bottom: 1px solid #000;
+            margin-top: 10px;
             margin-bottom: 5px;
         }
 
-        .text-center {
-            text-align: center;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .issued {
-            margin-top: 20px;
+        td {
+            padding: 2px 0;
         }
 
-        .issued {
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .issued-row {
+        .row-flex {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .issued .label {
-            width: 90px;              /* aligns "Issued by:" */
-            text-align: left;
+        .label {
+            white-space: nowrap;
         }
 
-        .issued .line {
-            display: inline-block;
-            width: 420px;             /* SAME WIDTH for name & position */
+        .value {
+            text-align: right;
+            min-width: 120px;
+            font-family: monospace;
+        }
+
+        .highlight {
+            font-weight: bold;
+            border-top: 1px solid #000;
             border-bottom: 1px solid #000;
+        }
+
+        .net {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .issued {
+            margin-top: 15px;
             text-align: center;
-            padding-bottom: 2px;
         }
 
-        .issued .position {
-            margin-left: 35px;
+        .line {
+            display: inline-block;
+            width: 300px;
+            border-bottom: 1px solid #000;
         }
-
-
     </style>
 </head>
+
 <body>
 <div class="inner-content">
+
     <div class="watermark">CONFIDENTIAL</div>
-    <div class="watermark1">CONFIDENTIAL</div>
-    <div class="watermark2">CONFIDENTIAL</div>
-    <div class="watermark3">CONFIDENTIAL</div>
-    <div class="watermark4">CONFIDENTIAL</div>
 
     <div class="header">
-        <img src="{{ public_path('/img/' . $provider['client_logo']) }}" alt="Logo">
+        <img src="{{ public_path('/img/' . $provider['client_logo']) }}">
         <div class="header-text">
             Office of the Presidential Adviser on Peace, Reconciliation and Unity<br>
             PAYROLL PAYMENT SLIP
         </div>
     </div>
 
-     @php
-                // Parse cut-off period
-                [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+    @php
+        [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+        $startDate = \Carbon\Carbon::parse($start);
 
-                $startDate = \Carbon\Carbon::parse($start);
+        $fullMonthStart = $startDate->copy()->startOfMonth();
+        $fullMonthEnd   = $startDate->copy()->endOfMonth();
 
-                // Full month range based on the payroll month
-                $fullMonthStart = $startDate->copy()->startOfMonth();
-                $fullMonthEnd   = $startDate->copy()->endOfMonth();
+        $fullMonthCutoff = $fullMonthStart->format('F j')
+            . ' – ' .
+            $fullMonthEnd->format('F j, Y');
+    @endphp
 
-                $fullMonthCutoff = $fullMonthStart->format('F j')
-                    . ' – ' .
-                    $fullMonthEnd->format('F j, Y');
-            @endphp
+    <!-- TOP GRID -->
+    <div class="grid">
 
-    <!-- Employee Info -->
-    <table class="info-table">
-        <tr>
-            <td class="label">Cut Off Period:</td>
-            <td class="value">
-                {{ $payslipView['fullMonthCutoff'] }}
-            </td>
-        </tr>
-        
-        <tr>
-            <td class="label">Employee's Name:</td>
-            <td class="value">{{ $payslip['name'] }}</td>
-        </tr>
-        <tr>
-            <td class="label">Position:</td>
-            <td class="value">{{ $payslip['position'] }}</td>
-        </tr>
-        <tr>
-            <td class="label">Unit:</td>
-            <td class="value">{{ $payslip['information']['section']['name'] }}</td>
-        </tr>
-    </table>
+        <!-- Employee Info -->
+        <div class="card">
+            <div class="section-title">Employee Details</div>
+            <table>
+                <tr>
+                    <td class="label">Cut Off</td>
+                    <td class="value">{{ $payslipView['fullMonthCutoff'] }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Name</td>
+                    <td class="value">{{ $payslip['name'] }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Position</td>
+                    <td class="value">{{ $payslip['position'] }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Unit</td>
+                    <td class="value">{{ $payslip['information']['section']['name'] }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="card">
+            <div class="section-title">Summary</div>
+            <table>
+                
+                @if ($payslip['employment_type_id'] == 1)
+
+                <tr class="highlight">
+                    <td class="label">Gross</td>
+                    <td class="value">PHP {{ number_format($payslip['gross_amount_earned'], 2) }}</td>
+                </tr>
+
+                @else
+
+                <tr class="highlight">
+                    <td class="label">Basic Salary</td>
+                    <td class="value">PHP {{ number_format($payslip['basic_salary'], 2) }}</td>
+                </tr>
+
+                @endif
+                <tr class="highlight">
+                    <td class="label">Total Deductions</td>
+                    <td class="value">PHP {{ number_format($payslip['total_deductions'], 2) }}</td>
+                </tr>
+                <tr class="net">
+                    <td class="label">Net Pay</td>
+                    <td class="value">PHP {{ number_format($payslip['net_amount'], 2) }}</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
 
     <!-- Earnings -->
-    <div class="section-title">*** Earnings ***</div>
-    <table class="info-table">
+    <div class="section-title">Earnings</div>
+    <table>
         <tr>
-            <td class="label">Monthly Basic Salary:</td>
+            <td class="label">Monthly Basic Salary</td>
             <td class="value">PHP {{ number_format($payslip['basic_salary'], 2) }}</td>
         </tr>
+
+        @if ($payslip['employment_type_id'] == 1)
         <tr>
-            <td class="label">Personnel Economic Relief Allowance:</td>
+            <td class="label">Personnel Economic Relief Allowance</td>
             <td class="value">PHP {{ number_format($payslip['pera'], 2) }}</td>
         </tr>
         <tr>
-            <td class="label">Gross Amount Earned:</td>
-            <td class="value">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</td>
+            <td class="label">Gross Amount Earned</td>
+            <td class="value">PHP {{ number_format($payslip['gross_amount_earned'], 2) }}</td>
         </tr>
+        @endif
     </table>
 
     <!-- Deductions -->
-    <div class="section-title">*** Deductions ***</div>
-    <!-- Loan Deductions -->
-@if($payslip->deductions->where('reference_type', 'loan')->count())
-    <table class="info-table">
-        @foreach($payslip->deductions->where('reference_type', 'loan') as $deduction)
-            <tr>
-                <td class="label">
-                    {{ $deduction->loan->loanType->name ?? 'Loan Deduction' }}
-                </td>
-                <td class="value">
-                    PHP {{ number_format($deduction->amount, 2) }}
-                </td>
-            </tr>
-        @endforeach
-    </table>
-@endif
-    <table class="info-table">
-        <tr><td class="label">GSIS Contribution:</td><td class="value">PHP {{ number_format($payslip['rlip'], 2) }}</td></tr>
-        <tr><td class="label">PAG-IBIG Contribution:</td><td class="value">PHP {{ number_format($payslip['hdmf'], 2) }}</td></tr>
-        <tr><td class="label">Phil Health Contribution:</td><td class="value">PHP {{ number_format($payslip['philhealth'], 2) }}</td></tr>
-        <tr><td class="label">GSIS Emergency Loan:</td><td class="value">PHP {{ number_format($payslip['emergency_loan'], 2) }}</td></tr>
-        <tr><td class="label">GSIS Conso Loan:</td><td class="value">PHP {{ number_format($payslip['consoloan'], 2) }}</td></tr>
-        <tr><td class="label">GSIS MPL:</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
-        <tr><td class="label">GSIS MPL Lite:</td><td class="value">PHP {{ number_format($payslip['mpl_lite'], 2) }}</td></tr>
-        <tr><td class="label">GSIS CPL:</td><td class="value">PHP {{ number_format($payslip['cpl'], 2) }}</td></tr>
-        <tr><td class="label">HDMF MP2:</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
-        <tr><td class="label">MPL STLMS:</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
-        <tr><td class="label">Cir375-ECQ:</td><td class="value">PHP {{ number_format($payslip['cir375_cir449'], 2) }}</td></tr>
-        <tr><td class="label">PAGIBIG:</td><td class="value">PHP {{ number_format($payslip['pagibig'], 2) }}</td></tr>
-        <tr><td class="label">BIR Withholding TAX:</td><td class="value">PHP {{ number_format($payslip['w_tax'], 2) }}</td></tr>
-        <tr><td class="label">UCA:</td><td class="value">PHP {{ number_format($payslip['uca'], 2) }}</td></tr>
-        <tr><td class="label">Lates / Undertime / Absences:</td><td class="value">PHP {{ number_format($payslip['aut'], 2) }}</td></tr>
-        <tr><td class="label">Total Deductions:</td><td class="value">PHP {{ number_format($payslip['total_deductions'], 2) }}</td></tr>
-    </table>
+    <div class="section-title">Deductions</div>
 
-    <!-- Net Pay -->
-    <div class="section-title">*** Net Pay ***</div>
-    <table class="info-table">
-        <tr><td class="label">Net Amount:</td><td class="value">PHP {{ number_format($payslip['net_amount'], 2) }}</td></tr>
-        <tr><td class="label">DBP:</td><td class="value">PHP {{ number_format($payslip['dbp'], 2) }}</td></tr>
-        <tr><td class="label">Unlad Kawani:</td><td class="value">PHP {{ number_format($payslip['kawani'], 2) }}</td></tr>
-        <tr><td class="label">LBP Payroll Account:</td><td class="value">PHP {{ number_format($payslip['lbp_payroll_account'], 2) }}</td></tr>
+   
+
+    <table>
+        <tr><td class="label">GSIS Contribution</td><td class="value">PHP {{ number_format($payslip['rlip'], 2) }}</td></tr>
+        <tr><td class="label">PAG-IBIG</td><td class="value">PHP {{ number_format($payslip['hdmf'], 2) }}</td></tr>
+        <tr><td class="label">PhilHealth</td><td class="value">PHP {{ number_format($payslip['philhealth'], 2) }}</td></tr>
+        <tr><td class="label">GSIS Conso Loan</td><td class="value">PHP {{ number_format($payslip['consoloan'], 2) }}</td></tr>
+        <tr><td class="label">GSIS Emergency Loan</td><td class="value">PHP {{ number_format($payslip['emergency_loan'], 2) }}</td></tr>
+        <tr><td class="label">GSIS PLREG</td><td class="value">PHP {{ number_format($payslip['plreg'], 2) }}</td></tr>
+
+        @if ($payslip['employment_type_id'] == 1)
+        <tr><td class="label">GSIS MPL</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
+        @else
+        <tr><td class="label">GSIS MPL</td><td class="value">PHP 0.00</td></tr>
+        @endif
+
+        <tr><td class="label">GSIS MPL Lite</td><td class="value">PHP {{ number_format($payslip['mpl_lite'], 2) }}</td></tr>
+        <tr><td class="label">GSIS CPL</td><td class="value">PHP {{ number_format($payslip['cpl'], 2) }}</td></tr>
+        <tr><td class="label">GSIS GSEL</td><td class="value">PHP {{ number_format($payslip['gsel'], 2) }}</td></tr>
+        <tr><td class="label">MP2</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
+
+        @if ($payslip['employment_type_id'] != 1)
+        <tr><td class="label">MPL</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
+        @endif
+
+        @if ($payslip['employment_type_id'] == 1)
+        <tr><td class="label">MPL STLMS</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
+        @endif
+
+        <tr><td class="label">Cir375-ECQ</td><td class="value">PHP {{ number_format($payslip['cir375_cir449'], 2) }}</td></tr>
+        <tr><td class="label">BIR Withholding TAX</td><td class="value">PHP {{ number_format($payslip['w_tax'], 2) }}</td></tr>
+        <tr><td class="label">UCA</td><td class="value">PHP {{ number_format($payslip['uca'], 2) }}</td></tr>
+        <tr><td class="label">Disallowance</td><td class="value">PHP {{ number_format($payslip['disallowance'], 2) }}</td></tr>
+        <tr><td class="label">Lates/Absences</td><td class="value">PHP {{ number_format($payslip['aut'], 2) }}</td></tr>
+        <tr><td class="label">Overpayment</td><td class="value">PHP {{ number_format($payslip['overpayment'], 2) }}</td></tr>
         <tr>
-            <td class="label">Amount Due (15):</td>
-            <td class="value">PHP {{ number_format($payslip['net_first_half'], 2) }}</td>
+            <td class="label">TAX 3%</td>
+            <td class="value">PHP {{ number_format($payslip['tax_3'] ?? 0, 2) }}</td>
         </tr>
         <tr>
-            <td class="label">Amount Due (30):</td>
-            <td class="value">PHP {{ number_format($payslip['net_second_half'], 2) }}</td>
+            <td class="label">TAX 5%</td>
+            <td class="value">PHP {{ number_format($payslip['tax_5'] ?? 0, 2) }}</td>
         </tr>
+        <tr>
+            <td class="label">TAX 8%</td>
+            <td class="value">PHP {{ number_format($payslip['tax_8'] ?? 0, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label">TAX 10%</td>
+            <td class="value">PHP {{ number_format($payslip['tax_10'] ?? 0, 2) }}</td>
+        </tr>
+        
+        <tr class="highlight">
+            <td class="label">Total Deductions</td>
+            <td class="value">PHP {{ number_format($payslip['total_deductions'], 2) }}</td>
+        </tr> 
     </table>
 
-    <!-- Issued By -->
+    <!-- Disbursement -->
+    <div class="section-title">Disbursement</div>
+    <table>
+        <tr><td class="label">Net Amount</td><td class="value net">PHP {{ number_format($payslip['net_amount'], 2) }}</td></tr>
+        <tr><td class="label">DBP</td><td class="value">PHP {{ number_format($payslip['dbp'], 2) }}</td></tr>
+        <tr><td class="label">Unlad Kawani</td><td class="value">PHP {{ number_format($payslip['kawani'], 2) }}</td></tr>
+        <tr><td class="label">LBP Payroll</td><td class="value">PHP {{ number_format($payslip['lbp_payroll_account'], 2) }}</td></tr>
+        <tr><td class="label">15th</td><td class="value">PHP {{ number_format($payslip['net_first_half'], 2) }}</td></tr>
+        <tr><td class="label">30th</td><td class="value">PHP {{ number_format($payslip['net_second_half'], 2) }}</td></tr>
+    </table>
+
+    <!-- Signature -->
     <div class="issued">
-        <div class="issued-row">
-            <span class="label">Issued by:</span>
-            <span class="line">
-                {{ $supervisingOfficer['full_name'] }}
-            </span>
-        </div>
-
-        <div class="issued-row">
-            <span class="label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span class="line position">
-                {{ $supervisingOfficer['position_name'] }}
-            </span>
-        </div>
+        <div>Issued by:</div>
+        <div class="line">{{ $supervisingOfficer['full_name'] }}</div><br>
+        <small>{{ $supervisingOfficer['position_name'] }}</small>
     </div>
-
 
 </div>
 </body>

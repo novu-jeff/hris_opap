@@ -222,6 +222,9 @@
             <td class="label">Monthly Basic Salary:</td>
             <td class="value">PHP {{ number_format($payslip['basic_salary'], 2) }}</td>
         </tr>
+        @php
+                if ($payslip['employment_type_id'] == 1) {
+        @endphp  
         <tr>
             <td class="label">Personnel Economic Relief Allowance:</td>
             <td class="value">PHP {{ number_format($payslip['pera'], 2) }}</td>
@@ -230,6 +233,9 @@
             <td class="label">Gross Amount Earned:</td>
             <td class="value">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</td>
         </tr>
+        @php
+            }
+        @endphp 
     </table>
 
     <!-- Deductions -->
@@ -253,18 +259,48 @@
         <tr><td class="label">GSIS Contribution:</td><td class="value">PHP {{ number_format($payslip['rlip'], 2) }}</td></tr>
         <tr><td class="label">PAG-IBIG Contribution:</td><td class="value">PHP {{ number_format($payslip['hdmf'], 2) }}</td></tr>
         <tr><td class="label">Phil Health Contribution:</td><td class="value">PHP {{ number_format($payslip['philhealth'], 2) }}</td></tr>
-        <tr><td class="label">GSIS Emergency Loan:</td><td class="value">PHP {{ number_format($payslip['emergency_loan'], 2) }}</td></tr>
         <tr><td class="label">GSIS Conso Loan:</td><td class="value">PHP {{ number_format($payslip['consoloan'], 2) }}</td></tr>
+        <tr><td class="label">GSIS Emergency Loan:</td><td class="value">PHP {{ number_format($payslip['emergency_loan'], 2) }}</td></tr>
+        <tr><td class="label">GSIS PLREG:</td><td class="value">PHP {{ number_format($payslip['plreg'], 2) }}</td></tr>
+        @php
+            if ($payslip['employment_type_id'] == 1) {
+        @endphp 
         <tr><td class="label">GSIS MPL:</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
+        @php
+            }else{
+        @endphp 
+        <tr><td class="label">GSIS MPL:</td><td class="value">PHP 0.00 </td></tr>
+        @php
+            }
+        @endphp 
         <tr><td class="label">GSIS MPL Lite:</td><td class="value">PHP {{ number_format($payslip['mpl_lite'], 2) }}</td></tr>
         <tr><td class="label">GSIS CPL:</td><td class="value">PHP {{ number_format($payslip['cpl'], 2) }}</td></tr>
-        <tr><td class="label">HDMF MP2:</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
+        <tr><td class="label">GSIS GSEL:</td><td class="value">PHP {{ number_format($payslip['gsel'], 2) }}</td></tr>
+        <tr><td class="label">MP2:</td><td class="value">PHP {{ number_format($payslip['mp2'], 2) }}</td></tr>
+        @php
+            if ($payslip['employment_type_id'] != 1) {
+        @endphp 
+        <tr><td class="label">MPL:</td><td class="value">PHP {{ number_format($payslip['mpl'], 2) }}</td></tr>
+        @php
+            }
+        @endphp 
+        @php
+            if ($payslip['employment_type_id'] == 1) {
+        @endphp 
         <tr><td class="label">MPL STLMS:</td><td class="value">PHP {{ number_format($payslip['mplstlms'], 2) }}</td></tr>
+        @php
+            }
+        @endphp 
         <tr><td class="label">Cir375-ECQ:</td><td class="value">PHP {{ number_format($payslip['cir375_cir449'], 2) }}</td></tr>
-        <tr><td class="label">PAGIBIG:</td><td class="value">PHP {{ number_format($payslip['pagibig'], 2) }}</td></tr>
         <tr><td class="label">BIR Withholding TAX:</td><td class="value">PHP {{ number_format($payslip['w_tax'], 2) }}</td></tr>
         <tr><td class="label">UCA:</td><td class="value">PHP {{ number_format($payslip['uca'], 2) }}</td></tr>
+        <tr><td class="label">DISALLOWANCE:</td><td class="value">PHP {{ number_format($payslip['disallowance'], 2) }}</td></tr>
         <tr><td class="label">Lates / Undertime / Absences:</td><td class="value">PHP {{ number_format($payslip['aut'], 2) }}</td></tr>
+        <tr><td class="label">OVERPAYMENT:</td><td class="value">PHP {{ number_format($payslip['overpayment'], 2) }}</td></tr>
+        <tr><td class="label">TAX 3%:</td><td class="value">PHP {{ number_format($payslip['tax_3 '], 2) }}</td></tr>
+        <tr><td class="label">TAX 5%:</td><td class="value">PHP {{ number_format($payslip['tax_5'], 2) }}</td></tr>
+        <tr><td class="label">TAX 8%:</td><td class="value">PHP {{ number_format($payslip['tax_8'], 2) }}</td></tr>
+        <tr><td class="label">TAX 10%:</td><td class="value">PHP {{ number_format($payslip['tax_10'], 2) }}</td></tr>
         <tr><td class="label">Total Deductions:</td><td class="value">PHP {{ number_format($payslip['total_deductions'], 2) }}</td></tr>
     </table>
 
