@@ -118,7 +118,7 @@
                     'DISALLOWANCE' => $payslip['disallowance'],
                     'Lates / Undertime / Absences' => $payslip['aut'],
                     'OVERPAYMENT' => $payslip['overpayment'],
-                    'TAX 3%' => $payslip['tax_3 '],
+                    'TAX 3%' => $payslip['tax_3'],
                     'TAX 5%' => $payslip['tax_5'],
                     'TAX 8%' => $payslip['tax_8'],
                     'TAX 10%' => $payslip['tax_10'],
