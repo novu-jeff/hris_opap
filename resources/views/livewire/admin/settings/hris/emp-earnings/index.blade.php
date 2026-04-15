@@ -10,13 +10,15 @@
                     <div class="row">
                         <div class="col-12 col-md-12 mb-3 w-100">
                             <label for="employee_no" class="form-label">Choose Employees</label>
-                            <select class="form-select multi-select w-100" wire:model="fields.employee_no"  multiple >
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->employee_no }}">
-                                        ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div wire:ignore>
+                                <select class="form-select multi-select w-100" multiple>
+                                    @foreach($employees as $employee)
+                                        <option value="{{ $employee->employee_no }}">
+                                            ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                         <div class="col-12 col-md-12 mb-3">
@@ -57,6 +59,10 @@
                             <option value="30">30</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="300">300</option>
+                            <option value="300">400</option>
+                            <option value="300">500</option>
                         </select>
                     </div>
                     <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
