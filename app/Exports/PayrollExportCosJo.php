@@ -146,7 +146,7 @@ class PayrollExportCosJo implements FromCollection, WithEvents
                     ? strtoupper("{$item->position} (SG{$salaryGrade})")
                     : strtoupper($item->position);
                 $rows->push([
-                    "{$employeeCount}. " . strtoupper($item->name ?? ''),
+                    "{$employeeCount}. " . mb_strtoupper($item->name ?? '', 'UTF-8'),
                     $positionWithSalaryGrade,
                 $item->basic_salary,
                 $item->hdmf ?? 0,
