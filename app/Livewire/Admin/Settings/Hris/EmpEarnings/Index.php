@@ -18,7 +18,12 @@ class Index extends Component
 {
     use WithPagination, WithFileUploads;
 
-    public $id, $selected_id, $entries = 10, $search = '', $page, $toUpdate, $amountType, $file;
+    public $viewMode;
+
+    public $showModal = false;
+    public $mode = 'create'; // or 'edit'
+
+    public $id, $selected_id, $entries = 10, $search = '', $toUpdate, $amountType, $file;
     public $employees;
 
     public $fields = [
@@ -46,7 +51,6 @@ class Index extends Component
         }
 
         $this->employees = $this->getEmployees();
-         $this->dispatch('set_select');
     }
 
     public function onChange(string $property, string $value)
@@ -57,33 +61,53 @@ class Index extends Component
         }
     }
 
-    public function setPage(string $page = null, string $toUpdate = null)
+    public function openModal($mode = 'create', $employee_no = null)
     {
-        $this->page = $page;
-        $this->toUpdate = $toUpdate;
-        
-        if ($page === 'edit' && $toUpdate) {
-            $data = EmployeeEarnings::where('employee_no', $toUpdate)
-             ->where('earning_id', $this->id)
-            ->first();
-            
+        $this->mode = $mode;
+        $this->showModal = true;
+
+        if ($mode === 'create') {
+            $this->fields['employee_no'] = [];
+        }
+
+        if ($mode === 'edit' && $employee_no) {
+            $data = EmployeeEarnings::where('employee_no', $employee_no)
+                ->where('earning_id', $this->id)
+                ->first();
+
             $this->fields = [
-                'employee_no' => [$toUpdate],
+                'employee_no' => [$employee_no],
                 'amount_type' => $data->amount_type ?? null,
                 'first_term'  => $data->first_term ?? null,
                 'second_term' => $data->second_term ?? null,
                 'amount' => $data->amount ?? null,
             ];
-        $this->onChange('amount_type', $data->amount_type);
+
+            $this->onChange('amount_type', $data->amount_type);
         }
 
         $this->employees = $this->getEmployees();
-        $this->dispatch('set_select');
+
+        $this->js("
+            setTimeout(() => {
+                Livewire.dispatch('init-select', {
+                    employees: " . json_encode($this->employees) . ",
+                    selected: " . json_encode($this->fields['employee_no']) . "
+                });
+            }, 200);
+        ");
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+       // $this->reset($this->fields['amount']);
+       $this->fields['amount'] = null;
     }
 
     public function getEmployees()
     {
-        return ($this->page === 'create')
+        return ($this->mode === 'create')
         ? EmployeeInformation::with('personal')
             ->whereHas('personal')
              ->whereDoesntHave('earnings', function ($q) {
@@ -120,7 +144,10 @@ class Index extends Component
         $termRules = ($amountType === 'basic salary') ? 'nullable|numeric' : 'required|numeric';
 
         
-        $rules['fields.amount'] = $termRules;
+        return [
+            'fields.employee_no' => ['required', 'array', 'min:1'], // 🔥 ADD THIS
+            'fields.amount' => $termRules,
+        ];
 
         return $rules;
     }
@@ -128,7 +155,8 @@ class Index extends Component
     protected function messages(): array
     {
         return [
-            'fields.amount_type.required' => 'The amount type field is required.',
+            'fields.employee_no.required' => 'Please select at least one employee.',
+            'fields.employee_no.min' => 'Please select at least one employee.',
             'fields.amount.required' => 'The amount field is required.',
         ];
     }
@@ -140,6 +168,7 @@ class Index extends Component
 
     public function save()
     {
+        $this->fields['employee_no'] = $this->fields['employee_no'] ?: [];
         if (Gate::denies('write employee-earnings')) {
             return $this->dispatch('alert', [
                 'status' => 'error',
@@ -182,42 +211,53 @@ class Index extends Component
             }*/
 
              foreach ($this->fields['employee_no'] as $employee_no) {
-    // Fetch the employee record
-    $employee = EmployeeInformation::where('employee_no', $employee_no)->first();
+                // Fetch the employee record
+                $employee = EmployeeInformation::where('employee_no', $employee_no)->first();
 
-    if (!$employee) continue; // skip if employee not found
+                if (!$employee) continue; // skip if employee not found
 
-    $data = [
-        'amount_type' => $amountType,
-    ];
+                $data = [
+                    'amount_type' => $amountType,
+                ];
 
-    if ($amountType === 'basic_salary') {
-        $data['amount'] = $employee->salary;
-    } else {
-        $data['amount'] = $amount;
-        $data['first_term'] = $firstTerm;
-        $data['second_term'] = $secondTerm;
-    }
+                if ($amountType === 'basic_salary') {
+                    $data['amount'] = $employee->salary;
+                } else {
+                    $data['amount'] = $amount;
+                    $data['first_term'] = $firstTerm;
+                    $data['second_term'] = $secondTerm;
+                }
 
-    EmployeeEarnings::updateOrCreate(
-        [
-            'earning_id' => $earningId,
-            'employee_no' => $employee_no,
-        ],
-        $data
-    );
-}   
+                EmployeeEarnings::updateOrCreate(
+                    [
+                        'earning_id' => $earningId,
+                        'employee_no' => $employee_no,
+                    ],
+                    $data
+                );
+            }   
 
             DB::commit();
 
+            // ✅ reset form (optional but recommended)
+            //$this->reset('fields');
+
+            // ✅ go back to table
+            $this->viewMode = null;
+
+            // ✅ reset pagination to first page
+            $this->resetPage();
+
+
             $employees = $this->fields['employee_no'];
-            $this->dispatch('set_select');
             $this->dispatch('alert', [
                 'status' => 'success',
                 'title' => 'Saved!',
                 'showAlert' => true,
                 'message' => 'Earning(s) saved',
             ]);
+            $this->closeModal();
+            $this->resetPage();
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->dispatch('alert', [
