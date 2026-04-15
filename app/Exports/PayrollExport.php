@@ -142,9 +142,9 @@ class PayrollExport implements FromCollection, WithEvents
                 $salaryGrade = $item->salary_grade
                     ?? optional($item->information?->positions)->salary_grade
                     ?? '';
-                $positionWithSalaryGrade = $salaryGrade !== ''
-                    ? "{$item->position} (SG{$salaryGrade})"
-                    : $item->position;
+                    $positionWithSalaryGrade = $salaryGrade !== ''
+                    ? strtoupper("{$item->position} (SG{$salaryGrade})")
+                    : strtoupper($item->position);
                 $rows->push([
                     "{$employeeCount}. " . strtoupper($item->name ?? ''),
                     $positionWithSalaryGrade,
