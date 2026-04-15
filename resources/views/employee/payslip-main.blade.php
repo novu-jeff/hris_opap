@@ -20,6 +20,7 @@
                         ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
                         ->implode(' to '),-->
             @php
+               
                 // Parse cut-off period
                 [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
 
@@ -57,6 +58,9 @@
                     <div class="label">Monthly Basic Salary:</div>
                     <div class="value ms-2">PHP {{ number_format($payslip['basic_salary'], 2) }}</div>
                 </div>
+                @php
+                if ($payslip['employment_type_id'] == 1) {
+                @endphp    
                 <div class="d-flex align-items-start border-bottom py-1">
                     <div class="label">Personnel Economic Relief Allowance:</div>
                     <div class="value ms-2">PHP {{ number_format($payslip['pera'], 2)}}</div>
@@ -65,40 +69,68 @@
                     <div class="label">Gross Amount Earned:</div>
                     <div class="value ms-2">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</div>
                 </div>
+                @php
+                  }
+                @endphp 
                
             </div>
 
             {{-- DEDUCTIONS --}}
             <div class="info border-section p-3 mt-3">
                 <div class="tle px-2 fw-bold">*** Deductions ***</div>
-                
-                @foreach([
+
+                @php
+                $deductions = [
                     'GSIS Contribution' => $payslip['rlip'],
                     'PAG-IBIG Contribution' => $payslip['hdmf'],
                     'Phil Health Contribution' => $payslip['philhealth'],
-                    'GSIS Emergency Loan' => $payslip['emergency_loan'],
                     'GSIS Conso Loan' => $payslip['consoloan'],
-                    'GSIS Education Assistance Loan' => 0,
-                    'GSIS Policy Loan' => 0,
-                    'GSIS MPL' => $payslip['mpl'],
+                    'GSIS Emergency Loan' => $payslip['emergency_loan'],
+                    'GSIS PLREG' => $payslip['plreg'],
+                ];
+
+                // Insert AFTER GSIS PLREG
+                if ($payslip['employment_type_id'] == 1) {
+                    $deductions['GSIS MPL'] = $payslip['mpl'];
+                }else{
+                    $deductions['GSIS MPL'] = '0.00';
+                }
+                $deductions += [
                     'GSIS MPL Lite' => $payslip['mpl_lite'],
                     'GSIS CPL' => $payslip['cpl'],
-                    'HDMF Calamity Loan' => 0,
-                    'HDMF MP2' => $payslip['mp2'],
-                    'MPL STLMS' => $payslip['mplstlms'],
-                    'HDMF MP3' => 0,
+                    'GSIS GSEL' => $payslip['gsel'],
+                    'MP2' => $payslip['mp2'],
+                ];
+
+                // Insert AFTER HDMF MP2
+                if ($payslip['employment_type_id'] != 1) {
+                    $deductions['MPL'] = $payslip['mpl'];
+                }
+
+                if ($payslip['employment_type_id'] == 1) {
+                    $deductions['MPL STLMS'] = $payslip['mplstlms'];
+                }
+
+                $deductions += [
                     'Cir375-ECQ' => $payslip['cir375_cir449'],
-                    'SSS' => $payslip['sss'],
-                    'Loan Deductions' => $payslip['other_loans'],
                     'BIR Withholding TAX' => $payslip['w_tax'],
                     'UCA' => $payslip['uca'],
+                    'DISALLOWANCE' => $payslip['disallowance'],
                     'Lates / Undertime / Absences' => $payslip['aut'],
-                ] as $label => $value)
-                    <div class="d-flex align-items-start border-bottom py-1">
-                        <div class="label">{{ $label }}:</div>
-                        <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
-                    </div>
-                @endforeach
+                    'OVERPAYMENT' => $payslip['overpayment'],
+                    'TAX 3%' => $payslip['tax_3 '],
+                    'TAX 5%' => $payslip['tax_5'],
+                    'TAX 8%' => $payslip['tax_8'],
+                    'TAX 10%' => $payslip['tax_10'],
+                ];
+            @endphp
+
+            @foreach($deductions as $label => $value)
+                <div class="d-flex align-items-start border-bottom py-1">
+                    <div class="label">{{ $label }}:</div>
+                    <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
+                </div>
+            @endforeach
             </div>
 
     @if($payslip->deductions->where('reference_type', 'loan')->count())
