@@ -1,59 +1,9 @@
 <div>
     
-    @if($formPage == 'create' || $formPage == 'edit')
-        <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
-            <!-- <button wire:click="setPage" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Go Back</button> -->
-        </div>
-        <div class="card border-0 mt-3 shadow">
-            <div class="card-body p-4">
-                <form wire:submit.prevent="save" wire:target="save">
-                    <div class="row">
-                        @php
-                            $selectedEmployee = collect($employees)->firstWhere('employee_no', $fields['employee_no'][0] ?? null);
-                        @endphp
-                        <div class="col-12 col-md-12 mb-3 w-100">
-                            <label for="employee_no" class="form-label">Choose Employees</label>
-                            <div wire:ignore>
-                                <select class="form-select multi-select w-100" multiple>
-                                    @foreach($employees as $employee)
-                                        <option value="{{ $employee->employee_no }}">
-                                            ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                        @if(!empty($selectedEmployee->personal->firstname) && $formPage != 'create')
-                        <div class="col-12 col-md-12 mb-3 w-100">
-                            <label for="amount" class="form-label">Name: {{ $selectedEmployee->personal->firstname .' '.$selectedEmployee->personal->lastname ?? '' }}</label>
-                            
-                        </div>
-                        @endif
-                        <div class="col-12 col-md-6 mb-3">
-                            <label for="amount" class="form-label">Amount</label>
-                            <input type="text" id="amount" wire:model="fields.amount" class="form-control">
-                            @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="col-12 col-md-6 mb-3">
-                            <label for="valid_until" class="form-label">Valid Until</label>
-                            <input type="date" id="valid_until" wire:model="fields.valid_until" class="form-control">
-                            @error('fields.valid_until') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="submit" class="btn btn-primary px-5 py-3 text-uppercase fw-bold">
-                            <span wire:loading.remove wire:target="save">Save <i class="fa-solid fa-arrow-right ms-2"></i></span>
-                            <span wire:loading wire:target="save">Saving <i class="fa-solid fa-spinner ms-2 fa-spin"></i></span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @else
+    
        <div class="d-flex justify-content-end gap-3 actions w-100 mb-5">
             <!-- <a href="{{route('other-deductions.index')}}" class="btn btn-outline-primary text-uppercase px-5 py-3 fw-medium">Go Back</a> -->
-            <button wire:click="setPage('create')" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</button>
+            <button wire:click="openModal('create')" class="btn btn-primary text-uppercase px-5 py-3 fw-medium">Add New</button>
         </div>
         <div class="card border-0 mt-3">
             <div class="card-body p-0">
@@ -100,7 +50,7 @@
                                     </td>   
                                     <td>
                                         <div class="d-flex justify-content-center gap-1">
-                                            <button wire:click="setPage('edit', '{{$record->employee_no}}')" class="btn btn-info mx-1">
+                                            <button wire:click="openModal('edit', '{{$record->employee_no}}')" class="btn btn-info mx-1">
                                                 <i class="fa-solid fa-edit"></i>
                                             </button>
                                             <button wire:click="remove('true', '{{$record->employee_no}}')" class="btn btn-danger mx-1">
@@ -122,27 +72,156 @@
                 </div>
             </div>
         </div>
-    @endif
+        @if($showModal)
+        <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
+            <div class="modal-dialog">
+                <div class="modal-content">
+        
+                    <div class="modal-header">
+                        <h5>{{ $mode == 'edit' ? 'Edit' : 'Add' }} Deductions</h5>
+                        <button wire:click="closeModal" class="btn-close"></button>
+                    </div>
+        
+                    <div class="modal-body">
+                        <div class="col-12 col-md-12 mb-3 w-100">
+                            <label for="employee_no" class="form-label">Choose Employees</label>
+                            <div wire:ignore.self>
+                                <select class="form-select multi-select w-100" multiple data-placeholder="Select employee(s)"></select>
+                                <input type="hidden" id="selectedEmployees">
+                            </div>
+                            @error('fields.employee_no') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <input type="text" id="amount" wire:model="fields.amount" class="form-control">
+                            @error('fields.amount') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="valid_until" class="form-label">Valid Until</label>
+                            <input type="date" id="valid_until" wire:model="fields.valid_until" class="form-control">
+                            @error('fields.valid_until') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+        
+                    <div class="modal-footer">
+                        <button wire:click="closeModal" class="btn btn-secondary">Cancel</button>
+                        <button 
+                            wire:click="save"
+                            onclick="return beforeSave(@this)"
+                            id="saveBtn"
+                            class="btn btn-primary"
+                            disabled>
+                            Save
+                        </button>
+                    </div>
+        
+                </div>
+            </div>
+        </div>
+        @endif
 </div>
 
 @section('script')
 <script>
-    $(function() {
-
-        Livewire.on('set_select', () => {
+    document.addEventListener('livewire:initialized', () => {
+    
+        Livewire.on('init-select', (data) => {
+    
             setTimeout(() => {
-                $('.multi-select').select2();
-
-                $('.multi-select').on('change', function () {
-                    let data = $(this).val();
-                    @this.call('setEmployees', data);
+    
+                let el = $('.multi-select');
+    
+                if (el.length === 0) return;
+    
+                el.empty();
+    
+                data.employees.forEach(emp => {
+                    let option = new Option(
+                        `(${emp.employee_no}) ${emp.personal.firstname} ${emp.personal.lastname}`,
+                        emp.employee_no,
+                        false,
+                        false
+                    );
+                    el.append(option);
                 });
-            }, 10);
+    
+                if (el.hasClass("select2-hidden-accessible")) {
+                    el.select2('destroy');
+                }
+                
+                
+                    el.select2({
+                        dropdownParent: el.closest('.modal-content'),
+                        width: '100%',
+                        placeholder: 'Select employee(s)', // 🔥 ADD
+                        allowClear: true // 🔥 ADD
+                    });
+    
+                    // ✅ DO NOT reset if already has value
+                    window.selectedEmployees = window.selectedEmployees || [];
+    
+                    el.on('select2:select select2:unselect', function () {
+                        window.selectedEmployees = $(this).val();
+                        toggleSaveButton(); // 🔥 ADD THIS
+                    });
+                
+                   // toggleSaveButton();
+                // 🔥 ADD THIS (CRITICAL FIX)
+                let selected = data.selected || [];
+
+                if (selected.length) {
+                    el.val(selected).trigger('change');
+                    window.selectedEmployees = selected; // keep JS in sync
+                }
+    
+            }, 300);
         });
-
-
-        
-
+    
     });
-</script>
+    document.addEventListener('input', function (e) {
+        if (e.target.id === 'amount' || e.target.id === 'valid_until') {
+            toggleSaveButton();
+        }
+    });
+    function toggleSaveButton() {
+        let employees = window.selectedEmployees || [];
+        let amount = document.getElementById('amount')?.value || '';
+        let validUntil = document.getElementById('valid_until')?.value || '';
+
+        let btn = document.getElementById('saveBtn');
+
+        if (
+            employees.length > 0 &&
+            amount.trim() !== '' &&
+            validUntil.trim() !== ''
+        ) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = true;
+        }
+    }
+
+function beforeSave(component) {
+    component.set('fields.employee_no', window.selectedEmployees || []);
+    return true;
+}
+    function validateBeforeSave(component) {
+        let employees = window.selectedEmployees || [];
+        let amount = document.getElementById('amount').value;
+
+        if (!employees.length) {
+            alert('Please select at least one employee.');
+            return false;
+        }
+
+        if (!amount) {
+            alert('Amount is required.');
+            return false;
+        }
+
+        component.set('fields.employee_no', employees);
+
+        return true;
+    }
+    </script>
 @endsection
