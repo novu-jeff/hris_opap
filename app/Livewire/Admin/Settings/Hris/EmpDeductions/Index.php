@@ -17,6 +17,11 @@ class Index extends Component
     use WithPagination;
     use WithFileUploads;
 
+    public $viewMode;
+
+    public $showModal = false;
+    public $mode = 'create'; // or 'edit'
+
     public $id;             
     public $selected_id;   
     public $entries = 10;
@@ -39,6 +44,50 @@ class Index extends Component
     public function mount($id)
     {
         $this->id = $id;
+        $this->employees = $this->getEmployees();
+    }
+
+    public function openModal($mode = 'create', $employee_no = null)
+    {
+        $this->mode = $mode;
+        $this->showModal = true;
+
+        if ($mode === 'create') {
+            $this->fields['employee_no'] = [];
+        }
+
+        if ($mode === 'edit' && $employee_no) {
+
+            $data = EmployeeDeductions::where('employee_no', $employee_no)
+                ->where('deduction_id', $this->id)
+                ->first();
+
+            $this->fields = [
+                'employee_no' => [$employee_no],    
+                'amount' => $data->amount,  
+                'valid_until'  => $data->valid_until, 
+            ];
+
+        }
+
+        $this->employees = $this->getEmployees();
+
+        $this->js("
+            setTimeout(() => {
+                Livewire.dispatch('init-select', {
+                    employees: " . json_encode($this->employees) . ",
+                    selected: " . json_encode($this->fields['employee_no']) . "
+                });
+            }, 200);
+        ");
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+       // $this->reset($this->fields['amount']);
+       $this->fields['amount'] = null;
+       $this->fields['valid_until'] = null;
     }
 
 
@@ -71,10 +120,10 @@ class Index extends Component
     public function getEmployees()
     {
 
-         return ($this->formPage === 'create')
+        return ($this->mode === 'create')
         ? EmployeeInformation::with('personal')
             ->whereHas('personal')
-            ->whereDoesntHave('deductions', function ($q) {
+             ->whereDoesntHave('deductions', function ($q) {
                 $q->where('deduction_id', $this->id);
             })
             ->get()
@@ -153,6 +202,7 @@ class Index extends Component
 
     public function save()
     {
+        $this->fields['employee_no'] = $this->fields['employee_no'] ?: [];
         if (Gate::denies('write employee-deductions')) {
             $this->dispatch('alert', [
                 'status'    => 'error',
@@ -195,13 +245,21 @@ class Index extends Component
 
             DB::commit();
 
-            $this->dispatch('set_select');
+            $this->viewMode = null;
+
+            // ✅ reset pagination to first page
+            $this->resetPage();
+
+
+            $employees = $this->fields['employee_no'];
             $this->dispatch('alert', [
                 'status'    => 'success',
                 'title'     => 'Saved!',
                 'showAlert' => true,
                 'message'   => 'Deduction(s) saved.',
             ]);
+            $this->closeModal();
+            $this->resetPage();
 
         } catch (\Throwable $e) {
             DB::rollBack();
