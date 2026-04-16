@@ -1,98 +1,126 @@
 <div>
     <div>
     <div class="modal fade"
-         id="show"
-         wire:ignore.self
-         data-bs-backdrop="static"
-         data-bs-keyboard="false"
-         tabindex="-1"
-         aria-hidden="true">
+     id="show"
+     wire:ignore.self
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1">
 
-        <div class="modal-dialog modal-lg modal-dialog-scrollable" >
-            <div class="modal-content">
+     <div class="modal-dialog custom-modal modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0 rounded-3">
 
-                <div class="modal-header">
-                    <h5 class="modal-title text-uppercase fw-bold">
-                        Salary Table – {{ $show->name ?? '' }}
-                    </h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                </div>
+            {{-- HEADER --}}
+            <div class="modal-header border-bottom py-3 px-4">
+                <h5 class="modal-title fw-semibold text-dark">
+                    Salary Table <span class="text-muted">— {{ $show->name ?? '' }}</span>
+                </h5>
+                
+                    <button class="btn btn-sm btn-outline-secondary"
+                            onclick="toggleView()"
+                            id="viewToggle">
+                        Card View
+                    </button>
+                
+                   
+             
 
-                <div class="modal-body">
-                    @if($show)
-                        {{-- WTAX Toggle --}}
-                       <!-- <div class="mb-3">
-                            <input type="checkbox" wire:model="showWtax" id="showWtax">
-                            <label for="showWtax" class="form-label mb-0">Show WTAX</label>
-                        </div>-->
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped align-middle">
-                                <thead class="table-light text-center">
-                                    <tr>
-                                        <th rowspan="2">Salary Grade</th>
-                                        <th colspan="8">Steps</th>
-                                    </tr>
-                                    <tr>
-                                        <th>1</th>
-                                        <th>2</th>
-                                        <th>3</th>
-                                        <th>4</th>
-                                        <th>5</th>
-                                        <th>6</th>
-                                        <th>7</th>
-                                        <th>8</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach($show->items as $data)
-
-                                     @php
-                                        $gradeBg = $loop->even ? 'bg-primary bg-opacity-25' : 'bg-primary bg-opacity-10';
-                                    @endphp
-                                                                        {{-- SALARY ROW --}}
-                                        <tr class="fw-semibold">
-                                            <td rowspan="{{ $showWtax ? '2' : '1' }}" class="text-center {{ $gradeBg }}">
-                                                {{ $data['salary_grade'] }}
-                                            </td>
-
-                                            <td>₱{{ number_format((float) $data['step_1'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_2'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_3'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_4'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_5'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_6'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_7'], 2) }}</td>
-                                            <td>₱{{ number_format((float) $data['step_8'], 2) }}</td>
-                                        </tr>
-
-                                        {{-- WTAX ROW (Conditional) --}}
-                                        @if($showWtax)
-                                            <tr class="text-muted small fst-italic">
-                                                <td>WTAX: ₱{{ number_format($data['step_1_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_2_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_3_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_4_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_5_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_6_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_7_wtax'], 2) }}</td>
-                                                <td>WTAX: ₱{{ number_format($data['step_8_wtax'], 2) }}</td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
             </div>
+
+            {{-- BODY --}}
+            <div class="modal-body px-4 py-3">
+
+                @if($show)
+                <div id="tableView">
+                    <div class="table-responsive">
+
+                        <table class="table align-middle mb-0 salary-table sticky-first">
+
+                            {{-- HEADER --}}
+                            <thead class="text-center">
+                                <tr class="border-bottom">
+                                    <th rowspan="2" class="bg-light fw-semibold">SG</th>
+                                    <th colspan="8" class="bg-light fw-semibold">Steps</th>
+                                </tr>
+                                <tr class="bg-light small text-muted">
+                                    @for($i=1;$i<=8;$i++)
+                                        <th>{{ $i }}</th>
+                                    @endfor
+                                </tr>
+                            </thead>
+
+                            {{-- BODY --}}
+                            <tbody>
+                                @foreach($show->items as $data)
+
+                                    <tr class="salary-row">
+                                        <td class="text-center fw-bold text-primary">
+                                            {{ $data['salary_grade'] }}
+                                        </td>
+
+                                        @for($i=1;$i<=8;$i++)
+                                            <td class="text-end">
+                                                ₱{{ number_format((float)$data['step_'.$i], 2) }}
+                                            </td>
+                                        @endfor
+                                    </tr>
+
+                                    {{-- WTAX --}}
+                                    @if($showWtax)
+                                        <tr class="wtax-row">
+                                            <td></td>
+                                            @for($i=1;$i<=8;$i++)
+                                                <td class="text-end text-muted small">
+                                                    {{ number_format($data['step_'.$i.'_wtax'], 2) }}
+                                                </td>
+                                            @endfor
+                                        </tr>
+                                    @endif
+
+                                @endforeach
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>  
+
+                <div id="cardView" class="d-none">
+                    @foreach($show->items as $data)
+                        <div class="salary-card mb-3">
+                            <div class="fw-bold text-primary mb-2">
+                                SG {{ $data['salary_grade'] }}
+                            </div>
+                
+                            <div class="row g-2">
+                                @for($i=1;$i<=8;$i++)
+                                    <div class="col-6">
+                                        <div class="card-step">
+                                            <div class="label">Step {{ $i }}</div>
+                                            <div class="value">
+                                                ₱{{ number_format((float)$data['step_'.$i], 2) }}
+                                            </div>
+                
+                                            @if($showWtax)
+                                                <div class="wtax">
+                                                    {{ number_format($data['step_'.$i.'_wtax'], 2) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+
         </div>
     </div>
+</div>
 </div>
 
 
@@ -139,3 +167,23 @@
 @endforeach
 
 </div>
+
+@section('script')
+<script>
+    function toggleView() {
+        const table = document.getElementById('tableView');
+        const card = document.getElementById('cardView');
+        const btn = document.getElementById('viewToggle');
+    
+        if (table.classList.contains('d-none')) {
+            table.classList.remove('d-none');
+            card.classList.add('d-none');
+            btn.innerText = 'Card View';
+        } else {
+            table.classList.add('d-none');
+            card.classList.remove('d-none');
+            btn.innerText = 'Table View';
+        }
+    }
+    </script>   
+@endsection
