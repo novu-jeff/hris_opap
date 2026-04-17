@@ -44,6 +44,7 @@
                                                         <option value="1">Regular Contractual</option>
                                                         <option value="2">Contract of Service</option>
                                                         <option value="3">Job Offer</option>
+                                                        <option value="4">COS</option>
                                                     </select>
                                                 </td>
                                                 <td>
