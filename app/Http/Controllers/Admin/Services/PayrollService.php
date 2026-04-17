@@ -36,6 +36,7 @@ class PayrollService extends Controller {
 
         $cosId = EmployementTypes::where('code', 'COS')->value('id');
         $joId  = EmployementTypes::where('code', 'JO')->value('id');
+        $cos2Id  = EmployementTypes::where('code', 'COS2')->value('id');
 
       // dd( $cosId , $joId, $employment_type );
      
@@ -64,12 +65,12 @@ class PayrollService extends Controller {
             ->join('employee_personal as p', 'ei.employee_no', '=', 'p.employee_no')
             ->leftJoin('positions as po', 'ei.position_id', '=', 'po.id')
             ->leftJoin('sections as s', 'ei.section_id', '=', 's.id')
-            ->where(function ($query) use ($employment_type, $cosId, $joId) {
+            ->where(function ($query) use ($employment_type, $cosId, $joId, $cos2Id) {
 
                 if ($employment_type == $cosId) {
                     // COS payroll must include JO employees
                     Log::info('COS payroll must include JO employees');
-                    $query->whereIn('ei.employment_type_id', [$cosId, $joId]);
+                    $query->whereIn('ei.employment_type_id', [$cosId, $joId, $cos2Id]);
                 } else {
                     Log::info('COS2 payroll must include JO employees');
                     $query->where('ei.employment_type_id', $employment_type);
