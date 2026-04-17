@@ -99,7 +99,7 @@
                         </div>
                     </div>
                     @if($isGovernment)
-                        @if(in_array($records['employee_information']['type'], ['1', '2', '3']))
+                        @if(in_array($records['employee_information']['type'], ['1', '2', '3', '4']))
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="position_id">Position <span class="text-danger">*</span></label>
                                 <select wire:change="handleSalary" wire:model.live="records.employee_information.position_id" id="records.employee_information.position_id" class="form-select">
@@ -126,7 +126,7 @@
                                 </div>
                             </div>  
                             @endif
-                            @if($records['employee_information']['type'] == 3 || $records['employee_information']['type'] == 4)    
+                            @if($records['employee_information']['type'] == 3)    
                                 <div class="col-md-4 mb-3">
                                     <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                     <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
@@ -135,7 +135,7 @@
                                     </div>
                                 </div>     
                             @endif
-                        @elseif($records['employee_information']['type'] == 4)    
+                        @elseif($records['employee_information']['type'] == 50)    
                             <div class="col-md-4 mb-3">
                                 <label class="mb-2" for="job_completion">Job Order Completion <span class="text-danger">*</span></label>
                                 <input type="date" wire:model="records.employee_information.job_completion" id="records.employee_information.job_completion" class="form-control">
