@@ -195,6 +195,10 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
         $payrollItem['philhealth'] = $philhealth ; // ✅ IMPORTANT
 
+        $rlip = floor(floatval($basic * 0.09) * 100) / 100;
+        $this->rlip[$sectionIndex][$employeeIndex] = $rlip;
+        $payrollItem['rlip'] = $rlip ; // ✅ IMPORTANT
+
    }else{
         $gross = round($basic, 2);
 
@@ -676,7 +680,8 @@ public function selectEmployee($id)
                             ? floor((min($basic_salary, $ceiling) * $rate / 2) * 100) / 100
                             : 0;
                           $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
-                          $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                          //$rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
+                          $rlip = $hasDeductions ? floor(floatval($basic_salary * 0.09) * 100) / 100 : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
