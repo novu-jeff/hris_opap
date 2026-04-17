@@ -183,13 +183,25 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $basic = floatval($payrollItem['basic_salary'] ?? 0);
     $pera  = floatval($payrollItem['pera'] ?? 0);
     $aut = floatval($payrollItem['aut'] ?? 0);
+    $rate = 0.05;
+    $ceiling = 100000;
 
     // If pera exists, add it
    //dd($payrollItem['employment_type_id'] );
    if($payrollItem['employment_type_id'] !== 2 && $payrollItem['employment_type_id'] !== 3 && $payrollItem['employment_type_id'] !== 4) {
         $gross = round($basic + $pera, 2);
+
+        $philhealth = floor((min($basic, $ceiling) * $rate / 2) * 100) / 100;
+        $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
+        $payrollItem['philhealth'] = $philhealth ; // ✅ IMPORTANT
+
    }else{
         $gross = round($basic, 2);
+
+        $philhealth = floor(($basic * 0.05) * 100) / 100;
+        $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
+        $payrollItem['philhealth'] =  $philhealth ; // ✅ IMPORTANT
+                       
    }
 
     // Override gross
