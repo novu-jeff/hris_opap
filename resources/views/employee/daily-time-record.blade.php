@@ -56,30 +56,34 @@ $(document).on('click', '.save-as-pdf', function() {
 
     printWindow.document.write(`
         <style>
+            * {
+                box-sizing: border-box;
+            }
             body {
                 margin: 0;
                 padding: 10px;
                 font-family: Arial, sans-serif;
+                zoom: 0.75; /* adjust between 0.75–0.9 if needed */
             }
             
              .dtr-header img {
-                width: 80px;   /* CHANGE SIZE HERE */
+                width: 60px;   /* CHANGE SIZE HERE */
                 height: auto;
             }
             
             .dtr-header {
                 position: relative;
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 5px;
             }
 
             .dtr-info {
-                margin-bottom: 20px;
-                font-size: 14px;
+                margin-bottom: 8px;
+                font-size: 12px;
             }
 
             .underline {
-                min-width: 300px;
+                min-width: auto;
                 width: fit-content;
                 border-bottom: 1px solid black;
                 padding: 0 10px 0 20px;
@@ -89,19 +93,19 @@ $(document).on('click', '.save-as-pdf', function() {
             
 
             .dtr-container {
-                display: grid;
-                grid-template-columns: 50% 50%;
-                gap: 10px;
+                display: flex;
                 width: 100%;
+                page-break-inside: avoid;
             }
 
             .dtr {
-                padding: 10mm 5mm;
+                padding: 5mm 3mm;
                 border: 1px solid #999;
-                border-radius: 10px;
+                border-radius: 0px;
                 background: white;
-                font-size: 9px;
+                font-size: 8px;
                 page-break-inside: avoid;
+                width: 49%;
             }
 
             .dtr-table {
@@ -111,33 +115,34 @@ $(document).on('click', '.save-as-pdf', function() {
 
             .dtr-table th, .dtr-table td {
                 border: 1px solid #555;
-                padding: 3px;
-                font-size: 8px;
+                padding: 1px;
+                font-size: 6.5px;
                 text-align: center;
             }
 
             .dtr-summary {
                 text-align: center;
-                margin-top: 20px;
+                margin-top: 5px;
             }
             .dtr-summary h5 {
                 text-transform: uppercase;
                 font-weight: bold;
-                margin: 30px 0 30px 0;
+                margin: 10px 0;
+                font-size: 10px;
             }  
             .dtr-summary-container {
                 width: 90%;
                 margin: auto;
-                display: grid
-            ;
+                display: grid;
                 grid-template-columns: repeat(3, minmax(200px, 1fr));
                 text-align: left;
+                gap: 0;
             } 
             
             .dtr-summary-item {
-                font-size: 13px;
+                font-size: 9px;
                 font-weight: 600;
-                margin-bottom: 0px !important;
+                margin-bottom: 2px;
                 text-transform: uppercase;
                 color: #000000c5;
             }
@@ -148,8 +153,8 @@ $(document).on('click', '.save-as-pdf', function() {
 
             @page {
                 size: A4 landscape;
-                margin: 8mm;
-            }
+                margin: 5mm;
+            }     
         </style>
     `);
 
