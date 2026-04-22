@@ -425,7 +425,7 @@ class SalaryService extends Controller {
       
                       }else{
                         $salaryBase = max($basic_salary, 10000);
-
+                        Log::info('Philhealth items', ['salaryBase' => $salaryBase, 'basicSalary' => $basic_salary]);
                         $philhealth = $hasDeductions
                             ? floor(($salaryBase * 0.05) * 100) / 100
                             : 0;
