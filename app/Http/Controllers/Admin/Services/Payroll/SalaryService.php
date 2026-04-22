@@ -506,8 +506,10 @@ class SalaryService extends Controller {
                         $secondHalf = round($lbp - $firstHalf, 2);
                         
                     }else{
+                       
                         $firstHalf  = floor(($net  / 2) * 100) / 100;
                         $secondHalf = round($net - $firstHalf, 2);
+                        Log::info('Firsthalf Computation Salary Service', ['Net' => $net, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
                     }
                    
 
