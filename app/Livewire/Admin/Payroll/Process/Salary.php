@@ -769,8 +769,18 @@ public function selectEmployee($id)
                             $secondHalf = round($lbp - $firstHalf, 2);
                             
                         }else{
-                            $firstHalf  = floor(($net  / 2) * 100) / 100;
-                            $secondHalf = round($net - $firstHalf, 2);
+                            /*$firstHalf  = floor(($net  / 2) * 100) / 100;
+                            $secondHalf = round($net - $firstHalf, 2);*/
+
+                            $netCents = (int) round($net * 100);
+
+                            $firstHalfCents = intdiv($netCents, 2);
+                            $secondHalfCents = $netCents - $firstHalfCents;
+    
+                            $firstHalf = $firstHalfCents / 100;
+                            $secondHalf = $secondHalfCents / 100;
+                            Log::info('Firsthalf Computation Salary', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
+                        
                         }
                     }else{
 
@@ -783,8 +793,18 @@ public function selectEmployee($id)
                             $secondHalf = round($lbp - $firstHalf, 2);
                             
                         }else{
-                            $firstHalf  = floor(($net  / 2) * 100) / 100;
-                            $secondHalf = round($net - $firstHalf, 2);
+                            /*$firstHalf  = floor(($net  / 2) * 100) / 100;
+                            $secondHalf = round($net - $firstHalf, 2);*/
+
+                            $netCents = (int) round($net * 100);
+
+                            $firstHalfCents = intdiv($netCents, 2);
+                            $secondHalfCents = $netCents - $firstHalfCents;
+    
+                            $firstHalf = $firstHalfCents / 100;
+                            $secondHalf = $secondHalfCents / 100;
+                            Log::info('Secondhalf Computation Salary Service', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
+                        
                         }
 
                     }   
