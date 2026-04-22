@@ -424,7 +424,7 @@ class SalaryService extends Controller {
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
                       }else{
-                        $salaryBase = min(max($basic_salary, 10000), 100000);
+                        $salaryBase = max($basic_salary, 10000);
 
                         $philhealth = $hasDeductions
                             ? floor(($salaryBase * 0.05) * 100) / 100
