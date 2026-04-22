@@ -507,9 +507,16 @@ class SalaryService extends Controller {
                         
                     }else{
                        
-                        $firstHalf  = floor(($net  / 2) * 100) / 100;
-                        $secondHalf = round($net - $firstHalf, 2);
-                        Log::info('Firsthalf Computation Salary Service', ['Net' => $net, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
+                        //$firstHalf  = floor(($net  / 2) * 100) / 100;
+                        //$secondHalf = round($net - $firstHalf, 2);
+                        $netCents = (int) round($net * 100);
+
+                        $firstHalfCents = intdiv($netCents, 2);
+                        $secondHalfCents = $netCents - $firstHalfCents;
+
+                        $firstHalf = $firstHalfCents / 100;
+                        $secondHalf = $secondHalfCents / 100;
+                        Log::info('Firsthalf Computation Salary Service', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
                     }
                    
 
