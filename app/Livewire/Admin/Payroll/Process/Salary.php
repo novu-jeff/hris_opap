@@ -346,12 +346,28 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     } elseif ($isFirstHalf) {
         // First cutoff (1–15): recompute first half ONLY
         Log::info('First cutoff (1–15)', ['netAmount' => $netAmount,'bankTotal' => $bankTotal]);
-        $firstHalf  = floor(($netAmount / 2) * 100) / 100;
+       // $firstHalf  = floor(($netAmount / 2) * 100) / 100;
         // dd($firstHalf);
         //dd($firstHalf , $bankTotal);
-        $firstHalf =  $firstHalf - $bankTotal ;
-        $firstHalf = round((float) $firstHalf, 2);
-        $secondHalf = round($lbpPayroll - $firstHalf, 2);
+       // $firstHalf =  $firstHalf - $bankTotal ;
+       // $firstHalf = round((float) $firstHalf, 2);
+      //  $secondHalf = round($lbpPayroll - $firstHalf, 2);
+
+        $netCents = (int) round($netAmount * 100);        // 1,983,292
+        $bankCents = (int) round($bankTotal * 100);       // 100,000
+        $lbpCents = $netCents - $bankCents; 
+
+        //$netCents = (int) round($netAmount * 100);
+
+       // $firstHalfCents = intdiv($netCents, 2);
+        $firstHalfCents = intdiv($netCents, 2);
+        $firstHalfCents = $firstHalfCents - $bankCents;
+        $secondHalfCents = $lbpCents - $firstHalfCents;
+
+        $firstHalf = $firstHalfCents / 100;
+        $secondHalf = $secondHalfCents / 100;
+
+
     } else {
         // Second cutoff (16–end): recompute second half ONLY
         Log::info('Second cutoff (16–end)', ['originalfirstHalf' => $payrollItem['net_first_half'],'lbpPayroll' => $lbpPayroll]);
