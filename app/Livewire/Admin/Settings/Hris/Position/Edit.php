@@ -86,9 +86,7 @@ class Edit extends Component
     protected function rules() {
         return [
             'fields.name' => [
-                'required',
-                Rule::unique('positions', 'name')
-                    ->ignore($this->id),
+                'required'
             ],
             'fields.salary_grade' => 'required|numeric',
             'fields.type' => 'required|exists:employment_types,id'
