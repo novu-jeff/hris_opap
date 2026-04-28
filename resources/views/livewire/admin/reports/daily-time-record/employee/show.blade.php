@@ -19,7 +19,7 @@
         justify-content: center;
         width: 100%;
         gap: 20px;
-        padding: 0 20px; /* was 80px */
+        padding: 0 80px 0 80px;
     }
 
     .print-container .dtr:nth-of-type(2) {
@@ -27,7 +27,7 @@
     }
 
     .dtr {
-        width: 700px;
+        width: 800px;
         margin: 10px 0 50px 0;
         padding: 10mm 5mm;
         box-sizing: border-box;
@@ -138,7 +138,7 @@
     .dtr-summary h5 {
         text-transform: uppercase;
         font-weight: bold;
-        margin: 15px 0; /* was 30px */
+        margin: 30px 0 30px 0;
     }
 
     .dtr-summary-container {
@@ -157,7 +157,7 @@
     }
 
     .signature {
-        margin-top: 25px; /* was 50px */
+        margin-top: 50px;
         text-align: center;
     }
 
@@ -170,13 +170,11 @@
     .certify {
         width: 90%;
         margin: auto;
-        margin-top: 10px; /* reduce */
         text-align: center
     }
 
     .remarks {
         margin-left: 40px;
-        margin-top: 10px;
     }
 
     .btn-correction {
@@ -208,7 +206,7 @@
 }
 
 .dtr-copy {
-    width: 48% !important; /* keep this */
+    width: 48%;
     max-width: 100%;
     padding: 5px;
 }
@@ -315,7 +313,7 @@
     body {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        transform: scale(0.78);        /* ← adjust until everything fits */
+        transform: scale(0.83);        /* ← adjust until everything fits */
         transform-origin: top left;
     }
 
@@ -353,7 +351,7 @@
     .p-dtr-table th,
     .p-dtr-table td {
         padding: 2px !important;
-        font-size: 10px !important;
+        font-size: 11px !important;
     }
 
    
