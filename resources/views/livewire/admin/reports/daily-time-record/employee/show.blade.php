@@ -455,14 +455,13 @@
                 @endif
             </div>
         @endif
+        <div id="print-template" style="display:none;">
+            <div class="dtr-container">
+                @include('livewire.admin.reports.daily-time-record.employee.partials.dtr-copy')
+                @include('livewire.admin.reports.daily-time-record.employee.partials.dtr-copy')
+            </div>
+        </div>
     </div>  
 </div>
 
-<script>
-function printDTR() {
-    
-    window.print();
 
-   
-}
-</script>

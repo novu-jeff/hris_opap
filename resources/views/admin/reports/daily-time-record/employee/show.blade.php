@@ -16,154 +16,133 @@
 
 
 <script>
-    $(document).on('click', '.save-as-pdf', function() {
-    
-        var original = $('.dtr').first();  
-        if (original.length === 0) {
-            alert("No DTR found.");
-            return;
-        }
-    
-        // CLONE DTR
-        var copy = original.clone();
-    
-        // 🔥 FIX LOGO FOR BOTH ORIGINAL & COPY
-        [original, copy].forEach(function(section) {
-            section.find('img').each(function() {
-                var src = $(this).attr('src');
-                if (src && !src.startsWith('http')) {
-                    $(this).attr('src', window.location.origin + src);
-                }
-            });
-        });
-    
-        var printWindow = window.open('', '_blank', 'width=900,height=700');
-    
-        printWindow.document.write('<html><head><title>{{$employee_no . " | DTR"}}</title>');
-    
-        printWindow.document.write(`
+$(document).on('click', '.save-as-pdf', function () {
+    let content = $('#print-template').html();
+
+    let printWindow = window.open('', '_blank', 'width=1200,height=800');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>DTR Print</title>
+
             <style>
+                /* PDF paper margin */
+                @page {
+                    size: A4 portrait;
+                    margin: 15mm 12mm 15mm 12mm;
+                }
+
                 * {
                     box-sizing: border-box;
                 }
+
+                html,
                 body {
                     margin: 0;
-                    padding: 10px;
+                    padding: 0;
                     font-family: Arial, sans-serif;
-                    zoom: 0.75; /* adjust between 0.75–0.9 if needed */
+                    font-size: 10px;
+                    background: white;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
                 }
-                
-                 .dtr-header img {
-                    width: 60px;   /* CHANGE SIZE HERE */
-                    height: auto;
+
+                /* visible content margin */
+                body {
+                    padding: 10px;
                 }
-                
-                .dtr-header {
-                    position: relative;
-                    text-align: center;
-                    margin-bottom: 5px;
-                }
-    
-                .dtr-info {
-                    margin-bottom: 8px;
-                    font-size: 12px;
-                }
-    
-                .underline {
-                    min-width: auto;
-                    width: fit-content;
-                    border-bottom: 1px solid black;
-                    padding: 0 10px 0 20px;
-                    display: inline-flex;
-                    align-items: end;
-                }
-                
-    
+
                 .dtr-container {
                     display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    gap: 12px;
                     width: 100%;
-                    page-break-inside: avoid;
                 }
-    
-                .dtr {
-                    padding: 5mm 3mm;
-                    border: 1px solid #999;
-                    border-radius: 0px;
-                    background: white;
-                    font-size: 8px;
+
+                .dtr-copy {
+                    width: 48%;
                     page-break-inside: avoid;
-                    width: 49%;
+                    break-inside: avoid;
                 }
-    
+
+                .logo {
+                    width: 42px !important;
+                    height: auto !important;
+                    display: block;
+                    margin: 0 auto 5px auto;
+                }
+
+                .office-title {
+                    text-align: center;
+                    font-size: 11px;
+                    font-weight: bold;
+                    line-height: 1.2;
+                    margin-bottom: 8px;
+                }
+
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 6px;
+                    font-size: 10px;
+                }
+
+                .info-table td {
+                    border: none;
+                    padding: 1px;
+                    text-align: left;
+                    vertical-align: top;
+                }
+
                 .dtr-table {
                     width: 100%;
                     border-collapse: collapse;
+                    table-layout: fixed;
                 }
-    
-                .dtr-table th, .dtr-table td {
-                    border: 1px solid #555;
-                    padding: 1px;
-                    font-size: 6.5px;
+
+                .dtr-table th,
+                .dtr-table td {
+                    border: 1px solid #000;
                     text-align: center;
-                }
-    
-                .dtr-summary {
-                    text-align: center;
-                    margin-top: 5px;
-                }
-                .dtr-summary h5 {
-                    text-transform: uppercase;
-                    font-weight: bold;
-                    margin: 10px 0;
-                    font-size: 10px;
-                }  
-                .dtr-summary-container {
-                    width: 90%;
-                    margin: auto;
-                    display: grid;
-                    grid-template-columns: repeat(3, minmax(200px, 1fr));
-                    text-align: left;
-                    gap: 0;
-                } 
-                
-                .dtr-summary-item {
+                    padding: 2px;
                     font-size: 9px;
-                    font-weight: 600;
-                    margin-bottom: 2px;
-                    text-transform: uppercase;
-                    color: #000000c5;
+                    line-height: 1.1;
                 }
-    
-            .text-uppercase {
-                text-transform: uppercase !important;
-            }
-    
-                @page {
-                    size: A4 landscape;
-                    margin: 5mm;
-                }     
+
+                .signature {
+                    margin-top: 20px;
+                    text-align: center;
+                    font-size: 10px;
+                }
+
+                .line {
+                    border-top: 1px solid #000;
+                    margin-top: 18px;
+                    padding-top: 3px;
+                    font-weight: bold;
+                }
             </style>
-        `);
-    
-        printWindow.document.write('</head><body>');
-        printWindow.document.write('<div class="dtr-container">');
-    
-        // LEFT copy
-        printWindow.document.write(original.prop('outerHTML'));
-    
-        // RIGHT copy
-        printWindow.document.write(copy.prop('outerHTML'));
-    
-        printWindow.document.write('</div></body></html>');
-    
-        printWindow.document.close();
-    
-        // Wait for images to load before printing
-        printWindow.onload = function () {
-            printWindow.print();
-            setTimeout(() => printWindow.close(), 500);
-        };
-    });
+        </head>
+
+        <body>
+            ${content}
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+
+        setTimeout(() => {
+            printWindow.close();
+        }, 800);
+    };
+});
     </script>
     
       
