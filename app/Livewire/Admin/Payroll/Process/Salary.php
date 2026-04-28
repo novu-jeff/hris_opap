@@ -188,25 +188,41 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
     // If pera exists, add it
    //dd($payrollItem['employment_type_id'] );
-   if($payrollItem['employment_type_id'] !== 2 && $payrollItem['employment_type_id'] !== 3 && $payrollItem['employment_type_id'] !== 4) {
-        $gross = round($basic + $pera, 2);
+   $userPhilhealth = $this->philhealth[$sectionIndex][$employeeIndex] ?? null;
+   if ($userPhilhealth === null || $userPhilhealth === '' || floatval($userPhilhealth) == 0) {
+            $philhealth = 0;
+        if($payrollItem['employment_type_id'] !== 2 && $payrollItem['employment_type_id'] !== 3 && $payrollItem['employment_type_id'] !== 4) {
+                $gross = round($basic + $pera, 2);
+                
+                $rlip = floor(floatval($basic * 0.09) * 100) / 100;
+                $this->rlip[$sectionIndex][$employeeIndex] = $rlip;
+                $payrollItem['rlip'] = $rlip ; // ✅ IMPORTANT
 
-        $philhealth = floor((min($basic, $ceiling) * $rate / 2) * 100) / 100;
-        $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
-        $payrollItem['philhealth'] = $philhealth ; // ✅ IMPORTANT
+        }else{
+                $gross = round($basic, 2);
+                        
+        }
+   } else {
+        if($payrollItem['employment_type_id'] !== 2 && $payrollItem['employment_type_id'] !== 3 && $payrollItem['employment_type_id'] !== 4) {
+                $gross = round($basic + $pera, 2);
+            
+                $philhealth = floor((min($basic, $ceiling) * $rate / 2) * 100) / 100;
+                $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
+                $payrollItem['philhealth'] = $philhealth ; // ✅ IMPORTANT
 
-        $rlip = floor(floatval($basic * 0.09) * 100) / 100;
-        $this->rlip[$sectionIndex][$employeeIndex] = $rlip;
-        $payrollItem['rlip'] = $rlip ; // ✅ IMPORTANT
+                $rlip = floor(floatval($basic * 0.09) * 100) / 100;
+                $this->rlip[$sectionIndex][$employeeIndex] = $rlip;
+                $payrollItem['rlip'] = $rlip ; // ✅ IMPORTANT
 
-   }else{
-        $gross = round($basic, 2);
-
-        $philhealth = floor(($basic * 0.05) * 100) / 100;
-        $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
-        $payrollItem['philhealth'] =  $philhealth ; // ✅ IMPORTANT
-                       
-   }
+        }else{
+                $gross = round($basic, 2);
+                
+                $philhealth = floor(($basic * 0.05) * 100) / 100;
+                $this->philhealth[$sectionIndex][$employeeIndex] =  $philhealth ;
+                $payrollItem['philhealth'] =  $philhealth ; // ✅ IMPORTANT
+                            
+        }
+    }   
 
     // Override gross
     $payrollItem['gross_amount_earned'] = $gross;
