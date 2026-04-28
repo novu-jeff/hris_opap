@@ -9,6 +9,7 @@ use App\Notifications\Notifications;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Log;
@@ -80,9 +81,7 @@ class Index extends Component
             ]);
         }
 
-        Log::info('Data retro download', ['records' => $records ]);
-
-     
+        Log::info('Download ATRO', ['records' => $records]);
 
         $earliestStartTime = Carbon::parse(collect($records)->min('start_time'))->format('g:i A');
         $latestEndTime = Carbon::parse(collect($records)->max('end_time'))->format('g:i A');
@@ -91,12 +90,14 @@ class Index extends Component
         $template = public_path('templates/forms/HRMS-PD Form 05.docx');
 
         $currentDate = Carbon::now()->format('m-d-y');
-        $outputPath = public_path('outputs/HRMS-PD FORM 05 | ' . $currentDate . '.docx');
+        $disk = Storage::disk('public');
+        $outputDirectory = 'outputs';
+        $outputFile = 'HRMS-PD FORM 05 | ' . $currentDate . '.docx';
+        $outputPath = $disk->path($outputDirectory . '/' . $outputFile);
 
-        // Ensure the outputs directory exists
-        $dir = public_path('outputs');
-        if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+        // Use the public storage disk to avoid write-permission issues in public/
+        if (!$disk->exists($outputDirectory)) {
+            $disk->makeDirectory($outputDirectory);
         }
 
     
