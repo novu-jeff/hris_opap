@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use PhpOffice\PhpWord\TemplateProcessor;
+use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
@@ -78,6 +79,8 @@ class Index extends Component
                 'message' => 'No approved applications found for the selected date and office' 
             ]);
         }
+
+        Log::info('Data retro download', ['records' => $records ]);
 
      
 

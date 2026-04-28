@@ -57,6 +57,19 @@
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                        <div class="col-12 col-md-12 mb-3" wire:ignore>
+                            <label for="relative-emp" class="form-label">Employees <span class="text-danger fw-bold">*</span></label>
+                            <select class="form-select multi-select" multiple wire:model="fields.employees">
+                                @foreach($OtherEmployees as $employee)
+                                    <option value="{{ $employee->employee_no }}">
+                                        ({{ $employee->employee_no }}) {{ $employee->personal->firstname }} {{ $employee->personal->lastname }}
+                                    </option>
+                                @endforeach
+                            </select>                                
+                            <div class="error-field select2-error">
+                                
+                            </div>
+                        </div>
 
                         {{-- JUSTIFICATION --}}
                         <div class="col-12 mb-3">

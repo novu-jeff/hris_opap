@@ -159,7 +159,7 @@ $(document).on('click', '.save-as-pdf', function() {
     `);
 
     printWindow.document.write('</head><body>');
-    printWindow.document.write('<div class="dtr-container">');
+    printWindow.document.write('<div class="dtr-container rey">');
 
     // LEFT copy
     printWindow.document.write(original.prop('outerHTML'));
