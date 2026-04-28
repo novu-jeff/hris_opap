@@ -29,152 +29,131 @@
 
 
 <script>
-$(document).on('click', '.save-as-pdf', function() {
+$(document).on('click', '.save-as-pdf', function () {
+    let content = $('#print-template').html();
 
-    var original = $('.dtr').first();  
-    if (original.length === 0) {
-        alert("No DTR found.");
-        return;
-    }
-
-    // CLONE DTR
-    var copy = original.clone();
-
-    // 🔥 FIX LOGO FOR BOTH ORIGINAL & COPY
-    [original, copy].forEach(function(section) {
-        section.find('img').each(function() {
-            var src = $(this).attr('src');
-            if (src && !src.startsWith('http')) {
-                $(this).attr('src', window.location.origin + src);
-            }
-        });
-    });
-
-    var printWindow = window.open('', '_blank', 'width=900,height=700');
-
-    printWindow.document.write('<html><head><title>{{$employee_no . " | DTR"}}</title>');
+    let printWindow = window.open('', '_blank', 'width=1200,height=800');
 
     printWindow.document.write(`
-        <style>
-            * {
-                box-sizing: border-box;
-            }
-            body {
-                margin: 0;
-                padding: 10px;
-                font-family: Arial, sans-serif;
-                zoom: 0.75; /* adjust between 0.75–0.9 if needed */
-            }
-            
-             .dtr-header img {
-                width: 60px;   /* CHANGE SIZE HERE */
-                height: auto;
-            }
-            
-            .dtr-header {
-                position: relative;
-                text-align: center;
-                margin-bottom: 5px;
-            }
+        <html>
+        <head>
+            <title>DTR Print</title>
 
-            .dtr-info {
-                margin-bottom: 8px;
-                font-size: 12px;
-            }
+            <style>
+                /* PDF paper margin */
+                @page {
+                    size: A4 portrait;
+                    margin: 15mm 12mm 15mm 12mm;
+                }
 
-            .underline {
-                min-width: auto;
-                width: fit-content;
-                border-bottom: 1px solid black;
-                padding: 0 10px 0 20px;
-                display: inline-flex;
-                align-items: end;
-            }
-            
+                * {
+                    box-sizing: border-box;
+                }
 
-            .dtr-container {
-                display: flex;
-                width: 100%;
-                page-break-inside: avoid;
-            }
+                html,
+                body {
+                    margin: 0;
+                    padding: 0;
+                    font-family: Arial, sans-serif;
+                    font-size: 10px;
+                    background: white;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
 
-            .dtr {
-                padding: 5mm 3mm;
-                border: 1px solid #999;
-                border-radius: 0px;
-                background: white;
-                font-size: 8px;
-                page-break-inside: avoid;
-                width: 49%;
-            }
+                /* visible content margin */
+                body {
+                    padding: 10px;
+                }
 
-            .dtr-table {
-                width: 100%;
-                border-collapse: collapse;
-            }
+                .dtr-container {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    gap: 12px;
+                    width: 100%;
+                }
 
-            .dtr-table th, .dtr-table td {
-                border: 1px solid #555;
-                padding: 1px;
-                font-size: 6.5px;
-                text-align: center;
-            }
+                .dtr-copy {
+                    width: 48%;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
 
-            .dtr-summary {
-                text-align: center;
-                margin-top: 5px;
-            }
-            .dtr-summary h5 {
-                text-transform: uppercase;
-                font-weight: bold;
-                margin: 10px 0;
-                font-size: 10px;
-            }  
-            .dtr-summary-container {
-                width: 90%;
-                margin: auto;
-                display: grid;
-                grid-template-columns: repeat(3, minmax(200px, 1fr));
-                text-align: left;
-                gap: 0;
-            } 
-            
-            .dtr-summary-item {
-                font-size: 9px;
-                font-weight: 600;
-                margin-bottom: 2px;
-                text-transform: uppercase;
-                color: #000000c5;
-            }
+                .logo {
+                    width: 42px !important;
+                    height: auto !important;
+                    display: block;
+                    margin: 0 auto 5px auto;
+                }
 
-        .text-uppercase {
-            text-transform: uppercase !important;
-        }
+                .office-title {
+                    text-align: center;
+                    font-size: 11px;
+                    font-weight: bold;
+                    line-height: 1.2;
+                    margin-bottom: 8px;
+                }
 
-            @page {
-                size: A4 landscape;
-                margin: 5mm;
-            }     
-        </style>
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 6px;
+                    font-size: 10px;
+                }
+
+                .info-table td {
+                    border: none;
+                    padding: 1px;
+                    text-align: left;
+                    vertical-align: top;
+                }
+
+                .dtr-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+
+                .dtr-table th,
+                .dtr-table td {
+                    border: 1px solid #000;
+                    text-align: center;
+                    padding: 2px;
+                    font-size: 9px;
+                    line-height: 1.1;
+                }
+
+                .signature {
+                    margin-top: 20px;
+                    text-align: center;
+                    font-size: 10px;
+                }
+
+                .line {
+                    border-top: 1px solid #000;
+                    margin-top: 18px;
+                    padding-top: 3px;
+                    font-weight: bold;
+                }
+            </style>
+        </head>
+
+        <body>
+            ${content}
+        </body>
+        </html>
     `);
-
-    printWindow.document.write('</head><body>');
-    printWindow.document.write('<div class="dtr-container rey">');
-
-    // LEFT copy
-    printWindow.document.write(original.prop('outerHTML'));
-
-    // RIGHT copy
-    printWindow.document.write(copy.prop('outerHTML'));
-
-    printWindow.document.write('</div></body></html>');
 
     printWindow.document.close();
 
-    // Wait for images to load before printing
     printWindow.onload = function () {
+        printWindow.focus();
         printWindow.print();
-        setTimeout(() => printWindow.close(), 500);
+
+        setTimeout(() => {
+            printWindow.close();
+        }, 800);
     };
 });
 </script>
