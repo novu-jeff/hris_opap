@@ -66,7 +66,7 @@
                                     </option>
                                 @endforeach
                             </select>                                
-                            <div class="error-field select2-error">
+                            <div class="error-field select2-error ">
                                 
                             </div>
                         </div>
