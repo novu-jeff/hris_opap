@@ -74,7 +74,7 @@
                     </div>
                     <div class="col-12 col-md-4 mb-3">
                         <label class="mb-2" for="date_resignation">Date Resignation</label>
-                        <input type="text" wire:model="records.employee_information.date_resignation" id="records.employee_information.date_resignation" class="form-control restricted" readonly>
+                        <input type="date" wire:model="records.employee_information.date_resignation" id="records.employee_information.date_resignation" class="form-control">
                         <div class="error-field">
                             @error('records.employee_information.date_resignation') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
