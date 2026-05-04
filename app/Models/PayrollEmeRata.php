@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SalaryPayroll extends Model
+class PayrollEmeRata extends Model
 {
     use HasFactory;
 
-    protected $table = 'payroll_salary';
+    protected $table = 'payroll_eme_rata';
     protected $fillable = [
         'batch_id',
         'payroll_date',
@@ -25,6 +25,6 @@ class SalaryPayroll extends Model
     }
 
     public function items() {
-        return $this->hasMany(SalaryItemsPayroll::class, 'payroll_id', 'id');
+        return $this->hasMany(PayrollEmeRataItems::class, 'payroll_id', 'id');
     }
 }

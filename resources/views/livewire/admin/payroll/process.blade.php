@@ -7,7 +7,10 @@
             'mid_year' => 'admin.payroll.process.mid-year',
             'year_end' => 'admin.payroll.process.year-end',
             'ot_pay' => 'admin.payroll.process.ot-pay',
+            'eme_rata' => 'admin.payroll.process.eme-rata',
         ];
+
+       // dd($componentMap[$type]);
     @endphp
 
     @if(isset($componentMap[$type]))

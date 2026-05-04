@@ -14,7 +14,10 @@
                         'mid_year'           => 'admin.payroll.reports.mid-year',
                         'year_end'           => 'admin.payroll.reports.year-end',
                         'ot_pay'             => 'admin.payroll.reports.ot-pay',
+                        'eme_rata'           => 'admin.payroll.reports.eme-rata',
                     ];
+
+                   // dd($reportComponentMap[$type]);
                 @endphp
 
                 @if(isset($reportComponentMap[$type]))
@@ -153,20 +156,50 @@
                                 <div wire:ignore.self class="tab-pane fade show active" id="eligible" role="tabpanel" aria-labelledby="eligible-tab">
                                     <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
                                         <span class="fw-bold text-success text-uppercase fw-bold">Total Eligible: {{ $employeesChecked['eligible']['count'] }}</span>
+                                        <div style="width: 300px;">
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                placeholder="Search employee..."
+                                                wire:model.live="eligibleSearch"
+                                            >
+                                        </div>
                                     </div>
                                     <div class="table-responsive mt-2" style="max-height: 300px; overflow-y: auto;">
                                         <table class="table table-striped table-bordered w-100 m-0">
                                             <thead class="table-light" style="position: sticky; top: 0; z-index: 1; background-color: #f8f9fa;">
                                                 <tr>
+                                                    <th width="50">
+                                                        <input
+                                                            type="checkbox"
+                                                            wire:model.live="selectAllEligible"
+                                                        >
+                                                    </th>
                                                     <th>#</th>
                                                     <th>Employee No</th>
                                                     <th>Name</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @forelse ($employeesChecked['eligible']['items'] as $index => $employee)
+                                                @php
+                                                    $filteredEligible = collect($employeesChecked['eligible']['items'])
+                                                        ->filter(function ($employee) {
+                                                            if (!$this->eligibleSearch) return true;
+
+                                                            return str_contains(strtolower($employee['name']), strtolower($this->eligibleSearch))
+                                                                || str_contains(strtolower($employee['employee_no'] ?? ''), strtolower($this->eligibleSearch));
+                                                        });
+                                                @endphp
+                                                @forelse ($filteredEligible as $index => $employee)
                                                     <tr>
-                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                wire:model.live="selectedEmployees"
+                                                                value="{{ $employee['employee_no'] }}"
+                                                            >
+                                                        </td>
+                                                        <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $employee['employee_no'] ?? 'N/A' }}</td>
                                                         <td>{{ $employee['name'] }}</td>
                                                     </tr>

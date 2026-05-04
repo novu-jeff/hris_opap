@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\Services\PayrollService;
 use Illuminate\Support\Facades\Bus;
 use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
+use App\Models\PayrollEmeRata;
 use App\Notifications\Notifications;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
@@ -55,6 +57,11 @@ class Index extends Component
 
     public $cutoff_period = null;
     public $period_date = null;
+    public $eme_rata_period;
+
+    public $eligibleSearch = '';
+    public $selectedEmployees = [];
+    public $selectAllEligible = false;
 
     protected $listeners = ['createPayroll', 'dispatchPayrollJobs', 'cancelPayroll', 'removePayroll'];
 
@@ -114,6 +121,7 @@ class Index extends Component
                 'is_mid_year' => false,
                 'is_year_end' => false,
                 'is_ot_pay' => false,
+                'is_eme_rata' => false,
             ], $item->setting?->toArray() ?? []);
 
 
@@ -256,6 +264,28 @@ class Index extends Component
                 ];
             }
 
+            if ($settings['is_eme_rata']) {
+                $subs['eme_rata'] =  [
+                    'name' => 'EME RATA',
+                    'page' => 'eme_rata',
+                    'fields' => [
+                        'employment_type' => [
+                            'label' => 'Employment Type',
+                            'type' => 'text',
+                            'value' => $item->name,
+                            'class' => 'restricted',
+                            'attr' => ['readonly' => true],
+                            'rules' => ''
+                        ],
+                        'payroll_date' => [
+                            'label' => 'EME RATA Period',
+                            'type' => 'date',
+                            'rules' => ['required', 'date'],
+                        ],
+                    ]
+                ];
+            }
+
             return [
                 strtolower($item->name) => [
                     'name' => $item->name,
@@ -369,7 +399,7 @@ class Index extends Component
 
                 $firstHalfApproved = SalaryPayroll::where('employment_type', $employmentTypeId)
                     ->where('cut_off_period', $firstHalfCutoff)
-                    ->where('status', 'approved') // assuming your column is 'status'
+                    ->where('status', 'approved')
                     ->exists();
 
                 if (!$firstHalfApproved) {
@@ -413,14 +443,17 @@ class Index extends Component
             
         }
 
+       
+
         // -------------------------------
         // DUPLICATE PAYROLL CHECK
         // -------------------------------
         if ($employmentTypeId) {
-            $exists = SalaryPayroll::where('employment_type', $employmentTypeId)
-                ->where('cut_off_period', $cutoff)
-                ->where('payroll_date', $payrollDate->format('Y-m-d'))
-                ->exists();
+            $exists = $this->activeSalaryPayrollExists(
+                $employmentTypeId,
+                $cutoff,
+                $payrollDate->format('Y-m-d')
+            );
 
             if ($exists) {
                 return [
@@ -429,10 +462,60 @@ class Index extends Component
                     'message' => 'This payroll already exists for the same cut-off period and payroll date.'
                 ];
             }
+
+           
         }
 
         // All good
         return ['valid' => true];
+    }
+
+        private function validateEmeRataPayrollDate(?string $payrollDate, ?int $employmentTypeId = null): array
+    {
+        if (empty($payrollDate)) {
+            return [
+                'valid' => false,
+                'title' => 'Missing Date',
+                'message' => 'Payroll date is required.'
+            ];
+        }
+
+        try {
+            $date = Carbon::parse($payrollDate);
+        } catch (\Exception $e) {
+            return [
+                'valid' => false,
+                'title' => 'Invalid Date',
+                'message' => 'Invalid payroll date format.'
+            ];
+        }
+
+        $lastDayOfMonth = $date->copy()->endOfMonth()->day;
+
+        if ($date->day !== $lastDayOfMonth) {
+            return [
+                'valid' => false,
+                'title' => 'Invalid Payroll Date',
+                'message' => "EME RATA payroll date must be the last day of the month ({$lastDayOfMonth})."
+            ];
+        }
+
+         $exists = $this->activeEmeRataExists(
+            $employmentTypeId,
+            $this->payroll_date
+        );
+    
+        if ($exists) {
+            return [
+                'valid' => false,
+                'title' => 'Duplicate Payroll',
+                'message' => 'This EME RATA payroll date already exists.'
+            ];
+        }
+
+        return [
+            'valid' => true
+        ];
     }
 
 
@@ -457,6 +540,47 @@ class Index extends Component
         $this->resetValidation();
     }
 
+    private function activeSalaryPayrollExists(int $employmentTypeId, string $cutoff, string $payrollDate): bool
+    {
+        return SalaryPayroll::where('employment_type', $employmentTypeId)
+            ->where('cut_off_period', $cutoff)
+            ->where('payroll_date', $payrollDate)
+            ->where(function ($query) {
+                $query->where('status', 'approved')
+                    ->orWhere(function ($pending) {
+                        $pending->where('status', 'pending')
+                            ->whereNotExists(function ($batch) {
+                                $batch->select(DB::raw(1))
+                                    ->from('job_batches')
+                                    ->whereColumn('job_batches.id', 'payroll_salary.batch_id')
+                                    ->where(function ($failedBatch) {
+                                        $failedBatch->where('failed_jobs', '>', 0)
+                                            ->orWhereNotNull('cancelled_at');
+                                    });
+                            });
+                    });
+            })
+            ->exists();
+    }
+
+    private function activeEmeRataExists(
+        int $employmentTypeId,
+        string $payrollDate
+    ): bool
+    {
+
+        if (empty($payrollDate)) {
+            return false;
+        }
+        return PayrollEmeRata::where('employment_type', $employmentTypeId)
+            ->whereDate('payroll_date', $payrollDate)
+            ->where(function ($query) {
+                $query->where('status', 'approved')
+                    ->orWhere('status', 'pending');
+            })
+            ->exists();
+    }
+
 
     public function createPayroll()
     {
@@ -479,9 +603,25 @@ class Index extends Component
         }
     }    
 
+    if ($type === 'eme_rata') {
+    
+
+        $result = $this->validateEmeRataPayrollDate(
+            $this->payroll_date,
+            $employmentTypeId 
+        );
+    
+        if (!$result['valid']) {
+            return $this->showErrorAlert(
+                $result['title'],
+                $result['message']
+            );
+        }
+    }
+
 
          // Validate that payroll date / cut-off period are provided
-    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end') && empty($this->payroll_date)) {
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end' || $type === 'eme_rata') && empty($this->payroll_date)) {
         return $this->showErrorAlert('Missing Date', 'Payroll date is required.');
     }
 
@@ -512,10 +652,20 @@ class Index extends Component
    
 
     // Ensure eligible employees exist
-    if (empty($this->employeesChecked['eligible']['items'])) {
-        
-        return $this->showErrorAlert('Oops', 'No employees found for this payroll.');
-    }
+        if (empty($this->employeesChecked['eligible']['items'])) {
+            return $this->showErrorAlert(
+                'Oops',
+                'No employees found for this payroll.'
+            );
+        }
+
+        // Ensure user selected employees
+       /* if (empty($this->selectedEmployees)) {
+            return $this->showErrorAlert(
+                'No Employee Selected',
+                'Please select at least one employee.'
+            );
+        }*/
 
     // Lock employment type ID
     $employmentTypeId = $this->lockedEmploymentTypeId;
@@ -549,18 +699,24 @@ class Index extends Component
                 'ot_period'       => $this->ot_period,
                 'employment_type' => $employmentTypeId,
             ],
+            'eme_rata' => [
+                'payroll_date'       => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+            ],
         ];
       //  dd($map[$type]);        
 
         $process = $payrollService->getProcess($type);
 
-       // dd( $process);
+       // dd($process, $type);
         $data    = $map[$type];
+        $data['selected_employees'] = $this->selectedEmployees;
 
-       // dd($process['service']);
+       // dd($data['selected_employees']);
 
         // Validate with service rules
         $service   = app($process['service']);
+       
         $rules     = $service->rules($data);
         $validator = Validator::make($data, $rules);
 
@@ -568,21 +724,25 @@ class Index extends Component
             Log::info($validator->errors());
             throw new \Illuminate\Validation\ValidationException($validator);
         }
-
+       // dd($service,'testing');
       // ------------------------------------------------------
         // DUPLICATE PAYROLL CHECK
         // ------------------------------------------------------
-        $exists = SalaryPayroll::where('employment_type', $employmentTypeId)
-            ->where('cut_off_period', $this->cut_off_period)
-            ->where('payroll_date', $this->payroll_date)
-            ->exists();
 
-        if ($exists) {
-            
-             return $this->showErrorAlert('Duplicate Payroll', 'This payroll already exists for the same cut-off period and payroll date.');
-        }
+        if($type == 'salary'){
+            $exists = $this->activeSalaryPayrollExists(
+                $employmentTypeId,
+                $this->cut_off_period,
+                $this->payroll_date
+            );
 
+            if ($exists) {
+                
+                return $this->showErrorAlert('Duplicate Payrollss', 'This payroll already exists for the same cut-off period and payroll date.');
+            }
+       }
 
+//dd('checking');
         // Create payroll record
        $payroll = $service->createPayroll($data);
 
@@ -596,96 +756,6 @@ class Index extends Component
         ]);
 
         // Close modal
-        $this->dispatch('hideModal', ['modal' => 'newPayroll']);
-    }
-
-
-    public function createPayrollBK()
-    {
-        $type = $this->type;
-        $employmentTypeId = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
-        $payrollService = app(PayrollService::class);
-
-
-        $this->validate();
-
-        //if (!$this->isToCreate) {
-        if ($this->isToCreate === false) {
-            if (empty($employmentTypeId)) {
-                return $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops',
-                    'message' => 'Employment type is required to fetch employees.'
-                ]); 
-            }
-            
-             // 🔒 LOCK EMPLOYMENT TYPE ID FOR NEXT STEP
-            $this->lockedEmploymentTypeId = $employmentTypeId;
-
-            $this->employeesChecked = $payrollService->getEmployees($employmentTypeId, $type);
-            $this->isToCreate = true;
-            return;
-        }
-
-        if (empty($this->employeesChecked['eligible']['items'])) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops',
-                'message' => 'No employees found for this payroll.'
-            ]); 
-        }
-
-        $map = [
-            'salary' => [
-                'payroll_date'    => $this->payroll_date,
-                'cut_off_period'  => $this->cut_off_period,
-                'has_deductions'  => $this->has_deductions,
-                'employment_type' => $employmentTypeId,
-            ],
-            'clothing_allowance' => [
-                'payroll_date'    => $this->payroll_date,
-                'employment_type' => $employmentTypeId,
-            ],
-            'mid_year' => [
-                'payroll_date'    => $this->payroll_date,
-                'employment_type' => $employmentTypeId,
-                'type'            => 'mid_year',
-            ],
-            'year_end' => [
-                'payroll_date'    => $this->payroll_date,
-                'employment_type' => $employmentTypeId,
-                'type'            => 'year_end',
-            ],
-            'ot_pay' => [
-                'ot_period'       => $this->ot_period,
-                'employment_type' => $employmentTypeId,
-            ],
-        ];
-
-        $process = $payrollService->getProcess($type);
-        $data = $map[$type];
-
-        $service = app($process['service']);
-        $rules = $service->rules($data);
-
-
-        $validator = Validator::make($data, $rules);
-
-        if ($validator->fails()) {
-            Log::info($validator->errors());
-            throw new \Illuminate\Validation\ValidationException($validator);
-        }
-
-        $payroll = $service->createPayroll($data);
-
-        $this->dispatch('start-job-dispatch', [
-            'payroll_id'      => $payroll->id,
-            'employment_type' => $payroll->employment_type,
-            'type'            => $type,
-        ]);
-
         $this->dispatch('hideModal', ['modal' => 'newPayroll']);
     }
 
@@ -710,7 +780,7 @@ class Index extends Component
 
         $process = $serviceInstance->generateChunks($payroll_id, $employmentType, $type);
 
-     
+        //dd($process);
         
         $status = $process['status'];
 
@@ -770,6 +840,21 @@ class Index extends Component
         if ($batch) {
 
             $this->batchProgress = $batch->progress();
+
+            if ($batch->cancelled() || $batch->failedJobs > 0) {
+                $model = $service->getProcess($this->type)['models']['parent'];
+                $model::where('batch_id', $this->batchId)->update(['status' => 'failed']);
+
+                $this->isBatchProcessing = false;
+                $this->batchStatusMessage = 'Payroll processing failed.';
+
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Payroll Failed',
+                    'message' => 'Payroll processing timed out or failed. Please retry after checking the payroll logs.',
+                ]);
+            }
 
             $this->batchStatusMessage = match (true) {
                 $this->batchProgress < 10   => 'Retrieving employee records...',
@@ -831,6 +916,18 @@ class Index extends Component
     public function getCanProceedProperty()
     {
         return !empty($this->cut_off_period) && !empty($this->payroll_date);
+    }
+
+    public function updatedSelectAllEligible($value)
+    {
+        if ($value) {
+            $this->selectedEmployees = collect($this->employeesChecked['eligible']['items'])
+                ->pluck('employee_no')
+                ->filter()
+                ->toArray();
+        } else {
+            $this->selectedEmployees = [];
+        }
     }
 
     private function isOneMonthCutoff($cutoff)

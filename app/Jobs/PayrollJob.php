@@ -42,9 +42,12 @@ class PayrollJob implements ShouldQueue
         'type' => $this->type,
         'employees_count' => $employeesCount,
     ]);
-
-    $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
-
+    if($this->type == 'salary'){
+        $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
+    }
+    if($this->type == 'eme_rata'){
+        $payroll = \App\Models\PayrollEmeRata::find($this->payrollId);
+    }
    if (!$payroll) {
        Log::channel('payroll')->error('PayrollJob failed: payroll not found', [
            'payroll_id' => $this->payrollId,

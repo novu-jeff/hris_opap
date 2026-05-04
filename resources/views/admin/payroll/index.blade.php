@@ -36,6 +36,22 @@
                 </li>
             </ul>
         @endif--}}
+        @if(isset($options[$employment_type]))
+            <ul class="nav nav-pills mb-4" id="action-type-tab" role="tablist">
+                <li class="nav-item d-flex flex-wrap gap-2 text-uppercase fw-bold" role="presentation">
+                    @foreach($options[$employment_type]['sub'] as $subKey => $subName)
+                        <a href="{{ route('payroll.index', [
+                            'type' => $subKey,
+                            'employment_type' => $employment_type
+                        ]) }}"
+                        class="nav-link border border-primary {{ $type === $subKey ? 'active' : '' }}"
+                        role="tab">
+                            {{ $subName }}
+                        </a>
+                    @endforeach
+                </li>
+            </ul>
+        @endif
     </div>
     <div class="mt-3">
         @livewire('admin.payroll.index', ['employment_type' => $employment_type, 'type' => $type])
@@ -44,9 +60,11 @@
 </div>
 <style>
     .nav-pills:nth-child(2) .nav-link.active, .nav-pills .show>.nav-link {
-        color: #225F8B;
+       /* color: #225F8B;
         background-color: transparent;
-        border: 2px solid #225F8B;
+        border: 2px solid #225F8B;*/
+        background-color: var(--bs-nav-pills-link-active-bg);
+        color: var(--bs-nav-pills-link-active-color);
     }
     .modal .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
         background-color: #225F8B !important;

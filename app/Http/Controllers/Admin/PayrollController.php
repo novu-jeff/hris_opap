@@ -32,6 +32,7 @@ class PayrollController extends Controller
                 'is_mid_year' => false,
                 'is_year_end' => false,
                 'is_ot_pay' => false,
+                'is_eme_rata' => false,
             ], $item->setting?->toArray() ?? []);
 
             if ($settings['is_salary']) {
@@ -48,6 +49,9 @@ class PayrollController extends Controller
             }
             if ($settings['is_ot_pay']) {
                 $subs['ot_pay'] = 'Overtime Pay';
+            }
+            if ($settings['is_eme_rata']) {
+                $subs['eme_rata'] = 'EME RaTa';
             }
 
             return [
