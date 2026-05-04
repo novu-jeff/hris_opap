@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
+use App\Http\Controllers\Admin\Reports\Payroll\PayrollEmeRataReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
@@ -299,6 +300,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('payroll-record', [PayrollReportController::class, 'index'])->name('reports.payroll');
             Route::get('payroll-record/view/{payroll}', [PayrollReportController::class, 'view'])->name('reports.payroll.view');
+
+            Route::get('payroll-record/eme-rata', [PayrollEmeRataReportController::class, 'index'])->name('reports.eme-rata.payroll');
+            Route::get('payroll-record/eme-rata/view/{payroll}', [PayrollEmeRataReportController::class, 'view'])->name('reports.eme-rata.payroll.view');
 
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');

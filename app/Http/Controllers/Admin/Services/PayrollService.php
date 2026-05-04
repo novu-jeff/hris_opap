@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Services\Payroll\BonusService;
 use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
 use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
+use App\Http\Controllers\Admin\Services\Payroll\EmeRataService;
 use App\Http\Controllers\Controller;
 use App\Models\EmployementTypes;
 use App\Models\BonusItemsPayroll;
@@ -16,6 +17,8 @@ use App\Models\OTItemsPayroll;
 use App\Models\OTPayroll;
 use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
+use App\Models\PayrollEmeRata;
+use App\Models\PayrollEmeRataItems;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -204,7 +207,15 @@ class PayrollService extends Controller {
                     'parent' => OTPayroll::class,
                     'child' => OTItemsPayroll::class,
                 ]
+                ],
+            'eme_rata' => [
+                'service' => EmeRataService::class,
+                'models' => [
+                    'parent' => PayrollEmeRata::class,
+                    'child' => PayrollEmeRataItems::class,
+                ]
             ]
+
 
         ];
 

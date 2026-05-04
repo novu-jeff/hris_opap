@@ -143,7 +143,11 @@
                 @endcan
                 @can('read dtr')
                 <a href="{{ route('reports.payroll') }}" class="submenu-item">
-                    <i class="fa-solid fa-clipboard-list"></i> Payroll Record</a>
+                    <i class="fa-solid fa-clipboard-list"></i> Salary Payroll Record</a>
+                @endcan
+                @can('read dtr')
+                <a href="{{ route('reports.eme-rata.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> EME RATA Payroll Record</a>
                 @endcan
                 @if($product == 'private')
                     <a href="{{ route('reports.bir') }}" class="submenu-item">

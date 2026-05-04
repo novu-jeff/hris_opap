@@ -139,11 +139,13 @@ class SalaryService extends Controller {
 
 
     public function createPayroll($payload) {
+       // dd($payload);
         $payroll = SalaryPayroll::create([
             'payroll_date' => $payload['payroll_date'],
             'cut_off_period' => $payload['cut_off_period'],
             'employment_type' => $payload['employment_type'],
             'hasDeductions' => $payload['has_deductions'] ?? false,
+            'selected_employees' => json_encode($payload['selected_employees'] ?? []),
             'status' => 'pending'
         ]);
 
@@ -165,7 +167,20 @@ class SalaryService extends Controller {
         $employees = $this->payrollService->getEmployees($employment_type, $type);
         $employees = $employees['eligible']['items'];
 
-        $chunks = array_chunk($employees, 1000);
+
+        $selectedEmployees = json_decode($payroll->selected_employees ?? '[]', true);
+
+        if (!empty($selectedEmployees)) {
+            $employees = collect($employees)
+                ->filter(function ($employee) use ($selectedEmployees) {
+                    return in_array($employee['employee_no'], $selectedEmployees);
+                })
+                ->values()
+                ->toArray();
+        }
+
+        // Keep each payroll job below the queue worker timeout; DTR computation is query-heavy per employee.
+        $chunks = array_chunk($employees, 25);
 
         $jobs = [];
 
@@ -425,7 +440,6 @@ class SalaryService extends Controller {
       
                       }else{
                         $salaryBase = max($basic_salary, 10000);
-                        Log::info('Philhealth items', ['salaryBase' => $salaryBase, 'basicSalary' => $basic_salary]);
                         $philhealth = $hasDeductions
                             ? floor(($salaryBase * 0.05) * 100) / 100
                             : 0;
@@ -516,7 +530,6 @@ class SalaryService extends Controller {
 
                         $firstHalf = $firstHalfCents / 100;
                         $secondHalf = $secondHalfCents / 100;
-                        Log::info('Firsthalf Computation Salary Service', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
                     }
                    
 
