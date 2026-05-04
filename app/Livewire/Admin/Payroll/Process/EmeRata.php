@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Payroll\Process;
 
 
-use App\Http\Controllers\Admin\Services\Payroll\EmerataService;
+use App\Http\Controllers\Admin\Services\Payroll\EmeRataService;
 use App\Http\Controllers\Admin\Services\OtherServices;
 use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\SalaryItemsPayroll;
