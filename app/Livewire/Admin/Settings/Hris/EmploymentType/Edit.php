@@ -35,6 +35,7 @@ class Edit extends Component
                 'is_clothing_allowance' => false,
                 'is_mid_year' => false,
                 'is_year_end' => false,
+                'is_eme_rata' => false,
             ];
         }
 
@@ -46,6 +47,7 @@ class Edit extends Component
             'is_clothing_allowance' => (bool) $settings->is_clothing_allowance,
             'is_mid_year' => (bool) $settings->is_mid_year,
             'is_year_end' => (bool) $settings->is_year_end,
+            'is_eme_rata' => (bool) $settings->is_eme_rata,
         ];
 
         return $data;
@@ -86,6 +88,7 @@ class Edit extends Component
                 'is_clothing_allowance' => $this->fields['is_clothing_allowance'] ?? false,
                 'is_mid_year' => $this->fields['is_mid_year'] ?? false,
                 'is_year_end' => $this->fields['is_year_end'] ?? false,
+                'is_eme_rata' => $this->fields['is_eme_rata'] ?? false,
                 'updated_at' => now(),
             ];
 
@@ -138,7 +141,8 @@ class Edit extends Component
             'fields.is_ot_pay' => 'nullable|boolean',
             'fields.is_clothing_allowance' => 'nullable|boolean',
             'fields.is_mid_year' => 'nullable|boolean',
-            'fields.is_year_end' => 'nullable|boolean'
+            'fields.is_year_end' => 'nullable|boolean',
+            'fields.is_eme_rata' => 'nullable|boolean'
         ];
     }
 
