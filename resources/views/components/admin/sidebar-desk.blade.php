@@ -148,7 +148,15 @@
                 @can('read dtr')
                 <a href="{{ route('reports.eme-rata.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> EME RATA Payroll Record</a>
-                @endcan
+                @endcan <small>
+                @can('read dtr')
+                <a href="{{asset('templates/unlad-kawani.xlsx')}}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Unlad Kawani Payroll Record</a>
+                @endcan 
+                @can('read dtr')
+                <a href="{{asset('templates/DBP.xlsx')}}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> DBP Payroll Record</a>
+                @endcan 
                 @if($product == 'private')
                     <a href="{{ route('reports.bir') }}" class="submenu-item">
                         <i class="fa-solid fa-file-lines"></i> BIR</a>
