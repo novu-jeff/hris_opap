@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Reports\Payroll\EmeRata;
+namespace App\Livewire\Admin\Reports\Payroll;
 
 use Livewire\Component;
 use App\Models\SalaryPayroll;
