@@ -78,13 +78,12 @@ class EmeRataService extends Controller {
         $grouped = [];
 
         foreach ($payroll->items as $item) {
+
             $section = $item->information->section ?? null;
-
-            if (!$section) continue;
-
-            $sectionId = $section->id;
-            $sectionName = $section->name;
-
+        
+            $sectionId = $section->id ?? 0;
+            $sectionName = $section->name ?? 'Unassigned Section';
+        
             if (!isset($grouped[$sectionId])) {
                 $grouped[$sectionId] = [
                     'section_id' => $sectionId,
@@ -92,8 +91,8 @@ class EmeRataService extends Controller {
                     'employees' => [],
                 ];
             }
-
-            $grouped[$sectionId]['employees'][] = $item->toArray() ?? [];
+        
+            $grouped[$sectionId]['employees'][] = $item->toArray();
         }
 
         $items = array_values($grouped);
