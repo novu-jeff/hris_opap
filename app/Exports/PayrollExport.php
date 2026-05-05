@@ -385,7 +385,7 @@ class PayrollExport implements FromCollection, WithEvents
 
             // All rows below header = employee rows
             $sheet->getStyle("A" . ($headerRow + 1) . ":{$highestColumn}{$highestRow}")
-                ->getFont()->setSize(12);
+                ->getFont()->setSize(10);
 
             $sheet->getStyle("A6:{$highestColumn}6")
             ->getAlignment()
@@ -603,33 +603,35 @@ class PayrollExport implements FromCollection, WithEvents
 
             // ===== FIX COLUMN WIDTHS (PREVENT HEADER STRETCHING) =====
 $fixedWidths = [
-    'A' => 30,  // NAME
-    'B' => 35,  // POSITION
-    'C' => 15,
-    'D' => 12,
-    'E' => 18,
-    'F' => 12,
-    'G' => 12,
-    'H' => 14,
-    'I' => 14,
-    'J' => 14,
-    'K' => 12,
-    'L' => 12,
-    'M' => 12,
-    'N' => 12,  // CPL
-    'O' => 14,
-    'P' => 16,
-    'Q' => 18,
-    'R' => 14,
-    'S' => 14,
-    'T' => 20,
-    'U' => 16,
-    'V' => 16,
-    'W' => 14,
-    'X' => 14,
-    'Y' => 18,
-    'Z' => 14,
-    'AA' => 14,
+    'A' => 22,  // NAME
+    'B' => 25,  // POSITION
+    'C' => 11,
+    'D' => 9,
+    'E' => 12,
+    'F' => 9,
+    'G' => 9,
+    'H' => 10,
+    'I' => 9,
+    'J' => 9,
+    'K' => 9,
+    'L' => 9,
+    'M' => 11,
+    'N' => 9,  // CPL
+    'O' => 11,
+    'P' => 9,
+    'Q' => 11,
+    'R' => 9,
+    'S' => 10,
+    'T' => 9,
+    'U' => 11,
+    'V' => 9,
+    'W' => 11,
+    'X' => 11,
+    'Y' => 10,
+    'Z' => 8,
+    'AA' => 11,
+    'AB' => 8,
+    'AC' => 8,
     ];
 
 foreach ($fixedWidths as $col => $width) {
