@@ -142,10 +142,10 @@
 
         <br><br>
 
-       <!-- <div class="line">
-            DIRECTOR FRANCISCO F. MENDOZA, JR.
+        <div class="line">
+           
         </div>
-        Director IV, HRMS-->
+        Department Head
     </div>
 
 </div>
