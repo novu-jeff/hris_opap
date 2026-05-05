@@ -20,7 +20,13 @@
     </div>
 
     <div class="dtr-info">
-        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['firstname'] . ' ' . $logs['employee_account']['middlename'] . ' ' . $logs['employee_account']['lastname']}}</div></div>
+        <div>Employee Name: <div  style="margin-left: 10px;" class="underline">{{ ucwords(
+            strtolower(
+                $logs['employee_account']['firstname'] . ' ' .
+                $logs['employee_account']['middlename'] . ' ' .
+                $logs['employee_account']['lastname']
+            )
+        ) }}</div></div>
         <div>Position: <div  style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['position'] }}</div></div>
         <div>Official Time: <div style="margin-left: 10px; text-transform: capitalize;" class="underline">{{ $officialTime['shift_duration'] ?? 'flexible' }}</div></div>
         <div>Office/Department: <div style="margin-left: 10px;" class="underline">{{ $logs['employee_account']['section'] }}</div></div>
