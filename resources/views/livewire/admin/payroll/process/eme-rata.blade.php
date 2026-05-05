@@ -242,29 +242,20 @@
 </div>
     @endif
 
-    @if($hasChanges)
-        <div class="d-flex justify-content-end mt-5">
-            <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" wire:click="save">
-                <span wire:loading.remove wire:target="save">Save Changes</span>
-                <span wire:loading wire:target="save">
-                    Saving <i class="fa-solid fa-spinner fa-spin"></i>
-                </span>
-            </button>
-        </div>
-    @endif
+   
 
     @if($hasChanges || !empty($newItems))
-    <div class="d-flex justify-content-end mt-5">
+ <!--   <div class="d-flex justify-content-end mt-5">
         <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" wire:click="save">
             <span wire:loading.remove wire:target="save">Save Changes</span>
             <span wire:loading wire:target="save">
                 Saving <i class="fa-solid fa-spinner fa-spin"></i>
             </span>
         </button>
-    </div>
+    </div>-->
 @endif
 
-@if(!$isApproved && !$hasChanges)
+@if(!$isApproved)
     <div class="d-flex justify-content-end mt-5">
         <button class="btn btn-primary px-5 py-3 text-uppercase" wire:loading.attr="disabled" wire:click="approve">
             <span wire:loading.remove wire:target="approve">Approve</span>
