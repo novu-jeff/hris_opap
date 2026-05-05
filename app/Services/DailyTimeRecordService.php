@@ -1028,6 +1028,7 @@ class DailyTimeRecordService {
        // dd()
 
         //dd($timestamps[3]->format('h:i A'));
+       // dd($timestamps->count());
 
 
         if ($timestamps->count() >= 4) {
@@ -1048,25 +1049,29 @@ class DailyTimeRecordService {
         // dd($timestamps );
             # Fallback: assign based on time ranges
           //dd($record, $timestamps );
-            foreach ($timestamps as $ts) {
+           /* foreach ($timestamps as $ts) {
                // dd($ts->format('h:i A'));   
                 $hour = (int) $ts->format('H');
-              //  dd($hour);
+               // dd($hour);
                 if (!isset($record['clock_in']) && $hour >= 5 && $hour <= 9) {
                    // dd('here5');
                     $record['clock_in'] = $ts->format('h:i A');
                 } elseif (!isset($record['lunch_in']) && $hour >= 11 && $hour <= 12) {
-                 //  dd($hour);
+                 // dd($hour, 'here2');
                     $record['lunch_in'] = $ts->format('h:i A');
                 } elseif (!isset($record['lunch_out']) && $hour >= 12 && $hour <= 13) {
-
+                   // dd($hour, 'here3');
                  // dd($record['lunch_out']);
                     $record['lunch_out'] = $ts->format('h:i A');
                 } elseif (!isset($record['clock_out']) && $hour >= 15 && $hour <= 18) {
-                   // dd('here8');
+                  //  dd('here8');
                     $record['clock_out'] = $ts->format('h:i A');
                 }
-            }
+            }*/
+
+            $record['clock_in'] = $timestamps[0]->format('h:i A');
+            $record['lunch_in'] = $timestamps[1]->format('h:i A');
+            $record['lunch_out'] = $timestamps[2]->format('h:i A');
         }
     }
 
