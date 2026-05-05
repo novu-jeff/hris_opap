@@ -130,16 +130,22 @@
 
     <div class="signature">
         <div class="line">
-            BEA MILAN A. CLERIGO
+            {{ strtoupper(
+                $logs['employee_account']['firstname'].' '.
+                $logs['employee_account']['middlename'].' '.
+                $logs['employee_account']['lastname']
+            ) }}
         </div>
-        Supervising Administrative Officer
+        {{ strtoupper(
+            $logs['employee_account']['position']   
+        ) }}
 
         <br><br>
 
-        <div class="line">
+       <!-- <div class="line">
             DIRECTOR FRANCISCO F. MENDOZA, JR.
         </div>
-        Director IV, HRMS
+        Director IV, HRMS-->
     </div>
 
 </div>
