@@ -410,10 +410,12 @@ class SalaryService extends Controller {
                 if ($employee['employment_type_id'] != 1){
                    // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
                    $aut = $auts;
+                   $overpay = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'OVERPAY')['amount'] ?? 0), 2) : 0;
                    $mplstlms = 0;
                 }else{
                     $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                     $aut = 0;
+                    $overpay = 0;
                 }
                 // Optional deductions
                // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
@@ -492,7 +494,7 @@ class SalaryService extends Controller {
                 }
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
-                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
+                    $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $overpay +
                     $tax_3 + $tax_5 + $tax_8 + $tax_10 + $gsel + $uca + $aut;
 
                 $total_lbp =  $dbp +  $kawani;  
@@ -543,6 +545,9 @@ class SalaryService extends Controller {
 
                     $firstHalfRecord = $this->getFirstHalfPayrollItem($employee_no, $payroll);
 
+                    Log::info('secondhalf get to firsthalf', ['employee' => $employee_no, 'firstrecord' =>  $firstHalfRecord]);
+
+
                    // dd($firstHalfRecord );
 
                     if ($firstHalfRecord) {
@@ -581,10 +586,10 @@ class SalaryService extends Controller {
                        
 
                         $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
-                        $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
+                        $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax +
                         $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel;
 
-                        Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
+                        Log::info('selected employee firstHalfRecord', ['employeeno' => $employee_no,'rlip' => $firstHalfRecord->rlip,'hdmf' => $firstHalfRecord->hdmf, 'philhealth' => $firstHalfRecord->philhealth, 'consoloan' => $firstHalfRecord->consoloan,'emergency_loan' => $firstHalfRecord->emergency_loan, 'plreg' => $firstHalfRecord->plreg, 'mpl' => $firstHalfRecord->mpl, 'mpl_lite' => $firstHalfRecord->mpl_lite, 'cpl' => $firstHalfRecord->cpl,  'mp2' => $firstHalfRecord->mp2, 'mplstlms' => $firstHalfRecord->mplstlms, 'cir375_cir449' => $firstHalfRecord->cir375_cir449, 'w_tax' => $firstHalfRecord->w_tax, 'overpayment' => $firstHalfRecord->overpayment, 'ctax_3'  => $ctax_3, 'ctax_5' => $ctax_5, 'ctax_8' => $ctax_8, 'ctax_10' => $ctax_10, 'uca' => $firstHalfRecord->uca, 'aut' => $firstHalfRecord->aut, 'disallowance' => $firstHalfRecord->disallowance, 'gsel' => $firstHalfRecord->gsel,'fh_total_deduction' =>  $fh_total_deduction]);
 
                         if($firstHalfRecord->employment_type_id !== 2 && $firstHalfRecord->employment_type_id !== 3 && $firstHalfRecord->employment_type_id !== 4) {
                             $fh_net = round($firstHalfRecord->gross_amount_earned - $fh_total_deduction, 2);
@@ -691,7 +696,7 @@ class SalaryService extends Controller {
                     'uca' => $uca,
                     'aut' => $aut,
                     'disallowance' => $disallowance ?? 0,
-                    'overpayment' => $overpayment ?? 0,
+                    'overpayment' => $overpay ?? 0,
                     'total_deductions' => $total_deduction,
                     'net_amount' => $net,
                     'dbp' => $dbp,
