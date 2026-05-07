@@ -84,8 +84,11 @@ class View extends Component
 
     // Group by section
     // Group by section
-$sections = $items->groupBy(function ($item) {
+/*$sections = $items->groupBy(function ($item) {
     return optional($item->information->section)->name ?? 'NO SECTION';
+});*/
+$sections = $items->groupBy(function ($item) {
+    return $item->information?->section?->name ?? 'NO SECTION';
 });
 $payrollItems = [];
 
