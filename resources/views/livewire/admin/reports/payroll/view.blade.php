@@ -18,6 +18,8 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
             <option value="">All</option>
             <option value="cash">Cash</option>
             <option value="land bank atm">Land Bank ATM</option>
+            <option value="hold">Hold</option>
+            <option value="Unhold">Unhold</option>
         </select>
     </div>
 
@@ -339,6 +341,8 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
             <option value="">All</option>
             <option value="cash">Cash</option>
             <option value="land bank atm">Land Bank ATM</option>
+            <option value="hold">Hold</option>
+            <option value="Unhold">Unhold</option>
         </select>
     </div>
 
