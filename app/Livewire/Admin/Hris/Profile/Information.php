@@ -263,7 +263,7 @@ class Information extends Component
             'records.employee_information.position_id'   => 'required_if:records.employee_information.type,1,2|nullable|exists:positions,id',
             //'records.employee_information.step_id'       => 'required|in:1,2,3,4,5,6,7,8',
             'records.employee_information.salary'        => 'required|numeric|gt:1000',
-            'records.employee_information.salary_method' => 'nullable|in:cash,land bank atm',
+            'records.employee_information.salary_method' => 'nullable|in:cash,land bank atm,hold,unhold',
         ];
     }
 

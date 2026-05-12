@@ -192,6 +192,8 @@
                              <option value=""> - CHOOSE - </option>
                             <option value="cash">Cash</option>
                             <option value="land bank atm">Land Bank ATM</option>
+                            <option value="hold">Hold</option>
+                            <option value="unhold">Unhold</option>
                         </select>
                         <div class="error-field">
                             @error('records.employee_information.salary_method') <span class="text-danger">{{ $message }}</span> @enderror
