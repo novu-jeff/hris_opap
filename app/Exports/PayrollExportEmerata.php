@@ -68,6 +68,33 @@ class PayrollExportEmerata implements FromCollection, WithEvents
             });
         }
 
+        // Group by department first, then by section (nested output order)
+        $groupedByDepartment = $items
+        ->sortBy(function ($item) {
+            $department = optional($item->information->section?->department);
+            $code = $department->code ?? '';
+
+            // Custom department ordering:
+            // - `EO` first
+            // - then `P1`, `P2`, `P3`, ... in numeric order
+            if ($code === 'EO') return 0;
+
+            if (preg_match('/^P(\d+)/', $code, $matches)) {
+                return 1 + (int) $matches[1];
+            }
+
+            return 9999;
+        })
+        ->groupBy(function ($item) {
+            $department = optional($item->information->section?->department);
+
+            return $department->name
+                ? ($department->code
+                    ? "{$department->code} - {$department->name}"
+                    : $department->name)
+                : 'None';
+        });
+
         $rows = collect();
 
         /*
@@ -87,53 +114,90 @@ $rows->push([""]); // row 3
     
     
         $counter = 1;
+
+        foreach ($groupedByDepartment as $department => $departmentEmployees) {
+            // DEPARTMENT LABEL ROW
+            $rows->push(["DEPARTMENT {$department}"]);
     
-        foreach ($items as $item) {
-            $rows->push([
-                $counter,                    // A
-                strtoupper($item->name),     // B
-                '', '', '', '', '',          // C-G filler
-            
-                strtoupper($item->position), // H
-                '', '', '', '', '',          // I-M filler
-            
-                '', $item->ra ?? 0,              // N
-                 '',                      // O-P filler
-            
-                              // Q
-                '','', $item->ta ?? 0, '',                  // R-T filler
-            
-                '',      // U
-                '', $item->net_amount ?? 0, '',                  // V-X filler
-            
-                '', ''                       // Y-Z signature
-            ]);
+            // Group within department by section
+            $groupedBySection = $departmentEmployees
+                ->sortBy(fn ($item) => optional($item->information->section)->name)
+                ->groupBy(function ($item) {
+                    $section = optional($item->information->section);
     
-            $counter++;
+                    return $section->name
+                        ? "{$section->code} - {$section->name}"
+                        : 'NO SECTION';
+                });
+    
+            foreach ($groupedBySection as $section => $employees) {
+    
+                // ✅ SORT BY SALARY GRADE (HIGHEST → LOWEST)
+                    $employees = $employees->sortByDesc(function ($item) {
+                        return $item->salary_grade
+                            ?? optional($item->information?->positions)->salary_grade
+                            ?? 0;
+                    });
+                // SECTION LABEL ROW
+    
+                $rows->push(["SECTION: {$section}"]);
+    
+            foreach ($employees as $item) {
+
+                $salaryGrade = $item->salary_grade
+                    ?? optional($item->information?->positions)->salary_grade
+                    ?? '';
+                    $positionWithSalaryGrade = $salaryGrade !== ''
+                    ? strtoupper("{$item->position} (SG{$salaryGrade})")
+                    : strtoupper($item->position);
+                $rows->push([
+                    $counter,                    // A
+                    strtoupper($item->name),     // B
+                    '', '', '', '', '',          // C-G filler
+                
+                    $positionWithSalaryGrade, // H
+                    '', '', '', '', '',          // I-M filler
+                
+                    '', $item->ra ?? 0,              // N
+                    '',                      // O-P filler
+                
+                                // Q
+                    '','', $item->ta ?? 0, '',                  // R-T filler
+                
+                    '',      // U
+                    '', $item->net_amount ?? 0, '',                  // V-X filler
+                
+                    '', ''                       // Y-Z signature
+                ]);
+        
+                $counter++;
+            }
         }
-    
-        /*
-        GRAND TOTAL
-        */
-        $rows->push([
-            '',
-            '',
-            'TOTAL',
-            '', '', '', '',
         
-            '', '', '', '', '', '',
+    }   
         
-            '',
-            $items->sum('ra'), '',
-        
-            '',
-            '', $items->sum('ta'), '',
-        
-            '',
-            '',$items->sum('net_amount'), '',
-        
-            '', ''
-        ]);
+            /*
+            GRAND TOTAL
+            */
+            $rows->push([
+                '',
+                '',
+                'TOTAL',
+                '', '', '', '',
+            
+                '', '', '', '', '', '',
+            
+                '',
+                $items->sum('ra'), '',
+            
+                '',
+                '', $items->sum('ta'), '',
+            
+                '',
+                '',$items->sum('net_amount'), '',
+            
+                '', ''
+            ]);
     
         return new Collection($rows);
     
@@ -152,6 +216,7 @@ $rows->push([""]); // row 3
     
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
+                $highestColumn = $sheet->getHighestColumn();
     
                 /*
                 ==================================================
@@ -232,6 +297,78 @@ $rows->push([""]); // row 3
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER)
                     ->setWrapText(true);
+
+                    for ($row = 1; $row <= $highestRow + 5; $row++) {
+
+                        $value = $sheet->getCell("B{$row}")->getValue()
+                            ?? $sheet->getCell("A{$row}")->getValue();
+        
+                        if (!$value) continue;
+        
+                        /* SECTION ROW */
+                        if (str_contains($value, 'SECTION:')) {
+        
+                            $sheet->mergeCells("A{$row}:{$highestColumn}{$row}");
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getFont()->setBold(true)->setSize(10);
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getFill()->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('D9EAD3');
+                        }
+        
+                        /* DEPARTMENT ROW */
+                        if (str_contains($value, 'DEPARTMENT')) {
+                            $sheet->mergeCells("A{$row}:{$highestColumn}{$row}");
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getFont()->setBold(true)->setSize(10);
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        
+                            $sheet->getStyle("A{$row}")
+                                ->getFill()->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('D9E1F2');
+                        }
+        
+                        
+                        
+                       
+                                /* GRAND TOTAL (SPECIAL COLOR) */
+                        if (str_contains($value, 'GRAND TOTAL')) {
+        
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                                ->getFont()->setBold(true)->setSize(13);
+        
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                                ->getFill()->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('F4CCCC'); // light red
+        
+                            // DOUBLE BORDER
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                                ->getBorders()->getOutline()
+                                ->setBorderStyle(Border::BORDER_DOUBLE);    
+                                }
+        
+                        /* SECTION TOTAL */
+                        elseif (str_contains($value, 'TOTAL')) {
+        
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                                ->getFont()->setBold(true);
+        
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")
+                                ->getFill()->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('FFF2CC'); // yellow
+        
+                        
+                        }
+                        
+                    }    
     
                 // BORDERS
                 $sheet->getStyle("A7:Z{$highestRow}")
