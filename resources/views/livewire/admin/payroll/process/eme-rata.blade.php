@@ -71,7 +71,7 @@
     <div class="card-body">
 
         <h5 class="fw-bold mb-3">
-            Add Employee to Eme Rata Payroll
+            Add Employee to Rata Payroll
         </h5>
 
         {{-- SEARCH --}}

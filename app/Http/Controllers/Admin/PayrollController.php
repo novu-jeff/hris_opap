@@ -51,7 +51,7 @@ class PayrollController extends Controller
                 $subs['ot_pay'] = 'Overtime Pay';
             }
             if ($settings['is_eme_rata']) {
-                $subs['eme_rata'] = 'EME RaTa';
+                $subs['eme_rata'] = 'RaTa';
             }
 
             return [
