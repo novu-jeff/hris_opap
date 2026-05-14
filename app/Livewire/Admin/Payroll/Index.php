@@ -122,6 +122,7 @@ class Index extends Component
                 'is_year_end' => false,
                 'is_ot_pay' => false,
                 'is_eme_rata' => false,
+                'is_eme' => false,
             ], $item->setting?->toArray() ?? []);
 
 
@@ -279,6 +280,29 @@ class Index extends Component
                         ],
                         'payroll_date' => [
                             'label' => 'RATA Period',
+                            'type' => 'date',
+                            'rules' => ['required', 'date'],
+                        ],
+                    ]
+                ];
+            }
+
+
+            if ($settings['is_eme']) {
+                $subs['eme'] =  [
+                    'name' => 'EME',
+                    'page' => 'eme',
+                    'fields' => [
+                        'employment_type' => [
+                            'label' => 'Employment Type',
+                            'type' => 'text',
+                            'value' => $item->name,
+                            'class' => 'restricted',
+                            'attr' => ['readonly' => true],
+                            'rules' => ''
+                        ],
+                        'payroll_date' => [
+                            'label' => 'EME Period',
                             'type' => 'date',
                             'rules' => ['required', 'date'],
                         ],
@@ -518,6 +542,54 @@ class Index extends Component
         ];
     }
 
+    private function validateEmePayrollDate(?string $payrollDate, ?int $employmentTypeId = null): array
+    {
+        if (empty($payrollDate)) {
+            return [
+                'valid' => false,
+                'title' => 'Missing Date',
+                'message' => 'Payroll date is required.'
+            ];
+        }
+
+        try {
+            $date = Carbon::parse($payrollDate);
+        } catch (\Exception $e) {
+            return [
+                'valid' => false,
+                'title' => 'Invalid Date',
+                'message' => 'Invalid payroll date format.'
+            ];
+        }
+
+        $lastDayOfMonth = $date->copy()->endOfMonth()->day;
+
+        if ($date->day !== $lastDayOfMonth) {
+            return [
+                'valid' => false,
+                'title' => 'Invalid Payroll Date',
+                'message' => "RATA payroll date must be the last day of the month ({$lastDayOfMonth})."
+            ];
+        }
+
+         $exists = $this->activeEmeExists(
+            $employmentTypeId,
+            $this->payroll_date
+        );
+    
+        if ($exists) {
+            return [
+                'valid' => false,
+                'title' => 'Duplicate Payroll',
+                'message' => 'This RATA payroll date already exists.'
+            ];
+        }
+
+        return [
+            'valid' => true
+        ];
+    }
+
 
     private function showErrorAlert(string $title, string $message)
     {
@@ -581,6 +653,24 @@ class Index extends Component
             ->exists();
     }
 
+    private function activeEmeExists(
+        int $employmentTypeId,
+        string $payrollDate
+    ): bool
+    {
+
+        if (empty($payrollDate)) {
+            return false;
+        }
+        return PayrollEme::where('employment_type', $employmentTypeId)
+            ->whereDate('payroll_date', $payrollDate)
+            ->where(function ($query) {
+                $query->where('status', 'approved')
+                    ->orWhere('status', 'pending');
+            })
+            ->exists();
+    }
+
 
     public function createPayroll()
     {
@@ -619,9 +709,25 @@ class Index extends Component
         }
     }
 
+    if ($type === 'eme') {
+    
+
+        $result = $this->validateEmePayrollDate(
+            $this->payroll_date,
+            $employmentTypeId 
+        );
+    
+        if (!$result['valid']) {
+            return $this->showErrorAlert(
+                $result['title'],
+                $result['message']
+            );
+        }
+    }
+
 
          // Validate that payroll date / cut-off period are provided
-    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end' || $type === 'eme_rata') && empty($this->payroll_date)) {
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end' || $type === 'eme_rata' || $type === 'eme') && empty($this->payroll_date)) {
         return $this->showErrorAlert('Missing Date', 'Payroll date is required.');
     }
 
@@ -700,6 +806,10 @@ class Index extends Component
                 'employment_type' => $employmentTypeId,
             ],
             'eme_rata' => [
+                'payroll_date'       => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
+            ],
+            'eme' => [
                 'payroll_date'       => $this->payroll_date,
                 'employment_type' => $employmentTypeId,
             ],
