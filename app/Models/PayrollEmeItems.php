@@ -31,8 +31,7 @@ class PayrollEmeItems extends Model
                 'name',
                 'position',
                 'basic_salary',
-                'ra',
-                'ta',
+                'eme',
                 'net_amount',
                 
                 

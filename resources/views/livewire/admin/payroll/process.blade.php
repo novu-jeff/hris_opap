@@ -8,6 +8,7 @@
             'year_end' => 'admin.payroll.process.year-end',
             'ot_pay' => 'admin.payroll.process.ot-pay',
             'eme_rata' => 'admin.payroll.process.eme-rata',
+            'eme' => 'admin.payroll.process.eme',
         ];
 
        // dd($componentMap[$type]);

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Services\Payroll\ClothingAllowanceService;
 use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Admin\Services\Payroll\EmeRataService;
+use App\Http\Controllers\Admin\Services\Payroll\EmeService;
 use App\Http\Controllers\Controller;
 use App\Models\EmployementTypes;
 use App\Models\BonusItemsPayroll;
@@ -19,6 +20,8 @@ use App\Models\SalaryItemsPayroll;
 use App\Models\SalaryPayroll;
 use App\Models\PayrollEmeRata;
 use App\Models\PayrollEmeRataItems;
+use App\Models\PayrollEme;
+use App\Models\PayrollEmeItems;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -75,7 +78,7 @@ class PayrollService extends Controller {
                     Log::info('COS payroll must include JO employees');
                     $query->whereIn('ei.employment_type_id', [$cosId, $joId, $cos2Id]);
                 } else {
-                    Log::info('COS2 payroll must include JO employees');
+                    Log::info('COS2 payroll not include JO employees');
                     $query->where('ei.employment_type_id', $employment_type);
                 }
 
@@ -84,9 +87,9 @@ class PayrollService extends Controller {
             ->where('ei.isDeleted', 0)
             ->get();
 
-            Log::info('results', [
+            /*Log::info('results', [
                 'results' => $results
-            ]);
+            ]);*/
 
         
 
@@ -207,12 +210,19 @@ class PayrollService extends Controller {
                     'parent' => OTPayroll::class,
                     'child' => OTItemsPayroll::class,
                 ]
-                ],
+            ],
             'eme_rata' => [
                 'service' => EmeRataService::class,
                 'models' => [
                     'parent' => PayrollEmeRata::class,
                     'child' => PayrollEmeRataItems::class,
+                ]
+            ],
+            'eme' => [
+                'service' => EmeService::class,
+                'models' => [
+                    'parent' => PayrollEme::class,
+                    'child' => PayrollEmeItems::class,
                 ]
             ]
 
