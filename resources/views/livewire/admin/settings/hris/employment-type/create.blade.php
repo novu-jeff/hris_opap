@@ -70,7 +70,7 @@
 
                         <div class="col-md-4 form-check mb-2">
                             <input class="form-check-input" type="checkbox" wire:model="fields.is_eme_rata" id="is_eme_rata">
-                            <label class="form-check-label" for="is_eme_rata">EME RaTa</label>
+                            <label class="form-check-label" for="is_eme_rata">RaTa</label>
                             <div class="error-field">
                                 @error('fields.is_eme_rata') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>

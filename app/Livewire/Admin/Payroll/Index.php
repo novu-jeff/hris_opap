@@ -266,7 +266,7 @@ class Index extends Component
 
             if ($settings['is_eme_rata']) {
                 $subs['eme_rata'] =  [
-                    'name' => 'EME RATA',
+                    'name' => 'RATA',
                     'page' => 'eme_rata',
                     'fields' => [
                         'employment_type' => [
@@ -278,7 +278,7 @@ class Index extends Component
                             'rules' => ''
                         ],
                         'payroll_date' => [
-                            'label' => 'EME RATA Period',
+                            'label' => 'RATA Period',
                             'type' => 'date',
                             'rules' => ['required', 'date'],
                         ],
@@ -496,7 +496,7 @@ class Index extends Component
             return [
                 'valid' => false,
                 'title' => 'Invalid Payroll Date',
-                'message' => "EME RATA payroll date must be the last day of the month ({$lastDayOfMonth})."
+                'message' => "RATA payroll date must be the last day of the month ({$lastDayOfMonth})."
             ];
         }
 
@@ -509,7 +509,7 @@ class Index extends Component
             return [
                 'valid' => false,
                 'title' => 'Duplicate Payroll',
-                'message' => 'This EME RATA payroll date already exists.'
+                'message' => 'This RATA payroll date already exists.'
             ];
         }
 
@@ -738,7 +738,7 @@ class Index extends Component
 
             if ($exists) {
                 
-                return $this->showErrorAlert('Duplicate Payrollss', 'This payroll already exists for the same cut-off period and payroll date.');
+                return $this->showErrorAlert('Duplicate Payroll', 'This payroll already exists for the same cut-off period and payroll date.');
             }
        }
 
