@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Bus;
 use App\Models\EmployementTypes;
 use App\Models\SalaryPayroll;
 use App\Models\PayrollEmeRata;
+use App\Models\PayrollEme;
 use App\Notifications\Notifications;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -568,7 +569,7 @@ class Index extends Component
             return [
                 'valid' => false,
                 'title' => 'Invalid Payroll Date',
-                'message' => "RATA payroll date must be the last day of the month ({$lastDayOfMonth})."
+                'message' => "EME payroll date must be the last day of the month ({$lastDayOfMonth})."
             ];
         }
 
@@ -581,7 +582,7 @@ class Index extends Component
             return [
                 'valid' => false,
                 'title' => 'Duplicate Payroll',
-                'message' => 'This RATA payroll date already exists.'
+                'message' => 'This EME payroll date already exists.'
             ];
         }
 

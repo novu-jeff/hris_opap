@@ -8,8 +8,8 @@ use App\Http\Controllers\Admin\Services\OtherServices;
 use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
-use App\Models\PayrollEmeRata;
-use App\Models\PayrollEmeRataItems;
+use App\Models\PayrollEme;
+use App\Models\PayrollEmeItems;
 use App\Services\ContributionsService;
 use App\Services\SummaryServices;
 use Carbon\Carbon;
@@ -21,7 +21,7 @@ use App\Models\Positions;
 use App\Models\Tranche;
 use Illuminate\Support\Facades\Log;
 
-class EmeRataService extends Controller {
+class EmeService extends Controller {
 
     protected $product;
     protected $bsd_emp_identical;
@@ -35,7 +35,7 @@ class EmeRataService extends Controller {
 
     public function getPayroll(int $payroll_id) {
 
-        $payroll = PayrollEmeRata::with('items.information.section', 'employment_type')->findOrFail($payroll_id);
+        $payroll = PayrollEme::with('items.information.section', 'employment_type')->findOrFail($payroll_id);
 
         $payroll->formatted_payroll_date = Carbon::parse($payroll->payroll_date)->format('F d, Y');
 
@@ -63,13 +63,11 @@ class EmeRataService extends Controller {
 
 
         $netAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->net_amount));
-        $raAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->ra));
-        $taAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->ta));
+        $emeAmount = $payroll->items->sum(fn($item) => (float) str_replace(',', '', $item->eme));
 
         $payroll->overall_net_amount = round($netAmount, 2);
-        $payroll->overall_ra_amount = round($raAmount, 2);
-        $payroll->overall_ta_amount = round($taAmount, 2);
-        $payroll->type = 'RATA';
+        $payroll->overall_eme_amount = round($emeAmount, 2);
+        $payroll->type = 'EME';
 
         //$payroll->overall_salary = round($overallSalary, 2);
       //  $payroll->overall_net_amount = round($overallNetAmount, 2);
@@ -121,7 +119,7 @@ class EmeRataService extends Controller {
 
     public function createPayroll($payload) {
         //dd($payload);
-        $payroll = PayrollEmeRata::create([
+        $payroll = PayrollEme::create([
             'payroll_date' => $payload['payroll_date'],
             'cut_off_period' => $payload['cut_off_period'] ?? false,
             'employment_type' => $payload['employment_type'],
@@ -136,7 +134,7 @@ class EmeRataService extends Controller {
 
     public function generateChunks(int $payroll_id, int $employment_type, string $type) {
 
-        $payroll = PayrollEmeRata::findOrFail($payroll_id);
+        $payroll = PayrollEme::findOrFail($payroll_id);
 
         if(!$payroll) {
             return [
@@ -166,11 +164,11 @@ class EmeRataService extends Controller {
        // dd( $chunks );
 
         foreach ($chunks as $chunk) {
-            Log::info('chuck data', ['chuck' => $chunk]);
+            Log::info('EME chuck data', ['chuck' => $chunk]);
             $jobs[] = new PayrollJob(
                                     $chunk,          // already an array
                                     $payroll->id,    // pass only ID
-                                    'eme_rata'
+                                    'eme'
                                 );
         }
 
@@ -233,10 +231,9 @@ class EmeRataService extends Controller {
                
 
                 // Earnings
-                $ra = round(floatval(collect($earnings)->firstWhere('code', 'RA')['amount'] ?? 0), 2);
-                $ta = round(floatval(collect($earnings)->firstWhere('code', 'TA')['amount'] ?? 0), 2);
+                $eme = round(floatval(collect($earnings)->firstWhere('code', 'EME')['amount'] ?? 0), 2);
                 
-                $net = round($ra + $ta, 2);
+                $net = round($eme, 2);
                
                 
               //  $firstHalf  = floor(($net / 2) * 100) / 100;
@@ -249,9 +246,9 @@ class EmeRataService extends Controller {
                     'name' => $name,
                     'position' => $position,
                     'basic_salary' => $basic_salary,
-                    'ra' => $ra,
-                    'ta' => $ta,
-                    'net_amount' => $net,
+                    'eme' => $eme ?? 0,
+                    'net_amount' => $net ?? 0,
+
                     
                 ];
             }

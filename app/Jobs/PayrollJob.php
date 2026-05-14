@@ -42,19 +42,22 @@ class PayrollJob implements ShouldQueue
         'type' => $this->type,
         'employees_count' => $employeesCount,
     ]);
-    if($this->type == 'salary'){
-        $payroll = \App\Models\SalaryPayroll::find($this->payrollId);
+    
+    $payroll = match ($this->type) {
+        'salary' => \App\Models\SalaryPayroll::find($this->payrollId),
+        'eme_rata' => \App\Models\PayrollEmeRata::find($this->payrollId),
+        'ot_pay' => \App\Models\OTPayroll::find($this->payrollId),
+        'eme' => \App\Models\PayrollEme::find($this->payrollId),
+        default => null,
+    };
+    
+    if (!$payroll) {
+        Log::channel('payroll')->error('PayrollJob failed: payroll not found', [
+            'payroll_id' => $this->payrollId,
+            'type' => $this->type,
+        ]);
+        return;
     }
-    if($this->type == 'eme_rata'){
-        $payroll = \App\Models\PayrollEmeRata::find($this->payrollId);
-    }
-   if (!$payroll) {
-       Log::channel('payroll')->error('PayrollJob failed: payroll not found', [
-           'payroll_id' => $this->payrollId,
-           'type' => $this->type,
-       ]);
-       return;
-   }
 
    $service = app(PayrollService::class);
 $process = $service->getProcess($this->type);
@@ -63,7 +66,7 @@ $instance = app($process['service']);
 
 // Check if computePayroll exists
 if (!method_exists($instance, 'computePayroll')) {
-    Log::channel('payroll')->error('PayrollJob failed: computePayroll missing on service', [
+    Log::channel('payroll')->error('PayrollJob failedss: computePayroll missing on service', [
         'payroll_id' => $this->payrollId,
         'type' => $this->type,
         'instance_class' => get_class($instance),

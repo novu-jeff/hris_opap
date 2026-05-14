@@ -15,6 +15,7 @@
                         'year_end'           => 'admin.payroll.reports.year-end',
                         'ot_pay'             => 'admin.payroll.reports.ot-pay',
                         'eme_rata'           => 'admin.payroll.reports.eme-rata',
+                        'eme'                => 'admin.payroll.reports.eme',
                     ];
 
                    // dd($reportComponentMap[$type]);
