@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollEmeRataReportController;
+use App\Http\Controllers\Admin\Reports\Payroll\PayrollEmeReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
@@ -177,9 +178,18 @@ Route::prefix('admin')->group(function() {
         ->name('admin.login');
     Route::any('logout', [AdminLoginController::class, 'logout'])
         ->name('admin.logout');
+     
+        Route::get('/test-ot', function () {
+            app(\App\Services\ClockInOutService::class)
+                ->computeDailyOvertime('EMP-TEST-01', '2026-05-11 16:00:00');
+        
+            return 'OT Computed';
+        });    
 
 
     Route::middleware(['auth'])->group(function() {
+
+      
 
         Route::get('dashboard', [AdminDashboardController::class, 'index'])
             ->name('admin.dashboard');
@@ -303,6 +313,9 @@ Route::prefix('admin')->group(function() {
 
             Route::get('payroll-record/eme-rata', [PayrollEmeRataReportController::class, 'index'])->name('reports.eme-rata.payroll');
             Route::get('payroll-record/eme-rata/view/{payroll}', [PayrollEmeRataReportController::class, 'view'])->name('reports.eme-rata.payroll.view');
+
+            Route::get('payroll-record/eme', [PayrollEmeReportController::class, 'index'])->name('reports.eme.payroll');
+            Route::get('payroll-record/eme/view/{payroll}', [PayrollEmeReportController::class, 'view'])->name('reports.eme.payroll.view');
 
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');
