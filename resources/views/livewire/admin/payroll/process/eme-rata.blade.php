@@ -35,7 +35,7 @@
         </div>
         <div class="col-12 col-md-6">
             <div class="text-uppercase fw-bold">
-                RA Amount : <span class="ms-2 ">PHP {{number_format($records['payroll']['overall_ra_amount'], 2)}}</span>
+                RA Amount : <span class="ms-2">PHP {{number_format($records['payroll']['overall_ra_amount'], 2)}}</span>
             </div>
             <div class="text-uppercase fw-bold">
                 TA Amount : <span class="ms-2">PHP {{number_format($records['payroll']['overall_ta_amount'], 2)}}</span>

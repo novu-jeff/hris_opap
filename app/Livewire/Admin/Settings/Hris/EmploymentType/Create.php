@@ -45,6 +45,7 @@ class Create extends Component
                 'is_mid_year' => $this->fields['is_mid_year'] ?? false,
                 'is_year_end' => $this->fields['is_year_end'] ?? false,
                 'is_eme_rata' => $this->fields['is_eme_rata'] ?? false,
+                'is_eme' => $this->fields['is_eme'] ?? false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -83,7 +84,8 @@ class Create extends Component
             'fields.is_clothing_allowance' => 'nullable|boolean',
             'fields.is_mid_year' => 'nullable|boolean',
             'fields.is_year_end' => 'nullable|boolean',
-            'fields.is_eme_rata' => 'nullable|boolean'
+            'fields.is_eme_rata' => 'nullable|boolean',
+            'fields.is_eme' => 'nullable|boolean'
         ];
     }
 
