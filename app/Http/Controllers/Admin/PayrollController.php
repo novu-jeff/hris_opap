@@ -53,6 +53,9 @@ class PayrollController extends Controller
             if ($settings['is_eme_rata']) {
                 $subs['eme_rata'] = 'RaTa';
             }
+            if ($settings['is_eme']) {
+                $subs['eme'] = 'EME';
+            }
 
             return [
                 strtolower($item->name) => [
