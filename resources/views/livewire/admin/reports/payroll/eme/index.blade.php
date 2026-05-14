@@ -80,7 +80,7 @@
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-body">
                                         <div class="fw-bold text-primary">
-                                            Monthly EME RATA Summary
+                                            Monthly EME Summary
                                         </div>
 
                                         <div class="fs-4 fw-bold">
@@ -96,9 +96,9 @@
                         </div>
 
                         <!-- Payroll Table -->
-                        @include('livewire.admin.reports.payroll.partials.eme-rata-payroll-table-modern', [
+                        @include('livewire.admin.reports.payroll.partials.eme-payroll-table-modern', [
                             'payrolls' => $payrolls,
-                            'type' => 'eme_rata'
+                            'type' => 'eme'
                         ])
 
                     </div>
@@ -108,7 +108,7 @@
         @empty
             <div class="text-center py-5">
                 <h5 class="fw-bold text-muted">
-                    No approved RATA payroll records found
+                    No approved EME payroll records found
                 </h5>
             </div>
         @endforelse
