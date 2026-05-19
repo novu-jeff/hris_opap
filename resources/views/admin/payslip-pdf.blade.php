@@ -156,16 +156,16 @@
             {{-- EMPLOYEE INFO --}}
             <table class="emp-info" style="margin-bottom: 12px;">
                 <tr>
-                    <td>Employee's Name :</td>
-                    <td>{{ $payslip['name'] }}</td>
+                    <td>EMPLOYEE'S NAME :</td>
+                    <td>{{ strtoupper($payslip['name']) }}</td>
                 </tr>
                 <tr>
-                    <td>Position :</td>
-                    <td>{{ $payslip['position'] }}</td>
+                    <td>POSITION :</td>
+                    <td>{{ strtoupper($payslip['position']) }}</td>
                 </tr>
                 <tr>
-                    <td>Unit :</td>
-                    <td>{{ $payslip['information']['section']['name'] }}</td>
+                    <td>UNIT :</td>
+                    <td>{{ strtoupper($payslip['information']['section']['name']) }}</td>
                 </tr>
             </table>
 
