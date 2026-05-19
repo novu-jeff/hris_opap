@@ -45,6 +45,12 @@ class Index extends Component
     public $ot_period;
     public $employment_type_id;
     public $has_deductions;
+
+    public $percentage;
+    public $semester;
+    public $coverage_from;
+    public $coverage_to;
+
     public array $employeesChecked;
     public string $activeTab;
     public bool $isToCreate = false;
@@ -186,7 +192,7 @@ class Index extends Component
                 ];
             }
 
-            if ($settings['is_mid_year']) {
+          /*  if ($settings['is_mid_year']) {
                 $subs['mid_year'] = [
                     'name' => 'Mid Year Bonus',
                     'page' => 'mid_year',
@@ -211,6 +217,65 @@ class Index extends Component
                         ],
                     ]
                 ];
+            }*/
+
+            if($settings['is_mid_year']){
+                $subs['mid_year'] = [
+                    'name' => 'Mid Year Bonus',
+                    'page' => 'mid_year',
+                    'fields' => [
+                        'employment_type' => [
+                            'label' => 'Employment Type',
+                            'type' => 'text',
+                            'value' => $item->name,
+                            'class' => 'restricted',
+                            'attr' => ['readonly' => true],
+                            'rules' => ''
+                        ],
+
+                        'payroll_date' => [
+                            'label' => 'Payroll Date',
+                            'type' => 'date',
+                            'value' => now()->format('Y-m-d'),
+                            'rules' => 'required|date',
+                        ],
+
+                       /* 'semester' => [
+                            'label' => 'Semester',
+                            'type' => 'select',
+                            'value' => '',
+                            'options' => [
+                                (object)['id' => 'first_semester', 'name' => 'First Semester (Jan - Jun)'],
+                                (object)['id' => 'second_semester', 'name' => 'Second Semester (Jul - Dec)'],
+                            ],
+                            'rules' => 'nullable'
+                        ],
+
+                        'coverage_from' => [
+                            'label' => 'Coverage From',
+                            'type' => 'date',
+                            'value' => '',
+                            'attr' => ['readonly' => true],
+                            'rules' => 'required|date',
+                        ],
+
+                        'coverage_to' => [
+                            'label' => 'Coverage To',
+                            'type' => 'date',
+                            'value' => '',
+                            'attr' => ['readonly' => true],
+                            'rules' => 'required|date',
+                        ],*/
+
+                        'percentage' => [
+                            'label' => 'Percentage',
+                            'type' => 'text',
+                            'value' => '100',
+                            'rules' => 'required|numeric|min:0|max:100',
+                        ],
+                    ]
+                ];
+            
             }
 
             if ($settings['is_year_end']) {
@@ -796,6 +861,7 @@ class Index extends Component
                 'payroll_date'    => $this->payroll_date,
                 'employment_type' => $employmentTypeId,
                 'type'            => 'mid_year',
+                'percentage' => $this->percentage,
             ],
             'year_end' => [
                 'payroll_date'    => $this->payroll_date,

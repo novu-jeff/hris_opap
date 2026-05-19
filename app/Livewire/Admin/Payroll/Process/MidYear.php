@@ -6,8 +6,12 @@ use App\Http\Controllers\Admin\Services\Payroll\BonusService;
 use App\Http\Controllers\Admin\Services\PayrollService;
 use App\Models\BonusItemsPayroll;
 use App\Models\BonusPayroll;
+use App\Models\OtherEarnings;
+use App\Models\Positions;
+use App\Models\Tranche;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class MidYear extends Component
 {
@@ -16,6 +20,7 @@ class MidYear extends Component
     public $employment_type;
     public $payroll_id;
     public $bonus = [];
+    public $percentage = [];
     public $cash_gift = [];
     public $net_amount = [];
     public array $originalItems = [];
@@ -23,6 +28,19 @@ class MidYear extends Component
     public bool $isApproved = false;
     public bool $hasChanges = false;
     public $records;
+
+    public $confirmingDelete = false;
+    public $deleteSectionIndex;
+    public $deleteEmployeeIndex;
+
+    public $showAddModal = false;
+    public $searchEmployee = '';
+    public $employeeResults = [];
+    public $selectedEmployee = null;
+    public $showDuploicateLabel = false;
+    public $duplicateMessage = '';
+
+    public array $newItems = [];
 
     protected $listeners = ['save', 'approve'];
 
@@ -47,6 +65,7 @@ class MidYear extends Component
             foreach ($employees as $employeeIndex => $record) {
                 $this->bonus[$sectionIndex][$employeeIndex]   = $record['bonus'] ?? 0;
                 $this->cash_gift[$sectionIndex][$employeeIndex]   = $record['cash_gift'] ?? 0;
+                $this->percentage[$sectionIndex][$employeeIndex]   = $record['percentage'] ?? 0;
                 $this->net_amount[$sectionIndex][$employeeIndex]   = $record['net_amount'] ?? 0;
             }
         }
@@ -134,6 +153,383 @@ class MidYear extends Component
         return false;
     }
 
+    public function confirmDelete($sectionIndex, $employeeIndex)
+{
+    $this->deleteSectionIndex = $sectionIndex;
+    $this->deleteEmployeeIndex = $employeeIndex;
+    $this->confirmingDelete = true;
+
+   /* $this->dispatch('showConfirmation', [
+        'title' => 'Delete employee?',
+        'message' => 'This will permanently remove this employee from payroll.',
+        'action' => 'deleteEmployee'
+    ]);*/
+}
+
+public function deleteEmployee()
+{
+    $sectionIndex = $this->deleteSectionIndex;
+    $employeeIndex = $this->deleteEmployeeIndex;
+
+    if ($this->isApproved) return;
+
+    $fields = [
+        'bonus',
+        'percentage',
+        'net_amount'
+    ];
+
+    $employee = $this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+
+    DB::transaction(function () use ($employee, $sectionIndex, $employeeIndex, $fields) {
+
+        BonusItemsPayroll::where('id', $employee['id'])->delete();
+
+        unset($this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex]);
+
+        // ✅ REMOVE FROM ALL FIELD ARRAYS
+        foreach ($fields as $field) {
+            Log::info('check items', ['field' =>  $field, 'sectionIndex' => $sectionIndex, 'employeeIndex' => $employeeIndex ]);
+            unset($this->{$field}[$sectionIndex][$employeeIndex]);
+
+            // reindex each field
+            if (isset($this->{$field}[$sectionIndex])) {
+                $this->{$field}[$sectionIndex] = array_values($this->{$field}[$sectionIndex]);
+            }
+        }
+        
+        $this->records['payroll_items'][$sectionIndex]['employees'] = array_values(
+            $this->records['payroll_items'][$sectionIndex]['employees']
+        );
+    });
+    $this->confirmingDelete = false;
+
+    $this->dispatch('alert', [
+        'status' => 'success',
+        'title' => 'Deleted',
+        'message' => 'Employee removed from payroll'
+    ]);
+}
+
+
+public function searchEmployeeAction($value)
+{
+    $this->searchEmployee = $value;
+
+    if (trim($value) === '') {
+        $this->employeeResults = [];
+        return;
+    }
+
+    $this->employeeResults = DB::table('employee_information as ei')
+        ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
+        ->where('ei.isDeleted', 0)
+        ->where('ei.status', 'active')
+        ->where('ei.employment_type_id', 1)
+        ->where(function ($q) use ($value) {
+            $q->where('ei.employee_no', 'like', '%' . $value . '%')
+              ->orWhere('ep.firstname', 'like', '%' . $value . '%')
+              ->orWhere('ep.lastname', 'like', '%' . $value . '%');
+        })
+        ->limit(10)
+        ->select(
+            'ei.id',
+            'ei.employee_no',
+            DB::raw("CONCAT(COALESCE(ep.firstname,''), ' ', COALESCE(ep.lastname,'')) as name")
+        )
+        ->get();
+
+        $this->showDuploicateLabel = false;    
+}
+
+public function selectEmployee($id)
+{
+    $payroll = BonusPayroll::find($this->payroll_id);
+
+    $emp = DB::table('employee_information as ei')
+        ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
+        ->where('ei.id', $id)
+        ->select(
+            'ei.employee_no',
+            'ei.salary',
+            'ei.position_id',
+            'ei.section_id',
+            'ei.date_hired',
+            'ei.w_tax',
+            'ei.tax_type',
+            'ei.step_id',
+            'ei.salary_type',
+            'ei.employment_type_id',
+            'ep.bp_no',
+            DB::raw("CONCAT(ep.firstname, ' ', ep.lastname) as name")
+        )
+        ->first();
+
+    if (!$emp) {
+        return;
+    }
+
+    // reset duplicate warning
+    $this->showDuploicateLabel = false;
+
+    $stepId = $emp->step_id;
+    $eligible = $emp->employment_type_id;
+
+
+        if ($emp->employment_type_id != 3 && $emp->employment_type_id != 4) {
+
+
+            $salaryGrade = Positions::where('id', $emp->position_id)->value('salary_grade');
+
+            $stepColumn = "step_" . ($stepId  ?? '');
+             $stepColumnTax = "step_" . ($stepId  ?? '') . "_wtax";
+
+             // Get the latest tranche for this eligible type
+             $latestTranche = Tranche::with(['items' => function ($query) use ($salaryGrade, $stepColumn, $stepColumnTax) {
+                 $query->where('salary_grade', $salaryGrade)
+                  ->select('id', 'tranche_id', 'salary_grade', $stepColumn, $stepColumnTax);
+             }])
+              ->where('eligible', $eligible)
+             ->where('is_active', 1)
+             ->latest('year')
+             ->first();
+             
+
+             $salary = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                     ? $latestTranche->items->first()->$stepColumn 
+                     : 0;
+                 
+             $wtax = ($latestTranche && $latestTranche->items->isNotEmpty()) 
+                 ? $latestTranche->items->first()->$stepColumnTax 
+                 : 0;
+
+        } else {
+        // dd('here');
+            $wtax = data_get($emp, 'w_tax', 0);
+            $salary = data_get($emp, 'salary', 0);
+        } 
+
+    $employee_salary = round(floatval($salary), 2);
+
+    $cash_gift = 0;
+
+    if($payroll->bonus_type == 'year_end') {
+        $cash_gift = OtherEarnings::where('code', 'cashgift')->value('amount') ?? 0;
+    }
+    
+    $bonus = $employee_salary;
+    if($payroll->bonus_type == 'year_end') {
+        $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
+        $net = ($bonus + $cash_gift) - $tax;
+    }else{
+        $tax = 0;
+        $net = $bonus;
+    }
+
+    $this->selectedEmployee = [
+        'payroll_id' => $payroll->id,
+        'employee_no' => $emp->employee_no,
+        'employment_type' => $emp->employment_type_id,
+        'position_id' => $emp->position_id,
+        'section_id' => $emp->section_id,
+
+        'name' => $emp->name,
+        'position' => $this->getPositionName($emp->position_id),
+
+        'date_hired' => $emp->date_hired,
+
+        'basic_salary' => $employee_salary,
+        'bonus' => $employee_salary,
+        'cash_gift' => $cash_gift,
+        'percentage' => $payroll->percentage,
+        'coverage_from' => $payroll->coverage_from,
+        'coverage_to' => $payroll->coverage_to,
+        'tax' => $tax,
+        'net_amount' => $net 
+    ];
+
+    // optional: clear results after select
+    $this->employeeResults = [];
+}
+
+    public function confirmAddEmployee()
+    {
+        if (!$this->selectedEmployee) return;
+
+        $existss = BonusItemsPayroll::where('payroll_id', $this->payroll_id)
+        ->where('employee_no', $this->selectedEmployee['employee_no'])
+        ->exists();
+       // dd('duplicatesss');
+    if ($existss) {
+
+      //  dd('duplicate');
+        $this->showDuploicateLabel = true;
+        $this->duplicateMessage = 'Employee already exists in this payroll';
+
+        $this->dispatch('alert', [
+            'status' => 'error',
+            'title' => 'Duplicate',
+            'message' => 'Employee already exists in payrollvvv'
+        ]);
+        return;
+    } 
+        /*
+    |--------------------------------------------------------------------------
+    | MID YEAR VALIDATION
+    |--------------------------------------------------------------------------
+    */
+    $payroll = BonusPayroll::find($this->payroll_id);
+    $type = $payroll->bonus_type; // mid_year or year_end
+
+    if ($type === 'mid_year') {
+       // dd('enter');
+        $dateHired = !empty($this->selectedEmployee['date_hired'])
+            ? \Carbon\Carbon::parse($this->selectedEmployee['date_hired'])
+            : null;
+
+        $currentYear = now()->year;
+
+        $may15 = \Carbon\Carbon::create($currentYear, 5, 15);
+        $july1Prev = \Carbon\Carbon::create($currentYear - 1, 7, 1);
+
+        $reasons = [];
+
+        if (!$dateHired) {
+          //  dd('no date hired');
+            $reasons[] = 'No date hired';
+        }
+
+        if ($dateHired && $dateHired->gt($may15)) {
+            $reasons[] = 'Not in service as of May 15';
+        }
+
+        if ($dateHired && $dateHired->gt($july1Prev)) {
+            if ($dateHired->diffInMonths($may15) < 4) {
+                $reasons[] = 'Less than 4 months of service from July 1 to May 15';
+            }
+        }
+
+        if (!empty($reasons)) {
+            $this->showDuploicateLabel = true;
+            $this->duplicateMessage = implode(', ', $reasons);
+
+            $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Employee Not Eligible',
+                'message' => $this->duplicateMessage
+            ]);
+
+            return;
+        }
+    }
+        $this->hasChanges = true;
+        DB::transaction(function () {
+
+            $positionName = $this->getPositionName($this->selectedEmployee['position_id']);
+            $sectionName  = $this->getSectionName($this->selectedEmployee['section_id']);
+
+            $new = BonusItemsPayroll::create([
+                'payroll_id' => $this->payroll_id,
+                'employee_no' => $this->selectedEmployee['employee_no'],
+                'employment_type_id' => $this->selectedEmployee['employment_type'],
+                'name' => $this->selectedEmployee['name'],
+                'position' => $positionName,
+                'basic_salary' => $this->selectedEmployee['basic_salary'],
+                'percentage' => $this->selectedEmployee['percentage'],
+                'bonus' => $this->selectedEmployee['bonus'],
+                'cash_gift' => $this->selectedEmployee['cash_gift'],
+                'date_hired' => $this->selectedEmployee['date_hired'],
+                'coverage_from' => $this->selectedEmployee['coverage_from'],
+                'coverage_to' => $this->selectedEmployee['coverage_to'],
+                'tax' => $this->selectedEmployee['tax'],
+                'net_amount' => $this->selectedEmployee['net_amount'],
+            ]);
+
+        // $this->loadRecords();
+
+            $newItem = $new->toArray();
+
+        
+            \Log::info('Add employee to Mid-year', ['records' => $newItem]);
+
+            $sectionIndex = $this->findOrCreateSection([
+                'section_name' => $sectionName
+            ]);
+
+            $this->records['payroll_items'][$sectionIndex]['employees'][] = $newItem;
+
+        $employeeIndex = count($this->records['payroll_items'][$sectionIndex]['employees']) - 1;
+
+            // init fields
+            foreach ([
+                'percentage',
+                'bonus','net_amount'
+            ] as $field) {
+                
+                $this->{$field}[$sectionIndex][$employeeIndex] = $newItem[$field] ?? 0;
+            }
+
+            $payrollItem = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+            $original    = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? [];
+
+            if ($this->isChanged($payrollItem, $original)) {
+                Log::info('new employee haschange1', ['payrollItem' => $payrollItem,'original' => $original]);
+                $this->updatedItems[] = $payrollItem['id'];
+                $this->updatedItems = array_unique($this->updatedItems);
+            } else {
+                Log::info('new employee haschange2', ['payrollItem' => $payrollItem,'original' => $original]);
+                $this->updatedItems = array_diff($this->updatedItems, [$payrollItem['id']]);
+            }
+
+        // $this->recompute($sectionIndex, $employeeIndex);
+            $this->newItems[] = $new->id;
+            $this->hasChanges = true;
+        });
+
+        $this->reset(['selectedEmployee', 'searchEmployee', 'employeeResults', 'showAddModal', 'showDuploicateLabel']);
+        $this->hasChanges = true;
+        $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Added',
+            'message' => 'Employee added to Mid-Year payroll'
+        ]);
+    }
+
+    private function getPositionName($positionId)
+    {
+        return DB::table('positions')
+            ->where('id', $positionId)
+            ->value('name') ?? 'N/A';
+    }
+
+    private function getSectionName($sectionId)
+    {
+        return DB::table('sections')
+            ->where('id', $sectionId)
+            ->value('name') ?? 'Unknown Section';
+    }
+
+    private function findOrCreateSection($data)
+{
+    $sectionName = $data['section_name'] ?? 'Unknown Section';
+
+    // 1. Try to find existing section
+    foreach ($this->records['payroll_items'] as $index => $section) {
+        if (($section['section_name'] ?? '') === $sectionName) {
+            return $index;
+        }
+    }
+
+    // 2. Create new section if not found
+    $this->records['payroll_items'][] = [
+        'section_name' => $sectionName,
+        'employees' => []
+    ];
+
+    return count($this->records['payroll_items']) - 1;
+}
+
+
     public function save(bool $isNotify = true)
     {
         if ($isNotify) {
@@ -163,6 +559,7 @@ class MidYear extends Component
 
                     $updateData = [
                         'bonus' => $employeeData['bonus'] ?? 0,
+                        'percentage' => $employeeData['percentage'] ?? 0,
                         'tax' => $employeeData['tax'] ?? 0,
                         'net_amount' => $employeeData['net_amount'] ?? 0,
                     ];
@@ -173,6 +570,7 @@ class MidYear extends Component
 
             DB::commit();
 
+            $this->newItems = [];
             $this->hasChanges = false;
 
             $this->reset('updatedItems');

@@ -10,6 +10,7 @@ use App\Models\BonusPayroll;
 use App\Models\EmployementTypes;
 use App\Models\OtherEarnings;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class BonusService extends Controller {
 
@@ -97,25 +98,104 @@ class BonusService extends Controller {
     }
 
 
-    public function createPayroll($payload) {
+    public function createPayroll($payload)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Auto-set coverage dates
+        |--------------------------------------------------------------------------
+        */
 
-        if (BonusPayroll::where([
-            'payroll_date' => $payload['payroll_date'],
-            'employment_type' => $payload['employment_type'],
-            'bonus_type' => $payload['type'],
-        ])->exists()) {
-            throw new \Exception('Payroll for this period and employment type already exists.');
+        $employmentType = $payload['employment_type'];
+        $bonusType      = $payload['type'];
+        $semester       = $payload['semester'] ?? null;
+        $currentYear    = now()->year;
+
+        $coverageFrom = null;
+        $coverageTo   = null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Plantilla (employment_type = 1)
+        |--------------------------------------------------------------------------
+        */
+
+        if ($employmentType == 1) {
+
+            if ($bonusType === 'mid_year') {
+                $coverageFrom = Carbon::create($currentYear, 1, 1)->format('Y-m-d');
+                $coverageTo   = Carbon::create($currentYear, 6, 30)->format('Y-m-d');
+                $semester     = null;
+            }
+
+            if ($bonusType === 'year_end') {
+                $coverageFrom = Carbon::create($currentYear, 7, 1)->format('Y-m-d');
+                $coverageTo   = Carbon::create($currentYear, 12, 31)->format('Y-m-d');
+                $semester     = null;
+            }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | COS / Contractual (employment_type = 2)
+        |--------------------------------------------------------------------------
+        */
+
+        if ($employmentType == 2) {
+
+            if ($semester === 'first_semester') {
+                $coverageFrom = Carbon::create($currentYear, 1, 1)->format('Y-m-d');
+                $coverageTo   = Carbon::create($currentYear, 6, 30)->format('Y-m-d');
+            }
+
+            if ($semester === 'second_semester') {
+                $coverageFrom = Carbon::create($currentYear, 7, 1)->format('Y-m-d');
+                $coverageTo   = Carbon::create($currentYear, 12, 31)->format('Y-m-d');
+            }
+        }
+
+        Log::info('Midyear create Payroll', ['Payload' => $payload, 'employment_type' => $employmentType, 'bonus_type' => $bonusType, 'coverage_from' => $coverageFrom, 'coverage_to'=> $coverageTo]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Duplicate Check
+        |--------------------------------------------------------------------------
+        */
+
+        if (BonusPayroll::where([
+            'payroll_date'    => $payload['payroll_date'],
+            'employment_type' => $employmentType,
+            'bonus_type'      => $bonusType,
+            'coverage_from'   => $coverageFrom,
+            'coverage_to'     => $coverageTo,
+        ])->exists()) {
+            throw new \Exception(
+                'Payroll for this period and employment type already exists.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Payroll
+        |--------------------------------------------------------------------------
+        */
+
         $payroll = BonusPayroll::create([
-            'payroll_date' => $payload['payroll_date'],
-            'employment_type' => $payload['employment_type'],
-            'bonus_type' => $payload['type'],
-            'status' => 'pending'
+            'payroll_date'       => $payload['payroll_date'],
+            'employment_type'    => $employmentType,
+            'bonus_type'         => $bonusType,
+            'coverage_from'      => $coverageFrom,
+            'coverage_to'        => $coverageTo,
+            'semester'           => $semester,
+            'percentage'         => $payload['percentage'] ?? 100,
+            'remarks'            => $payload['remarks'] ?? null,
+            'selected_employees' => json_encode(
+                $payload['selected_employees'] ?? []
+            ),
+            'status'             => 'pending',
         ]);
 
         return $payroll;
-
     }
 
     public function generateChunks(int $payroll_id, int $employment_type, string $type) {
@@ -130,15 +210,30 @@ class BonusService extends Controller {
         }
 
         $employees = $this->payrollService->getEmployees($employment_type, $type);
-        $employees = $employees['eligible'];
+        $employees = $employees['eligible']['items'];
 
-        $chunks = array_chunk($employees, 1000);
+        $selectedEmployees = json_decode($payroll->selected_employees ?? '[]', true);
+
+        if (!empty($selectedEmployees)) {
+            $employees = collect($employees)
+                ->filter(function ($employee) use ($selectedEmployees) {
+                    return in_array($employee['employee_no'], $selectedEmployees);
+                })
+                ->values()
+                ->toArray();
+        }
+
+        $chunks = array_chunk($employees, 25);
 
         $jobs = [];
 
 
         foreach ($chunks as $chunk) {
-            $jobs[] = new PayrollJob(collect($chunk), $payroll, $type);
+            $jobs[] = new PayrollJob(
+                $chunk,          // already an array
+                $payroll->id,    // pass only ID
+                'mid_year'
+            );
         }
 
         $payroll_date = Carbon::parse($payroll->payroll_date)->format('M d, Y');
@@ -177,6 +272,8 @@ class BonusService extends Controller {
                 $employee_no = $employee['employee_no'];
                 $employee_name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $employee_position = $employee['position_name'];
+                $date_hired = $employee['date_hired'];
+                $employment_type_id = $employee['employment_type_id'];
                 $employee_salary = round(floatval($employee['salary']), 2);
 
                 $cash_gift = 0;
@@ -186,18 +283,27 @@ class BonusService extends Controller {
                 }
                 
                 $bonus = $employee_salary;
-                $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
-                $net = ($bonus + $cash_gift) - $tax;
+                if($type == 'year_end') {
+                    $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
+                    $net = ($bonus + $cash_gift) - $tax;
+                }else{
+                    $tax = 0;
+                    $net = $bonus;
+                }
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
                     'employee_no' => $employee_no,
-                    'employment_type' => $employee['employment_type_id'],
+                    'employment_type' => $employment_type_id,
                     'name' => $employee_name,
                     'position' => $employee_position,
+                    'date_hired' => $date_hired,
                     'basic_salary' => $employee_salary,
                     'bonus' => $employee_salary,
                     'cash_gift' => $cash_gift,
+                    'percentage' => $payroll->percentage,
+                    'coverage_from' => $payroll->coverage_from,
+                    'coverage_to' => $payroll->coverage_to,
                     'tax' => $tax,
                     'net_amount' => $net 
                 ];

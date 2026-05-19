@@ -133,7 +133,9 @@ class PayrollService extends Controller {
                         $reasons[] = 'not in service as of May 15';
                     }
 
-                    if (!$dateHired || $dateHired->gt($july1Prev)) {
+                    if (!$dateHired) {
+                        $reasons[] = 'no date hired';
+                    } elseif ($dateHired->gt($july1Prev)) {
                         if ($dateHired->diffInMonths($may15) < 4) {
                             $reasons[] = 'less than 4 months of service from July 1 to May 15';
                         }
