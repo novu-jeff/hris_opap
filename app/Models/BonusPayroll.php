@@ -16,6 +16,12 @@ class BonusPayroll extends Model
         'employment_type',
         'bonus_type',
         'payroll_date',
+        'coverage_from',
+        'coverage_to',
+        'semester',
+        'percentage',
+        'remarks',
+        'selected_employees',
         'status',
     ];
 

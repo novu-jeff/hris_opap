@@ -48,6 +48,7 @@ class PayrollJob implements ShouldQueue
         'eme_rata' => \App\Models\PayrollEmeRata::find($this->payrollId),
         'ot_pay' => \App\Models\OTPayroll::find($this->payrollId),
         'eme' => \App\Models\PayrollEme::find($this->payrollId),
+        'mid_year' => \App\Models\BonusPayroll::find($this->payrollId),
         default => null,
     };
     

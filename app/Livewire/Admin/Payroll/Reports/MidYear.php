@@ -81,16 +81,35 @@ class MidYear extends Component
 
     public function render()
     {
-    
-        $employment_type_id = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
+        $employment_type_id = EmployementTypes::where(
+            'name',
+            'like',
+            '%' . $this->employment_type . '%'
+        )->value('id');
 
         $records = BonusPayroll::where('bonus_type', $this->type)
-            ->when($this->status, fn($q) => $q->where('status', $this->status))
             ->where('employment_type', $employment_type_id)
+            ->when($this->status, fn($q) => $q->where('status', $this->status))
+            ->orderBy('payroll_date', 'desc')
             ->paginate($this->entries);
 
+        /*
+        |--------------------------------------------------------------------------
+        | GROUP ONLY CURRENT PAGE
+        |--------------------------------------------------------------------------
+        |
+        | Same logic as EME accordion UI
+        |
+        */
+
+        $grouped = $records->getCollection()->groupBy(function ($item) {
+            return \Carbon\Carbon::parse($item->payroll_date)
+                ->format('F Y');
+        });
+
         return view('livewire.admin.payroll.reports.mid-year', [
-            'salary' => $records
+            'salary' => $records,
+            'groupedSalary' => $grouped,
         ]);
     }
 }
