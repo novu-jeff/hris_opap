@@ -147,11 +147,15 @@
                 @endcan
                 @can('read dtr')
                 <a href="{{ route('reports.eme-rata.payroll') }}" class="submenu-item">
-                    <i class="fa-solid fa-clipboard-list"></i> RATA Payroll Record</a>
+                    <i class="fa-solid fa-clipboard-list"></i> RA/TA Payroll Record</a>
                 @endcan 
                 @can('read dtr')
                 <a href="{{ route('reports.eme.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> EME Payroll Record</a>
+                @endcan 
+                @can('read dtr')
+                <a href="{{ route('reports.mid-year.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Mid Year Payroll Record</a>
                 @endcan 
                 @can('read dtr')
                 <a href="{{asset('templates/unlad-kawani.xlsx')}}" class="submenu-item">
