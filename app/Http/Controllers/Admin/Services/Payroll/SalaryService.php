@@ -552,10 +552,10 @@ class SalaryService extends Controller {
 
                     if ($firstHalfRecord) {
 
-                        $hasTax3 = isset($tax_3) && $tax_3 > 0;
-                        $hasTax5 = isset($tax_5) && $tax_5 > 0;
-                        $hasTax8 = isset($tax_8) && $tax_8 > 0;
-                        $hasTax10 = isset($tax_10) && $tax_10 > 0;
+                        $hasTax3 = isset($firstHalfRecord->tax_3) && $firstHalfRecord->tax_3 > 0;
+                        $hasTax5 = isset($firstHalfRecord->tax_5) && $firstHalfRecord->tax_5 > 0;
+                        $hasTax8 = isset($firstHalfRecord->tax_8) && $firstHalfRecord->tax_8 > 0;
+                        $hasTax10 = isset($firstHalfRecord->tax_10) && $firstHalfRecord->tax_10 > 0;
 
                         $ctax_3 = 0;
                         $ctax_5 = 0;
