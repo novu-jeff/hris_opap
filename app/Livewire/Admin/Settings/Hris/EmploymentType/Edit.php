@@ -37,6 +37,7 @@ class Edit extends Component
                 'is_year_end' => false,
                 'is_eme_rata' => false,
                 'is_eme' => false,
+                'is_premium' => false,
             ];
         }
 
@@ -50,6 +51,7 @@ class Edit extends Component
             'is_year_end' => (bool) $settings->is_year_end,
             'is_eme_rata' => (bool) $settings->is_eme_rata,
             'is_eme' => (bool) $settings->is_eme,
+            'is_premium' => (bool) $settings->is_premium,
         ];
 
         return $data;
@@ -92,6 +94,7 @@ class Edit extends Component
                 'is_year_end' => $this->fields['is_year_end'] ?? false,
                 'is_eme_rata' => $this->fields['is_eme_rata'] ?? false,
                 'is_eme' => $this->fields['is_eme'] ?? false,
+                'is_premium' => $this->fields['is_premium'] ?? false,
                 'updated_at' => now(),
             ];
 
@@ -146,7 +149,8 @@ class Edit extends Component
             'fields.is_mid_year' => 'nullable|boolean',
             'fields.is_year_end' => 'nullable|boolean',
             'fields.is_eme_rata' => 'nullable|boolean',
-            'fields.is_eme' => 'nullable|boolean'
+            'fields.is_eme' => 'nullable|boolean',
+            'fields.is_premium' => 'nullable|boolean'
         ];
     }
 
