@@ -83,6 +83,14 @@
                                 @error('fields.is_eme') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        <div class="col-md-4 form-check mb-2">
+                            <input class="form-check-input" type="checkbox" wire:model="fields.is_premium" id="is_premium">
+                            <label class="form-check-label" for="is_premium">Premium</label>
+                            <div class="error-field">
+                                @error('fields.is_premium') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                     </div>
 
                 </div>
