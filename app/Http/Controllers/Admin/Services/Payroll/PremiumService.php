@@ -249,479 +249,572 @@ class PremiumService extends Controller {
     }
 
     public function computePayroll($payroll, $employees, $type)
-{
-    if ($this->product == 'government') {
-
-        $data = [];
-
-        foreach ($employees as $employee) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Employee Information
-            |--------------------------------------------------------------------------
-            */
-
-            $employee_no = $employee['employee_no'];
-
-            $employee_name = trim(
-                ($employee['firstname'] ?? '') . ' ' .
-                ($employee['lastname'] ?? '')
-            );
-
-            $employee_position = $employee['position_name'] ?? '';
-
-            $date_hired = $employee['date_hired'] ?? null;
-
-            $employment_type_id =
-                $employee['employment_type_id'];
-
-            $basicSalary = round(
-                floatval($employee['salary'] ?? 0),
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Initialize Monthly Amounts
-            |--------------------------------------------------------------------------
-            */
-
-            $months = [
-
-                'january_amount' => 0,
-                'february_amount' => 0,
-                'march_amount' => 0,
-                'april_amount' => 0,
-                'may_amount' => 0,
-                'june_amount' => 0,
-
-                'july_amount' => 0,
-                'august_amount' => 0,
-                'september_amount' => 0,
-                'october_amount' => 0,
-                'november_amount' => 0,
-                'december_amount' => 0,
-
-            ];
-
-            /*
-            |--------------------------------------------------------------------------
-            | Coverage Dates
-            |--------------------------------------------------------------------------
-            */
-
-            $start = Carbon::parse(
-                $payroll->coverage_from
-            );
-
-            $end = Carbon::parse(
-                $payroll->coverage_to
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Latest Payroll Reference
-            |--------------------------------------------------------------------------
-            |
-            | Used as fallback if month has no payroll row
-            |
-            */
-
-            $latestPayrollItem =
-                \DB::table('payroll_salary_items as psi')
-
-                    ->join(
-                        'payroll_salary as ps',
-                        'ps.id',
-                        '=',
-                        'psi.payroll_id'
-                    )
-
-                    ->where(
-                        'psi.employee_no',
-                        $employee_no
-                    )
-
-                    ->where(
-                        'ps.employment_type',
-                        $employment_type_id
-                    )
-
-                    ->where(
-                        'ps.status',
-                        'approved'
-                    )
-
-                    ->select(
-                        'psi.basic_salary',
-                        'psi.aut'
-                    )
-
-                    ->orderBy(
-                        'ps.payroll_date',
-                        'desc'
-                    )
-
-                    ->first();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Default Values
-            |--------------------------------------------------------------------------
-            */
-
-            $defaultSalary = round(
-                floatval(
-                    $latestPayrollItem->basic_salary
-                        ?? $basicSalary
-                ),
-                2
-            );
-
-            $defaultAut = round(
-                floatval(
-                    $latestPayrollItem->aut
-                        ?? 0
-                ),
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Get Payroll Rows
-            |--------------------------------------------------------------------------
-            */
-
-            $salaryItems =
-                \DB::table('payroll_salary_items as psi')
-
-                    ->join(
-                        'payroll_salary as ps',
-                        'ps.id',
-                        '=',
-                        'psi.payroll_id'
-                    )
-
-                    ->where(
-                        'psi.employee_no',
-                        $employee_no
-                    )
-
-                    ->where(
-                        'ps.employment_type',
-                        $employment_type_id
-                    )
-
-                    ->where(
-                        'ps.status',
-                        'approved'
-                    )
-
-                    ->whereBetween(
-                        'ps.payroll_date',
-                        [
-                            $payroll->coverage_from,
-                            $payroll->coverage_to
-                        ]
-                    )
-
-                    ->select(
-                        'ps.payroll_date',
-                        'psi.basic_salary',
-                        'psi.aut'
-                    )
-
-                    ->orderBy(
-                        'ps.payroll_date'
-                    )
-
-                    ->get()
-
-                    ->keyBy(function ($item) {
-
-                        return Carbon::parse(
-                            $item->payroll_date
-                        )->format('Y-m');
-
-                    });
-
-            /*
-            |--------------------------------------------------------------------------
-            | Build Semester Months
-            |--------------------------------------------------------------------------
-            */
-
-            $current = $start->copy();
-
-            $generatedMonths = [];
-
-            while ($current <= $end) {
-
-                $monthKey =
-                    $current->format('Y-m');
-
-                $generatedMonths[] = [
-
-                    'month_key' => $monthKey,
-
-                    'month_name' => strtolower(
-                        $current->format('F')
-                    ),
-
-                    'salary' => round(
-                        floatval(
-                            $salaryItems[$monthKey]
-                                ->basic_salary
-                                ?? $defaultSalary
-                        ),
-                        2
-                    ),
-
-                    'aut' => round(
-                        floatval(
-                            $salaryItems[$monthKey]
-                                ->aut
-                                ?? $defaultAut
-                        ),
-                        2
-                    ),
-
+    {
+        if ($this->product == 'government') {
+    
+            $data = [];
+    
+            foreach ($employees as $employee) {
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Employee Information
+                |--------------------------------------------------------------------------
+                */
+    
+                $employee_no = $employee['employee_no'];
+    
+                $employee_name = trim(
+                    ($employee['firstname'] ?? '') . ' ' .
+                    ($employee['lastname'] ?? '')
+                );
+    
+                $employee_position =
+                    $employee['position_name'] ?? '';
+    
+                $date_hired =
+                    $employee['date_hired'] ?? null;
+    
+                $employment_type_id =
+                    $employee['employment_type_id'];
+    
+                $basicSalary = round(
+                    floatval($employee['salary'] ?? 0),
+                    2
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Initialize Months
+                |--------------------------------------------------------------------------
+                */
+    
+                $months = [
+    
+                    'january_amount' => 0,
+                    'february_amount' => 0,
+                    'march_amount' => 0,
+                    'april_amount' => 0,
+                    'may_amount' => 0,
+                    'june_amount' => 0,
+    
+                    'july_amount' => 0,
+                    'august_amount' => 0,
+                    'september_amount' => 0,
+                    'october_amount' => 0,
+                    'november_amount' => 0,
+                    'december_amount' => 0,
+    
                 ];
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Coverage Dates
+                |--------------------------------------------------------------------------
+                */
+    
+                $start = Carbon::parse(
+                    $payroll->coverage_from
+                );
+    
+                $end = Carbon::parse(
+                    $payroll->coverage_to
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Latest Payroll Item
+                |--------------------------------------------------------------------------
+                */
+    
+                $latestPayrollItem =
+                    \DB::table('payroll_salary_items as psi')
+    
+                        ->join(
+                            'payroll_salary as ps',
+                            'ps.id',
+                            '=',
+                            'psi.payroll_id'
+                        )
+    
+                        ->where(
+                            'psi.employee_no',
+                            $employee_no
+                        )
+    
+                        ->where(
+                            'ps.employment_type',
+                            $employment_type_id
+                        )
+    
+                        ->where(
+                            'ps.status',
+                            'approved'
+                        )
+    
+                        ->select(
+                            'psi.basic_salary',
+                            'psi.aut'
+                        )
+    
+                        ->orderBy(
+                            'ps.payroll_date',
+                            'desc'
+                        )
+    
+                        ->first();
 
-                $current->addMonth();
-            }
+                        Log::info('LATEST PAYROLL ITEM', [
 
-            /*
-            |--------------------------------------------------------------------------
-            | Semester Computation
-            |--------------------------------------------------------------------------
-            */
-
-            $semesterTotal = 0;
-
-            foreach ($generatedMonths as $salaryItem) {
-
-                $month =
-                    $salaryItem['month_name'];
-
-                $salary = round(
+                            'employee_no' => $employee_no,
+                        
+                            'latestPayrollItem' => $latestPayrollItem,
+                        
+                        ]);
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Default Values
+                |--------------------------------------------------------------------------
+                */
+    
+                $defaultSalary = round(
                     floatval(
-                        $salaryItem['salary'] ?? 0
+                        $latestPayrollItem->basic_salary
+                            ?? $basicSalary
                     ),
                     2
                 );
-
-                $aut = round(
+    
+                $defaultAut = round(
                     floatval(
-                        $salaryItem['aut'] ?? 0
+                        $latestPayrollItem->aut
+                            ?? 0
                     ),
                     2
                 );
-
+    
                 /*
                 |--------------------------------------------------------------------------
-                | Premium Formula
+                | Salary Items Per Month
                 |--------------------------------------------------------------------------
-                |
-                | (Basic Salary - AUT) * 20%
-                |
                 */
+    
+                $salaryItems =
+                    \DB::table('payroll_salary_items as psi')
+    
+                        ->join(
+                            'payroll_salary as ps',
+                            'ps.id',
+                            '=',
+                            'psi.payroll_id'
+                        )
+    
+                        ->where(
+                            'psi.employee_no',
+                            $employee_no
+                        )
+    
+                        ->where(
+                            'ps.employment_type',
+                            $employment_type_id
+                        )
+    
+                        ->where(
+                            'ps.status',
+                            'approved'
+                        )
+    
+                        ->whereBetween(
+                            'ps.payroll_date',
+                            [
+                                $payroll->coverage_from,
+                                $payroll->coverage_to
+                            ]
+                        )
+    
+                        ->select(
+                            'ps.payroll_date',
+                            'psi.basic_salary',
+                            'psi.aut'
+                        )
+    
+                        ->orderBy(
+                            'ps.payroll_date',
+                            'desc'
+                        )
+    
+                        ->get()
+    
+                        ->groupBy(function ($item) {
+    
+                            return Carbon::parse(
+                                $item->payroll_date
+                            )->format('Y-m');
+    
+                        });
 
-                $netBase = $salary - $aut;
+                        Log::info('RAW SALARY ITEMS', [
 
-                $premiumAmount = round(
-                    $netBase * 0.20,
-                    2
-                );
-
+                            'employee_no' => $employee_no,
+                        
+                            'salaryItems' => $salaryItems->toArray(),
+                        
+                        ]);
+    
                 /*
                 |--------------------------------------------------------------------------
-                | Month Column
+                | Generate Semester Months
                 |--------------------------------------------------------------------------
                 */
+    
+                $current = $start->copy();
+    
+                $generatedMonths = [];
+    
+                while ($current <= $end) {
+    
+                    $monthKey =
+                        $current->format('Y-m');
+    
+                    $monthPayrolls =
+                        $salaryItems[$monthKey]
+                        ?? collect();
+    
+                    $latestMonthPayroll =
+                        $monthPayrolls->first();
+    
+                    $generatedMonths[] = [
+    
+                        'month_key' => $monthKey,
+    
+                        'month_name' => strtolower(
+                            $current->format('F')
+                        ),
+    
+                        'salary' => round(
+                            floatval(
 
-                $column =
-                    $month . '_amount';
+                                $monthPayrolls->isNotEmpty()
 
-                if (
-                    array_key_exists(
-                        $column,
-                        $months
-                    )
-                ) {
+                                    ? $latestMonthPayroll->basic_salary
 
-                    $months[$column] =
-                        $premiumAmount;
+                                    : $basicSalary
+
+                            ),
+                            2
+                        ),
+    
+                        'aut' => round(
+                            floatval(
+
+                                $monthPayrolls->isNotEmpty()
+
+                                    ? $monthPayrolls->max('aut')
+
+                                    : 0
+
+                            ),
+                            2
+                        ),
+    
+                    ];
+
+                    Log::info('GENERATED MONTH', [
+
+                        'employee_no' => $employee_no,
+                    
+                        'month_key' => $monthKey,
+                    
+                        'month_name' => strtolower(
+                            $current->format('F')
+                        ),
+                    
+                        'salary' => round(
+                            floatval(
+                                $latestMonthPayroll->basic_salary
+                                    ?? $defaultSalary
+                            ),
+                            2
+                        ),
+                    
+                        'aut' => round(
+                            floatval(
+                                $monthPayrolls->max('aut')
+                                    ?? $defaultAut
+                            ),
+                            2
+                        ),
+                    
+                    ]);
+    
+                    $current->addMonth();
                 }
-
+    
                 /*
                 |--------------------------------------------------------------------------
-                | Semester Total
+                | Compute Premium Per Month
                 |--------------------------------------------------------------------------
                 */
+    
+                $semesterTotal = 0;
+    
+                foreach ($generatedMonths as $salaryItem) {
+    
+                    $month =
+                        $salaryItem['month_name'];
+    
+                    $salary = round(
+                        floatval(
+                            $salaryItem['salary'] ?? 0
+                        ),
+                        2
+                    );
+    
+                    $aut = round(
+                        floatval(
+                            $salaryItem['aut'] ?? 0
+                        ),
+                        2
+                    );
+    
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Premium Formula
+                    |--------------------------------------------------------------------------
+                    |
+                    | (Basic Salary - AUT) * 20%
+                    |
+                    */
+    
+                    $netBase =
+                        $salary - $aut;
+    
+                    $premiumAmount = round(
+                        $netBase * 0.20,
+                        2
+                    );
+    
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Month Column
+                    |--------------------------------------------------------------------------
+                    */
+    
+                    $column =
+                        $month . '_amount';
+    
+                    if (
+                        array_key_exists(
+                            $column,
+                            $months
+                        )
+                    ) {
+    
+                        $months[$column] =
+                            $premiumAmount;
+                    }
+    
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Semester Total
+                    |--------------------------------------------------------------------------
+                    */
+    
+                    $semesterTotal +=
+                        $premiumAmount;
 
-                $semesterTotal +=
-                    $premiumAmount;
+                        Log::info('PREMIUM COMPUTATION', [
+
+                            'employee_no' => $employee_no,
+                        
+                            'month' => $month,
+                        
+                            'salary' => $salary,
+                        
+                            'aut' => $aut,
+                        
+                            'net_base' => $netBase,
+                        
+                            'premium_amount' => $premiumAmount,
+                        
+                        ]);    
+                }
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Percentage
+                |--------------------------------------------------------------------------
+                */
+    
+                $percentage = round(
+                    floatval(
+                        $payroll->percentage ?? 100
+                    ),
+                    2
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Bonus
+                |--------------------------------------------------------------------------
+                */
+    
+                $bonus = round(
+                    $semesterTotal *
+                    ($percentage / 100),
+                    2
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Tax
+                |--------------------------------------------------------------------------
+                */
+    
+                $tax = round(
+                    $bonus * 0.05,
+                    2
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Net
+                |--------------------------------------------------------------------------
+                */
+    
+                $net = round(
+                    $bonus - $tax,
+                    2
+                );
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Save Data
+                |--------------------------------------------------------------------------
+                */
+                Log::info('FINAL PREMIUM TOTALS', [
+
+                    'employee_no' => $employee_no,
+                
+                    'semester_total' => $semesterTotal,
+                
+                    'bonus' => $bonus,
+                
+                    'tax' => $tax,
+                
+                    'net' => $net,
+                
+                    'months' => $months,
+                
+                ]);
+    
+                $data[] = [
+    
+                    'payroll_id' =>
+                        $payroll->id,
+    
+                    'employee_no' =>
+                        $employee_no,
+    
+                    'employment_type_id' =>
+                        $employment_type_id,
+    
+                    'name' => strtoupper(
+                        $employee_name
+                    ),
+    
+                    'position' => strtoupper(
+                        $employee_position
+                    ),
+    
+                    'basic_salary' =>
+                        $basicSalary,
+    
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Monthly Columns
+                    |--------------------------------------------------------------------------
+                    */
+    
+                    'january_amount' =>
+                        $months['january_amount'],
+    
+                    'february_amount' =>
+                        $months['february_amount'],
+    
+                    'march_amount' =>
+                        $months['march_amount'],
+    
+                    'april_amount' =>
+                        $months['april_amount'],
+    
+                    'may_amount' =>
+                        $months['may_amount'],
+    
+                    'june_amount' =>
+                        $months['june_amount'],
+    
+                    'july_amount' =>
+                        $months['july_amount'],
+    
+                    'august_amount' =>
+                        $months['august_amount'],
+    
+                    'september_amount' =>
+                        $months['september_amount'],
+    
+                    'october_amount' =>
+                        $months['october_amount'],
+    
+                    'november_amount' =>
+                        $months['november_amount'],
+    
+                    'december_amount' =>
+                        $months['december_amount'],
+    
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Totals
+                    |--------------------------------------------------------------------------
+                    */
+    
+                    'total_amount' =>
+                        round($semesterTotal, 2),
+    
+                    'percentage' =>
+                        $percentage,
+    
+                    'remarks' => null,
+    
+                    'bonus' =>
+                        $bonus,
+    
+                    'cash_gift' => 0,
+    
+                    'date_hired' =>
+                        $date_hired,
+    
+                    'coverage_from' =>
+                        $payroll->coverage_from,
+    
+                    'coverage_to' =>
+                        $payroll->coverage_to,
+    
+                    'semester' =>
+                        $payroll->semester,
+    
+                    'tax' =>
+                        $tax,
+    
+                    'net_amount' =>
+                        $net,
+    
+                ];
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Percentage
-            |--------------------------------------------------------------------------
-            */
-
-            $percentage = round(
-                floatval(
-                    $payroll->percentage ?? 100
-                ),
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Bonus
-            |--------------------------------------------------------------------------
-            */
-
-            $bonus = round(
-                $semesterTotal *
-                ($percentage / 100),
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Tax
-            |--------------------------------------------------------------------------
-            */
-
-            $tax = round(
-                $semesterTotal * 0.05,
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Net Amount
-            |--------------------------------------------------------------------------
-            */
-
-            $net = round(
-                $semesterTotal - $tax,
-                2
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Save Row
-            |--------------------------------------------------------------------------
-            */
-
-            $data[] = [
-
-                'payroll_id' => $payroll->id,
-
-                'employee_no' => $employee_no,
-
-                'employment_type_id' =>
-                    $employment_type_id,
-
-                'name' => strtoupper(
-                    $employee_name
-                ),
-
-                'position' => strtoupper(
-                    $employee_position
-                ),
-
-                'basic_salary' =>
-                    $basicSalary,
-
-                /*
-                |--------------------------------------------------------------------------
-                | Monthly Columns
-                |--------------------------------------------------------------------------
-                */
-
-                'january_amount' =>
-                    $months['january_amount'],
-
-                'february_amount' =>
-                    $months['february_amount'],
-
-                'march_amount' =>
-                    $months['march_amount'],
-
-                'april_amount' =>
-                    $months['april_amount'],
-
-                'may_amount' =>
-                    $months['may_amount'],
-
-                'june_amount' =>
-                    $months['june_amount'],
-
-                'july_amount' =>
-                    $months['july_amount'],
-
-                'august_amount' =>
-                    $months['august_amount'],
-
-                'september_amount' =>
-                    $months['september_amount'],
-
-                'october_amount' =>
-                    $months['october_amount'],
-
-                'november_amount' =>
-                    $months['november_amount'],
-
-                'december_amount' =>
-                    $months['december_amount'],
-
-                /*
-                |--------------------------------------------------------------------------
-                | Totals
-                |--------------------------------------------------------------------------
-                */
-
-                'total_amount' =>
-                    round($semesterTotal, 2),
-
-                'percentage' =>
-                    $percentage,
-
-                'remarks' => null,
-
-                'bonus' =>
-                    $bonus,
-
-                'cash_gift' => 0,
-
-                'date_hired' =>
-                    $date_hired,
-
-                'coverage_from' =>
-                    $payroll->coverage_from,
-
-                'coverage_to' =>
-                    $payroll->coverage_to,
-
-                'semester' =>
-                    $payroll->semester,
-
-                'tax' =>
-                    $tax,
-
-                'net_amount' =>
-                    $net,
-
-            ];
+    
+            return $data;
         }
-
-        return $data;
     }
-}
 
 }
