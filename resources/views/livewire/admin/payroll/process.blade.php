@@ -9,6 +9,7 @@
             'ot_pay' => 'admin.payroll.process.ot-pay',
             'eme_rata' => 'admin.payroll.process.eme-rata',
             'eme' => 'admin.payroll.process.eme',
+            'premium' => 'admin.payroll.process.premium',
         ];
 
        // dd($componentMap[$type]);
