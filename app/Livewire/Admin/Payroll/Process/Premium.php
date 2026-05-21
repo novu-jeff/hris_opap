@@ -638,41 +638,49 @@ public function selectEmployee($id)
     */
 
     $latestPayrollItem =
-        DB::table('payroll_salary_items as psi')
+    \DB::table('payroll_salary_items as psi')
 
-            ->join(
-                'payroll_salary as ps',
-                'ps.id',
-                '=',
-                'psi.payroll_id'
-            )
+        ->join(
+            'payroll_salary as ps',
+            'ps.id',
+            '=',
+            'psi.payroll_id'
+        )
 
-            ->where(
-                'psi.employee_no',
-                $emp->employee_no
-            )
+        ->where(
+            'psi.employee_no',
+            $emp->employee_no
+        )
 
-            ->where(
-                'ps.employment_type',
-                $emp->employment_type_id
-            )
+        ->where(
+            'ps.employment_type',
+            $emp->employment_type_id
+        )
 
-            ->where(
-                'ps.status',
-                'approved'
-            )
+        ->where(
+            'ps.status',
+            'approved'
+        )
 
-            ->select(
-                'psi.basic_salary',
-                'psi.aut'
-            )
+        ->select(
+            'psi.basic_salary',
+            'psi.aut'
+        )
 
-            ->orderBy(
-                'ps.payroll_date',
-                'desc'
-            )
+        ->orderBy(
+            'ps.payroll_date',
+            'desc'
+        )
 
-            ->first();
+        ->first();
+
+        Log::info('Single ADD LATEST PAYROLL ITEM', [
+
+            'employee_no' => $emp->employee_no,
+        
+            'latestPayrollItem' => $latestPayrollItem,
+        
+        ]);
 
     /*
     |--------------------------------------------------------------------------
@@ -703,58 +711,67 @@ public function selectEmployee($id)
     */
 
     $salaryItems =
-        DB::table('payroll_salary_items as psi')
+                    \DB::table('payroll_salary_items as psi')
+    
+                        ->join(
+                            'payroll_salary as ps',
+                            'ps.id',
+                            '=',
+                            'psi.payroll_id'
+                        )
+    
+                        ->where(
+                            'psi.employee_no',
+                            $emp->employee_no
+                        )
+    
+                        ->where(
+                            'ps.employment_type',
+                            $emp->employment_type_id
+                        )
+    
+                        ->where(
+                            'ps.status',
+                            'approved'
+                        )
+    
+                        ->whereBetween(
+                            'ps.payroll_date',
+                            [
+                                $payroll->coverage_from,
+                                $payroll->coverage_to
+                            ]
+                        )
+    
+                        ->select(
+                            'ps.payroll_date',
+                            'psi.basic_salary',
+                            'psi.aut'
+                        )
+    
+                        ->orderBy(
+                            'ps.payroll_date',
+                            'desc'
+                        )
+    
+                        ->get()
+    
+                        ->groupBy(function ($item) {
+    
+                            return Carbon::parse(
+                                $item->payroll_date
+                            )->format('Y-m');
+    
+                        });
 
-            ->join(
-                'payroll_salary as ps',
-                'ps.id',
-                '=',
-                'psi.payroll_id'
-            )
+                        Log::info('Single Add RAW SALARY ITEMS', [
 
-            ->where(
-                'psi.employee_no',
-                $emp->employee_no
-            )
-
-            ->where(
-                'ps.employment_type',
-                $emp->employment_type_id
-            )
-
-            ->where(
-                'ps.status',
-                'approved'
-            )
-
-            ->whereBetween(
-                'ps.payroll_date',
-                [
-                    $payroll->coverage_from,
-                    $payroll->coverage_to
-                ]
-            )
-
-            ->select(
-                'ps.payroll_date',
-                'psi.basic_salary',
-                'psi.aut'
-            )
-
-            ->orderBy(
-                'ps.payroll_date'
-            )
-
-            ->get()
-
-            ->keyBy(function ($item) {
-
-                return Carbon::parse(
-                    $item->payroll_date
-                )->format('Y-m');
-
-            });
-
+                            'employee_no' => $emp->employee_no,
+                        
+                            'salaryItems' => $salaryItems->toArray(),
+                        
+                        ]);
+    
     /*
     |--------------------------------------------------------------------------
     | GENERATE MONTHS
@@ -768,37 +785,80 @@ public function selectEmployee($id)
     while ($current <= $end) {
 
         $monthKey =
-            $current->format('Y-m');
+                        $current->format('Y-m');
+    
+                    $monthPayrolls =
+                        $salaryItems[$monthKey]
+                        ?? collect();
+    
+                    $latestMonthPayroll =
+                        $monthPayrolls->first();
+    
+                    $generatedMonths[] = [
+    
+                        'month_key' => $monthKey,
+    
+                        'month_name' => strtolower(
+                            $current->format('F')
+                        ),
+    
+                        'salary' => round(
+                            floatval(
 
-        $generatedMonths[] = [
+                                $monthPayrolls->isNotEmpty()
 
-            'month_key' => $monthKey,
+                                    ? $latestMonthPayroll->basic_salary
 
-            'month_name' => strtolower(
-                $current->format('F')
-            ),
+                                    : $basicSalary
 
-            'salary' => round(
-                floatval(
-                    $salaryItems[$monthKey]
-                        ->basic_salary
-                        ?? $defaultSalary
-                ),
-                2
-            ),
+                            ),
+                            2
+                        ),
+    
+                        'aut' => round(
+                            floatval(
 
-            'aut' => round(
-                floatval(
-                    $salaryItems[$monthKey]
-                        ->aut
-                        ?? $defaultAut
-                ),
-                2
-            ),
+                                $monthPayrolls->isNotEmpty()
 
-        ];
+                                    ? $monthPayrolls->max('aut')
 
-        $current->addMonth();
+                                    : 0
+
+                            ),
+                            2
+                        ),
+    
+                    ];
+
+                    Log::info('GENERATED MONTH', [
+
+                        'employee_no' => $emp->employee_no,
+                    
+                        'month_key' => $monthKey,
+                    
+                        'month_name' => strtolower(
+                            $current->format('F')
+                        ),
+                    
+                        'salary' => round(
+                            floatval(
+                                $latestMonthPayroll->basic_salary
+                                    ?? $defaultSalary
+                            ),
+                            2
+                        ),
+                    
+                        'aut' => round(
+                            floatval(
+                                $monthPayrolls->max('aut')
+                                    ?? $defaultAut
+                            ),
+                            2
+                        ),
+                    
+                    ]);
+    
+                    $current->addMonth();
     }
 
     /*
