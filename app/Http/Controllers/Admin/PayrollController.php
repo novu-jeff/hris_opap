@@ -33,6 +33,8 @@ class PayrollController extends Controller
                 'is_year_end' => false,
                 'is_ot_pay' => false,
                 'is_eme_rata' => false,
+                'is_eme' => false,
+                'is_premium' => false,
             ], $item->setting?->toArray() ?? []);
 
             if ($settings['is_salary']) {
@@ -55,6 +57,9 @@ class PayrollController extends Controller
             }
             if ($settings['is_eme']) {
                 $subs['eme'] = 'EME';
+            }
+            if ($settings['is_premium']) {
+                $subs['premium'] = 'Semestral Premium';
             }
 
             return [

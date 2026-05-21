@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Services\Payroll\OverTimeService;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Admin\Services\Payroll\EmeRataService;
 use App\Http\Controllers\Admin\Services\Payroll\EmeService;
+use App\Http\Controllers\Admin\Services\Payroll\PremiumService;
 use App\Http\Controllers\Controller;
 use App\Models\EmployementTypes;
 use App\Models\BonusItemsPayroll;
@@ -225,6 +226,13 @@ class PayrollService extends Controller {
                 'models' => [
                     'parent' => PayrollEme::class,
                     'child' => PayrollEmeItems::class,
+                ]
+            ],
+            'premium' => [
+                'service' => PremiumService::class,
+                'models' => [
+                    'parent' => BonusPayroll::class,
+                    'child' => BonusItemsPayroll::class,
                 ]
             ]
 
