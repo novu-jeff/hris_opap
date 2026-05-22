@@ -7,7 +7,7 @@ use App\Models\BonusPayroll;
 use App\Models\EmployeeInformation;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PayrollExportMidYear;
+use App\Exports\PayrollExportPremium;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\WithPagination;
 use Illuminate\Support\Collection;
@@ -206,6 +206,8 @@ class View extends Component
                     'position' => $item->position,
 
                     'date_hired' => $item->date_hired,
+
+                    'basic_salary' => $item->basic_salary,
 
                     /*
                     |--------------------------------------------------------------------------
@@ -426,7 +428,7 @@ class View extends Component
     }
 
 
-    public function exportExcelMidYear()
+    public function exportExcelPremium()
 {
    
     // ✅ PRELOAD relationships (VERY IMPORTANT)
@@ -470,7 +472,7 @@ class View extends Component
    
 
     return Excel::download(
-        new PayrollExportMidYear(
+        new PayrollExportPremium(
             $this->payroll,
             $this->filterSalaryMethod,
             $this->searchName,

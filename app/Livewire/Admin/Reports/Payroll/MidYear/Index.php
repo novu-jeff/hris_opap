@@ -150,6 +150,7 @@ public function disapprove($id)
         ->withSum('items', 'net_amount')
         ->with(['items.information'])
         ->where('status', 'approved')
+        ->where('bonus_type', 'mid_year')
         ->orderBy('payroll_date', 'desc');
 
     if ($this->filterEmploymentType) {
