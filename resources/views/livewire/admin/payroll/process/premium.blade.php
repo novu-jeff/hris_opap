@@ -57,6 +57,43 @@
                         </div>
 
                         <div class="mb-3">
+                            <small class="text-muted text-uppercase">
+                                Coverage Period
+                            </small>
+                        
+                            <div class="fw-bold fs-6">
+                        
+                                @if(
+                                    !empty($records['payroll']['coverage_from']) &&
+                                    !empty($records['payroll']['coverage_to'])
+                                )
+                        
+                                    {{ \Carbon\Carbon::parse($records['payroll']['coverage_from'])->format('F d, Y') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($records['payroll']['coverage_to'])->format('F d, Y') }}
+                        
+                                @else
+                        
+                                    N/A
+                        
+                                @endif
+                        
+                            </div>
+                        </div>
+                        
+                        @if(!empty($records['payroll']['semester']))
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase">
+                                    Semester
+                                </small>
+                        
+                                <div class="fw-bold fs-6 text-uppercase">
+                                    {{ str_replace('_', ' ', $records['payroll']['semester']) }}
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mb-3">
                             <small class="text-muted text-uppercase">Payroll Date</small>
                             <div class="fw-bold">
                                 {{ $records['payroll']['formatted_payroll_date'] }}
@@ -94,21 +131,21 @@
 
                         <div class="mb-3">
                             <small class="text-muted text-uppercase">
-                                {{ $records['payroll']['type'] }}
+                                Total Amount
                             </small>
                             <div class="fw-bold text-primary">
                                 PHP {{ number_format($records['payroll']['total_bonus'], 2) }}
                             </div>
                         </div>
 
-                        @if($records['payroll']['bonus_type'] == 'year_end')
+                        
                             <div class="mb-3">
                                 <small class="text-muted text-uppercase">Tax</small>
                                 <div class="fw-bold text-danger">
                                     PHP {{ number_format($records['payroll']['total_tax'], 2) }}
                                 </div>
                             </div>
-                        @endif
+                    
 
                         <div>
                             <small class="text-muted text-uppercase">Net Amount</small>
