@@ -230,11 +230,16 @@ class Premium extends Component
         */
 
         $tax = round(
+            $bonus * 0.05,
+            2
+        );
+
+       /* $tax = round(
             floatval(
                 $this->tax[$sectionIndex][$employeeIndex] ?? 0
             ),
             2
-        );
+        );*/
 
         /*
         |--------------------------------------------------------------------------
