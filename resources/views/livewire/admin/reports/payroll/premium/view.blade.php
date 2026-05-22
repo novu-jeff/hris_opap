@@ -264,7 +264,7 @@
                 
                     <th>POSITION</th>
                 
-                    <th>DATE HIRED</th>
+                    <th>BASIC SALARY</th>
                 
                     @if($records['payroll']['semester'] == 'first_semester')
                 
@@ -331,7 +331,7 @@
 
                             <!-- BASIC -->
                             <td class="text-end">
-                                {{ $item['date_hired'] }}
+                                {{ number_format($item['basic_salary'], 2) }}
                             </td>
 
                             {{-- FIRST SEM --}}
