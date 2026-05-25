@@ -10,6 +10,7 @@
             'eme_rata' => 'admin.payroll.process.eme-rata',
             'eme' => 'admin.payroll.process.eme',
             'premium' => 'admin.payroll.process.premium',
+            'gratuity' => 'admin.payroll.process.gratuity',
         ];
 
        // dd($componentMap[$type]);

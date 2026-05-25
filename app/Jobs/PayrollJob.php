@@ -50,6 +50,7 @@ class PayrollJob implements ShouldQueue
         'eme' => \App\Models\PayrollEme::find($this->payrollId),
         'mid_year' => \App\Models\BonusPayroll::find($this->payrollId),
         'premium' => \App\Models\BonusPayroll::find($this->payrollId),
+        'gratuity' => \App\Models\PayrollGratuity::find($this->payrollId),
         default => null,
     };
     
