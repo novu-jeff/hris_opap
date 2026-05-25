@@ -38,6 +38,7 @@ class Edit extends Component
                 'is_eme_rata' => false,
                 'is_eme' => false,
                 'is_premium' => false,
+                'is_gratuity' => false,
             ];
         }
 
@@ -52,6 +53,7 @@ class Edit extends Component
             'is_eme_rata' => (bool) $settings->is_eme_rata,
             'is_eme' => (bool) $settings->is_eme,
             'is_premium' => (bool) $settings->is_premium,
+            'is_gratuity' => (bool) $settings->is_gratuity,
         ];
 
         return $data;
@@ -95,6 +97,7 @@ class Edit extends Component
                 'is_eme_rata' => $this->fields['is_eme_rata'] ?? false,
                 'is_eme' => $this->fields['is_eme'] ?? false,
                 'is_premium' => $this->fields['is_premium'] ?? false,
+                'is_gratuity' => $this->fields['is_gratuity'] ?? false,
                 'updated_at' => now(),
             ];
 
@@ -150,7 +153,8 @@ class Edit extends Component
             'fields.is_year_end' => 'nullable|boolean',
             'fields.is_eme_rata' => 'nullable|boolean',
             'fields.is_eme' => 'nullable|boolean',
-            'fields.is_premium' => 'nullable|boolean'
+            'fields.is_premium' => 'nullable|boolean',
+            'fields.is_gratuity' => 'nullable|boolean'
         ];
     }
 
