@@ -131,6 +131,7 @@ class Index extends Component
                 'is_eme_rata' => false,
                 'is_eme' => false,
                 'is_premium' => false,
+                'is_gratuity' => false,
             ], $item->setting?->toArray() ?? []);
 
 
@@ -293,7 +294,7 @@ class Index extends Component
                             'rules' => '',
                         ],
                         'payroll_date' => [
-                            'label' => 'Date',
+                            'label' => 'Payroll Date',
                             'type' => 'date',
                             'value' => Carbon::now()->month(11)->format('Y-m-d'),
                             'rules' => 'required|date',
@@ -301,6 +302,12 @@ class Index extends Component
                                 'min' => Carbon::now()->month(11)->day(15)->format('Y-m-d'),
                                 'max' => Carbon::now()->month(12)->day(31)->format('Y-m-d'),
                             ]
+                        ],
+                        'percentage' => [
+                            'label' => 'Percentage',
+                            'type' => 'text',
+                            'value' => '100',
+                            'rules' => 'required|numeric|min:0|max:100',
                         ],
                     ]
                 ];
@@ -434,6 +441,28 @@ class Index extends Component
                     ]
                 ];
             
+            }
+
+            if ($settings['is_gratuity']) {
+                $subs['gratuity'] =  [
+                    'name' => 'GRATUITY',
+                    'page' => 'gratuity',
+                    'fields' => [
+                        'employment_type' => [
+                            'label' => 'Employment Type',
+                            'type' => 'text',
+                            'value' => $item->name,
+                            'class' => 'restricted',
+                            'attr' => ['readonly' => true],
+                            'rules' => ''
+                        ],
+                        'payroll_date' => [
+                            'label' => 'Gratuity Period',
+                            'type' => 'date',
+                            'rules' => ['required', 'date'],
+                        ],
+                    ]
+                ];
             }
 
             return [
@@ -853,7 +882,7 @@ class Index extends Component
 
 
          // Validate that payroll date / cut-off period are provided
-    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end' || $type === 'eme_rata' || $type === 'eme' || $type === 'premium') && empty($this->payroll_date)) {
+    if (($type === 'salary' || $type === 'clothing_allowance' || $type === 'mid_year' || $type === 'year_end' || $type === 'eme_rata' || $type === 'eme'  || $type === 'gratuity') && empty($this->payroll_date)) {
         return $this->showErrorAlert('Missing Date', 'Payroll date is required.');
     }
 
@@ -944,6 +973,10 @@ class Index extends Component
                 'payroll_date'       => $this->payroll_date,
                 'employment_type' => $employmentTypeId,
                 'semester'        => $this->semester,
+            ],
+            'gratuity' => [
+                'payroll_date'       => $this->payroll_date,
+                'employment_type' => $employmentTypeId,
             ],
         ];
       //  dd($map[$type]);        

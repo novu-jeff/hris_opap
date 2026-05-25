@@ -16,7 +16,8 @@
                         'ot_pay'             => 'admin.payroll.reports.ot-pay',
                         'eme_rata'           => 'admin.payroll.reports.eme-rata',
                         'eme'                => 'admin.payroll.reports.eme',
-                        'premium'                => 'admin.payroll.reports.premium',
+                        'premium'            => 'admin.payroll.reports.premium',
+                        'gratuity'            => 'admin.payroll.reports.gratuity',
                     ];
 
                    // dd($reportComponentMap[$type]);

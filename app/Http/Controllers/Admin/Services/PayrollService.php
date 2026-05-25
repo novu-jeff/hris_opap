@@ -9,8 +9,11 @@ use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Admin\Services\Payroll\EmeRataService;
 use App\Http\Controllers\Admin\Services\Payroll\EmeService;
 use App\Http\Controllers\Admin\Services\Payroll\PremiumService;
+use App\Http\Controllers\Admin\Services\Payroll\GratuityService;
 use App\Http\Controllers\Controller;
 use App\Models\EmployementTypes;
+use App\Models\PayrollGratuityItems;
+use App\Models\PayrollGratuity;
 use App\Models\BonusItemsPayroll;
 use App\Models\BonusPayroll;
 use App\Models\ClothingAllowanceItemsPayroll;
@@ -233,6 +236,13 @@ class PayrollService extends Controller {
                 'models' => [
                     'parent' => BonusPayroll::class,
                     'child' => BonusItemsPayroll::class,
+                ]
+            ],
+            'gratuity' => [
+                'service' => GratuityService::class,
+                'models' => [
+                    'parent' => PayrollGratuity::class,
+                    'child' => PayrollGratuityItems::class,
                 ]
             ]
 
