@@ -47,6 +47,7 @@ class Create extends Component
                 'is_eme_rata' => $this->fields['is_eme_rata'] ?? false,
                 'is_eme' => $this->fields['is_eme'] ?? false,
                 'is_premium' => $this->fields['is_premium'] ?? false,
+                'is_gratuity' => $this->fields['is_gratuity'] ?? false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -87,7 +88,8 @@ class Create extends Component
             'fields.is_year_end' => 'nullable|boolean',
             'fields.is_eme_rata' => 'nullable|boolean',
             'fields.is_eme' => 'nullable|boolean',
-            'fields.is_premium' => 'nullable|boolean'
+            'fields.is_premium' => 'nullable|boolean',
+            'fields.is_gratuity' => 'nullable|boolean'
         ];
     }
 
