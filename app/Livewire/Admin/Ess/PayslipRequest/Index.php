@@ -286,52 +286,94 @@ class Index extends Component
 
     public function render()
     {
-        $status = $this->status === 'granted' ? 'approved' : $this->status;
-
+        $status = $this->status === 'granted'
+            ? 'approved'
+            : $this->status;
+    
         if ($status === 'all') {
-
+    
             $model = SalaryItemsPayroll::with([
-                'information',
+                'information.personal',
                 'payroll'
-            ]);
-        
+            ])
+            ->join(
+                'payroll_salary as ps',
+                'payroll_salary_items.payroll_id',
+                '=',
+                'ps.id'
+            )
+            ->select('payroll_salary_items.*')
+            ->orderBy('ps.payroll_date', 'desc');
+    
             if ($this->search) {
+    
                 $this->resetPage();
-        
+    
                 $model->where(function ($query) {
-                    $query->where('employee_no', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('information.personal', function ($subQuery) {
-                            $subQuery->whereRaw(
-                                "CONCAT(firstname, ' ', lastname) LIKE ?",
-                                ['%' . $this->search . '%']
-                            );
-                        });
+    
+                    $query->where(
+                        'payroll_salary_items.employee_no',
+                        'like',
+                        '%' . $this->search . '%'
+                    )
+    
+                    ->orWhereHas('information.personal', function ($subQuery) {
+    
+                        $subQuery->whereRaw(
+                            "CONCAT(firstname, ' ', lastname) LIKE ?",
+                            ['%' . $this->search . '%']
+                        );
+    
+                    });
+    
                 });
+    
             }
-        
+    
         } else {
-
-            $model = EmployeePayslipRequest::with('employee')->where('status', $status)->where('isDeleted', false);
-
+    
+            $model = EmployeePayslipRequest::with([
+                'employee',
+                'payroll'
+            ])
+            ->where('employee_payslip_request.status', $status)
+            ->where('employee_payslip_request.isDeleted', false)
+            ->latest();
+    
             if ($this->search) {
+    
                 $this->resetPage();
+    
                 $model->where(function ($query) {
-                    $query->where('employee_no', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('employee', function ($subQuery) {
-                            $subQuery->whereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ['%' . $this->search . '%']);
-                        });
+    
+                    $query->where(
+                        'employee_no',
+                        'like',
+                        '%' . $this->search . '%'
+                    )
+    
+                    ->orWhereHas('employee', function ($subQuery) {
+    
+                        $subQuery->whereRaw(
+                            "CONCAT(firstname, ' ', lastname) LIKE ?",
+                            ['%' . $this->search . '%']
+                        );
+    
+                    });
+    
                 });
+    
             }
+    
         }
-
-        $records = $model
-    ->join('payroll_salary as ps', 'payroll_salary_items.payroll_id', '=', 'ps.id')
-    ->select('payroll_salary_items.*')
-    ->orderBy('ps.payroll_date', 'desc')
-    ->paginate($this->entries);
-
-        return view('livewire.admin.ess.payslip-request.index', [
-            'records' => $records
-        ]);
+    
+        $records = $model->paginate($this->entries);
+    
+        return view(
+            'livewire.admin.ess.payslip-request.index',
+            [
+                'records' => $records
+            ]
+        );
     }
 }
