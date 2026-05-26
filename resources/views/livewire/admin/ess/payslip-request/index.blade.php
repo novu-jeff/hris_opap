@@ -124,101 +124,153 @@
                                 </tr>
                             </thead>                
                             <tbody>
+
                                 @php
                                     $currentMonth = null;
                                 @endphp
+                            
                                 @forelse($records as $record)
-                                @php
-                                $monthGroup = \Carbon\Carbon::parse(
-                                    $record->payroll->payroll_date
-                                )->format('F Y');
-                            @endphp
-                        
-                            @if($currentMonth != $monthGroup)
-                        
-                                <tr class="table-primary">
-                                    <td colspan="5" class="fw-bold text-uppercase">
-                                        {{ $monthGroup }}
-                                    </td>
-                                </tr>
-                        
-                                @php
-                                    $currentMonth = $monthGroup;
-                                @endphp
-                        
-                            @endif
-                                    <tr data-id="{{$record->id}}">
-                                        @if($status === 'all')
-
-                                        <td>{{ $record->employee_no }}</td>
-                                
-                                        <td>
-                                            {{ $record->information->personal->firstname ?? '' }}
-                                            {{ $record->information->personal->lastname ?? '' }}
-                                        </td>
-                                
-                                        <td>
-                                            <div>
-                                                <strong>
-                                                    {{ \Carbon\Carbon::parse($record->payroll->payroll_date)->format('F Y') }}
-                                                </strong>
-                                            </div>
-                                        
-                                            
-                                        </td>
-                                
-                                        <td>
-                                            {{ \Carbon\Carbon::parse($record->created_at)->format('F d, Y') }}
-                                        </td>
-                                
-                                        <td>
-                                
-                                            <button
-                                                class="btn btn-info btn-sm"
-                                                wire:click="downloadDirect(
-                                                    '{{ $record->employee_no }}',
-                                                    {{ $record->payroll_id }}
-                                                )"
-                                            >
-                                                <i class="fa-solid fa-download"></i>
-                                            </button>
-                                
-                                        </td>
-                                
-                                    @else
-                                        <td>{{$record->employee_no}}</td>
-                                        <td>{{$record->employee->firstname . ' ' . $record->employee->lastname}}</td>
-                                        <td>
-                                            <a target="_blank" href="{{ route('payroll.process', ['type' => 'salary', 'payroll_id' => $record->payroll_id]) }}">
-                                                {{'#'.$record->payroll_id}}
-                                            </a>
-                                        </td>
-                                        <td>{{format_date($record->created_at, 'date_string')}}</td>
-                                        <td>
-                                            <button type="button" wire:click="view({{$record->id}})" class="btn btn-primary mx-1">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                            <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                            @if($record->status == 'approved')
-                                            <button
-                                                class="btn btn-info btn-sm"
-                                                title="Download Payslip"
-                                                wire:click="download({{ $record->id }})"
-                                            >
-                                                <i class="fa-solid fa-download"></i>
-                                            </button>
-
-                                            @endif
-                                        </td>
+                            
+                                    @if($status === 'all')
+                            
+                                        @php
+                                            $monthGroup = optional($record->payroll)->payroll_date
+                                                ? \Carbon\Carbon::parse(
+                                                    $record->payroll->payroll_date
+                                                )->format('F Y')
+                                                : 'NO PAYROLL';
+                                        @endphp
+                            
+                                        @if($currentMonth != $monthGroup)
+                            
+                                            <tr class="table-primary">
+                                                <td colspan="5" class="fw-bold text-uppercase">
+                                                    {{ $monthGroup }}
+                                                </td>
+                                            </tr>
+                            
+                                            @php
+                                                $currentMonth = $monthGroup;
+                                            @endphp
+                            
                                         @endif
+                            
+                                    @endif
+                            
+                                    <tr data-id="{{ $record->id }}">
+                            
+                                        @if($status === 'all')
+                            
+                                            <td>
+                                                {{ $record->employee_no }}
+                                            </td>
+                            
+                                            <td>
+                                                {{ $record->information->personal->firstname ?? '' }}
+                                                {{ $record->information->personal->lastname ?? '' }}
+                                            </td>
+                            
+                                            <td>
+                                                {{ optional($record->payroll)->payroll_date
+                                                    ? \Carbon\Carbon::parse(
+                                                        $record->payroll->payroll_date
+                                                    )->format('F d, Y')
+                                                    : 'N/A'
+                                                }}
+                                            </td>
+                            
+                                            <td>
+                                                {{ format_date($record->created_at, 'date_string') }}
+                                            </td>
+                            
+                                            <td>
+                            
+                                                <button
+                                                    class="btn btn-info btn-sm"
+                                                    wire:click="downloadDirect(
+                                                        '{{ $record->employee_no }}',
+                                                        {{ $record->payroll_id }}
+                                                    )"
+                                                >
+                                                    <i class="fa-solid fa-download"></i>
+                                                </button>
+                            
+                                            </td>
+                            
+                                        @else
+                            
+                                            <td>
+                                                {{ $record->employee_no }}
+                                            </td>
+                            
+                                            <td>
+                                                {{ $record->employee->firstname . ' ' . $record->employee->lastname }}
+                                            </td>
+                            
+                                            <td>
+                                                <a
+                                                    target="_blank"
+                                                    href="{{ route(
+                                                        'payroll.process',
+                                                        [
+                                                            'type' => 'salary',
+                                                            'payroll_id' => $record->payroll_id
+                                                        ]
+                                                    ) }}"
+                                                >
+                                                    #{{ $record->payroll_id }}
+                                                </a>
+                                            </td>
+                            
+                                            <td>
+                                                {{ format_date($record->created_at, 'date_string') }}
+                                            </td>
+                            
+                                            <td>
+                            
+                                                <button
+                                                    type="button"
+                                                    wire:click="view({{ $record->id }})"
+                                                    class="btn btn-primary mx-1"
+                                                >
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </button>
+                            
+                                                <button
+                                                    wire:click="remove(true, {{ $record->id }})"
+                                                    class="btn btn-danger mx-1"
+                                                >
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                            
+                                                @if($record->status == 'approved')
+                            
+                                                    <button
+                                                        class="btn btn-info btn-sm"
+                                                        title="Download Payslip"
+                                                        wire:click="download({{ $record->id }})"
+                                                    >
+                                                        <i class="fa-solid fa-download"></i>
+                                                    </button>
+                            
+                                                @endif
+                            
+                                            </td>
+                            
+                                        @endif
+                            
                                     </tr>
+                            
                                 @empty
+                            
                                     <tr>
-                                        <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
-                                    </tr> 
+                                        <td colspan="12" class="text-center fw-bold py-3">
+                                            No data was found
+                                        </td>
+                                    </tr>
+                            
                                 @endforelse
+                            
                             </tbody>
                         </table>
                     </div>
