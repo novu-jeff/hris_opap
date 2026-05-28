@@ -160,7 +160,11 @@
                 @can('read dtr')
                 <a href="{{ route('reports.premium.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Premium Payroll Record</a>
-                @endcan  
+                @endcan 
+                @can('read dtr')
+                <a href="{{ route('reports.gratuity.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Gratuity Payroll Record</a>
+                @endcan   
                 @can('read dtr')
                 <a href="{{asset('templates/unlad-kawani.xlsx')}}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Unlad Kawani Payroll Record</a>
