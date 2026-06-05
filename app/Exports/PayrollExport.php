@@ -101,9 +101,8 @@ class PayrollExport implements FromCollection, WithEvents
     $headers = [
         'NAME','POSITION','BASIC SALARY','PERA','GROSS AMOUNT EARNED',
         'RLIP','HDMF','PHILHEALTH','CONSOLOAN','EMERGYLN','PLREG',
-        'MPL','MPL LITE','CPL','GSEL','MP2','MPL STLMS','CIR375, CIR449',
-        'W/TAX','UCA','DISALLOWANCE','AUT','TOTAL DED','NET AMOUNT','DBP BRANCH',
-        'KAWANI','LBP PAYROLL ACCOUNT','1st Half','2nd Half',
+        'MPL','MPL LITE','CPL','GSEL', 'GBEL', 'MP2','MPL STLMS','CIR375, CIR449',
+        'W/TAX','UCA','DISALLOWANCE','AUT','TOTAL DED','NET AMOUNT','1st Half','2nd Half',
     ];
 
     $rows->push($headers);
@@ -161,6 +160,7 @@ class PayrollExport implements FromCollection, WithEvents
                     $item->mpl_lite ?? 0,
                     $item->cpl ?? 0,
                     $item->gsel ?? 0,
+                    $item->gbel ?? 0,
                     $item->mp2 ?? 0,
                     $item->mplstlms ?? 0,
                     $item->cir375_cir449 ?? 0,
@@ -170,9 +170,9 @@ class PayrollExport implements FromCollection, WithEvents
                     $item->aut ?? 0,
                     $item->total_deductions ?? 0,
                     $item->net_amount ?? 0,
-                    $item->dbp ?? '',
+                    /*$item->dbp ?? '',
                     $item->kawani ?? '',
-                    $item->lbp_payroll_account ?? '',
+                    $item->lbp_payroll_account ?? '',*/
                     $item->net_first_half ?? 0,
                     $item->net_second_half ?? 0,
                 ]);
@@ -196,6 +196,7 @@ class PayrollExport implements FromCollection, WithEvents
                 $employees->sum('mpl_lite'),
                 $employees->sum('cpl'),
                 $employees->sum('gsel'),
+                $employees->sum('gbel'),
                 $employees->sum('mp2'),
                 $employees->sum('mplstlms'),
                 $employees->sum('cir375_cir449'),
@@ -205,9 +206,9 @@ class PayrollExport implements FromCollection, WithEvents
                 $employees->sum('aut'),
                 $employees->sum('total_deductions'),
                 $employees->sum('net_amount'),
-                $employees->sum('dbp'),
+              /*  $employees->sum('dbp'),
                 $employees->sum('kawani'),
-                $employees->sum('lbp_payroll_account'),
+                $employees->sum('lbp_payroll_account'),*/
                 $employees->sum('net_first_half'),
                 $employees->sum('net_second_half'),
             ]);
@@ -231,6 +232,7 @@ class PayrollExport implements FromCollection, WithEvents
             $departmentEmployees->sum('mpl_lite'),
             $departmentEmployees->sum('cpl'),
             $departmentEmployees->sum('gsel'),
+            $departmentEmployees->sum('gbel'),
             $departmentEmployees->sum('mp2'),
             $departmentEmployees->sum('mplstlms'),
             $departmentEmployees->sum('cir375_cir449'),
@@ -240,9 +242,9 @@ class PayrollExport implements FromCollection, WithEvents
             $departmentEmployees->sum('aut'),
             $departmentEmployees->sum('total_deductions'),
             $departmentEmployees->sum('net_amount'),
-            $departmentEmployees->sum('dbp'),
+           /* $departmentEmployees->sum('dbp'),
             $departmentEmployees->sum('kawani'),
-            $departmentEmployees->sum('lbp_payroll_account'),
+            $departmentEmployees->sum('lbp_payroll_account'),*/
             $departmentEmployees->sum('net_first_half'),
             $departmentEmployees->sum('net_second_half'),
         ]);
@@ -267,6 +269,7 @@ class PayrollExport implements FromCollection, WithEvents
         $items->sum('mpl_lite'),
         $items->sum('cpl'),
         $items->sum('gsel'),
+        $items->sum('gbel'),
         $items->sum('mp2'),
         $items->sum('mplstlms'),
         $items->sum('cir375_cir449'),
@@ -276,9 +279,9 @@ class PayrollExport implements FromCollection, WithEvents
         $items->sum('aut'),
         $items->sum('total_deductions'),
         $items->sum('net_amount'),
-        $items->sum('dbp'),
+      /*  $items->sum('dbp'),
         $items->sum('kawani'),
-        $items->sum('lbp_payroll_account'),
+        $items->sum('lbp_payroll_account'),*/
         $items->sum('net_first_half'),
         $items->sum('net_second_half'),
     ]);
@@ -632,6 +635,7 @@ $fixedWidths = [
     'AA' => 11,
     'AB' => 8,
     'AC' => 8,
+    'AD' => 8,
     ];
 
 foreach ($fixedWidths as $col => $width) {

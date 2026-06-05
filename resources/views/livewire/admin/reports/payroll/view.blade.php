@@ -77,10 +77,10 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
 </div>
 
 <div class="col-12 col-md-4">
-    <div class="info-row">
+   <!-- <div class="info-row">
         <span class="info-label-3">Net LBP Payroll Account</span>
         <span class="info-value">PHP {{ number_format($records['totals']['lbp_payroll_account'], 2) }}</span>
-    </div>
+    </div>-->
 
     <div class="info-row">
         <span class="info-label-3">First Half Amount:</span>
@@ -133,6 +133,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>MPL Lite</th>
                     <th>CPL</th>
                     <th>GSEL</th>
+                    <th>GBEL</th>
                     <th>MP2</th>
                     <th>MPL STL</th>
                     <th>CIR</th>
@@ -146,9 +147,9 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>Net</th>
     
                     <!-- Distribution -->
-                    <th>DBP</th>
+                    <!--<th>DBP</th>
                     <th>Kawani</th>
-                    <th>LBP</th>
+                    <th>LBP</th>-->
                     <th>1st</th>
                     <th>2nd</th>
                 </tr>
@@ -198,6 +199,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($item['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['gsel'], 2) }}</td>
+                    <td class="text-end">{{ number_format($item['gbel'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
@@ -218,11 +220,11 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     </td>
     
                     <!-- Distribution -->
-                    <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
+                   <!-- <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['kawani'], 2) }}</td>
                     <td class="text-end fw-bold text-primary">
                         {{ number_format($item['lbp_payroll_account'], 2) }}
-                    </td>
+                    </td>-->
                     <td class="text-end">{{ number_format($item['net_first_half'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['net_second_half'], 2) }}</td>
     
@@ -250,6 +252,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['cpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['gsel'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['gbel'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['cir375_cir449'], 2) }}</td>
@@ -263,9 +266,9 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end text-success">{{ number_format($sectionGroup['section_totals']['net_amount'], 2) }}</td>
                 
                     <!-- Distribution -->
-                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['dbp'], 2) }}</td>
+                   <!-- <td class="text-end">{{ number_format($sectionGroup['section_totals']['dbp'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['kawani'], 2) }}</td>
-                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['lbp_payroll_account'], 2) }}</td>
+                    <td class="text-end">{{ number_format($sectionGroup['section_totals']['lbp_payroll_account'], 2) }}</td>-->
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['net_first_half'], 2) }}</td>
                     <td class="text-end">{{ number_format($sectionGroup['section_totals']['net_second_half'], 2) }}</td>
                 </tr>
@@ -301,6 +304,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($records['totals']['mpl_lite'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['cpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['gsel'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['gbel'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['mp2'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['mplstlms'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['cir375_cir449'], 2) }}</td>
@@ -314,9 +318,9 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end text-success">{{ number_format($records['totals']['net_amount'], 2) }}</td>
                 
                     <!-- Distribution -->
-                    <td class="text-end">{{ number_format($records['totals']['dbp'], 2) }}</td>
+                 <!--   <td class="text-end">{{ number_format($records['totals']['dbp'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['kawani'], 2) }}</td>
-                    <td class="text-end">{{ number_format($records['totals']['lbp_payroll_account'], 2) }}</td>
+                    <td class="text-end">{{ number_format($records['totals']['lbp_payroll_account'], 2) }}</td>-->
                     <td class="text-end">{{ number_format($records['totals']['net_first_half'], 2) }}</td>
                     <td class="text-end">{{ number_format($records['totals']['net_second_half'], 2) }}</td>
                 </tr>
@@ -399,10 +403,10 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
 </div>
 
 <div class="col-12 col-md-4">
-    <div class="info-row">
+   <!-- <div class="info-row">
         <span class="info-label-3">Net LBP Payroll Account</span>
         <span class="info-value">PHP {{ number_format($records['totals']['lbp_payroll_account'], 2) }}</span>
-    </div>
+    </div>-->
 
     <div class="info-row">
         <span class="info-label-3">First Half Amount:</span>
@@ -434,8 +438,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th colspan="1">EARNINGS</th>
                     <th colspan="9">DEDUCTIONS</th>
                     <th colspan="4">TAX BREAKDOWN</th>
-                    <th colspan="2">NET</th>
-                    <th colspan="5">DISTRIBUTION</th>
+                    <th colspan="2">DISTRIBUTION</th>
                 </tr>
     
                 <tr class="sub-header text-center">
@@ -450,13 +453,20 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>MPL</th>
                     <th>CIR</th>
                     <th>UCA</th>
+                    @if($use_realtime_aut)
                     <th>AUT</th>
+                    @else
+                    @foreach($autMonths as $month)
+                        <th>{{ strtoupper($month->format('M')) }} AUT</th>
+                    @endforeach
+                    <th>TOTAL AUT</th>
+                    @endif
                     <th>Overpay</th>
     
                     <!-- Tax -->
                     <th>3%</th>
                     <th>5%</th>
-                    <th>8%</th>
+                    <!--<th>8%</th>-->
                     <th>10%</th>
     
                     <!-- Net -->
@@ -464,9 +474,9 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <th>Net</th>
     
                     <!-- Distribution -->
-                    <th>DBP</th>
+                  <!--  <th>DBP</th>
                     <th>Kawani</th>
-                    <th>LBP</th>
+                    <th>LBP</th>-->
                     <th>1st</th>
                     <th>2nd</th>
                 </tr>
@@ -509,7 +519,17 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td class="text-end">{{ number_format($item['mpl'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['cir375_cir449'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['uca'], 2) }}</td>
+                    @if($use_realtime_aut)
                     <td class="text-end">{{ number_format($item['aut'], 2) }}</td>
+                    @else
+                    <td class="text-end">{{ number_format($item['aut_month1'] ?? 0, 2) }}</td>
+                    <td class="text-end">{{ number_format($item['aut_month2'] ?? 0, 2) }}</td>
+                    <td class="text-end">{{ number_format($item['aut_month3'] ?? 0, 2) }}</td>
+                   
+                    <td class="text-end fw-semibold">
+                        {{ number_format($item['aut_total'] ?? 0, 2) }}
+                    </td>
+                    @endif
                     <td class="text-end text-warning">
                         {{ number_format($item['overpayment'], 2) }}
                     </td>
@@ -517,7 +537,7 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <!-- TAX BREAKDOWN -->
                     <td class="text-end text-danger">{{ number_format($item['tax_3'], 2) }}</td>
                     <td class="text-end text-danger">{{ number_format($item['tax_5'], 2) }}</td>
-                    <td class="text-end text-danger">{{ number_format($item['tax_8'], 2) }}</td>
+                  <!--  <td class="text-end text-danger">{{ number_format($item['tax_8'], 2) }}</td>-->
                     <td class="text-end text-danger">{{ number_format($item['tax_10'], 2) }}</td>
                   
     
@@ -531,11 +551,11 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     </td>
     
                     <!-- Distribution -->
-                    <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
+                   <!-- <td class="text-end">{{ number_format($item['dbp'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['kawani'], 2) }}</td>
                     <td class="text-end fw-bold text-primary">
                         {{ number_format($item['lbp_payroll_account'], 2) }}
-                    </td>
+                    </td>-->
                     <td class="text-end">{{ number_format($item['net_first_half'], 2) }}</td>
                     <td class="text-end">{{ number_format($item['net_second_half'], 2) }}</td>
     
@@ -548,12 +568,15 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
                     <td colspan="3" class="text-end">SECTION TOTAL</td>
     
                     <td>{{ number_format($sectionGroup['section_totals']['basic_salary'], 2) }}</td>
-    
+                    @if($use_realtime_aut)
                     <td colspan="8"></td>
+                    @else
+                    <td colspan="11"></td>
+                    @endif
     
                     <td>{{ number_format($sectionGroup['section_totals']['tax_3'], 2) }}</td>
                     <td>{{ number_format($sectionGroup['section_totals']['tax_5'], 2) }}</td>
-                    <td>{{ number_format($sectionGroup['section_totals']['tax_8'], 2) }}</td>
+                    <!--<td>{{ number_format($sectionGroup['section_totals']['tax_8'], 2) }}</td>-->
                     <td>{{ number_format($sectionGroup['section_totals']['tax_10'], 2) }}</td>
     
                     <td>{{ number_format($sectionGroup['section_totals']['total_deductions'], 2) }}</td>
@@ -581,18 +604,23 @@ $types = explode(',', $records['payroll']['condition_employment_type']);
     
                     <td>{{ number_format($records['totals']['basic_salary'], 2) }}</td>
     
+                    @if($use_realtime_aut)
                     <td colspan="8"></td>
+                    @else
+                    <td colspan="11"></td>
+                    @endif
                     <td>{{ number_format($records['totals']['tax_3'], 2) }}</td>
                     <td>{{ number_format($records['totals']['tax_5'], 2) }}</td>
-                    <td>{{ number_format($records['totals']['tax_8'], 2) }}</td>
+                    <!--<td>{{ number_format($records['totals']['tax_8'], 2) }}</td>-->
                     <td>{{ number_format($records['totals']['tax_10'], 2) }}</td>
     
                     <td>{{ number_format($records['totals']['total_deductions'], 2) }}</td>
                     <td class="text-success">
                         {{ number_format($records['totals']['net_amount'], 2) }}
                     </td>
-    
-                    <td colspan="5"></td>
+                    <td>{{ number_format($records['totals']['net_first_half'], 2) }}</td>
+                    <td>{{ number_format($records['totals']['net_second_half'], 2) }}</td>
+                    <!--<td colspan="5"></td>-->
                 </tr>
             </tfoot>
     

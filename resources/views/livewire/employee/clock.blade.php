@@ -229,7 +229,7 @@
     <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-3">
-            <form wire:submit.prevent="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}" enctype="multipart/form-data">
+            <form wire:submit.prevent="triggerClock" enctype="multipart/form-data">
 
                 <div class="modal-header border-0 pt-2 pb-0">
                     <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
@@ -242,7 +242,54 @@
                     </div>
 
                     @if($status === 'Clock Out' || $isForcedOut)
+
+                    <div class="mb-3"><div class="mb-3">
+                        <label class="form-label fw-bold">
+                            Daily Accomplishment
+                        </label>
+                    
+                        <select
+                            wire:model.defer="accomplishment_type"
+                            wire:change="$refresh"
+                            class="form-control">
+                            <option value="">
+                                Select Accomplishment
+                            </option>
+                            <option value="Upload Accomplishment Report">
+                                Upload Accomplishment Report
+                            </option>
+                            @foreach($accomplishmentOptions as $option)Upload Accomplishment Report
+                                <option value="{{ $option }}">
+                                    {{ $option }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @if($accomplishment_type === 'Others')
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Specify Accomplishment
+                                </label>
+
+                                <textarea
+                                    wire:model="accomplishment_details"
+                                    class="form-control"
+                                    rows="4"
+                                    placeholder="Enter accomplishment details">
+                                </textarea>
+                            </div>
+                            @endif
+                    
+                        @error('accomplishment_type')
+                            <span class="text-danger">
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
+
+
                         {{-- Accomplishment file input --}}
+                        @if($accomplishment_type === 'Upload Accomplishment Report')   
                         <div class="mb-3">
                             <label for="accomplishmentFile" class="text-start">Accomplishment Report</label>
                             <input
@@ -270,6 +317,7 @@
                             @endif
                         </div>
                     @endif
+                @endif  
                 </div>
 
                 <div wire:ignore class="modal-footer border-0 d-flex gap-2 justify-content-between align-items-center">
@@ -282,7 +330,7 @@
                         wire:target="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
                         wire:loading.attr="disabled">
                         <span>Proceed</span>
-                        <span wire:loading wire:target="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}">
+                        <span wire:loading wire:target="{{ 'triggerClock' }}">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </span>
                     </button>

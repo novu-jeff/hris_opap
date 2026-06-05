@@ -129,35 +129,32 @@ class PayrollService extends Controller {
                     }
                 }   
 
-                if ($type === 'mid_year') {
-                    $may15 = Carbon::create($currentYear, 5, 15);
-                    $july1Prev = Carbon::create($currentYear - 1, 7, 1);
-
-                    if (!$dateHired || $dateHired->gt($may15)) {
-                        $reasons[] = 'not in service as of May 15';
-                    }
-
-                    if (!$dateHired) {
-                        $reasons[] = 'no date hired';
-                    } elseif ($dateHired->gt($july1Prev)) {
-                        if ($dateHired->diffInMonths($may15) < 4) {
-                            $reasons[] = 'less than 4 months of service from July 1 to May 15';
-                        }
-                    }
-                }
+               
 
                 if ($type === 'year_end') {
-                    $oct31 = Carbon::create($currentYear, 10, 31);
-                    $jan1 = Carbon::create($currentYear, 1, 1);
 
+                    $oct31 = Carbon::create($currentYear, 10, 31);
+                    $jan1  = Carbon::create($currentYear, 1, 1);
+                
                     if (!$dateHired || $dateHired->gt($oct31)) {
                         $reasons[] = 'not in service as of October 31';
                     }
-
-                    if (!$dateHired || $dateHired->gt($jan1)) {
-                        if ($dateHired->diffInMonths($oct31) < 4) {
-                            $reasons[] = 'less than 4 months of service from January 1 to October 31';
+                
+                    if (!$dateHired) {
+                
+                        $reasons[] = 'no date hired';
+                
+                    } elseif ($dateHired->gt($jan1)) {
+                
+                        if (
+                            $dateHired &&
+                            $dateHired->gt($jan1) &&
+                            $dateHired->diffInMonths($oct31) < 4
+                        ) {
+                            $reasons[] =
+                                'less than 4 months of service from January 1 to October 31';
                         }
+                
                     }
                 }
             }
@@ -299,13 +296,29 @@ class PayrollService extends Controller {
             ];
         }
 
+        Log::info('computeOvertimePay', [
+            'basic_salary' => $basic_salary,
+            'workedDays' => $workedDays,
+            'time_in_minutes' => $time_in_minutes,
+        ]);
+
         $decimalHours = floatval($time_in_minutes) / 60;
-        $dailyRate = $basic_salary / $workedDays;
+       // $dailyRate = $basic_salary / $workedDays;
+       $dailyRate = $basic_salary / 22;
         $hourlyRate = $dailyRate / 8;
         $otRate = $hourlyRate * 1.25;
         $grossOtPay = $decimalHours * $otRate;
         $tax = $this->computeWithholdingTax($grossOtPay);
         $netOtPay = round($grossOtPay - $tax, 2);
+
+        Log::info('computeOvertimePay result', [
+            'decimalHours' => $decimalHours,
+            'hourlyRate' => $hourlyRate,
+            'otRate' => $otRate,
+            'grossOtPay' => $grossOtPay,
+            'tax' => $tax,
+            'netOtPay' => $netOtPay
+        ]);
 
         return [
             'overtime_hours' => round($decimalHours, 2),

@@ -162,6 +162,10 @@
                     <i class="fa-solid fa-clipboard-list"></i> Premium Payroll Record</a>
                 @endcan 
                 @can('read dtr')
+                <a href="{{ route('reports.ot.payroll') }}" class="submenu-item">
+                    <i class="fa-solid fa-clipboard-list"></i> Overtime Payroll Record</a>
+                @endcan 
+                @can('read dtr')
                 <a href="{{ route('reports.gratuity.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Gratuity Payroll Record</a>
                 @endcan   
@@ -288,10 +292,9 @@
                     <a href="{{ route('employment-type.index') }}" class="submenu-item">
                         <i class="fa-solid fa-user-tag"></i> Employment Type</a>
                     @endcan
-                    {{-- @can('read employment-type')
-                    <a href="{{ route('loan-type.index') }}" class="submenu-item">
-                        <i class="fa-solid fa-hand-holding-dollar"></i> Loan Type</a>
-                    @endcan--}}
+                    <a href="{{ route('accomplishment-type.index') }}" class="submenu-item">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Accomplishment Type</a>
+                  
                     @can('read positions')
                     <a href="{{ route('position.index') }}" class="submenu-item">
                         <i class="fa-solid fa-briefcase"></i> Positions</a>

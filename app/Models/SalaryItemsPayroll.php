@@ -73,6 +73,7 @@ class SalaryItemsPayroll extends Model
                 'tax_10',
                 'tax_11',
                 'gsel',
+                'gbel',
                 
             ];
         }

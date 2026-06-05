@@ -81,15 +81,45 @@ class OtPay extends Component
 
     public function render()
     {
-    
-        $employment_type_id = EmployementTypes::where('name', 'like', '%' . $this->employment_type . '%')->value('id');
-        
-        $records = OTPayroll::when($this->status, fn($q) => $q->where('status', $this->status))
-            ->where('employment_type', $employment_type_id)
+        $employment_type_id = EmployementTypes::where(
+            'name',
+            'like',
+            '%' . $this->employment_type . '%'
+        )->value('id');
+
+        $records = OTPayroll::where('employment_type', $employment_type_id)
+            ->when($this->status, fn($q) => $q->where('status', $this->status))
+            ->orderBy('created_at', 'desc')
             ->paginate($this->entries);
 
+        /*
+        |--------------------------------------------------------------------------
+        | GROUP ONLY CURRENT PAGE
+        |--------------------------------------------------------------------------
+        |
+        | Same logic as Eme Rata:
+        | Group payroll records by month using period start date
+        |
+        */
+
+        $grouped = $records->getCollection()->groupBy(function ($item) {
+
+            /*
+            period format example:
+            2026-04-01 to 2026-04-15
+            */
+
+            $dates = explode(' to ', $item->period);
+
+            $startDate = $dates[0] ?? now();
+
+            return \Carbon\Carbon::parse($startDate)
+                ->format('F Y');
+        });
+
         return view('livewire.admin.payroll.reports.ot-pay', [
-            'salary' => $records
+            'salary' => $records,
+            'groupedSalary' => $grouped
         ]);
     }
 }

@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 class View extends Component
 {
     use WithPagination;
+    public $autMonths = [];
 
     public SalaryPayroll $payroll;
     public $payrollId;
@@ -31,6 +32,7 @@ class View extends Component
     public bool $isApproved = false;
     public array $updatedItems = [];
     public bool $hasChanges = false;
+    public $use_realtime_aut = false;
 
     public string $searchName = '';
 
@@ -42,6 +44,17 @@ class View extends Component
         $this->payroll = SalaryPayroll::with([
         'items.information' // ✅ LOAD employee_information
         ])->findOrFail($this->payrollId);
+
+        $this->use_realtime_aut =
+        $this->payroll->use_realtime_aut ?? true;
+
+        $payrollDate = Carbon::parse(
+            $this->payroll->payroll_date
+        )->startOfMonth();
+    
+        $this->autMonths = collect([2, 1, 0])
+            ->map(fn ($m) => $payrollDate->copy()->subMonths($m))
+            ->toArray();
 
         $this->prepareRecords();
     }
@@ -108,6 +121,7 @@ foreach ($sections as $sectionName => $employees) {
         'mpl_lite' => $employees->sum('mpl_lite'),
         'cpl' => $employees->sum('cpl'),
         'gsel' => $employees->sum('gsel'),
+        'gbel' => $employees->sum('gbel'),
         'mp2' => $employees->sum('mp2'),
         'mplstlms' => $employees->sum('mplstlms'),
         'cir375_cir449' => $employees->sum('cir375_cir449'),
@@ -120,6 +134,10 @@ foreach ($sections as $sectionName => $employees) {
         'uca' => $employees->sum('uca'),
         'disallowance' => $employees->sum('disallowance'),
         'aut' => $employees->sum('aut'),
+        'aut_month1' => $employees->sum('aut_month1'),
+        'aut_month2' => $employees->sum('aut_month2'),
+        'aut_month3' => $employees->sum('aut_month3'),
+        'aut_total' => $employees->sum('aut_total'),
         'total_deductions' => $employees->sum('total_deductions'),
         'net_amount' => $employees->sum('net_amount'),
         'dbp' => $employees->sum('dbp'),
@@ -152,6 +170,7 @@ foreach ($sections as $sectionName => $employees) {
                 'mpl_lite' => $item->mpl_lite ?? 0,
                 'cpl' => $item->cpl ?? 0,
                 'gsel' => $item->gsel ?? 0,
+                'gbel' => $item->gbel ?? 0,
                 'mp2' => $item->mp2 ?? 0,
                 'mplstlms' => $item->mplstlms ?? 0,
                 'cir375_cir449' => $item->cir375_cir449 ?? 0,
@@ -164,6 +183,10 @@ foreach ($sections as $sectionName => $employees) {
                 'uca' => $item->uca ?? 0,
                 'disallowance' => $item->disallowance ?? 0,
                 'aut' => $item->aut ?? 0,
+                'aut_month1' => $item->aut_month1 ?? 0,
+                'aut_month2' => $item->aut_month2 ?? 0,
+                'aut_month3' => $item->aut_month3 ?? 0,
+                'aut_total' => $item->aut_total ?? 0,
                 'total_deductions' => $item->total_deductions ?? 0,
                 'net_amount' => $item->net_amount ?? 0,
                 'dbp' => $item->dbp ?? 0,
@@ -195,6 +218,7 @@ foreach ($sections as $sectionName => $employees) {
         'mpl_lite' => $items->sum('mpl_lite'),
         'cpl' => $items->sum('cpl'),
         'gsel' => $items->sum('gsel'),
+        'gbel' => $items->sum('gbel'),
         'mp2' => $items->sum('mp2'),
         'mplstlms' => $items->sum('mplstlms'),
         'cir375_cir449' => $items->sum('cir375_cir449'),
@@ -207,6 +231,10 @@ foreach ($sections as $sectionName => $employees) {
         'uca' => $items->sum('uca'),
         'disallowance' => $items->sum('disallowance'),
         'aut' => $items->sum('aut'),
+        'aut_month1' => $items->sum('aut_month1'),
+        'aut_month2' => $items->sum('aut_month2'),
+        'aut_month3' => $items->sum('aut_month3'),
+        'aut_total' => $items->sum('aut_total'),
         'total_deductions' => $items->sum('total_deductions'),
         'net_amount' => $items->sum('net_amount'),
         'dbp' => $items->sum('dbp'),
@@ -419,6 +447,7 @@ public function exportExcel()
             'isApproved' => $this->isApproved,
             'updatedItems' => $this->updatedItems,
             'hasChanges' => $this->hasChanges,
+            'autMonths' => $this->autMonths,
         ]);
     }
 }

@@ -35,6 +35,7 @@ class BonusItemsPayroll extends Model
         'coverage_from',	
         'coverage_to',
         'semester',
+        'remarks',
         'tax',
         'net_amount',
     ];

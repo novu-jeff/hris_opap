@@ -105,7 +105,7 @@
                             <th rowspan="2" class="text-center">Basic Salary</th>
                             <th rowspan="2" class="text-center">Pera</th>
                             <th rowspan="2" class="text-center">Gross Amount Earned</th>
-                            <th colspan="29" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                            <th colspan="25" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
                   
                             <th colspan="10" class="text-center"></th>
                             <th colspan="10" class="text-center">Salary</th> 
@@ -121,6 +121,7 @@
                             <th colspan="2" class="vertical-text green">MPL LITE</th>
                             <th colspan="2" class="vertical-text green">CPL</th>
                             <th colspan="2" class="vertical-text green">GSEL</th>
+                            <th colspan="2" class="vertical-text green">GBEL</th>
                             <th colspan="2" class="vertical-text yellow">MP2</th>
                             <th colspan="2" class="vertical-text yellow">MPL STLMS</th>
                             <th colspan="2" class="vertical-text yellow">CIR375, CIR449</th>
@@ -130,9 +131,9 @@
                             <th class="vertical-text grey">AUT</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
-                            <th colspan="2" class="vertical-text grey">DBP BRANCH</th>
+                           <!-- <th colspan="2" class="vertical-text grey">DBP BRANCH</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
-                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
+                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>-->
                             <th colspan="4" class="text-center">1st Half</th>
                             <th colspan="4" class="text-center">2nd Half</th>
                         </tr>
@@ -248,13 +249,20 @@
                                           
                                         </td>
 
-                                        <td colspan="2">
-                                            <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                                wire:model="gsel.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                                class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
-                                          
-                                        </td>
-                                            
+                                    <td colspan="2">
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="gsel.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+
+                                    <td colspan="2">
+                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            wire:model="gbel.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                            class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
+                                        
+                                    </td>
+                                    
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="mp2.{{ $sectionIndex }}.{{ $employeeIndex }}"
@@ -309,7 +317,7 @@
                                             wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_amount')"
                                         {{ $isApproved ? 'readonly' : '' }}>
                                         </td>
-                                    <td colspan="2">
+                                 <!--   <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
@@ -324,7 +332,7 @@
                                          wire:model.lazy="lbp_payroll_account.{{ $sectionIndex }}.{{ $employeeIndex }}" 
                                             wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'lbp_payroll_account')"
                                         {{ $isApproved ? 'readonly' : '' }}> 
-                                        </td>
+                                        </td>-->
                                     <td colspan="4">
 
                                         <input type="text"
@@ -374,7 +382,7 @@
                             <th rowspan="2" class="text-center">Name</th>
                             <th rowspan="2" class="text-center">Position</th>
                             <th rowspan="2" class="text-center">Basic Salary</th>
-                            <th colspan="20" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
+                            <th colspan="13" class="text-center">DEDUCTIONS: (GSIS, MPL, PHILHEALTH, AUT, and W/TAX)</th>
                   
                             <th colspan="10" class="text-center"></th>
                             <th colspan="10" class="text-center">Salary</th> 
@@ -389,17 +397,29 @@
                             <!--<th colspan="2" class="vertical-text yellow">MPL STLMS</th>-->
                             <th colspan="2" class="vertical-text yellow">CIR375, CIR449</th>
                             <th colspan="2" class="vertical-text red">UCA</th>
+                            @if($use_realtime_aut)
                             <th class="vertical-text grey">AUT</th>
+                            @else
+                            <!--<th class="vertical-text grey">AUT</th>-->
+                                @foreach($autMonths as $month)
+                                <th class="vertical-text grey">
+                                    {{ strtoupper($month->format('M')) }} AUT
+                                </th>
+                                @endforeach
+                           
+
+                        <th class="vertical-text grey">TOTAL AUT</th>
+                        @endif
                             <th colspan="2" class="vertical-text red">Over payment</th>
                             <th class="vertical-text red">TAX (3%)</th>
                             <th class="vertical-text red">TAX (5%)</th>
-                            <th class="vertical-text red">TAX (8%)</th>
+                           <!-- <th class="vertical-text red">TAX (8%)</th>-->
                             <th class="vertical-text red">TAX (10%)</th>
                             <th class="text-center">TOTAL DED.</th>
                             <th class="text-center">NET AMOUNT</th>
-                            <th colspan="2" class="vertical-text grey">DBP</th>
+                         <!--   <th colspan="2" class="vertical-text grey">DBP</th>
                             <th colspan="2" class="vertical-text grey">KAWANI</th>
-                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>
+                            <th colspan="4" class="vertical-text grey">LBP PAYROLL ACCOUNT</th>-->
                             <th colspan="4" class="text-center">1st Half</th>
                             <th colspan="4" class="text-center">2nd Half</th>
                         </tr>
@@ -488,13 +508,42 @@
                                                 wire:model="uca.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>
                                         </td>
-                                    <td>
-                                        <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
-                                        wire:model="aut.{{ $sectionIndex }}.{{ $employeeIndex }}"
-                                        class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" {{ $isApproved ? 'readonly' : '' }}>
-                                    
-                                    </td>
-                                   
+                                        @if($use_realtime_aut)
+                                        <td>
+                                            <input type="text"
+                                                wire:model.live="aut.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="form-control wide-input">
+                                        </td>
+                                        @else
+                                        <td>
+                                            <input type="text"
+                                                wire:model.live="aut_month1.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="form-control wide-input">
+                                        </td>
+                                        
+                                        <td>
+                                            <input type="text"
+                                                wire:model.live="aut_month2.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="form-control wide-input">
+                                        </td>
+                                        
+                                        <td>
+                                            <input type="text"
+                                                wire:model.live="aut_month3.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                                class="form-control wide-input">
+                                        </td>
+                                        
+                                        <td>
+                                            <input type="text"
+                                                wire:model="aut_total.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                                readonly
+                                                class="form-control wide-input">
+                                        </td>
+                                        @endif
                                     <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="overpayment.{{ $sectionIndex }}.{{ $employeeIndex }}"
@@ -515,12 +564,12 @@
                                         
                                         </td>
                                         
-                                        <td>
+                                      <!--  <td>
                                             <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                                 wire:model="tax_8.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                                 class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input"  {{ $isApproved ? 'readonly' : '' }}>  
                                         
-                                        </td>
+                                        </td>-->
                                         
                                         <td>
                                             <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
@@ -543,7 +592,7 @@
                                             wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'net_amount')"
                                         {{ $isApproved ? 'readonly' : '' }}>
                                         </td>
-                                    <td colspan="2">
+                                   <!-- <td colspan="2">
                                         <input type="text" wire:change="recompute({{ $sectionIndex }}, {{ $employeeIndex }})"
                                             wire:model="dbp.{{ $sectionIndex }}.{{ $employeeIndex }}"
                                             class="form-control {{ $isApproved ? 'restricted' : '' }} wide-input" style="width: 120px;" {{ $isApproved ? 'readonly' : '' }}>
@@ -558,7 +607,7 @@
                                          wire:model.lazy="lbp_payroll_account.{{ $sectionIndex }}.{{ $employeeIndex }}" 
                                             wire:keydown="manualEdit({{ $sectionIndex }}, {{ $employeeIndex }}, 'lbp_payroll_account')"
                                         {{ $isApproved ? 'readonly' : '' }}> 
-                                        </td>
+                                        </td>-->
                                     <td colspan="4">
 
                                         <input type="text"

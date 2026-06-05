@@ -36,8 +36,8 @@ class DailyTimeRecordService {
     public function getDailyTimeRecord($employee_no, $dateInput, $mergeBothSources = false)
     {
         try {
-
-           
+            
+       
             # Case 1: Date Range Input (array with 2 elements)
             if (is_array($dateInput) && count($dateInput) === 2) {
                 $startDate = Carbon::parse($dateInput[0])->startOfDay()->toDateTimeString();
@@ -60,6 +60,8 @@ class DailyTimeRecordService {
 
         $today = now()->toDateString();
 
+       // dd($employee_no, $dateInput, $startDate, $endDate);
+
         if ($mergeBothSources) {
            
             $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources($employee_no, $startDate, $endDate);
@@ -69,6 +71,15 @@ class DailyTimeRecordService {
                 ->orderBy('timestamp')
                 ->get();
         }
+
+        Log::info('DTR  getDailyTimeRecord logs', [
+            'employees' => $employee_no,
+            'logs' => $logs,
+            'dateInput' => $dateInput,
+            'startdate' => $startDate,
+            'enddate' => $endDate
+
+        ]);
         
 
 
@@ -78,6 +89,13 @@ class DailyTimeRecordService {
 
 
         $logs = $this->processLogs($employee, $logs);
+
+        Log::info('DTR  Process logs', [
+            'employees' => $employee_no,
+            'logs' => $logs,
+
+        ]);
+       
         $dtr = $this->computeDTR($employee_no, $logs, $dateInput);
 
         return [
@@ -177,7 +195,9 @@ class DailyTimeRecordService {
         $leavesCount += $leaves['count'];
         $leavesCollection = collect($leaves['dates']);
 
-        $overtime = $this->getTotalOvertime($employee_no, $dateInput);
+       // $overtime = $this->getTotalOvertime($employee_no, $dateInput);
+       $overtime = $this->getUpdatedTotalOvertime($employee_no, $dateInput);
+      
 
         $total_overtime_perminutes = $overtime['raw_minutes'];
         $total_overtime_freq = $overtime['count'];
@@ -225,6 +245,7 @@ class DailyTimeRecordService {
 
             $remarks = array_merge($remarks, $checkAttendance['remarks']);
             
+            Log::info('Remarks', ['data' => $remarks]);
             # leaves
             foreach ($leaves['dates'] as $leaveDate) {
 
@@ -256,12 +277,18 @@ class DailyTimeRecordService {
                 $total_undertime_freq += $aut['undertime_freq'];
 
                 # overtime store
-                if ($matchedOvertime) {
+              /*  if ($matchedOvertime) {
                     $start = Carbon::parse($matchedOvertime->start_time);
                     $end = Carbon::parse($matchedOvertime->end_time);
                     $overtimeMinutes = $start->diffInMinutes($end);
                 }  else {
                     $overtimeMinutes  = 0;
+                }*/
+
+                if ($matchedOvertime) {
+                    $overtimeMinutes = $matchedOvertime->overtime_minutes;
+                } else {
+                    $overtimeMinutes = 0;
                 }
 
                 $formattedLogs[$dateString]['aut']['overtime']['minutes'] = $overtimeMinutes;
@@ -564,6 +591,8 @@ class DailyTimeRecordService {
             $isHoliday = true;
             $type = strtolower($holiday->type);
 
+            Log::info('holiday', ['type' => $type]);
+
            switch ($type) {
                 case 'regular':
                     $legalHolidays = true;
@@ -579,6 +608,17 @@ class DailyTimeRecordService {
                     $ownRemarks[] = 'Special Holiday';
                     break;
                 case 'special-working':
+                case 'wfh':
+                    $ownRemarks[] = 'Work From Home';
+                    break;
+            
+                case 'half-day-wfh':
+                    $ownRemarks[] = 'Half Day Work from Home';
+                    break;
+            
+                case 'half-day':
+                    $ownRemarks[] = 'Half Day';
+                    break;
                 case 'company':
                     $specialHolidays = true;
                     $isSpecialHoliday = true;
@@ -919,7 +959,43 @@ class DailyTimeRecordService {
             'total_hours' => "{$hours} hr(s) {$minutes} min(s)",
             'raw_minutes' => $totalMinutes,
         ];
-    }  
+    } 
+    
+    private function getUpdatedTotalOvertime($employeeNo, $dateInput)
+    {
+        $query = DB::table('employee_overtimes')
+            ->select(
+                'work_date as date',
+                'overtime_minutes'
+            )
+            ->where('employee_no', $employeeNo);
+
+        if (is_string($dateInput) && preg_match('/^\d{2}-\d{4}$/', $dateInput)) {
+            [$month, $year] = explode('-', $dateInput);
+
+            $query->whereMonth('work_date', (int) $month)
+                ->whereYear('work_date', (int) $year);
+
+        } elseif (is_array($dateInput) && count($dateInput) === 2) {
+            [$startDate, $endDate] = $dateInput;
+
+            $query->whereBetween('work_date', [$startDate, $endDate]);
+        }
+
+        $overtimes = $query->get();
+
+        $totalMinutes = $overtimes->sum('overtime_minutes');
+
+        $hours = floor($totalMinutes / 60);
+        $minutes = $totalMinutes % 60;
+
+        return [
+            'count' => $overtimes->where('overtime_minutes', '>', 0)->count(),
+            'dates' => $overtimes,
+            'total_hours' => "{$hours} hr(s) {$minutes} min(s)",
+            'raw_minutes' => $totalMinutes,
+        ];
+    }
     
     /**
      * Process raw log entries for an employee by grouping them per date,

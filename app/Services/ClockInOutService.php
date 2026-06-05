@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\EmployeeTimelogs;
+use App\Models\EmployeeOvertime;
 use App\Services\DailyTimeRecordService;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ClockInOutService
 {
@@ -122,7 +124,11 @@ class ClockInOutService
             'isWeb' => true,
             'captured_location' => $captured_location,
             'captured_image' => $captured_image,
-            'accomplishment' => $accomplishment
+            'accomplishment' => $accomplishment,
+
+            // Daily accomplishment
+            'accomplishment_type' => $toProcess['accomplishment_type'] ?? null,
+            'accomplishment_details' => $toProcess['accomplishment_details'] ?? null,
         ];
 
         if (config('app.external_timelogs')) {
@@ -136,7 +142,20 @@ class ClockInOutService
             $data['status'] = $statusMap[$entry];
         }
 
+     
+
         EmployeeTimelogs::create($data);
+
+Log::debug('Entry', [
+    'employeeId' => $entry
+]);
+        if (in_array($entry, [1, 3])) {
+            Log::debug('Clock In and out service called', [
+                'employeeId' => $employeeId,
+                'formattedTimestamp' => $formattedTimestamp,
+            ]);
+            $this->computeDailyOvertime($employeeId, $formattedTimestamp);
+        }
 
         return [
             'status' => true,
@@ -191,5 +210,73 @@ class ClockInOutService
             'title' => 'Please be informed',
             'message' => $message
         ];
+    }
+
+    public function computeDailyOvertime(string $employeeId, string $timestamp): void
+    {
+        $date = Carbon::parse($timestamp)->toDateString();
+
+        /*$logs = EmployeeTimelogs::where('employee_id', $employeeId)
+            ->whereDate('timestamp', $date)
+            ->orderBy('timestamp')
+            ->get();*/
+            $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources(
+                $employeeId,
+                $date . ' 00:00:00',
+                $date . ' 23:59:59'
+            );    
+
+        $totalMinutes = 0;
+        $timeIn = null;
+
+        foreach ($logs as $log) {
+            if ($log->status == 0) {
+                $timeIn = Carbon::parse($log->timestamp);
+            }
+
+            if ($log->status == 1 && $timeIn) {
+                $timeOut = Carbon::parse($log->timestamp);
+
+                if ($timeOut->greaterThan($timeIn)) {
+                    $totalMinutes += $timeIn->diffInMinutes($timeOut);
+                }
+
+                $timeIn = null;
+            }
+        }
+
+       /* $requiredMinutes = 8 * 60;
+
+        $overtimeMinutes = max(0, $totalMinutes - $requiredMinutes);
+        $overtimeHours = round($overtimeMinutes / 60, 2);*/
+
+        $requiredMinutes = 8 * 60;
+        $minimumClaimableOt = 2 * 60;
+
+        $renderedOtMinutes = max(
+            0,
+            $totalMinutes - $requiredMinutes
+        );
+
+        $overtimeMinutes = $renderedOtMinutes >= $minimumClaimableOt
+            ? $renderedOtMinutes
+            : 0;
+
+        $overtimeHours = round($overtimeMinutes / 60, 2);
+
+        // save to attendance or overtime table
+        EmployeeOvertime::updateOrCreate(
+            [
+                'employee_no' => $employeeId,
+                'work_date' => $date,
+            ],
+            [
+                'total_minutes' => $totalMinutes,
+                'overtime_minutes' => $overtimeMinutes,
+                'overtime_hours' => $overtimeHours,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
     }
 }
