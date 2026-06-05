@@ -16,6 +16,7 @@ class SalaryPayroll extends Model
         'cut_off_period',
         'employment_type',
         'hasDeductions',
+        'use_realtime_aut',
         'selected_employees',
         'status'
     ];

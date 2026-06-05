@@ -99,6 +99,7 @@
                     'GSIS MPL Lite' => $payslip['mpl_lite'],
                     'GSIS CPL' => $payslip['cpl'],
                     'GSIS GSEL' => $payslip['gsel'],
+                    'GSIS GBEL' => $payslip['gbel'],
                     'MP2' => $payslip['mp2'],
                 ];
 
@@ -160,9 +161,6 @@
                 <div class="tle px-2 fw-bold">*** Net Pay ***</div>
                 @foreach([
                     'Net Amount' => $payslip['net_amount'],
-                    'DBP' => $payslip['dbp'],
-                    'Unlad Kawani' => $payslip['kawani'],
-                    'LBP Payroll Account' => $payslip['lbp_payroll_account'],
                     'Amount Due (15)' => $payslip['net_first_half'],
                     'Amount Due (30)' => $payslip['net_second_half'],
                 ] as $label => $value)

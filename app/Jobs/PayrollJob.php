@@ -51,6 +51,7 @@ class PayrollJob implements ShouldQueue
         'mid_year' => \App\Models\BonusPayroll::find($this->payrollId),
         'premium' => \App\Models\BonusPayroll::find($this->payrollId),
         'gratuity' => \App\Models\PayrollGratuity::find($this->payrollId),
+        'year_end' => \App\Models\BonusPayroll::find($this->payrollId),
         default => null,
     };
     

@@ -9,6 +9,7 @@ use App\Jobs\PayrollJob;
 use App\Models\EmployementTypes;
 use App\Models\OTPayroll;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class OverTimeService extends Controller {
 
@@ -108,6 +109,7 @@ class OverTimeService extends Controller {
         $payroll = OTPayroll::create([
             'period' => $payload['ot_period'],
             'employment_type' => $payload['employment_type'],
+            'selected_employees' => json_encode($payload['selected_employees'] ?? []),
             'status' => 'pending'
         ]);
 
@@ -119,6 +121,8 @@ class OverTimeService extends Controller {
 
         $payroll = OTPayroll::findOrFail($payroll_id);
 
+       // dd($payroll);
+
         if(!$payroll) {
             return [
                 'status' => 'error',
@@ -127,15 +131,31 @@ class OverTimeService extends Controller {
         }
 
         $employees = $this->payrollService->getEmployees($employment_type, $type);
-        $employees = $employees['eligible'];
+        $employees = $employees['eligible']['items'];
 
-        $chunks = array_chunk($employees, 1000);
+        $selectedEmployees = json_decode($payroll->selected_employees ?? '[]', true);
+
+        if (!empty($selectedEmployees)) {
+            $employees = collect($employees)
+                ->filter(function ($employee) use ($selectedEmployees) {
+                    return in_array($employee['employee_no'], $selectedEmployees);
+                })
+                ->values()
+                ->toArray();
+        }
+
+        $chunks = array_chunk($employees, 25);
 
         $jobs = [];
 
 
         foreach ($chunks as $chunk) {
-            $jobs[] = new PayrollJob(collect($chunk), $payroll, $type);
+            Log::info('OT chuck data', ['chuck' => $chunk, 'id' => $payroll->id]);
+            $jobs[] = new PayrollJob(
+                $chunk,          // already an array
+                $payroll->id,    // pass only ID
+                'ot_pay'
+            );
         }
 
         [$startPeriod, $endPeriod] = explode(' to ', $payroll->period);
@@ -166,23 +186,78 @@ class OverTimeService extends Controller {
         
         if($this->product == 'government') {
 
-
+           // dd($payroll);
+         
             $dtr_service = app(DailyTimeRecordService::class);
 
             $data = [];
 
             foreach ($employees as $employee) {
+                
+
+                if (!is_array($employee)) {
+                    Log::error('Invalid employee format in OT payroll', [
+                        'employee' => $employee,
+                        'type' => gettype($employee),
+                    ]);
+                    continue;
+                }
+            
+                if (
+                    !isset(
+                        $employee['employee_no'],
+                        $employee['firstname'],
+                        $employee['lastname'],
+                        $employee['position_name'],
+                        $employee['salary']
+                    )
+                ) {
+                    Log::error('Missing employee fields in OT payroll', [
+                        'employee' => $employee,
+                    ]);
+                    continue;
+                }
 
                 $employee_no = $employee['employee_no'];
                 $name = trim($employee['firstname'] . ' ' . $employee['lastname']);
                 $position = $employee['position_name'];
                 $basic_salary = $employee['salary'];
 
-                $dtr = $dtr_service->getDailyTimeRecord($employee_no, $payroll->period, true);
+              //  $dtr = $dtr_service->getDailyTimeRecord($employee_no, $payroll->period, true);
+              [$start, $end] = explode(' to ', $payroll->period);
+                try {
+                    $dtr = $dtr_service->getDailyTimeRecord($employee_no,  [trim($start), trim($end)], true);
+                } catch (\Throwable $e) {
+                    Log::error('DTR CRASHED', [
+                        'employee_no' => $employee_no,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    continue;
+                }
 
-                $totalDays = $dtr['summary']['total_days'];
-                $workedDays = $dtr['summary']['worked_days'];
-                $overtime = $dtr['summary']['overtime_minues'];
+                if (!is_array($dtr) || !isset($dtr['summary'])) {
+                    Log::error('Invalid DTR response', [
+                        'employee_no' => $employee_no,
+                        'dtr' => $dtr,
+                        'type' => gettype($dtr),
+                    ]);
+                    continue;
+                }
+                
+                $totalDays = $dtr['summary']['total_days'] ?? 0;
+                $workedDays = $dtr['summary']['worked_days'] ?? 0;
+                $overtime = $dtr['summary']['overtime_minues'] ?? 0;
+
+                Log::info('DTR summary', [
+                    'totalDays' => $totalDays,
+                    'workedDays' => $workedDays,
+                    'overtime' => $overtime,
+                ]);
+
+              //  $totalDays = $dtr['summary']['total_days'];
+              //  $workedDays = $dtr['summary']['worked_days'];
+              //  $overtime = $dtr['summary']['overtime_minues'];
 
                 $ot = $this->payrollService->computeOvertimePay($basic_salary, $workedDays, $overtime);
 

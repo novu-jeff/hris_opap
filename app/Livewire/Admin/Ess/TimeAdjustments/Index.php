@@ -13,6 +13,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
+
 class Index extends Component
 {
  
@@ -262,11 +263,22 @@ Log::debug('deleted_attendance rows', ['count' => $deleted, 'employee_no' => $at
        
     }
 }
+Log::debug('computeDailyOvertime', [
+    'employeeNo' => $employeeNo,
+    'date' => $date,
+]);
+app(\App\Services\ClockInOutService::class)
+->computeDailyOvertime(
+    $employeeNo,
+    $date . ' 23:59:59'
+);
 
     // ✅ Finalize approval
     $record->update([
         'status' => 'approved',
     ]);
+
+   
 
     // ✅ Notify
     $user = EmployeeAccount::where('employee_no', $employeeNo)->first();

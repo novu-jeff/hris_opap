@@ -24,6 +24,19 @@ class YearEnd extends Component
     public bool $hasChanges = false;
     public $records;
 
+    public $confirmingDelete = false;
+    public $deleteSectionIndex;
+    public $deleteEmployeeIndex;
+
+    public $showAddModal = false;
+    public $searchEmployee = '';
+    public $employeeResults = [];
+    public $selectedEmployee = null;
+    public $showDuploicateLabel = false;
+    public $duplicateMessage = '';
+
+    public array $newItems = [];
+
     protected $listeners = ['save', 'approve'];
 
     public function mount() {

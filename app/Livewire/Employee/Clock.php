@@ -4,6 +4,7 @@ namespace App\Livewire\Employee;
 
 use App\Models\EmployeeTimelogs;
 use App\Models\EmployeeInformation;
+use App\Models\AccomplishmentType;
 use App\Services\ClockInOutService;
 use App\Services\DailyTimeRecordService;
 use Carbon\Carbon;
@@ -46,6 +47,29 @@ class Clock extends Component
     public $manipulate_timestamp = '07:00';
     public $upload_accomplishment;
 
+    public $accomplishment_type;
+    public $accomplishment_details;
+
+   /* public $accomplishmentOptions = [
+        'System Development',
+        'Bug Fixing',
+        'Technical Support',
+        'Client Support',
+        'Data Encoding',
+        'Testing / QA',
+        'Deployment',
+        'Documentation',
+        'Meeting',
+        'Training',
+        'Research',
+        'Field Work',
+        'Monitoring',
+        'Maintenance',
+        'Others'
+    ];*/
+
+    public $accomplishmentOptions = [];
+
     protected $listeners = [
         'getLocation',
         'imageCaptured',
@@ -54,7 +78,8 @@ class Clock extends Component
     ];
 
     protected $rules = [
-        'upload_accomplishment' => 'required|file|mimes:pdf|max:5120', // 5MB max
+        'upload_accomplishment' => 'nullable|file|mimes:pdf|max:5120', // 5MB max
+        'accomplishment_type' => 'required',
     ];
 
     protected $validationAttributes = [
@@ -62,7 +87,10 @@ class Clock extends Component
 
     public function mount(): void
     {
-
+        $this->accomplishmentOptions = AccomplishmentType::where('is_active', 1)
+        ->orderBy('accomplishment_name')
+        ->pluck('accomplishment_name')
+        ->toArray();
        
         $this->bsd_emp_identical = config('app.bsd_emp_identical');
         $this->employee_no = Auth::user()->employee_no;
@@ -321,7 +349,7 @@ class Clock extends Component
             return;
         }
 
-        if ($this->requiresAccomplishment() && empty($this->accomplishment)) {
+      /*  if ($this->requiresAccomplishment() && empty($this->accomplishment)) {
             $this->dispatch('alert', [
                 'showAlert' => true,
                 'status' => 'error',
@@ -329,6 +357,66 @@ class Clock extends Component
                 'message' => 'Please upload an accomplishment report before clocking out.',
             ]);
             return;
+        }*/
+
+        if (
+            $this->accomplishment_type === 'Upload Accomplishment Report'
+            && !$this->upload_accomplishment
+        ) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Required',
+                'message' => 'Please upload an accomplishment report.',
+            ]);
+        
+            return;
+        }
+
+        if (
+            ($this->status === 'Clock Out' || $this->isForcedOut)
+            && empty($this->accomplishment_type)
+        ) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Accomplishment Required',
+                'message' => 'Please select your accomplishment before clocking out.',
+            ]);
+        
+            return;
+        }
+
+        if (
+            $this->accomplishment_type === 'Others'
+            && empty($this->accomplishment_details)
+        ) {
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Required',
+                'message' => 'Please specify your accomplishment.',
+            ]);
+        
+            return;
+        }
+
+        if (
+            $this->accomplishment_type === 'Upload Accomplishment Report'
+            && $this->upload_accomplishment
+        ) {
+            $file = $this->upload_accomplishment;
+        
+            $fileName = $this->employee_no . '_' . time() . '.' .
+                $file->getClientOriginalExtension();
+        
+            $file->storeAs(
+                'accomplishments',
+                $fileName,
+                'public'
+            );
+        
+            $this->accomplishment = $fileName;
         }
 
         $service = app(ClockInOutService::class);
@@ -338,7 +426,11 @@ class Clock extends Component
             'captured_image' => $this->imageCaptured,
             'captured_location' => $this->gps_location,
             'accomplishment' => $this->accomplishment ?? null,
+            'accomplishment_type' => $this->accomplishment_type,
+            'accomplishment_details' => $this->accomplishment_details,
         ];
+
+        //dd($toProcess);
 
         $response = $service->process($this->entry, $toProcess, $this->employee_no);
 

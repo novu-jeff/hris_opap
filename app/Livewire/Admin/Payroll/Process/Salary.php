@@ -43,6 +43,7 @@ class Salary extends Component
     public $mpl_lite= [];
     public $cpl = [];
     public $gsel = [];
+    public $gbel = [];
     public $mp2 = [];
     public $mplstlms = [];
     public $cir375_cir449 = [];
@@ -57,6 +58,11 @@ class Salary extends Component
     public $tax_5 = [];
     public $tax_8 = [];
     public $tax_10 = [];
+
+    public $aut_month1 = [];
+    public $aut_month2 = [];
+    public $aut_month3 = [];
+    public $aut_total = [];
 
     public $total_deductions = [];
     public $net_amount = [];
@@ -85,6 +91,9 @@ class Salary extends Component
     public $selectedEmployee = null;
     public $showDuploicateLabel = false;
 
+    public $autMonths = [];
+    public $use_realtime_aut = false;
+
     public array $newItems = [];
 
     protected $listeners = ['save', 'approve', 'deleteEmployee', 'confirmSave'];
@@ -95,6 +104,20 @@ class Salary extends Component
     public function mount()
     {
         $this->loadRecords();
+
+        $this->use_realtime_aut =
+        $this->records['payroll']['use_realtime_aut'] ?? true;
+
+        $payrollDate = Carbon::parse(
+            $this->records['payroll']['payroll_date']
+        )->startOfMonth();
+    
+        $this->autMonths = collect([
+            2, 1, 0
+        ])->map(function ($monthsBack) use ($payrollDate) {
+            return $payrollDate->copy()->subMonths($monthsBack);
+        })->toArray();
+    
     }
 
     /* ======================================================
@@ -130,8 +153,8 @@ class Salary extends Component
                 foreach ([
                     'basic_salary', 'pera', 'gross_amount_earned',
                     'hdmf','uca', 'disallowance', 'dbp','kawani','rlip','philhealth','consoloan',
-                    'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel',
-                    'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut',
+                    'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel', 'gbel',
+                    'mplstlms','cir375_cir449','w_tax', 'overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut', 'aut_month1', 'aut_month2', 'aut_month3', 'aut_total',
                     'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
                 ] as $f) {
                     $this->{$f}[$s][$e] = $row[$f] ?? 0;
@@ -169,20 +192,40 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     $editableFields = [
         'basic_salary', 'pera',
         'hdmf','uca', 'disallowance', 'dbp','kawani','philhealth','consoloan',
-        'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel',
-        'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_3', 'tax_5', 'tax_8', 'tax_10', 'aut','rlip'
+        'emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','gsel', 'gbel',
+        'mplstlms','cir375_cir449','w_tax','overpayment', 'tax_3', 'tax_5', 'tax_10', 'aut', 'aut_month1', 'aut_month2', 'aut_month3', 'rlip'
     ];
 
     foreach ($editableFields as $f) {
         $payrollItem[$f] = round(floatval($this->{$f}[$sectionIndex][$employeeIndex] ?? 0), 2);
     }
 
+    if($this->use_realtime_aut){
+       // dd('realtime aut');
+        $autTotal = floatval($payrollItem['aut'] ?? 0);
+        $this->aut_total[$sectionIndex][$employeeIndex] = $autTotal;
+        $payrollItem['aut_total'] = $autTotal;
+        $payrollItem['aut'] = $autTotal;
+
+
+        
+    }else{
+       // dd('non realtime aut');
+        $autTotal =
+        floatval($this->aut_month1[$sectionIndex][$employeeIndex] ?? 0)
+        + floatval($this->aut_month2[$sectionIndex][$employeeIndex] ?? 0)
+        + floatval($this->aut_month3[$sectionIndex][$employeeIndex] ?? 0);
+
+         $this->aut_total[$sectionIndex][$employeeIndex] = $autTotal;
+        $payrollItem['aut_total'] = $autTotal;
+        $payrollItem['aut'] = $autTotal;
+    }
     // -------------------------------
     // Compute GROSS dynamically
     // -------------------------------
     $basic = floatval($payrollItem['basic_salary'] ?? 0);
     $pera  = floatval($payrollItem['pera'] ?? 0);
-    $aut = floatval($payrollItem['aut'] ?? 0);
+    $aut = floatval($payrollItem['aut_total'] ?? 0);
     $rate = 0.05;
     $ceiling = 100000;
 
@@ -229,30 +272,14 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // Override gross
     $payrollItem['gross_amount_earned'] = $gross;
     $this->gross_amount_earned[$sectionIndex][$employeeIndex] = $gross;
-
-    /*$hasTax3 = array_key_exists('tax_3', $original)
-        && $original['tax_3'] !== null
-        && floatval($original['tax_3']) != 0;
-    
-    $hasTax5 = array_key_exists('tax_5', $original)
-        && $original['tax_5'] !== null
-        && floatval($original['tax_5']) != 0;
-
-    $hasTax8 = array_key_exists('tax_8', $original)
-        && $original['tax_8'] !== null
-        && floatval($original['tax_8']) != 0;
-        
-    $hasTax10 = array_key_exists('tax_10', $original)
-        && $original['tax_10'] !== null
-        && floatval($original['tax_10']) != 0;*/
     
     $hasTax3 = isset($payrollItem['tax_3']) && $payrollItem['tax_3'] > 0;
     $hasTax5 = isset($payrollItem['tax_5']) && $payrollItem['tax_5'] > 0;
-    $hasTax8 = isset($payrollItem['tax_8']) && $payrollItem['tax_8'] > 0;
+   // $hasTax8 = isset($payrollItem['tax_8']) && $payrollItem['tax_8'] > 0;
     $hasTax10 = isset($payrollItem['tax_10']) && $payrollItem['tax_10'] > 0;
 
    // dd($hasTax3, $hasTax5 , $hasTax8, $hasTax10, $aut); 
-   Log::info('hastax', ['tax3' => $hasTax3,'tax5' => $hasTax5,'tax8' => $hasTax8,'tax10' => $hasTax10, 'aut' => $aut]);
+   Log::info('hastax', ['tax3' => $hasTax3,'tax5' => $hasTax5,'tax10' => $hasTax10, 'aut' => $aut]);
     
     if($hasTax3){
         $t3 = $basic - $aut;  
@@ -270,13 +297,13 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         $payrollItem['tax_5'] = $ctax_5; // ✅
     }
     
-    if($hasTax8){
+  /*  if($hasTax8){
         $t8 = $basic - $aut;  
         $ctax_8 = round($t8 * 0.08, 2);
     
         $this->tax_8[$sectionIndex][$employeeIndex] = $ctax_8;
         $payrollItem['tax_8'] = $ctax_8; // ✅
-    }
+    }*/
     
     if($hasTax10){
         $t10 = $basic - $aut;  
@@ -291,12 +318,14 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // -------------------------------
     $deductionFields = [
         'rlip','hdmf','philhealth','consoloan','emergency_loan',
-        'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449','gsel',
-        'uca','disallowance', 'w_tax','aut','overpayment','tax_3', 'tax_5', 'tax_8','tax_10'
+        'plreg','mpl','mpl_lite','cpl','mp2','mplstlms','cir375_cir449','gsel', 'gbel',
+        'uca','disallowance', 'w_tax', 'overpayment','tax_3', 'tax_5','tax_10',
+        'aut',
     ];
 
     $totalDeductions = 0;
     foreach ($deductionFields as $f) {
+        Log::info('deductionFields', ['f' => $f, 'payrollItem' => $payrollItem]);
         $totalDeductions += floatval($payrollItem[$f] ?? 0);
     }
     $totalDeductions = round($totalDeductions, 2);
@@ -330,7 +359,7 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
     // -------------------------------
     $isFirstHalf = $this->isFirstHalf();
 
-    if ($hasAny) {
+   /* if ($hasAny) {
 
       
         if($this->isSecondCutoff){
@@ -361,7 +390,9 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
         // If dbp/kawani already exist in DB, keep the stored first half
         // and recompute only the second half.
         
-    } elseif ($isFirstHalf) {
+    } else*/
+     if ($isFirstHalf) {
+        //dd($netAmount, $bankTotal);
         // First cutoff (1–15): recompute first half ONLY
         Log::info('First cutoff (1–15)', ['netAmount' => $netAmount,'bankTotal' => $bankTotal]);
        // $firstHalf  = floor(($netAmount / 2) * 100) / 100;
@@ -379,18 +410,20 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
        // $firstHalfCents = intdiv($netCents, 2);
         $firstHalfCents = intdiv($netCents, 2);
-        $firstHalfCents = $firstHalfCents - $bankCents;
-        $secondHalfCents = $lbpCents - $firstHalfCents;
+       // $firstHalfCents = $firstHalfCents - $bankCents;
+        $secondHalfCents = $netCents - $firstHalfCents;
 
         $firstHalf = $firstHalfCents / 100;
         $secondHalf = $secondHalfCents / 100;
 
 
     } else {
+
+        $netCents = (int) round($netAmount * 100); 
         // Second cutoff (16–end): recompute second half ONLY
         Log::info('Second cutoff (16–end)', ['originalfirstHalf' => $payrollItem['net_first_half'],'lbpPayroll' => $lbpPayroll]);
         $firstHalf  = round((float) ($payrollItem['net_first_half'] ?? 0), 2);
-        $secondHalf = round($lbpPayroll - $firstHalf, 2);
+        $secondHalf = round($netCents - $firstHalf, 2);
     }
 
     // HARD LOCK: prevent editing wrong half
@@ -479,7 +512,7 @@ public function deleteEmployee()
 
     $fields = [
         'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
-        'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel',
+        'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel', 'gbel',
         'cir375_cir449','w_tax','overpayment','tax_3','tax_5','tax_8','tax_10','aut',
         'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
     ];
@@ -553,6 +586,7 @@ public function selectEmployee($id)
     $payroll = SalaryPayroll::find($this->payroll_id);
 
     $cutOffPeriod = $payroll?->cut_off_period;
+    $use_realtime_aut = $payroll?->use_realtime_aut;
    // $taxType = '';
    
     $emp = DB::table('employee_information as ei')
@@ -688,12 +722,53 @@ public function selectEmployee($id)
                 $mpl = !empty($mplCos) ? $mplCos : $mplss;
 
                 if ($employment_type_id != 1){
-                   // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
-                   $aut = $auts;
+                    if($use_realtime_aut){
+                        $auts = $hasDeductions
+                            ? round(floatval($payroll_service->computeAutDeduction(
+                                $dtr_summary,
+                                $basic_salary,
+                                $salary_type
+                            )), 2)
+                            : 0;
+    
+                            $aut_total = $auts;
+                            $aut = $auts;
+
+                            $aut_month1 = 0;
+                            $aut_month2 = 0;
+                            $aut_month3 = 0;
+                      }else{
+
+                        $aut_month1 = $hasDeductions
+                        ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2)
+                        : 0;
+
+                    /*$aut_month3 = $hasDeductions
+                        ? round(floatval($payroll_service->computeAutDeduction(
+                            $dtr_summary,
+                            $basic_salary,
+                            $salary_type
+                        )), 2)
+                        : 0;
+
+                        $aut_month3 = !empty($auts) ? $auts : $aut_month3;*/
+
+                        $aut_month2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_1')['amount'] ?? 0), 2) : 0;
+                        $aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_2')['amount'] ?? 0), 2) : 0;
+                        /*$aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_3')['amount'] ?? 0), 2) : 0;*/
+                        $aut_total = $aut_month1 + $aut_month2 + $aut_month3;
+                        $aut = $aut_total;
+                   }
+                   $overpay = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'OVERPAY')['amount'] ?? 0), 2) : 0;
                    $mplstlms = 0;
                 }else{
-                    $aut = 0;
                     $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
+                    $aut = 0;
+                    $overpay = 0;
+                    $aut_month1 = 0;
+                    $aut_month2 = 0;
+                    $aut_month3 = 0;
+                    $aut_total = 0;
                 }
                 // Optional deductions
                // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
@@ -714,6 +789,7 @@ public function selectEmployee($id)
                             ? floor((min($basic_salary, $ceiling) * $rate / 2) * 100) / 100
                             : 0;
                           $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
+                          $gbel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GBEL')['amount'] ?? 0), 2) : 0;
                           //$rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $rlip = $hasDeductions ? floor(floatval($basic_salary * 0.09) * 100) / 100 : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
@@ -726,6 +802,7 @@ public function selectEmployee($id)
                         : 0;
                         
                           $gsel = 0;
+                          $gbel = 0;
                           $taxType = $emp->tax_type ?? null;
       
                          //dd($taxType);
@@ -744,9 +821,9 @@ public function selectEmployee($id)
                                     $tax_5 = round($taxBase * 0.05, 2);
                                     break;
 
-                                case 'TAX_8': // 8%
+                                /*case 'TAX_8': // 8%
                                     $tax_8 = round($taxBase * 0.08, 2);
-                                    break;
+                                    break;*/
 
                                 case 'TAX_10': // 10%
                                     $tax_10 = round($taxBase * 0.10, 2);
@@ -771,7 +848,7 @@ public function selectEmployee($id)
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + 
-                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut + $gsel;
+                    $tax_3 + $tax_5 + $tax_8 + $tax_10 +  $uca + $aut + $gsel + $gbel;
 
                 Log::info('selected employee total deductions', ['total_deductions' =>  $total_deduction]);    
 
@@ -795,14 +872,14 @@ public function selectEmployee($id)
                     // FIRST HALF PAYROLL (01–15)
                    if($isFirstHalf ){
 
-                        if(!empty($total_lbp)){
+                      /*  if(!empty($total_lbp)){
                             // dd($net);
                             $firstHalf  = floor(($net  / 2) * 100) / 100;
                             // dd($firstHalf);
                             $firstHalf =  $firstHalf - $total_lbp;
                             $secondHalf = round($lbp - $firstHalf, 2);
                             
-                        }else{
+                        }else{*/
                             /*$firstHalf  = floor(($net  / 2) * 100) / 100;
                             $secondHalf = round($net - $firstHalf, 2);*/
 
@@ -815,10 +892,10 @@ public function selectEmployee($id)
                             $secondHalf = $secondHalfCents / 100;
                             Log::info('Firsthalf Computation Salary', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
                         
-                        }
+                        //}
                     }else{
 
-                        if(!empty($total_lbp)){
+                        /*if(!empty($total_lbp)){
                             // dd($net);
                             $firstHalf  = floor(($net  / 2) * 100) / 100;
                             // dd($firstHalf);
@@ -826,7 +903,7 @@ public function selectEmployee($id)
                            // $secondHalf =  round($firstHalf - $total_lbp, 2);
                             $secondHalf = round($lbp - $firstHalf, 2);
                             
-                        }else{
+                        }else{*/
                             /*$firstHalf  = floor(($net  / 2) * 100) / 100;
                             $secondHalf = round($net - $firstHalf, 2);*/
 
@@ -839,7 +916,7 @@ public function selectEmployee($id)
                             $secondHalf = $secondHalfCents / 100;
                             Log::info('Secondhalf Computation Salary Service', ['Net' => $net, 'NetCents' => $netCents, 'firstHalfCents' => $firstHalfCents, 'secondHalfCents ' => $secondHalfCents, 'fisthalf' => $firstHalf, 'secondhalf' => $secondHalf]);
                         
-                        }
+                       // }
 
                     }   
 
@@ -847,14 +924,14 @@ public function selectEmployee($id)
 
         if ($firstHalfRecord) {
 
-            $hasTax3 = isset($tax_3) && $tax_3 > 0;
-            $hasTax5 = isset($tax_5) && $tax_5 > 0;
-            $hasTax8 = isset($tax_8) && $tax_8 > 0;
-            $hasTax10 = isset($tax_10) && $tax_10 > 0;
+            $hasTax3 = isset($firstHalfRecord->tax_3) && $firstHalfRecord->tax_3 > 0;
+            $hasTax5 = isset($firstHalfRecord->tax_5) && $firstHalfRecord->tax_5 > 0;
+           // $hasTax8 = isset($firstHalfRecord->tax_8) && $firstHalfRecord->tax_8 > 0;
+            $hasTax10 = isset($firstHalfRecord->tax_10) && $firstHalfRecord->tax_10 > 0;
 
             $ctax_3 = 0;
             $ctax_5 = 0;
-            $ctax_8 = 0;
+            /*$ctax_8 = 0;*/
             $ctax_10 = 0;
 
             if($hasTax3){
@@ -868,10 +945,10 @@ public function selectEmployee($id)
                 $ctax_5 = round($t5 * 0.05, 2);
             }
             
-            if($hasTax8){
+          /*  if($hasTax8){
                 $t8 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
                 $ctax_8 = round($t8 * 0.08, 2);
-            }
+            }*/
             
             if($hasTax10){
                 $t10 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
@@ -880,9 +957,9 @@ public function selectEmployee($id)
 
             $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
             $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax + 
-            $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel;
+            $ctax_3 + $ctax_5  + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel + $firstHalfRecord->gbel + $firstHalfRecord->aut_month1 + $firstHalfRecord->aut_month2 + $firstHalfRecord->aut_month3;
 
-            Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax8' => $ctax_8, 'tax10' => $ctax_10]);
+            Log::info('selected employee firstHalfRecord', ['data' =>  $firstHalfRecord, 'tax3' => $ctax_3, 'tax5' => $ctax_5, 'tax10' => $ctax_10]);
 
             if($firstHalfRecord->employment_type_id !== 2 && $firstHalfRecord->employment_type_id !== 3 && $firstHalfRecord->employment_type_id !== 4) {
                 $fh_net = round($firstHalfRecord->gross_amount_earned - $fh_total_deduction, 2);
@@ -911,7 +988,7 @@ public function selectEmployee($id)
                 $secondHalf = round($fh_net  - $firstHalfRecord->net_first_half, 2);
             }*/
 
-            $secondHalf =  round($fh_lbp - $firstHalfRecord->net_first_half, 2);
+            $secondHalf =  round($fh_net  - $firstHalfRecord->net_first_half, 2);
            
             
             
@@ -935,12 +1012,17 @@ public function selectEmployee($id)
                 'mpl_lite' => $firstHalfRecord->mpl_lite,
                 'cpl' => $firstHalfRecord->cpl,
                 'gsel' => $firstHalfRecord->gsel,
+                'gbel' => $firstHalfRecord->gbel,
                 'mp2' => $firstHalfRecord->mp2,
                 'mplstlms' => $firstHalfRecord->mplstlms,
                 'cir375_cir449' => $firstHalfRecord->cir375_cir449,
                 'w_tax' => $firstHalfRecord->w_tax,
                 'uca' => $firstHalfRecord->uca,
                 'aut' => $firstHalfRecord->aut,
+                'aut_month1' => $firstHalfRecord->aut_month1,
+                'aut_month2' => $firstHalfRecord->aut_month2,
+                'aut_month3' => $firstHalfRecord->aut_month3,
+                'aut_total' => $firstHalfRecord->aut_total,
                 'disallowance' => $firstHalfRecord->disallowance,
                 'overpayment' => $firstHalfRecord->overpayment,
                 'total_deductions' => round($fh_total_deduction, 2),
@@ -955,7 +1037,7 @@ public function selectEmployee($id)
                 'is_second_half_locked' => 1,
                 'tax_3' => $ctax_3,
                 'tax_5' => $ctax_5,
-                'tax_8' => $ctax_8,
+                'tax_8' => $ctax_8 ?? 0,
                 'tax_10' => $ctax_10,
             ];
 
@@ -982,12 +1064,17 @@ public function selectEmployee($id)
                 'mpl_lite' => $mpl_lite,
                 'cpl' => $cpl,
                 'gsel' => $gsel,
+                'gbel' => $gbel,
                 'mp2' => $mp2,
                 'mplstlms' => $mplstlms,
                 'cir375_cir449' => $cir,
                 'w_tax' => $w_tax,
                 'uca' => $uca,
                 'aut' => $aut,
+                'aut_month1' => $aut_month1,
+                'aut_month2' => $aut_month2,
+                'aut_month3' => $aut_month3,
+                'aut_total' => $aut_total,
                 'disallowance' => 0,
                 'overpayment' => 0,
                 'total_deductions' => round($total_deduction, 2),
@@ -1002,7 +1089,7 @@ public function selectEmployee($id)
                 'is_second_half_locked' => 1,
                 'tax_3' => $tax_3,
                 'tax_5' => $tax_5,
-                'tax_8' => $tax_8,
+                'tax_8' => $tax_8 ?? 0,
                 'tax_10' => $tax_10,
             ];
 
@@ -1092,11 +1179,16 @@ public function confirmAddEmployee()
             'mpl_lite' => $this->selectedEmployee['mpl_lite'],
             'cpl' => $this->selectedEmployee['cpl'],
             'gsel' => $this->selectedEmployee['gsel'],
+            'gbel' => $this->selectedEmployee['gbel'],
             'mp2' => $this->selectedEmployee['mp2'],
             'mplstlms' => $this->selectedEmployee['mplstlms'],
             'cir375_cir449' => $this->selectedEmployee['cir375_cir449'],
             'w_tax' => $this->selectedEmployee['w_tax'],
             'aut' => $this->selectedEmployee['aut'],
+            'aut_month1' => $this->selectedEmployee['aut_month1'],
+            'aut_month2' => $this->selectedEmployee['aut_month2'],
+            'aut_month3' => $this->selectedEmployee['aut_month3'],
+            'aut_total' => $this->selectedEmployee['aut_total'],
             'disallowance' => $this->selectedEmployee['disallowance'],
             'kawani' => $this->selectedEmployee['kawani'],
             'total_deductions' => $this->selectedEmployee['total_deductions'],
@@ -1108,7 +1200,7 @@ public function confirmAddEmployee()
             'overpayment' => $this->selectedEmployee['overpayment'],
             'tax_3' => $this->selectedEmployee['tax_3'],
             'tax_5' => $this->selectedEmployee['tax_5'],
-            'tax_8' => $this->selectedEmployee['tax_8'],
+            'tax_8' => $this->selectedEmployee['tax_8'] ?? 0,
             'tax_10' => $this->selectedEmployee['tax_10'],
         ]);
 
@@ -1128,8 +1220,8 @@ public function confirmAddEmployee()
         // init fields
         foreach ([
             'basic_salary','pera','gross_amount_earned','hdmf','uca','dbp','kawani','rlip','philhealth',
-            'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel',
-            'cir375_cir449','w_tax','disallowance', 'overpayment','tax_3','tax_5','tax_8','tax_10','aut',
+            'consoloan','emergency_loan','plreg','mpl','mpl_lite','cpl','mp2','mplstlms','gsel', 'gbel',
+            'cir375_cir449','w_tax','disallowance', 'overpayment','tax_3','tax_5','tax_10','aut', 'aut_month1', 'aut_month2', 'aut_month3', 'aut_total',
             'total_deductions','net_amount','lbp_payroll_account','net_first_half','net_second_half'
         ] as $field) {
             
@@ -1207,6 +1299,11 @@ private function findOrCreateSection($data)
             foreach ($this->records['payroll_items'] as $sectionIndex => $section) {
                 foreach ($section['employees'] as $employeeIndex => $row) {
 
+                    $row['aut_month1'] = $this->aut_month1[$sectionIndex][$employeeIndex] ?? 0;
+                    $row['aut_month2'] = $this->aut_month2[$sectionIndex][$employeeIndex] ?? 0;
+                    $row['aut_month3'] = $this->aut_month3[$sectionIndex][$employeeIndex] ?? 0;
+                    $row['aut_total']  = $this->aut_total[$sectionIndex][$employeeIndex] ?? 0;
+
                     // sync manually editable fields first
                     $row['total_deductions'] = $this->total_deductions[$sectionIndex][$employeeIndex] ?? $row['total_deductions'];
                     $row['net_amount'] = $this->net_amount[$sectionIndex][$employeeIndex] ?? $row['net_amount'];
@@ -1220,36 +1317,41 @@ private function findOrCreateSection($data)
                         'basic_salary' => $row['basic_salary'],
                         'pera' => $row['pera'],
                         'gross_amount_earned' => $row['gross_amount_earned'],
-                        'hdmf' => $row['hdmf'],
-                        'uca' => $row['uca'],
-                        'dbp' => $row['dbp'],
-                        'rlip'  => $row['rlip'],
-                        'philhealth' => $row['philhealth'],
-                        'consoloan' => $row['consoloan'],
-                        'emergency_loan' => $row['emergency_loan'],
-                        'plreg' => $row['plreg'],
-                        'mpl' => $row['mpl'],
-                        'mpl_lite' => $row['mpl_lite'],
-                        'cpl' => $row['cpl'],
-                        'gsel' => $row['gsel'],
-                        'mp2' => $row['mp2'],
-                        'mplstlms' => $row['mplstlms'],
-                        'cir375_cir449' => $row['cir375_cir449'],
-                        'w_tax' => $row['w_tax'],
-                        'aut' => $row['aut'],
+                        'hdmf' => $row['hdmf'] ?? 0,
+                        'uca' => $row['uca'] ?? 0,
+                        'dbp' => $row['dbp'] ?? 0,
+                        'rlip'  => $row['rlip'] ?? 0,
+                        'philhealth' => $row['philhealth'] ?? 0,
+                        'consoloan' => $row['consoloan'] ?? 0,
+                        'emergency_loan' => $row['emergency_loan'] ?? 0,
+                        'plreg' => $row['plreg'] ?? 0,
+                        'mpl' => $row['mpl'] ?? 0,
+                        'mpl_lite' => $row['mpl_lite'] ?? 0,
+                        'cpl' => $row['cpl'] ?? 0,
+                        'gsel' => $row['gsel'] ?? 0,
+                        'gbel' => $row['gbel'] ?? 0,
+                        'mp2' => $row['mp2'] ?? 0,
+                        'mplstlms' => $row['mplstlms'] ?? 0,
+                        'cir375_cir449' => $row['cir375_cir449'] ?? 0,
+                        'w_tax' => $row['w_tax'] ?? 0,
+                        'aut' => $row['aut_total'] ?? 0,
+                        'aut_month1' => floatval($row['aut_month1'] ?: 0),
+                        'aut_month2' => floatval($row['aut_month2'] ?: 0),
+                        'aut_month3' => floatval($row['aut_month3'] ?: 0),
+                        'aut_total'  => floatval($row['aut_total'] ?: 0),
                         'disallowance' => $row['disallowance'] ?? 0,
-                        'kawani' => $row['kawani'],
-                        'total_deductions' => $row['total_deductions'],
-                        'net_amount' => $row['net_amount'],
-                        'lbp_payroll_account' => $row['lbp_payroll_account'],
-                        'net_first_half' => $row['net_first_half'],
-                        'net_second_half' => $row['net_second_half'],
-                        'salary' => $row['salary'] ?? $row['basic_salary'] ?? 0,
+                        'kawani' => $row['kawani'] ?? 0,
+                        'total_deductions' => $row['total_deductions'] ?? 0,
+                        'net_amount' => $row['net_amount'] ?? 0,
+                        'lbp_payroll_account' => $row['lbp_payroll_account'] ?? 0,
+                        'net_first_half' => $row['net_first_half'] ?? 0,
+                        'net_second_half' => $row['net_second_half'] ?? 0,
+                        'salary' => $row['salary'] ?? 0,
                         'overpayment' => $row['overpayment'] ?? 0,
-                        'tax_3' => $row['tax_3'],
-                        'tax_5' => $row['tax_5'],
-                        'tax_8' => $row['tax_8'],
-                        'tax_10' => $row['tax_10'],
+                        'tax_3' => $row['tax_3'] ?? 0,
+                        'tax_5' => $row['tax_5'] ?? 0,
+                        'tax_8' => $row['tax_8'] ?? 0,
+                        'tax_10' => $row['tax_10'] ?? 0,
                     ]);
                 }
             }

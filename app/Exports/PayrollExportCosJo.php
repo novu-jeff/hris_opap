@@ -97,12 +97,27 @@ class PayrollExportCosJo implements FromCollection, WithEvents
 
     $rows = collect();
 
+    $payrollDate = Carbon::parse($this->payroll->payroll_date)->startOfMonth();
+
+    $use_realtime_aut = $this->payroll->use_realtime_aut ?? true;
+
+    if($use_realtime_aut){
+        $autMonths = ['AUT'];
+    }else{
+        $autMonths = [
+            strtoupper($payrollDate->copy()->subMonths(2)->format('M')) . ' AUT',
+            strtoupper($payrollDate->copy()->subMonths(1)->format('M')) . ' AUT',
+            strtoupper($payrollDate->copy()->format('M')) . ' AUT',
+            'TOTAL AUT'
+        ];
+       
+    }
+
     // ✅ PUSH HEADER ONCE
     $headers = [
         'NAME','POSITION','BASIC SALARY','HDMF','PHILHEALTH',
-        'MP2','MPL','CIR375, CIR449','UCA','AUT',
-        'Overpay', 'Tax3%', 'Tax5%', 'Tax8%', 'Tax10%','TOTAL DED','NET AMOUNT','DBP BRANCH',
-        'KAWANI','LBP PAYROLL ACCOUNT','1st Half','2nd Half',
+        'MP2','MPL','CIR375, CIR449','UCA', ...$autMonths,
+        'Overpay', 'Tax3%', 'Tax5%', 'Tax10%','TOTAL DED','NET AMOUNT','1st Half','2nd Half',
     ];
 
     $rows->push($headers);
@@ -145,30 +160,40 @@ class PayrollExportCosJo implements FromCollection, WithEvents
                 $positionWithSalaryGrade = $salaryGrade !== ''
                     ? strtoupper("{$item->position} (SG{$salaryGrade})")
                     : strtoupper($item->position);
-                $rows->push([
-                    "{$employeeCount}. " . mb_strtoupper($item->name ?? '', 'UTF-8'),
-                    $positionWithSalaryGrade,
-                $item->basic_salary,
-                $item->hdmf ?? 0,
-                $item->philhealth ?? 0,
-                $item->mp2 ?? 0,
-                $item->mpl ?? 0,
-                $item->cir375_cir449 ?? 0,
-                $item->uca ?? 0,
-                $item->aut ?? 0,
-                $item->overpayment ?? 0,
-                $item->tax_3 ?? 0,
-                $item->tax_5 ?? 0,
-                $item->tax_8 ?? 0,
-                $item->tax_10 ?? 0,
-                $item->total_deductions ?? 0,
-                $item->net_amount ?? 0,
-                $item->dbp ?? '',
-                $item->kawani ?? '',
-                $item->lbp_payroll_account ?? '',
-                $item->net_first_half ?? 0,
-                $item->net_second_half ?? 0,
-            ]);
+
+                    $row = [
+                        "{$employeeCount}. " . mb_strtoupper($item->name ?? '', 'UTF-8'),
+                        $positionWithSalaryGrade,
+                        $item->basic_salary,
+                        $item->hdmf ?? 0,
+                        $item->philhealth ?? 0,
+                        $item->mp2 ?? 0,
+                        $item->mpl ?? 0,
+                        $item->cir375_cir449 ?? 0,
+                        $item->uca ?? 0,
+                    ];
+                    
+                    if ($use_realtime_aut) {
+                        $row[] = $item->aut ?? 0;
+                    } else {
+                        $row[] = $item->aut_month1 ?? 0;
+                        $row[] = $item->aut_month2 ?? 0;
+                        $row[] = $item->aut_month3 ?? 0;
+                        $row[] = $item->aut_total ?? 0;
+                    }
+                    
+                    $row = array_merge($row, [
+                        $item->overpayment ?? 0,
+                        $item->tax_3 ?? 0,
+                        $item->tax_5 ?? 0,
+                        $item->tax_10 ?? 0,
+                        $item->total_deductions ?? 0,
+                        $item->net_amount ?? 0,
+                        $item->net_first_half ?? 0,
+                        $item->net_second_half ?? 0,
+                    ]);
+
+                    $rows->push($row);
 
             $employeeCount++;
         }
@@ -183,17 +208,28 @@ class PayrollExportCosJo implements FromCollection, WithEvents
             $employees->sum('mpl'),
             $employees->sum('cir375_cir449'),
             $employees->sum('uca'),
-            $employees->sum('aut'),
+            ...(
+                $use_realtime_aut
+                ? [
+                    $employees->sum('aut'),
+                ]
+                : [
+                    $employees->sum('aut_month1'),
+                    $employees->sum('aut_month2'),
+                    $employees->sum('aut_month3'),
+                    $employees->sum('aut_total'),
+                ]
+            ),
             $employees->sum('overpayment'),
             $employees->sum('tax_3'),
             $employees->sum('tax_5'),
-            $employees->sum('tax_8'),
+           /* $employees->sum('tax_8'),*/
             $employees->sum('tax_10'),
             $employees->sum('total_deductions'),
             $employees->sum('net_amount'),
-            $employees->sum('dbp'),
+           /* $employees->sum('dbp'),
             $employees->sum('kawani'),
-            $employees->sum('lbp_payroll_account'),
+            $employees->sum('lbp_payroll_account'),*/
             $employees->sum('net_first_half'),
             $employees->sum('net_second_half'),
         ]);
@@ -211,17 +247,29 @@ class PayrollExportCosJo implements FromCollection, WithEvents
         $departmentEmployees->sum('mpl'),
         $departmentEmployees->sum('cir375_cir449'),
         $departmentEmployees->sum('uca'),
-        $departmentEmployees->sum('aut'),
+       /* $departmentEmployees->sum('aut'),*/
+       ...(
+        $use_realtime_aut
+        ? [
+            $departmentEmployees->sum('aut'),
+        ]
+        : [
+            $departmentEmployees->sum('aut_month1'),
+            $departmentEmployees->sum('aut_month2'),
+            $departmentEmployees->sum('aut_month3'),
+            $departmentEmployees->sum('aut_total'),
+        ]
+    ),
         $departmentEmployees->sum('overpayment'),
         $departmentEmployees->sum('tax_3'),
         $departmentEmployees->sum('tax_5'),
-        $departmentEmployees->sum('tax_8'),
+       /* $departmentEmployees->sum('tax_8'),*/
         $departmentEmployees->sum('tax_10'),
         $departmentEmployees->sum('total_deductions'),
         $departmentEmployees->sum('net_amount'),
-        $departmentEmployees->sum('dbp'),
+       /* $departmentEmployees->sum('dbp'),
         $departmentEmployees->sum('kawani'),
-        $departmentEmployees->sum('lbp_payroll_account'),
+        $departmentEmployees->sum('lbp_payroll_account'),*/
         $departmentEmployees->sum('net_first_half'),
         $departmentEmployees->sum('net_second_half'),
     ]);
@@ -239,17 +287,29 @@ class PayrollExportCosJo implements FromCollection, WithEvents
         $items->sum('mpl'),
         $items->sum('cir375_cir449'),
         $items->sum('uca'),
-        $items->sum('aut'),
+       /* $items->sum('aut'),*/
+       ...(
+        $use_realtime_aut
+        ? [
+            $items->sum('aut'),
+        ]
+        : [
+            $items->sum('aut_month1'),
+            $items->sum('aut_month2'),
+            $items->sum('aut_month3'),
+            $items->sum('aut_total'),
+        ]
+    ),
         $items->sum('overpayment'),
         $items->sum('tax_3'),
         $items->sum('tax_5'),
-        $items->sum('tax_8'),
+      /*  $items->sum('tax_8'),*/
         $items->sum('tax_10'),
         $items->sum('total_deductions'),
         $items->sum('net_amount'),
-        $items->sum('dbp'),
+      /*  $items->sum('dbp'),
         $items->sum('kawani'),
-        $items->sum('lbp_payroll_account'),
+        $items->sum('lbp_payroll_account'),*/
         $items->sum('net_first_half'),
         $items->sum('net_second_half'),
     ]);
@@ -574,33 +634,33 @@ class PayrollExportCosJo implements FromCollection, WithEvents
     
                 // ===== FIX COLUMN WIDTHS (PREVENT HEADER STRETCHING) =====
     $fixedWidths = [
-        'A' => 30,  // NAME
-        'B' => 35,  // POSITION
-        'C' => 15,
-        'D' => 12,
-        'E' => 18,
-        'F' => 12,
-        'G' => 12,
-        'H' => 14,
-        'I' => 14,
-        'J' => 14,
+        'A' => 20,  // NAME
+        'B' => 22,  // POSITION
+        'C' => 11,
+        'D' => 11,
+        'E' => 11,
+        'F' => 11,
+        'G' => 11,
+        'H' => 11,
+        'I' => 11,
+        'J' => 11,
         'K' => 12,
         'L' => 12,
         'M' => 12,
         'N' => 12,  // CPL
-        'O' => 14,
-        'P' => 16,
-        'Q' => 18,
-        'R' => 14,
-        'S' => 14,
-        'T' => 20,
-        'U' => 16,
-        'V' => 16,
-        'W' => 14,
-        'X' => 14,
-        'Y' => 18,
-        'Z' => 14,
-        'AA' => 14,
+        'O' => 11,
+        'P' => 11,
+        'Q' => 11,
+        'R' => 11,
+        'S' => 11,
+        'T' => 11,
+        'U' => 11,
+        'V' => 11,
+        'W' => 11,
+        'X' => 11,
+        'Y' => 11,
+        'Z' => 11,
+        'AA' => 11,
         ];
     
     foreach ($fixedWidths as $col => $width) {

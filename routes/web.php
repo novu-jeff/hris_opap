@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\Reports\Payroll\PayrollEmeReportController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollMidYearReportController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollPremiumReportController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollGratuityReportController;
+use App\Http\Controllers\Admin\Reports\Payroll\PayrollOtReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Admin\Settings\HRIS\OtherDeductionsController;
 use App\Http\Controllers\Admin\Settings\HRIS\OtherEarningsController;
 use App\Http\Controllers\Admin\Settings\HRIS\SectionController;
 use App\Http\Controllers\Admin\Settings\HRIS\LoanTypeController;
+use App\Http\Controllers\Admin\Settings\HRIS\AccomplishmentTypeController;
 use App\Http\Controllers\Admin\Settings\HRIS\LeaveController;
 use App\Http\Controllers\Admin\Settings\ShiftScheduleController;
 use App\Http\Controllers\Admin\Settings\CompanyInformationController;
@@ -184,7 +186,7 @@ Route::prefix('admin')->group(function() {
      
         Route::get('/test-ot', function () {
             app(\App\Services\ClockInOutService::class)
-                ->computeDailyOvertime('EMP-TEST-01', '2026-05-11 16:00:00');
+                ->computeDailyOvertime('EMP-TEST-01', '2026-05-12 19:00:00');
         
             return 'OT Computed';
         });    
@@ -329,6 +331,9 @@ Route::prefix('admin')->group(function() {
             Route::get('payroll-record/gratuity', [PayrollGratuityReportController::class, 'index'])->name('reports.gratuity.payroll');
             Route::get('payroll-record/gratuity/view/{payroll}', [PayrollGratuityReportController::class, 'view'])->name('reports.gratuity.payroll.view');
 
+            Route::get('payroll-record/ot', [PayrollOtReportController::class, 'index'])->name('reports.ot.payroll');
+            Route::get('payroll-record/ot/view/{payroll}', [PayrollOtReportController::class, 'view'])->name('reports.ot.payroll.view');
+
             Route::get('bir/index', [BIRController::class, 'index'])
                 ->name('reports.bir');
             Route::get('bir/form-2316/{id}', [BIRController::class, 'form2316'])
@@ -393,7 +398,10 @@ Route::prefix('admin')->group(function() {
                     ->names('employment-type');
 
                 Route::resource('loan-type', LoanTypeController::class)
-                    ->names('loan-type');    
+                    ->names('loan-type'); 
+                    
+                Route::resource('accomplishment-type', AccomplishmentTypeController::class)
+                    ->names('accomplishment-type'); 
         
                 Route::resource('position', PositionController::class)
                     ->names('position');

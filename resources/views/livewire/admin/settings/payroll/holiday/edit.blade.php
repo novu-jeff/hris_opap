@@ -33,6 +33,9 @@
                                 <option value="regular">Regular Holiday</option>
                                 <option value="special-non-working">Special Non-Working Holiday</option>
                                 <option value="special-working">Special Working Holiday</option>
+                                <option value="wfh">Work From Home</option>
+                                <option value="half-day-wfh">Half Day WFH</option>
+                                <option value="half-day">Half Day</option>
                                 <option value="company">Company Holiday</option>
                             </select>
                             <div class="error-field">

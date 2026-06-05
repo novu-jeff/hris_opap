@@ -45,12 +45,15 @@ class EmployeeTimelogs extends Model
             $normalized->push((object) [
                 'timestamp' => $row->timestamp,
                 'employee_id' => $row->employee_id,
+                'status' => $row->status ?? null,
                 'shift_id' => $shiftId ?? 1,
                 'schedule_id' => $row->schedule_id ?? 1,
                 'isWeb' => $row->isWeb ?? null,
                 'captured_image' => $row->captured_image ?? null,
                 'captured_location' => $row->captured_location ?? null,
                 'accomplishment' => $row->accomplishment ?? null,
+                'accomplishment_type' => $row->accomplishment_type ?? null,
+                'accomplishment_details' => $row->accomplishment_details ?? null,
             ]);
         }
 
@@ -74,6 +77,7 @@ class EmployeeTimelogs extends Model
             $normalized->push((object) [
                 'timestamp' => $row->timestamp,
                 'employee_id' => $row->employee_id,
+                'status' => $row->status1 ?? null,
                 'shift_id' => $shiftId ?? 1,
                 'schedule_id' => 1,
                 'isWeb' => $row->isWeb ?? null,
@@ -147,6 +151,8 @@ class EmployeeTimelogs extends Model
                 'captured_image',
                 'captured_location',
                 'accomplishment',
+                'accomplishment_type',
+                'accomplishment_details',
             ];
     }
 

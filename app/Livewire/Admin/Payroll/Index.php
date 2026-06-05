@@ -45,6 +45,7 @@ class Index extends Component
     public $ot_period;
     public $employment_type_id;
     public $has_deductions;
+    public $use_realtime_aut;
 
     public $percentage;
     public $semester;
@@ -164,6 +165,11 @@ class Index extends Component
                         ],
                         'has_deductions' => [
                             'label' => 'Apply Deductions',
+                            'type' => 'checkbox',
+                            'rules' => 'nullable|boolean',
+                        ],
+                        'use_realtime_aut' => [
+                            'label' => 'Apply Realtime Aut Deduction',
                             'type' => 'checkbox',
                             'rules' => 'nullable|boolean',
                         ],
@@ -940,6 +946,7 @@ class Index extends Component
                 'payroll_date'    => $this->payroll_date,
                 'cut_off_period'  => $this->cut_off_period,
                 'has_deductions'  => $this->has_deductions,
+                'use_realtime_aut' => $this->use_realtime_aut,
                 'employment_type' => $employmentTypeId,
             ],
             'clothing_allowance' => [

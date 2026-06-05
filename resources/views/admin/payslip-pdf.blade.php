@@ -219,6 +219,7 @@
                 'GSIS MPL Lite' => $payslip['mpl_lite'],
                 'GSIS CPL' => $payslip['cpl'],
                 'GSIS GSEL' => $payslip['gsel'],
+                'GSIS GBEL' => $payslip['gbel'],
                 'MP2' => $payslip['mp2'],
             ];
 
@@ -272,26 +273,6 @@
                     <td>Net Amount :</td>
                     <td class="amount">
                         {{ number_format($payslip['net_amount'], 2) }}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>DBP :</td>
-                    <td class="amount">
-                        {{ number_format($payslip['dbp'], 2) }}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Unlad Kawani :</td>
-                    <td class="amount">
-                        {{ number_format($payslip['kawani'], 2) }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>LBP Payroll Account :</td>
-                    <td class="amount">
-                        {{ number_format($payslip['lbp_payroll_account'], 2) }}
                     </td>
                 </tr>
                 <tr>

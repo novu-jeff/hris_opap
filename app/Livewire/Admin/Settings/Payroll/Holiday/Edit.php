@@ -104,7 +104,7 @@ class Edit extends Component
                     ->ignore($this->id)
             ],
             'date' => 'required|date',
-            'type' => 'required|string|in:regular,special-non-working,special-working,company',
+            'type' => 'required|string|in:regular,special-non-working,special-working,wfh,half-day-wfh,half-day,company',
         ];
     }
 

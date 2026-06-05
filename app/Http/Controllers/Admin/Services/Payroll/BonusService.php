@@ -232,7 +232,7 @@ class BonusService extends Controller {
             $jobs[] = new PayrollJob(
                 $chunk,          // already an array
                 $payroll->id,    // pass only ID
-                'mid_year'
+                $type 
             );
         }
 
@@ -266,6 +266,7 @@ class BonusService extends Controller {
         if($this->product == 'government') {
 
             $data = [];
+            $currentYear = now()->year;
 
             foreach ($employees as $employee) {
 
@@ -277,19 +278,49 @@ class BonusService extends Controller {
                 $employee_salary = round(floatval($employee['salary']), 2);
 
                 $cash_gift = 0;
+                $reasons = [];
 
                 if($type == 'year_end') {
-                    $cash_gift = OtherEarnings::where('code', 'cashgift')->value('amount') ?? 0;
+                    $cash_gift = OtherEarnings::where('code', 'CASHGIFT')->value('amount') ?? 0;
                 }
-                
-                $bonus = $employee_salary;
-                if($type == 'year_end') {
-                    $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
-                    $net = ($bonus + $cash_gift) - $tax;
-                }else{
+
+                if ($type === 'mid_year') {
+                    $dateHired = $date_hired ? Carbon::parse($date_hired) : null;
+                    $may15 = Carbon::create($currentYear, 5, 15);
+                    $july1Prev = Carbon::create($currentYear - 1, 7, 1);
+
+                    if (!$dateHired || $dateHired->gt($may15)) {
+                        $reasons[] = 'not in service as of May 15';
+                    }
+
+                    if (!$dateHired) {
+                        $reasons[] = 'no date hired';
+                    } elseif ($dateHired->gt($july1Prev)) {
+                        if ($dateHired->diffInMonths($may15) < 4) {
+                            $reasons[] = 'less than 4 months of service from July 1 to May 15';
+                        }
+                    }
+                }
+
+                $hasDisqualification = !empty($reasons);
+
+                if ($hasDisqualification) {
+
+                    $bonus = 0;
                     $tax = 0;
-                    $net = $bonus;
-                }
+                    $net = 0;
+                
+                } else {
+                
+                    $bonus = $employee_salary;
+                    if($type == 'year_end') {
+                        $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
+                        $net = ($bonus + $cash_gift) - $tax;
+                    }else{
+                        $tax = 0;
+                        $net = $bonus;
+                    }
+                }    
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
@@ -299,11 +330,14 @@ class BonusService extends Controller {
                     'position' => $employee_position,
                     'date_hired' => $date_hired,
                     'basic_salary' => $employee_salary,
-                    'bonus' => $employee_salary,
+                    'bonus' => $bonus,
                     'cash_gift' => $cash_gift,
                     'percentage' => $payroll->percentage,
                     'coverage_from' => $payroll->coverage_from,
                     'coverage_to' => $payroll->coverage_to,
+                    'remarks' => !empty($reasons)
+                    ? implode('; ', $reasons)
+                    : null,
                     'tax' => $tax,
                     'net_amount' => $net 
                 ];
@@ -329,7 +363,7 @@ class BonusService extends Controller {
                 $data[] = [
                     'payroll_id' => $payroll->id,
                     'employee_no' => $employee_no,
-                    'employment_type' => $employee['employment_type_id'],
+                    'employment_type_id' => $employee['employment_type_id'],
                     'name' => $employee_name,
                     'position' => $employee_position,
                     'basic_salary' => $employee_salary,

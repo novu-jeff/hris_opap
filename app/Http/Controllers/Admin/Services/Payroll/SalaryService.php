@@ -145,6 +145,7 @@ class SalaryService extends Controller {
             'cut_off_period' => $payload['cut_off_period'],
             'employment_type' => $payload['employment_type'],
             'hasDeductions' => $payload['has_deductions'] ?? false,
+            'use_realtime_aut' => $payload['use_realtime_aut'] ?? false,
             'selected_employees' => json_encode($payload['selected_employees'] ?? []),
             'status' => 'pending'
         ]);
@@ -258,9 +259,7 @@ class SalaryService extends Controller {
     public function computePayroll($payroll, $employees, $type) {
 
         $hasDeductions = $payroll->hasDeductions ?? false;
-
-     
-
+        $use_realtime_aut = $payroll->use_realtime_aut ?? false;
 
         if ($this->product == 'government') {
 
@@ -393,7 +392,7 @@ class SalaryService extends Controller {
                 
                 $cir = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'CIR')['amount'] ?? 0), 2) : 0;
                 $mplCos = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPL')['amount'] ?? 0), 2) : 0;
-                $auts = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2) : 0;
+                //$auts = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2) : 0;
                // $w_tax = $hasDeductions ? round(floatval($payroll_service->computeWithholdingTax($basic_salary) ?? 0), 2) : 0;
                
                
@@ -408,14 +407,56 @@ class SalaryService extends Controller {
                 $mpl = !empty($mplCos) ? $mplCos : $mplss;
 
                 if ($employee['employment_type_id'] != 1){
-                   // $aut = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
-                   $aut = $auts;
+                   // $aut_month3 = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
+                   //$aut = $auts;
+                  if($use_realtime_aut){
+                    $auts = $hasDeductions
+                        ? round(floatval($payroll_service->computeAutDeduction(
+                            $dtr_summary,
+                            $basic_salary,
+                            $salary_type
+                        )), 2)
+                        : 0;
+
+                        $aut_total = $auts;
+                        $aut = $auts;
+
+                        $aut_month1 = 0;
+                        $aut_month2 = 0;
+                        $aut_month3 = 0;
+                  }else{
+
+                    $aut_month1 = $hasDeductions
+                        ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2)
+                        : 0;
+
+                    /*$aut_month3 = $hasDeductions
+                        ? round(floatval($payroll_service->computeAutDeduction(
+                            $dtr_summary,
+                            $basic_salary,
+                            $salary_type
+                        )), 2)
+                        : 0;
+
+                        $aut_month3 = !empty($auts) ? $auts : $aut_month3;*/
+
+                        $aut_month2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_1')['amount'] ?? 0), 2) : 0;
+                        $aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_2')['amount'] ?? 0), 2) : 0;
+                        /*$aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_3')['amount'] ?? 0), 2) : 0;*/
+                        $aut_total = $aut_month1 + $aut_month2 + $aut_month3;
+                        $aut = $aut_total;
+                   }
+
                    $overpay = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'OVERPAY')['amount'] ?? 0), 2) : 0;
                    $mplstlms = 0;
                 }else{
                     $mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
                     $aut = 0;
                     $overpay = 0;
+                    $aut_month1 = 0;
+                    $aut_month2 = 0;
+                    $aut_month3 = 0;
+                    $aut_total = 0;
                 }
                 // Optional deductions
                // $dbp = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'DBP')['amount'] ?? 0), 2) : 0;
@@ -437,6 +478,7 @@ class SalaryService extends Controller {
                                 ? floor((min($basic_salary, $ceiling) * $rate / 2) * 100) / 100
                                 : 0;
                           $gsel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GSEL')['amount'] ?? 0), 2) : 0;
+                          $gbel = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'GBEL')['amount'] ?? 0), 2) : 0;
                           $rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
       
@@ -446,6 +488,7 @@ class SalaryService extends Controller {
                             ? floor(($salaryBase * 0.05) * 100) / 100
                             : 0;
                           $gsel = 0;
+                          $gbel = 0;
                           $taxType = $employee['tax_type'] ?? null;
       
                          //dd($taxType);
@@ -464,9 +507,9 @@ class SalaryService extends Controller {
                                     $tax_5 = round($taxBase * 0.05, 2);
                                     break;
 
-                                case 'TAX_8': // 8%
+                               /* case 'TAX_8': // 8%
                                     $tax_8 = round($taxBase * 0.08, 2);
-                                    break;
+                                    break;*/
 
                                 case 'TAX_10': // 10%
                                     $tax_10 = round($taxBase * 0.10, 2);
@@ -477,10 +520,6 @@ class SalaryService extends Controller {
                           $w_tax = 0;
                       }
                 
-               
-               
-               
-               
                 $dbp = 0;
                 $kawani = 0;
 
@@ -495,7 +534,7 @@ class SalaryService extends Controller {
                 
                 $total_deduction = $rlip + $hdmf + $philhealth + $consoloan + $emergency_loan +
                     $plreg + $mpl + $mpl_lite + $cpl + $mp2 + $mplstlms + $cir + $w_tax + $overpay +
-                    $tax_3 + $tax_5 + $tax_8 + $tax_10 + $gsel + $uca + $aut;
+                    $tax_3 + $tax_5  + $tax_10 + $gsel + $gbel + $uca + $aut;
 
                 $total_lbp =  $dbp +  $kawani;  
 
@@ -514,14 +553,14 @@ class SalaryService extends Controller {
                 if ($isFirstHalf) {
                   //  dd($lbp);
                     // FIRST HALF PAYROLL (01–15)
-                    if(!empty($total_lbp)){
+                    /*if(!empty($total_lbp)){
                        // dd($net);
                         $firstHalf  = floor(($net  / 2) * 100) / 100;
                        // dd($firstHalf);
                         $firstHalf =  $firstHalf - $total_lbp;
                         $secondHalf = round($lbp - $firstHalf, 2);
                         
-                    }else{
+                    }else{*/
                        
                         //$firstHalf  = floor(($net  / 2) * 100) / 100;
                         //$secondHalf = round($net - $firstHalf, 2);
@@ -532,7 +571,7 @@ class SalaryService extends Controller {
 
                         $firstHalf = $firstHalfCents / 100;
                         $secondHalf = $secondHalfCents / 100;
-                    }
+                    //}
                    
 
                 } else {
@@ -573,10 +612,10 @@ class SalaryService extends Controller {
                             $ctax_5 = round($t5 * 0.05, 2);
                         }
                         
-                        if($hasTax8){
+                       /* if($hasTax8){
                             $t8 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
                             $ctax_8 = round($t8 * 0.08, 2);
-                        }
+                        }*/
                         
                         if($hasTax10){
                             $t10 = $firstHalfRecord->basic_salary - $firstHalfRecord->aut;   
@@ -587,7 +626,7 @@ class SalaryService extends Controller {
 
                         $fh_total_deduction = $firstHalfRecord->rlip + $firstHalfRecord->hdmf + $firstHalfRecord->philhealth + $firstHalfRecord->consoloan + $firstHalfRecord->emergency_loan +
                         $firstHalfRecord->plreg + $firstHalfRecord->mpl + $firstHalfRecord->mpl_lite + $firstHalfRecord->cpl + $firstHalfRecord->mp2 + $firstHalfRecord->mplstlms + $firstHalfRecord->cir375_cir449 + $firstHalfRecord->w_tax +
-                        $ctax_3 + $ctax_5 + $ctax_8 + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel;
+                        $ctax_3 + $ctax_5  + $ctax_10 +  $firstHalfRecord->uca + $firstHalfRecord->aut + $firstHalfRecord->disallowance + $firstHalfRecord->overpayment + $firstHalfRecord->gsel + $firstHalfRecord->gbel;
 
                         Log::info('selected employee firstHalfRecord', ['employeeno' => $employee_no,'rlip' => $firstHalfRecord->rlip,'hdmf' => $firstHalfRecord->hdmf, 'philhealth' => $firstHalfRecord->philhealth, 'consoloan' => $firstHalfRecord->consoloan,'emergency_loan' => $firstHalfRecord->emergency_loan, 'plreg' => $firstHalfRecord->plreg, 'mpl' => $firstHalfRecord->mpl, 'mpl_lite' => $firstHalfRecord->mpl_lite, 'cpl' => $firstHalfRecord->cpl,  'mp2' => $firstHalfRecord->mp2, 'mplstlms' => $firstHalfRecord->mplstlms, 'cir375_cir449' => $firstHalfRecord->cir375_cir449, 'w_tax' => $firstHalfRecord->w_tax, 'overpayment' => $firstHalfRecord->overpayment, 'ctax_3'  => $ctax_3, 'ctax_5' => $ctax_5, 'ctax_8' => $ctax_8, 'ctax_10' => $ctax_10, 'uca' => $firstHalfRecord->uca, 'aut' => $firstHalfRecord->aut, 'disallowance' => $firstHalfRecord->disallowance, 'gsel' => $firstHalfRecord->gsel,'fh_total_deduction' =>  $fh_total_deduction]);
 
@@ -618,7 +657,8 @@ class SalaryService extends Controller {
                             $secondHalf = round($fh_net  - $firstHalfRecord->net_first_half, 2);
                         }*/
 
-                        $secondHalf =  round($fh_lbp - $firstHalfRecord->net_first_half, 2);
+                       // $secondHalf =  round($fh_lbp - $firstHalfRecord->net_first_half, 2);
+                       $secondHalf = round($fh_net - $firstHalfRecord->net_first_half, 2);
 
                         // 🔥 USE FIRST HALF VALUES (NOT recomputed)
                         $basic_salary = $firstHalfRecord->basic_salary;
@@ -640,13 +680,18 @@ class SalaryService extends Controller {
                         $w_tax = $firstHalfRecord->w_tax;
                         $uca = $firstHalfRecord->uca;
                         $aut = $firstHalfRecord->aut;
+                        $aut_month1 = $firstHalfRecord->aut_month1;
+                        $aut_month2 = $firstHalfRecord->aut_month2;
+                        $aut_month3 = $firstHalfRecord->aut_month3;
+                        $aut_total = $firstHalfRecord->aut_total;
                         $gsel = $firstHalfRecord->gsel;
+                        $gbel = $firstHalfRecord->gbel;
                         $disallowance = $firstHalfRecord->disallowance;
                         $overpayment = $firstHalfRecord->overpayment;
 
                         $tax_3 = $ctax_3;
                         $tax_5 = $ctax_5;
-                        $tax_8 = $ctax_8;
+                       /* $tax_8 = $ctax_8;*/
                         $tax_10 = $ctax_10;
 
                         $total_deduction = $fh_total_deduction;
@@ -689,12 +734,17 @@ class SalaryService extends Controller {
                     'mpl_lite' => $mpl_lite,
                     'cpl' => $cpl,
                     'gsel' => $gsel,
+                    'gbel' => $gbel,
                     'mp2' => $mp2,
                     'mplstlms' => $mplstlms,
                     'cir375_cir449' => $cir,
                     'w_tax' => $w_tax,
                     'uca' => $uca,
                     'aut' => $aut,
+                    'aut_month1' => $aut_month1 ?? 0,
+                    'aut_month2' => $aut_month2 ?? 0,
+                    'aut_month3' => $aut_month3 ?? 0,
+                    'aut_total' => $aut_total ?? 0,
                     'disallowance' => $disallowance ?? 0,
                     'overpayment' => $overpay ?? 0,
                     'total_deductions' => $total_deduction,
@@ -709,7 +759,7 @@ class SalaryService extends Controller {
                     'is_second_half_locked' => $isFirstHalf ? 1 : 0,
                     'tax_3' => $tax_3,
                     'tax_5' => $tax_5,
-                    'tax_8' => $tax_8,
+                    'tax_8' => $tax_8 ?? 0,
                     'tax_10' => $tax_10,
                 ];
             }
