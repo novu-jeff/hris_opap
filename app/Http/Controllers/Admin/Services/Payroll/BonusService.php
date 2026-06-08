@@ -286,6 +286,25 @@ class BonusService extends Controller {
 
                 if ($type === 'mid_year') {
                     $dateHired = $date_hired ? Carbon::parse($date_hired) : null;
+
+                    $serviceLength = null;
+
+                    if ($dateHired) {
+
+                        $payrollDate = Carbon::parse($payroll->payroll_date);
+
+                        $diff = $dateHired->diff($payrollDate);
+
+                        $serviceLength = trim(
+                            ($diff->y ? $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ', ' : '') .
+                            ($diff->m ? $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ', ' : '') .
+                            ($diff->d ? $diff->d . ' day' . ($diff->d > 1 ? 's' : '') : '')
+                        );
+
+                    }
+
+
+
                     $may15 = Carbon::create($currentYear, 5, 15);
                     $july1Prev = Carbon::create($currentYear - 1, 7, 1);
 
@@ -320,7 +339,17 @@ class BonusService extends Controller {
                         $tax = 0;
                         $net = $bonus;
                     }
-                }    
+                } 
+                
+                $remarks = [];
+
+                if (!empty($reasons)) {
+                    $remarks[] = implode('; ', $reasons);
+                }
+    
+                if ($serviceLength) {
+                    $remarks[] = 'Length of Service: ' . $serviceLength;
+                }
 
                 $data[] = [
                     'payroll_id' => $payroll->id,
@@ -335,9 +364,7 @@ class BonusService extends Controller {
                     'percentage' => $payroll->percentage,
                     'coverage_from' => $payroll->coverage_from,
                     'coverage_to' => $payroll->coverage_to,
-                    'remarks' => !empty($reasons)
-                    ? implode('; ', $reasons)
-                    : null,
+                    'remarks' => implode(' | ', $remarks),
                     'tax' => $tax,
                     'net_amount' => $net 
                 ];

@@ -324,27 +324,15 @@ class PayrollExportMidYear implements FromCollection, WithEvents
     
                         $item->date_hired,
     
-                        '',
+                        '', 
     
-                        '',
-    
+                        $item->remarks ?? '',   // <-- NEW REMARKS COLUMN
+                        '', '', '',
                         $item->bonus ?? 0,
-    
-                        '',
     
                         $item->percentage ?? 0,
     
-                        
-    
-                        '',
-    
                         $item->net_amount ?? 0,
-    
-                        '',
-    
-                        '', '', '',
-    
-                        '', ''
     
                     ]);
     
@@ -367,13 +355,9 @@ class PayrollExportMidYear implements FromCollection, WithEvents
     
                     '', '', '', '', '', '',
     
-                    '',
+                    '', '', '', '',
     
                     $employees->sum('bonus'),
-    
-                    '',
-    
-                    '',
     
                     
     
@@ -381,11 +365,6 @@ class PayrollExportMidYear implements FromCollection, WithEvents
     
                     $employees->sum('net_amount'),
     
-                    '',
-    
-                    '', '', '',
-    
-                    '', ''
     
                 ]);
     
@@ -408,13 +387,9 @@ class PayrollExportMidYear implements FromCollection, WithEvents
     
             '', '', '', '', '', '',
     
-            '',
+            '', '', '', '',
     
             $items->sum('bonus'),
-    
-            '',
-    
-            '',
     
            
     
@@ -423,10 +398,6 @@ class PayrollExportMidYear implements FromCollection, WithEvents
             $items->sum('net_amount'),
     
             '',
-    
-            '', '', '',
-    
-            '', ''
     
         ]);
     
@@ -439,423 +410,556 @@ class PayrollExportMidYear implements FromCollection, WithEvents
      */
 
 
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-    
-                $sheet = $event->sheet->getDelegate();
-                $highestRow = $sheet->getHighestRow();
-                $highestColumn = $sheet->getHighestColumn();
-    
-                /*
-                ==================================================
-                EXACT GOVERNMENT TEMPLATE LAYOUT
-                RA/TA PAYROLL FORM
-                ==================================================
-                */
-    
-                // GLOBAL FONT
-                $sheet->getStyle("A1:T{$highestRow}")
-                    ->getFont()
-                    ->setName('Arial')
-                    ->setSize(10);
-    
-                // MAIN TITLES
-                $sheet->mergeCells('A1:T1');
-                $sheet->mergeCells('A2:T2');
-    
-                $sheet->setCellValue('A1', 'PAYROLL');
-                $sheet->setCellValue(
-                    'A2',
-                    'MID YEAR BONUS ' . strtoupper(Carbon::parse($this->payroll->payroll_date)->format('Y'))
-                );
-    
-                $sheet->getStyle('A1:T2')->getFont()->setBold(true)->setSize(12);
-                $sheet->getStyle('A1:T2')->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                    ->setVertical(Alignment::VERTICAL_CENTER);
-    
-                // ENTITY + FUND CLUSTER
-                $sheet->mergeCells('A3:M3');
-                $sheet->mergeCells('A4:M4');
-    
-                $sheet->setCellValue('A3', 'Entity Name: Office of the Presidential Adviser on Peace, Reconciliation and Unity (OPAPRU)');
-                $sheet->setCellValue('A4', '');
-    
-                // PAYROLL NUMBER BLOCK
-                $sheet->mergeCells('U3:W3');
-                $sheet->mergeCells('U4:W4');
-    
-                $sheet->setCellValue('U3', '');
-                $sheet->setCellValue('U4', '');
-    
-                // ACKNOWLEDGEMENT TEXT
-                $sheet->mergeCells('A5:T5');
-                $sheet->setCellValue(
-                    'A5',
-                    'We acknowledge receipt of the sum shown opposite our names as full compensation for services rendered for the period stated.'
-                );
-    
-                // TABLE HEADER
-                $headerRow = 7;
-    
-                $headers = [
-                    'A7' => 'NO.',
-                    'B7' => 'NAME',
-                    'H7' => 'POSITION',
-                    'L7' => 'DATE HIRED',
-                    'O7' => 'AMOUNT',
-                    'Q7' => '%',
-                    'R7' => 'MID YEAR BONUS',
-                ];
-    
-                foreach ($headers as $cell => $value) {
-                    $sheet->setCellValue($cell, $value);
-                }
-    
-                // HEADER MERGES
-                $sheet->mergeCells('B7:G7');
-                $sheet->mergeCells('H7:K7');
-                $sheet->mergeCells('L7:M7');
-                $sheet->mergeCells('R7:T7');
-                $sheet->mergeCells('U7:V7');
-    
-                $sheet->getStyle('A7:W7')->getFont()->setBold(true);
-                $sheet->getStyle('A7:W7')->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                    ->setVertical(Alignment::VERTICAL_CENTER)
-                    ->setWrapText(true);
+     public function registerEvents(): array
+     {
+         return [
+             AfterSheet::class => function (AfterSheet $event) {
+     
+                 $sheet = $event->sheet->getDelegate();
+                 $highestRow = $sheet->getHighestRow();
+                 $highestColumn = $sheet->getHighestColumn();
+                 
+                 /*
+                 ==================================================
+                 EXACT GOVERNMENT TEMPLATE LAYOUT
+                 RA/TA PAYROLL FORM
+                 ==================================================
+                 */
+                 /*
+|--------------------------------------------------------------------------
+| MERGE EMPLOYEE ROWS
+|--------------------------------------------------------------------------
+*/
 
-                    for ($row = 1; $row <= $highestRow + 5; $row++) {
+for ($row = 8; $row <= $highestRow; $row++) {
 
-                       
-                        
-                            $value = $sheet->getCell("C{$row}")->getValue()
-                                    ?: $sheet->getCell("B{$row}")->getValue()
-                                    ?: $sheet->getCell("A{$row}")->getValue();
-        
-                        if (!$value) continue;
-        
-                        /* SECTION ROW */
-                        if (str_contains($value, 'SECTION:')) {
-        
-                            $sheet->mergeCells("A{$row}:T{$row}");
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getFont()->setBold(true)->setSize(10);
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getFill()->setFillType(Fill::FILL_SOLID)
-                                ->getStartColor()->setRGB('D9EAD3');
-                        }
-        
-                        /* DEPARTMENT ROW */
-                        if (str_contains($value, 'DEPARTMENT')) {
-                            $sheet->mergeCells("A{$row}:T{$row}");
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getFont()->setBold(true)->setSize(10);
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        
-                            $sheet->getStyle("A{$row}")
-                                ->getFill()->setFillType(Fill::FILL_SOLID)
-                                ->getStartColor()->setRGB('D9E1F2');
-                        }
-        
-                        if (str_contains($value, 'TOTAL')) {
+ $firstColumnValue = $sheet->getCell("A{$row}")->getValue();
 
-                            /*
-                            =========================================
-                            TOTAL ROW HIGHLIGHT
-                            Same as first screenshot
-                            =========================================
-                            */
-                        
-                            // Bold + font size
-                            $sheet->getStyle("A{$row}:T{$row}")
-                                ->getFont()
-                                ->setBold(true)
-                                ->setSize(11);
-                        
-                            // Yellow highlight fill
-                            $sheet->getStyle("A{$row}:T{$row}")
-                                ->getFill()
-                                ->setFillType(Fill::FILL_SOLID)
-                                ->getStartColor()
-                                ->setRGB('FFF2CC'); // light yellow
-                        
-                            // Thick top + bottom border
-                            $sheet->getStyle("A{$row}:T{$row}")
-                                ->getBorders()
-                                ->getTop()
-                                ->setBorderStyle(Border::BORDER_THICK);
-                        
-                            $sheet->getStyle("A{$row}:T{$row}")
-                                ->getBorders()
-                                ->getBottom()
-                                ->setBorderStyle(Border::BORDER_THICK);
-                        
-                            // Right align amount columns
-                            foreach (['N', 'R'] as $col) {
-                                $sheet->getStyle("{$col}{$row}")
-                                    ->getAlignment()
-                                    ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                            }
-                        }
-                        
-                    }    
-    
-                // BORDERS
-                $sheet->getStyle("A7:T{$highestRow}")
-                    ->getBorders()
-                    ->getAllBorders()
-                    ->setBorderStyle(Border::BORDER_THIN);
+ if (
+     is_numeric($firstColumnValue)
+ ) {
+
+     $sheet->mergeCells("B{$row}:F{$row}");
+     $sheet->mergeCells("G{$row}:K{$row}");
+     $sheet->mergeCells("N{$row}:Q{$row}");
+     $sheet->mergeCells("T{$row}:U{$row}");
+
+     $sheet->getRowDimension($row)
+         ->setRowHeight(22);
+
+     $sheet->getStyle("B{$row}:U{$row}")
+         ->getAlignment()
+         ->setVertical(Alignment::VERTICAL_CENTER);
+ }
+}
+     
+                 // GLOBAL FONT
+                 $sheet->getStyle("A1:U{$highestRow}")
+                     ->getFont()
+                     ->setName('Arial')
+                     ->setSize(10);
+     
+                 // MAIN TITLES
+                 $sheet->mergeCells('A1:U1');
+                 $sheet->mergeCells('A2:U2');
+     
+                 $sheet->setCellValue('A1', 'PAYROLL');
                 
-                    $sheet->getStyle("A8:T{$highestRow}")
-                    ->getAlignment()
-                    ->setVertical(Alignment::VERTICAL_CENTER);  
-                    
-                    foreach (['N', 'Q', 'U'] as $col) {
-                        $sheet->getStyle("{$col}8:{$col}{$highestRow}")
-                            ->getAlignment()
-                            ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                    }
-    
-                // FOOTER BOXES
-                /*
-REPLACE ONLY YOUR FOOTER BOXES SECTION
-(Current problem is the signature/footer layout)
 
-FROM:
- // FOOTER BOXES
+                 $sheet->setCellValue(
+                     'A2',
+                     'MID YEAR BONUS PAYROLL - ' .
+                     $this->payroll->payroll_date
+                     
+                 );
+                 
+     
+                 $sheet->getStyle('A1:U2')->getFont()->setBold(true)->setSize(12);
+                 $sheet->getStyle('A1:U2')->getAlignment()
+                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                     ->setVertical(Alignment::VERTICAL_CENTER);
+     
+                 // ENTITY + FUND CLUSTER
+                 $sheet->mergeCells('A3:M3');
+                 $sheet->mergeCells('A4:M4');
+     
+                 $sheet->setCellValue('A3', 'Entity Name: Office of the Presidential Adviser on Peace, Reconciliation and Unity (OPAPRU)');
+                 $sheet->setCellValue('A4', '');
+     
+                 // PAYROLL NUMBER BLOCK
+                 $sheet->mergeCells('U3:W3');
+                 $sheet->mergeCells('U4:W4');
+     
+                 $sheet->setCellValue('U3', '');
+                 $sheet->setCellValue('U4', '');
+     
+                 // ACKNOWLEDGEMENT TEXT
+                 $sheet->mergeCells('A5:U5');
+                 $sheet->setCellValue(
+                     'A5',
+                     'We acknowledge receipt of the sum shown opposite our names as full compensation for services rendered for the period stated.'
+                 );
+     
+                 // TABLE HEADER
+                 $headerRow = 7;
+     
+                 $headers = [
+
+                     'A7' => 'NO.',
+                     'B7' => 'NAME',
+                     'G7' => 'POSITION',
+                     'L7' => 'DATE HIRED',
+                     'N7' => 'REMARKS',
+                     'R7' => 'AMOUNT',
+                     'S7' => '%',
+                     'T7' => 'MID YEAR BONUS',
+                 
+                 ];
+                 
+                 
+     
+                 foreach ($headers as $cell => $value) {
+                     $sheet->setCellValue($cell, $value);
+                 }
+     
+                 // HEADER MERGES
+                 $sheet->mergeCells('B7:F7');
+                 $sheet->mergeCells('G7:K7');
+                 $sheet->mergeCells('L7:L7');
+                 $sheet->mergeCells('N7:Q7');
+                 $sheet->mergeCells('R7:R7');
+                 $sheet->mergeCells('S7:S7');
+                 $sheet->mergeCells('T7:U7');
+     
+                 $sheet->getRowDimension(7)->setRowHeight(30);
+
+                     $sheet->getStyle('A7:U7')->applyFromArray([
+                         'font' => [
+                             'bold' => true,
+                             'size' => 10,
+                             'name' => 'Arial',
+                         ],
+                         'alignment' => [
+                             'horizontal' => Alignment::HORIZONTAL_CENTER,
+                             'vertical' => Alignment::VERTICAL_CENTER,
+                             'wrapText' => true,
+                         ],
+                         'fill' => [
+                             'fillType' => Fill::FILL_SOLID,
+                             'startColor' => [
+                                 'rgb' => 'D9EAD3',
+                             ],
+                         ],
+                     ]);
+
+                     for ($row = 1; $row <= $highestRow + 5; $row++) {
+
+                         $sheet->getStyle("A{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                         // Basic Salary
+                             $sheet->getStyle("L{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                             // Period Covered
+                             $sheet->getStyle("M{$row}:N{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                             // Duration
+                             $sheet->getStyle("O{$row}:Q{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                             // Gross OT Pay
+                             $sheet->getStyle("R{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                             // Tax
+                             $sheet->getStyle("S{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                             // Net Amount
+                             $sheet->getStyle("T{$row}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+                             $sheet->getStyle("B{$row}:F{$row}")
+                             ->getFont()
+                             ->setBold(true);    
+                         
+                             $value = $sheet->getCell("C{$row}")->getValue()
+                                     ?: $sheet->getCell("B{$row}")->getValue()
+                                     ?: $sheet->getCell("A{$row}")->getValue();
+         
+                         if (!$value) continue;
+                     
+                         /* SECTION ROW */
+                         if (str_contains($value, 'SECTION:')) {
+         
+                             $sheet->mergeCells("A{$row}:U{$row}");
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getFont()->setBold(true)->setSize(10);
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getFill()->setFillType(Fill::FILL_SOLID)
+                                 ->getStartColor()->setRGB('D9EAD3');
+                         }
+         
+                         /* DEPARTMENT ROW */
+                         if (str_contains($value, 'DEPARTMENT')) {
+                             $sheet->mergeCells("A{$row}:U{$row}");
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getFont()->setBold(true)->setSize(10);
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+         
+                             $sheet->getStyle("A{$row}")
+                                 ->getFill()->setFillType(Fill::FILL_SOLID)
+                                 ->getStartColor()->setRGB('D9E1F2');
+                         }
+         
+                         if (str_contains($value, 'TOTAL')) {
+
+                             /*
+                             =========================================
+                             TOTAL ROW HIGHLIGHT
+                             Same as first screenshot
+                             =========================================
+                             */
+                            $sheet->mergeCells("T{$row}:U{$row}");
+                            $sheet->mergeCells("C{$row}:Q{$row}");
+                         
+                             // Bold + font size
+                             $sheet->getStyle("A{$row}:U{$row}")
+                                 ->getFont()
+                                 ->setBold(true)
+                                 ->setSize(11);
+                         
+                             // Yellow highlight fill
+                             $sheet->getStyle("A{$row}:U{$row}")
+                                 ->getFill()
+                                 ->setFillType(Fill::FILL_SOLID)
+                                 ->getStartColor()
+                                 ->setRGB('FFE699'); // light yellow
+                         
+                             // Thick top + bottom border
+                             $sheet->getStyle("A{$row}:U{$row}")
+                                 ->getBorders()
+                                 ->getTop()
+                                 ->setBorderStyle(Border::BORDER_THICK);
+                         
+                             $sheet->getStyle("A{$row}:U{$row}")
+                                 ->getBorders()
+                                 ->getBottom()
+                                 ->setBorderStyle(Border::BORDER_THICK);
+                         
+                             // Right align amount columns
+                             foreach (['L','R','S','U'] as $col) {
+                                 $sheet->getStyle("{$col}{$row}")
+                                     ->getAlignment()
+                                     ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                             }
+                         }
+                         
+                     }  
+                 
+                 
+     
+                 // BORDERS
+                 $sheet->getStyle("A7:U{$highestRow}")
+                     ->getBorders()
+                     ->getAllBorders()
+                     ->setBorderStyle(Border::BORDER_THIN);
+                 
+                     $sheet->getStyle("A8:U{$highestRow}")
+                     ->getAlignment()
+                     ->setVertical(Alignment::VERTICAL_CENTER);  
+                     
+                     foreach (['N', 'Q', 'U', 'W'] as $col) {
+                         $sheet->getStyle("{$col}8:{$col}{$highestRow}")
+                             ->getAlignment()
+                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                     }
+     
+                 // FOOTER BOXES
+                 
  $footer = $highestRow + 4;
 
-TO:
- use this exact version below
-*/
+ /*
+ ==================================================
+ TOP SIGNATURE BLOCK
+ A | CERTIFIED | C APPROVED FOR PAYMENT
+ MATCH FIRST SCREENSHOT EXACTLY
+ ==================================================
+ */
 
-$footer = $highestRow + 2;
+ // A
+ $sheet->mergeCells("A{$footer}:H{$footer}");
+ $sheet->setCellValue("A{$footer}", 'A  PREPARED BY:');
 
-/*
-==================================================
-TOP SIGNATURE BLOCK
-A | CERTIFIED | C APPROVED FOR PAYMENT
-MATCH FIRST SCREENSHOT EXACTLY
-==================================================
-*/
+ // middle certified
+ $sheet->mergeCells("I{$footer}:M{$footer}");
+ $sheet->setCellValue(
+     "I{$footer}",
+     'CERTIFIED: Services duly rendered as stated.'
+ );
 
-// A
-$sheet->mergeCells("A{$footer}:H{$footer}");
-$sheet->setCellValue("A{$footer}", 'A  PREPARED BY:');
+ // C
+ $sheet->mergeCells("N{$footer}:T{$footer}");
+ $sheet->setCellValue(
+     "N{$footer}",
+     'C  APPROVED FOR PAYMENT:'
+ );
 
-// middle certified
-$sheet->mergeCells("I{$footer}:P{$footer}");
-$sheet->setCellValue(
-    "I{$footer}",
-    'CERTIFIED: Services duly rendered as stated.'
-);
+ /*
+ ==================================================
+ NAMES
+ ==================================================
+ */
 
-// C
-$sheet->mergeCells("Q{$footer}:V{$footer}");
-$sheet->setCellValue(
-    "Q{$footer}",
-    'C  APPROVED FOR PAYMENT:'
-);
+ $nameRow = $footer + 2;
+ $signameRow = $footer + 1;
 
-/*
-==================================================
-NAMES
-==================================================
-*/
+ $sheet->mergeCells("A{$signameRow}:H{$signameRow}");
+ $sheet->setCellValue(
+     "A{$signameRow}",
+     '________________________________'
+ );
 
-$nameRow = $footer + 2;
-$signameRow = $footer + 1;
+ $sheet->mergeCells("I{$signameRow}:M{$signameRow}");
+ $sheet->setCellValue(
+     "I{$signameRow}",
+     '________________________________'
+ );
 
-$sheet->mergeCells("A{$signameRow}:H{$signameRow}");
-$sheet->mergeCells("A{$nameRow}:H{$nameRow}");
-$sheet->setCellValue(
-    "A{$nameRow}",
-    strtoupper($this->preparedByName ?: 'BEA MILAN A. CLERIGO')
-);
+ $sheet->mergeCells("N{$signameRow}:T{$signameRow}");
+ $sheet->setCellValue(
+     "N{$signameRow}",
+     '________________________________'
+ );
 
-$sheet->mergeCells("I{$signameRow}:P{$signameRow}");
-$sheet->mergeCells("I{$nameRow}:P{$nameRow}");
-$sheet->setCellValue(
-    "I{$nameRow}",
-    strtoupper($this->certifiedByName ?: 'DIR. FRANCISCO F. MENDOZA, JR.')
-);
+ $sheet->mergeCells("A{$signameRow}:H{$signameRow}");
+ $sheet->mergeCells("A{$nameRow}:H{$nameRow}");
+ $sheet->setCellValue(
+     "A{$nameRow}",
+     strtoupper($this->preparedByName ?: 'BEA MILAN A. CLERIGO')
+ );
 
-$sheet->mergeCells("Q{$signameRow}:V{$signameRow}");
-$sheet->mergeCells("Q{$nameRow}:V{$nameRow}");
-$sheet->setCellValue(
-    "Q{$nameRow}",
-    'PA ARNUFO R. PAJARILLO, JR.'
-);
+ $sheet->mergeCells("I{$signameRow}:M{$signameRow}");
+ $sheet->mergeCells("I{$nameRow}:M{$nameRow}");
+ $sheet->setCellValue(
+     "I{$nameRow}",
+     strtoupper($this->certifiedByName ?: 'DIR. FRANCISCO F. MENDOZA, JR.')
+ );
 
-/*
-==================================================
-POSITIONS + DATE
-==================================================
-*/
+ $sheet->mergeCells("N{$signameRow}:T{$signameRow}");
+ $sheet->mergeCells("N{$nameRow}:T{$nameRow}");
+ $sheet->setCellValue(
+     "N{$nameRow}",
+     'PA ARNUFO R. PAJARILLO, JR.'
+ );
 
-$positionRow = $nameRow + 1;
+ /*
+ ==================================================
+ POSITIONS + DATE
+ ==================================================
+ */
 
-$sheet->mergeCells("A{$positionRow}:F{$positionRow}");
-$sheet->setCellValue(
-    "A{$positionRow}",
-    strtoupper($this->preparedByPosition ?: 'SAO-HRMS')
-);
+ $positionRow = $nameRow + 1;
 
-$sheet->mergeCells("G{$positionRow}:H{$positionRow}");
-$sheet->setCellValue("G{$positionRow}", 'DATE');
+ $sheet->mergeCells("A{$positionRow}:H{$positionRow}");
 
-$sheet->mergeCells("I{$positionRow}:P{$positionRow}");
-$sheet->setCellValue(
-    "I{$positionRow}",
-    strtoupper($this->certifiedByPosition ?: 'DIRECTOR IV - HRMS')
-);
+ 
+ $sheet->setCellValue(
+     "A{$positionRow}",
+     strtoupper($this->preparedByPosition ?: 'SAO-HRMS')
+ );
 
-$sheet->mergeCells("Q{$positionRow}:V{$positionRow}");
-$sheet->setCellValue(
-    "Q{$positionRow}",
-    'Presidential Assistant for Internal Management Cluster'
-);
 
-/*
-==================================================
-LOWER BOXES
-B | D | E
-==================================================
-*/
+ $sheet->setCellValue("G{$positionRow}", 'DATE');
 
-$lower = $positionRow + 2;
+ $sheet->mergeCells("I{$positionRow}:M{$positionRow}");
+ $sheet->setCellValue(
+     "I{$positionRow}",
+     strtoupper($this->certifiedByPosition ?: 'DIRECTOR IV - HRMS')
+ );
 
-/* B */
-$sheet->mergeCells("A{$lower}:P{$lower}");
-$sheet->setCellValue(
-    "A{$lower}",
-    'B  CERTIFIED: Supporting documents complete and proper; and cash available in the amount of'
-);
+ $sheet->mergeCells("N{$positionRow}:T{$positionRow}");
+ $sheet->setCellValue(
+     "N{$positionRow}",
+     'Presidential Assistant for Internal Management Cluster'
+ );
 
-/* D */
-$sheet->mergeCells("Q{$lower}:U{$lower}");
-$sheet->setCellValue(
-    "Q{$lower}",
-    'D  CERTIFIED: Each employee whose name appears on the payroll has'
-);
+ /*
+ ==================================================
+ LOWER BOXES
+ B | D | E
+ ==================================================
+ */
 
-/* E */
-$sheet->mergeCells("V{$lower}:V{$lower}");
-$sheet->setCellValue(
-    "V{$lower}",
-    'E'
-);
+ $lower = $positionRow + 2;
 
-/*
-==================================================
-BOTTOM NAMES
-==================================================
-*/
+ /* B */
+ $sheet->mergeCells("A{$lower}:M{$lower}");
+ $sheet->setCellValue(
+     "A{$lower}",
+     'B  CERTIFIED: Supporting documents complete and proper; and cash available in the amount of'
+ );
 
-$bottomNameRow = $lower + 3;
-$sigbottomNameRow = $lower + 2;
+ /* D */
+ $sheet->mergeCells("N{$lower}:T{$lower}");
+ $sheet->setCellValue(
+     "N{$lower}",
+     'D  CERTIFIED: Each employee whose name appears on the payroll has'
+ );
 
-$sheet->mergeCells("A{$sigbottomNameRow}:P{$sigbottomNameRow}");
-$sheet->mergeCells("A{$bottomNameRow}:P{$bottomNameRow}");
-$sheet->setCellValue(
-    "A{$bottomNameRow}",
-    'JENNIE CLAIRE L. MORDENO'
-);
+ /* E */
+ $sheet->mergeCells("V{$lower}:V{$lower}");
+ $sheet->setCellValue(
+     "V{$lower}",
+     'E'
+ );
 
-$sheet->mergeCells("Q{$sigbottomNameRow}:U{$sigbottomNameRow}");
-$sheet->mergeCells("Q{$bottomNameRow}:U{$bottomNameRow}");
-$sheet->setCellValue(
-    "Q{$bottomNameRow}",
-    'ALEX C. ORENDAIN'
-);
+ /*
+ ==================================================
+ BOTTOM NAMES
+ ==================================================
+ */
 
-/*
-==================================================
-BOTTOM POSITIONS
-==================================================
-*/
+ $bottomNameRow = $lower + 3;
+ $sigbottomNameRow = $lower + 2;
 
-$bottomPositionRow = $bottomNameRow + 1;
+ $sheet->mergeCells("A{$sigbottomNameRow}:G{$sigbottomNameRow}");
+ $sheet->mergeCells("A{$bottomNameRow}:G{$bottomNameRow}");
+ $sheet->setCellValue(
+     "A{$bottomNameRow}",
+     'JENNIE CLAIRE L. MORDENO'
+ );
 
-$sheet->mergeCells("A{$bottomPositionRow}:M{$bottomPositionRow}");
-$sheet->setCellValue(
-    "A{$bottomPositionRow}",
-    'Officer-in-Charge, Director IV-FMS'
-);
+ $sheet->mergeCells("N{$sigbottomNameRow}:T{$sigbottomNameRow}");
+ $sheet->mergeCells("N{$bottomNameRow}:T{$bottomNameRow}");
+ $sheet->setCellValue(
+     "N{$bottomNameRow}",
+     'ALEX C. ORENDAIN'
+ );
 
-$sheet->mergeCells("N{$bottomPositionRow}:P{$bottomPositionRow}");
-$sheet->setCellValue(
-    "N{$bottomPositionRow}",
-    'Date'
-);
+ /*
+ ==================================================
+ BOTTOM POSITIONS
+ ==================================================
+ */
 
-$sheet->mergeCells("Q{$bottomPositionRow}:U{$bottomPositionRow}");
-$sheet->setCellValue(
-    "Q{$bottomPositionRow}",
-    'Administrative Officer V'
-);
+ $bottomPositionRow = $bottomNameRow + 1;
 
-/*
-==================================================
-RIGHT SMALL BOX (E)
-==================================================
-*/
+ $sheet->mergeCells("A{$bottomPositionRow}:E{$bottomPositionRow}");
+ $sheet->setCellValue(
+     "A{$bottomPositionRow}",
+     'Officer-in-Charge, Director IV-FMS'
+ );
 
-$sheet->setCellValue("V" . ($lower + 1), 'ORS/BURS No.:');
-$sheet->setCellValue("V" . ($lower + 2), 'Date:');
-$sheet->setCellValue("V" . ($lower + 3), 'JEV No.:');
-$sheet->setCellValue("V" . ($lower + 4), 'Date:');
+ $sheet->mergeCells("F{$bottomPositionRow}:G{$bottomPositionRow}");
+ $sheet->setCellValue(
+     "F{$bottomPositionRow}",
+     'Date'
+ );
 
-/*
-==================================================
-BORDERS
-==================================================
-*/
+ $sheet->mergeCells("N{$bottomPositionRow}:T{$bottomPositionRow}");
+ $sheet->setCellValue(
+     "N{$bottomPositionRow}",
+     'Administrative Officer V'
+ );
 
-$sheet->getStyle("A{$footer}:V" . ($lower + 5))
-    ->getBorders()
-    ->getAllBorders()
-    ->setBorderStyle(Border::BORDER_THIN);
+ /*
+ ==================================================
+ RIGHT SMALL BOX (E)
+ ==================================================
+ */
 
-$sheet->getStyle("A{$footer}:V" . ($lower + 5))
-    ->getAlignment()
-    ->setVertical(Alignment::VERTICAL_CENTER);
-                
+ $sheet->setCellValue("V" . ($lower + 1), 'ORS/BURS No.:');
+ $sheet->setCellValue("V" . ($lower + 2), 'Date:');
+ $sheet->setCellValue("V" . ($lower + 3), 'JEV No.:');
+ $sheet->setCellValue("V" . ($lower + 4), 'Date:');
 
-                $moneyColumns = [
-                    'N','O','P','R','S','T','U','V','W','X','Y','Z','AA','AB','AC'
-                ];
-    
-                foreach ($moneyColumns as $col) {
-                    $sheet->getStyle("{$col}" . ($headerRow + 1) . ":{$col}{$highestRow}")
-                        ->getNumberFormat()
-                        ->setFormatCode('#,##0.00');
-                }
-                       
-    
-                // PAGE SETUP
-                $sheet->getPageSetup()
-                    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
-                    ->setPaperSize(PageSetup::PAPERSIZE_LEGAL)
-                    ->setFitToWidth(1)
-                    ->setFitToHeight(0);
-    
-                $sheet->freezePane('A8');
-            }
-        ];
-    }
-    
-    
-    }
-    
+
+ $sheet->getStyle("A{$nameRow}:T{$nameRow}")
+ ->getFont()
+ ->setBold(true)
+ ->setSize(11);
+
+$sheet->getStyle("A{$bottomNameRow}:T{$bottomNameRow}")
+ ->getFont()
+ ->setBold(true)
+ ->setSize(11);
+
+ $sheet->getStyle("A{$footer}:T" . ($bottomPositionRow))
+ ->getAlignment()
+ ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+ ->setVertical(Alignment::VERTICAL_CENTER);
+
+
+ $sheet->getStyle("A{$footer}:T{$footer}")
+ ->applyFromArray([
+     'font' => [
+         'bold' => true,
+         'size' => 10,
+     ],
+     'fill' => [
+         'fillType' => Fill::FILL_SOLID,
+         'startColor' => [
+             'rgb' => 'D9D9D9'
+         ]
+     ]
+ ]);
+ /*
+ ==================================================
+ BORDERS
+ ==================================================
+ */
+
+ $sheet->getStyle("A{$footer}:V" . ($lower + 5))
+     ->getBorders()
+     ->getAllBorders()
+     ->setBorderStyle(Border::BORDER_THIN);
+
+ $sheet->getStyle("A{$footer}:V" . ($lower + 5))
+     ->getAlignment()
+     ->setVertical(Alignment::VERTICAL_CENTER);
+                 
+
+                 $moneyColumns = [
+                     'L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC'
+                 ];
+     
+                 foreach ($moneyColumns as $col) {
+                     $sheet->getStyle("{$col}" . ($headerRow + 1) . ":{$col}{$highestRow}")
+                         ->getNumberFormat()
+                         ->setFormatCode('#,##0.00');
+                 }
+                     
+     
+                 // PAGE SETUP
+                 $sheet->getPageSetup()
+                     ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                     ->setPaperSize(PageSetup::PAPERSIZE_LEGAL)
+                     ->setFitToWidth(1)
+                     ->setFitToHeight(0);
+     
+                 $sheet->freezePane('A8');
+             }
+         ];
+     }
+ 
+ 
+ }
+ 
