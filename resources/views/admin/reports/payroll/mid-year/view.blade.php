@@ -162,6 +162,16 @@ tfoot tr.table-total-row {
     color: #1e90ff !important;
 }
 
+.remarks-column {
+    min-width: 350px;
+    max-width: 450px;
+    white-space: normal !important;
+    word-break: break-word;
+    line-height: 1.3;
+    font-size: 11px;
+}
+
 
 </style>
+
 

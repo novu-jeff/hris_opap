@@ -2,6 +2,7 @@
     $types = explode(',', $records['payroll']['condition_employment_type']);
 @endphp
 
+
 <div>
 
     <div class="action mb-4"></div>
@@ -163,6 +164,7 @@
                     <th>EMPLOYEE NAME</th>
                     <th>POSITION</th>
                     <th class="text-end">DATE HIRED</th>
+                    <th width="150">REMARKS</th>
                     <th class="text-end">AMOUNT</th>
                     <th class="text-end">PERCENTAGE</th>
                     <th class="text-end">MID YEAR BONUS</th>
@@ -206,6 +208,15 @@
                             <td class="text-end">
                                 {{ $item['date_hired'] }}
                             </td>
+                            <td style="max-width:350px;">
+
+                                <small class="text-muted remarks-column">
+                        
+                                    {{ $item['remarks'] ?? '-' }}
+                        
+                                </small>
+                        
+                            </td>
 
                             <!-- BONUS -->
                             <td class="text-end">
@@ -231,7 +242,7 @@
 
                         <tr class="fw-bold bg-light">
 
-                            <td colspan="3" class="text-end">
+                            <td colspan="4" class="text-end">
                                 SECTION TOTAL
                             </td>
 
@@ -272,7 +283,7 @@
 
                 <tr class="fw-bold bg-dark text-white">
 
-                    <td colspan="3" class="text-end">
+                    <td colspan="4" class="text-end">
                         GRAND TOTAL
                     </td>
 

@@ -232,6 +232,8 @@
                             <th>Name</th>
                             <th>Position</th>
                             <th>Date Hired</th>
+                            <th>PAYROLL DATE</th>
+                            <th>REMARKS</th>
                             <th>Amount</th>
                             <th>Percentage</th>
                             <th>{{ $records['payroll']['type'] }}</th>
@@ -293,7 +295,25 @@
                                     </td>
 
                                     <td>{{ $record['position'] }}</td>
-                                    <td>{{ $record['date_hired'] }}</td>
+                                    <td style="min-width:180px;">
+                                        <input
+                                        type="date"
+                                        class="form-control"
+                                        wire:model="dateHired.{{ $sectionIndex }}.{{ $employeeIndex }}"
+                                        wire:change="recomputeDateHired({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                        {{ $isApproved ? 'readonly' : '' }}
+                                    >
+                                    </td>
+                                    <td>{{ $records['payroll']['formatted_payroll_date'] }}</td>
+                                    <td style="min-width:450px;">
+                                        <textarea
+                                            rows="2"
+                                            class="form-control remarks-box"
+                                            wire:model.lazy="records.payroll_items.{{ $sectionIndex }}.employees.{{ $employeeIndex }}.remarks"
+                                            wire:change="remarksUpdated({{ $sectionIndex }}, {{ $employeeIndex }})"
+                                            {{ $isApproved ? 'readonly' : '' }}
+                                        ></textarea>
+                                    </td>
                                     <td>{{ $record['bonus'] }}</td>
                                     <td>{{ $record['percentage'] ?? 0 }}</td>
 
@@ -371,4 +391,42 @@
 
     </div>
 
+    @if($confirmingDelete)
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background: rgba(0,0,0,0.5); z-index: 10000;">
+
+        <div class="bg-white p-4 rounded shadow text-center" style="width: 400px;">
+            <h5 class="fw-bold mb-3">Delete Employee?</h5>
+            <p>This will permanently remove this employee from payroll.</p>
+
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                <button
+                    class="btn btn-secondary"
+                    wire:click="$set('confirmingDelete', false)"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="btn btn-danger"
+                    wire:click="deleteEmployee"
+                >
+                    Confirm Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+    <div 
+    wire:loading.delay
+        wire:target="deleteEmployee,save,approve,confirmAddEmployee,confirmSave,selectEmployee,searchEmployeeAction,recompute"
+        wire:loading.class.remove="d-none"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background: rgba(0,0,0,0.5); z-index: 9999;"
+    >
+    <div class="bg-white p-4 rounded shadow text-center">
+        <i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i>
+        <div class="fw-bold">Processing payroll...</div>
+    </div>
+</div>
 </div>

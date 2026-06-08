@@ -145,6 +145,7 @@ class View extends Component
                         'position' => $item->position,
                         'date_hired' => $item->date_hired,
                         'percentage' => $item->percentage,
+                        'remarks' => $item->remarks,
     
                         'basic_salary' => $item->basic_salary ?? 0,
                         'bonus' => $item->bonus ?? 0,
@@ -317,7 +318,6 @@ class View extends Component
     $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');  
     $chiefadministrativeOfficer = $this->getEmployeeByPosition('Chief Administrative Officer'); 
     
-   
 
     return Excel::download(
         new PayrollExportMidYear(

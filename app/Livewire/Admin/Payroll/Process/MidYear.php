@@ -23,6 +23,8 @@ class MidYear extends Component
     public $percentage = [];
     public $cash_gift = [];
     public $net_amount = [];
+    public $dateHired = [];
+    public $remarks = [];
     public array $originalItems = [];
     public array $updatedItems = [];
     public bool $isApproved = false;
@@ -67,6 +69,7 @@ class MidYear extends Component
                 $this->cash_gift[$sectionIndex][$employeeIndex]   = $record['cash_gift'] ?? 0;
                 $this->percentage[$sectionIndex][$employeeIndex]   = $record['percentage'] ?? 0;
                 $this->net_amount[$sectionIndex][$employeeIndex]   = $record['net_amount'] ?? 0;
+                $this->dateHired[$sectionIndex][$employeeIndex]   = $record['date_hired'] ?? null;
             }
         }
 
@@ -245,6 +248,7 @@ public function searchEmployeeAction($value)
 public function selectEmployee($id)
 {
     $payroll = BonusPayroll::find($this->payroll_id);
+    $currentYear = now()->year;
 
     $emp = DB::table('employee_information as ei')
         ->leftJoin('employee_personal as ep', 'ei.employee_no', '=', 'ep.employee_no')
@@ -317,14 +321,80 @@ public function selectEmployee($id)
         $cash_gift = OtherEarnings::where('code', 'cashgift')->value('amount') ?? 0;
     }
     
-    $bonus = $employee_salary;
-    if($payroll->bonus_type == 'year_end') {
-        $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
-        $net = ($bonus + $cash_gift) - $tax;
-    }else{
-        $tax = 0;
-        $net = $bonus;
+    if ($payroll->bonus_type === 'mid_year') {
+        $dateHired = $emp->date_hired ? \Carbon\Carbon::parse($emp->date_hired) : null;
+
+        $serviceLength = null;
+
+        if ($dateHired) {
+
+            $payrollDate = \Carbon\Carbon::parse($payroll->payroll_date);
+
+            $diff = $dateHired->diff($payrollDate);
+
+            $serviceLength = trim(
+                ($diff->y ? $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ', ' : '') .
+                ($diff->m ? $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ', ' : '') .
+                ($diff->d ? $diff->d . ' day' . ($diff->d > 1 ? 's' : '') : '')
+            );
+
+        }
+
+
+
+        $may15 = \Carbon\Carbon::create($currentYear, 5, 15);
+        $july1Prev = \Carbon\Carbon::create($currentYear - 1, 7, 1);
+
+        if (!$dateHired || $dateHired->gt($may15)) {
+            $reasons[] = 'not in service as of May 15';
+        }
+
+        if (!$dateHired) {
+            $reasons[] = 'no date hired';
+        } elseif ($dateHired->gt($july1Prev)) {
+            if ($dateHired->diffInMonths($may15) < 4) {
+                $reasons[] = 'less than 4 months of service from July 1 to May 15';
+            }
+        }
     }
+
+    $hasDisqualification = !empty($reasons);
+
+    if ($hasDisqualification) {
+
+        $bonus = 0;
+        $tax = 0;
+        $net = 0;
+    
+    } else {
+    
+        $bonus = $employee_salary;
+        if($payroll->bonus_type == 'year_end') {
+            $tax = $this->payrollService->computeBonusTax($bonus, $cash_gift);
+            $net = ($bonus + $cash_gift) - $tax;
+        }else{
+            $tax = 0;
+            $net = $bonus;
+        }
+    } 
+    
+    $remarks = [];
+
+    if (!empty($reasons)) {
+        $remarks[] = implode('; ', $reasons);
+    }
+
+    if ($serviceLength) {
+        $remarks[] = 'Length of Service: ' . $serviceLength;
+    }
+
+    Log::info('SELECT EMPLOYEE RESULT', [
+        'employee_no' => $emp->employee_no,
+        'remarks' => implode(' | ', $remarks),
+        'date_hired' => $emp->date_hired,
+        'bonus' => $bonus,
+        'net' => $net,
+    ]);
 
     $this->selectedEmployee = [
         'payroll_id' => $payroll->id,
@@ -345,7 +415,8 @@ public function selectEmployee($id)
         'coverage_from' => $payroll->coverage_from,
         'coverage_to' => $payroll->coverage_to,
         'tax' => $tax,
-        'net_amount' => $net 
+        'net_amount' => $net,
+        'remarks' => implode(' | ', $remarks), 
     ];
 
     // optional: clear results after select
@@ -381,7 +452,7 @@ public function selectEmployee($id)
     $payroll = BonusPayroll::find($this->payroll_id);
     $type = $payroll->bonus_type; // mid_year or year_end
 
-    if ($type === 'mid_year') {
+    /*if ($type === 'mid_year') {
        // dd('enter');
         $dateHired = !empty($this->selectedEmployee['date_hired'])
             ? \Carbon\Carbon::parse($this->selectedEmployee['date_hired'])
@@ -421,7 +492,7 @@ public function selectEmployee($id)
 
             return;
         }
-    }
+    }*/
         $this->hasChanges = true;
         DB::transaction(function () {
 
@@ -443,14 +514,38 @@ public function selectEmployee($id)
                 'coverage_to' => $this->selectedEmployee['coverage_to'],
                 'tax' => $this->selectedEmployee['tax'],
                 'net_amount' => $this->selectedEmployee['net_amount'],
+                'remarks' => $this->selectedEmployee['remarks'] ?? null,
             ]);
+
+            Log::info('CREATED BONUS ITEM', $new->toArray());
 
         // $this->loadRecords();
 
             $newItem = $new->toArray();
 
+            $newItem['remarks']
+                = $this->selectedEmployee['remarks'] ?? '';
+
+            $newItem['date_hired']
+                = $this->selectedEmployee['date_hired'] ?? null;
+
+            $newItem['bonus']
+                = $this->selectedEmployee['bonus'] ?? 0;
+
+            $newItem['net_amount']
+                = $this->selectedEmployee['net_amount'] ?? 0;
+
+            $newItem['percentage']
+                = $this->selectedEmployee['percentage'] ?? 100;
+
         
-            \Log::info('Add employee to Mid-year', ['records' => $newItem]);
+                Log::info('NEW ITEM BEFORE PUSH', [
+                    'employee_no' => $newItem['employee_no'],
+                    'date_hired'  => $newItem['date_hired'] ?? null,
+                    'remarks'     => $newItem['remarks'] ?? null,
+                    'bonus'       => $newItem['bonus'] ?? null,
+                    'net_amount'  => $newItem['net_amount'] ?? null,
+                ]);
 
             $sectionIndex = $this->findOrCreateSection([
                 'section_name' => $sectionName
@@ -460,14 +555,20 @@ public function selectEmployee($id)
 
         $employeeIndex = count($this->records['payroll_items'][$sectionIndex]['employees']) - 1;
 
-            // init fields
-            foreach ([
-                'percentage',
-                'bonus','net_amount'
-            ] as $field) {
-                
-                $this->{$field}[$sectionIndex][$employeeIndex] = $newItem[$field] ?? 0;
-            }
+        $this->dateHired[$sectionIndex][$employeeIndex]
+        = $newItem['date_hired'] ?? null;
+    
+        $this->remarks[$sectionIndex][$employeeIndex]
+            = $newItem['remarks'] ?? '';
+        
+        $this->percentage[$sectionIndex][$employeeIndex]
+            = $newItem['percentage'] ?? 100;
+        
+        $this->bonus[$sectionIndex][$employeeIndex]
+            = $newItem['bonus'] ?? 0;
+        
+        $this->net_amount[$sectionIndex][$employeeIndex]
+            = $newItem['net_amount'] ?? 0;
 
             $payrollItem = &$this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
             $original    = $this->originalItems[$sectionIndex]['employees'][$employeeIndex] ?? [];
@@ -562,9 +663,21 @@ public function selectEmployee($id)
                         'percentage' => $employeeData['percentage'] ?? 0,
                         'tax' => $employeeData['tax'] ?? 0,
                         'net_amount' => $employeeData['net_amount'] ?? 0,
+                        'remarks' => $employeeData['remarks'] ?? null,
+                        'date_hired' => $employeeData['date_hired'] ?? null,
                     ];
 
                     $payrollItem->update($updateData);
+
+                    DB::table('employee_information')
+                    ->where(
+                        'employee_no',
+                        $employeeData['employee_no']
+                    )
+                    ->update([
+                        'date_hired' =>
+                            $employeeData['date_hired']
+                    ]);
                 }
             }
 
@@ -629,6 +742,186 @@ public function selectEmployee($id)
             ]);
         }
 
+    }
+
+    public function recomputeDateHired(
+        $sectionIndex,
+        $employeeIndex
+    ) {
+    
+        $item =& $this->records['payroll_items']
+            [$sectionIndex]['employees']
+            [$employeeIndex];
+    
+        $dateHired =
+            $this->dateHired[$sectionIndex][$employeeIndex]
+            ?? null;
+    
+        $item['date_hired'] = $dateHired;
+    
+        $reasons = [];
+    
+        if (!$dateHired) {
+    
+            $reasons[] = 'No date hired';
+    
+        } else {
+    
+            $dateHired = \Carbon\Carbon::parse($dateHired);
+    
+            $currentYear = now()->year;
+    
+            $may15 =
+                \Carbon\Carbon::create(
+                    $currentYear,
+                    5,
+                    15
+                );
+    
+            $july1Prev =
+                \Carbon\Carbon::create(
+                    $currentYear - 1,
+                    7,
+                    1
+                );
+    
+            if ($dateHired->gt($may15)) {
+    
+                $reasons[] =
+                    'Not in service as of May 15';
+    
+            }
+    
+            if (
+                $dateHired->gt($july1Prev)
+                &&
+                $dateHired->diffInMonths($may15) < 4
+            ) {
+    
+                $reasons[] =
+                    'Less than 4 months of service from July 1 to May 15';
+    
+            }
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Eligible
+        |--------------------------------------------------------------------------
+        */
+
+        $serviceRemarks = '';
+
+        if ($dateHired) {
+            $payrollDate = \Carbon\Carbon::parse(
+                $this->records['payroll']['payroll_date']
+            );
+
+            $diff = $dateHired->diff($payrollDate);
+
+            $serviceRemarks =
+                'Length of Service: '
+                . $diff->y . ' year(s), '
+                . $diff->m . ' month(s), '
+                . $diff->d . ' day(s)';
+        }
+
+    
+        if (empty($reasons)) {
+    
+            $item['remarks'] = $serviceRemarks;
+
+            $item['bonus'] = $item['basic_salary'];
+        
+            $item['tax'] = 0;
+        
+            $item['net_amount'] = $item['bonus'];
+    
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Not Eligible
+        |--------------------------------------------------------------------------
+        */
+    
+        else {
+    
+            $remarks = implode('; ', $reasons);
+
+            if ($serviceRemarks) {
+                $remarks .= ' | ' . $serviceRemarks;
+            }
+
+            $item['remarks'] = $remarks;
+
+            $item['bonus'] = 0;
+
+            $item['tax'] = 0;
+
+            $item['net_amount'] = 0;
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Refresh inputs
+        |--------------------------------------------------------------------------
+        */
+    
+        $this->bonus[$sectionIndex][$employeeIndex]
+            = $item['bonus'];
+    
+        $this->net_amount[$sectionIndex][$employeeIndex]
+            = $item['net_amount'];
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recompute totals
+        |--------------------------------------------------------------------------
+        */
+    
+        $totalBonus = 0;
+        $totalTax = 0;
+        $totalNet = 0;
+    
+        foreach ($this->records['payroll_items'] as $section) {
+    
+            foreach ($section['employees'] as $employee) {
+    
+                $totalBonus +=
+                    floatval($employee['bonus'] ?? 0);
+    
+                $totalTax +=
+                    floatval($employee['tax'] ?? 0);
+    
+                $totalNet +=
+                    floatval($employee['net_amount'] ?? 0);
+            }
+        }
+    
+        $this->records['payroll']['total_bonus']
+            = $totalBonus;
+    
+        $this->records['payroll']['total_tax']
+            = $totalTax;
+    
+        $this->records['payroll']['total_net_amount']
+            = $totalNet;
+    
+        $this->hasChanges = true;
+    }
+
+    public function remarksUpdated($sectionIndex, $employeeIndex)
+    {
+        $item = $this->records['payroll_items'][$sectionIndex]['employees'][$employeeIndex];
+
+        $itemId = $item['id'];
+
+        if (!in_array($itemId, $this->updatedItems)) {
+            $this->updatedItems[] = $itemId;
+        }
+
+        $this->hasChanges = true;
     }
 
     public function render()
