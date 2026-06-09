@@ -591,6 +591,60 @@ class SalaryService extends Controller {
 
                     if ($firstHalfRecord) {
 
+                        if ($firstHalfRecord->employment_type_id != 1){
+                            // $aut_month3 = $hasDeductions ? round(floatval($payroll_service->computeAutDeduction($dtr_summary, $basic_salary, $salary_type))) : 0;
+                            //$aut = $auts;
+                           if($use_realtime_aut){
+                             $auts = $hasDeductions
+                                 ? round(floatval($payroll_service->computeAutDeduction(
+                                     $dtr_summary,
+                                     $basic_salary,
+                                     $salary_type
+                                 )), 2)
+                                 : 0;
+         
+                                 $aut_total = $auts;
+                                 $aut = $auts;
+         
+                                 $aut_month1 = 0;
+                                 $aut_month2 = 0;
+                                 $aut_month3 = 0;
+                           }else{
+         
+                             $aut_month1 = $hasDeductions
+                                 ? round(floatval(collect($deductions)->firstWhere('code', 'AUTS')['amount'] ?? 0), 2)
+                                 : 0;
+         
+                             /*$aut_month3 = $hasDeductions
+                                 ? round(floatval($payroll_service->computeAutDeduction(
+                                     $dtr_summary,
+                                     $basic_salary,
+                                     $salary_type
+                                 )), 2)
+                                 : 0;
+         
+                                 $aut_month3 = !empty($auts) ? $auts : $aut_month3;*/
+         
+                                 $aut_month2 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_1')['amount'] ?? 0), 2) : 0;
+                                 $aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_2')['amount'] ?? 0), 2) : 0;
+                                 /*$aut_month3 = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'AUT_3')['amount'] ?? 0), 2) : 0;*/
+                                 $aut_total = $aut_month1 + $aut_month2 + $aut_month3;
+                                 $aut = $aut_total;
+                            }
+         
+                           // $overpay = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'OVERPAY')['amount'] ?? 0), 2) : 0;
+                            //$mplstlms = 0;
+                         }else{
+                             //$mplstlms = $hasDeductions ? round(floatval(collect($deductions)->firstWhere('code', 'MPLSTLMS')['amount'] ?? 0), 2) : 0;
+                             $aut = 0;
+                            // $overpay = 0;
+                             $aut_month1 = 0;
+                             $aut_month2 = 0;
+                             $aut_month3 = 0;
+                             $aut_total = 0;
+                         }
+         
+
                         $hasTax3 = isset($firstHalfRecord->tax_3) && $firstHalfRecord->tax_3 > 0;
                         $hasTax5 = isset($firstHalfRecord->tax_5) && $firstHalfRecord->tax_5 > 0;
                         $hasTax8 = isset($firstHalfRecord->tax_8) && $firstHalfRecord->tax_8 > 0;
@@ -679,11 +733,11 @@ class SalaryService extends Controller {
                         $cir = $firstHalfRecord->cir375_cir449;
                         $w_tax = $firstHalfRecord->w_tax;
                         $uca = $firstHalfRecord->uca;
-                        $aut = $firstHalfRecord->aut;
-                        $aut_month1 = $firstHalfRecord->aut_month1;
-                        $aut_month2 = $firstHalfRecord->aut_month2;
-                        $aut_month3 = $firstHalfRecord->aut_month3;
-                        $aut_total = $firstHalfRecord->aut_total;
+                        $aut = $aut;
+                        $aut_month1 = $aut_month1;
+                        $aut_month2 = $aut_month2;
+                        $aut_month3 = $aut_month3;
+                        $aut_total = $aut_total;
                         $gsel = $firstHalfRecord->gsel;
                         $gbel = $firstHalfRecord->gbel;
                         $disallowance = $firstHalfRecord->disallowance;

@@ -555,53 +555,74 @@ class Index extends Component
         }
 
         $lastDay = $startDate->daysInMonth;
+        $startDay = $startDate->day;
+        $endDay   = $endDate->day;
 
-        // FIRST HALF (1–15)
-        if ($startDate->day === 1 && $endDate->day === 15) {
-            if ($payrollDate->day !== 15) {
+        // --------------------
+        // FIRST HALF (1-15)
+        // --------------------
+        if ($startDay <= 15 && $endDay <= 15) {
+
+            if (
+                $payrollDate->day < 1 ||
+                $payrollDate->day > 15
+            ) {
                 return [
                     'valid' => false,
                     'title' => 'Invalid Payroll Date',
-                    'message' => 'Payroll date for first half must be the 15th.'
+                    'message' => 'Payroll date must be within the first half (1-15).'
                 ];
             }
         }
-        // SECOND HALF (16–END)
-        elseif ($startDate->day === 16 && $endDate->day === $lastDay) {
-            if ($payrollDate->day !== $lastDay) {
+
+        // --------------------
+        // SECOND HALF (16-END)
+        // --------------------
+        elseif ($startDay >= 16 && $endDay >= 16) {
+
+            if (
+                $payrollDate->day < 16 ||
+                $payrollDate->day > $lastDay
+            ) {
                 return [
                     'valid' => false,
                     'title' => 'Invalid Payroll Date',
-                    'message' => "Payroll date for second half must be the {$lastDay}."
+                    'message' => "Payroll date must be within the second half (16-{$lastDay})."
                 ];
             }
 
-            // -------------------------------
-            // Ensure first half is approved
-            // -------------------------------
+            // First half approval check
             if ($employmentTypeId) {
-                $firstHalfCutoff = $startDate->copy()->startOfMonth()->format('Y-m-d') . ' to ' . $startDate->copy()->day(15)->format('Y-m-d');
+
+                $firstHalfCutoff =
+                    $startDate->copy()->startOfMonth()->format('Y-m-d')
+                    . ' to ' .
+                    $startDate->copy()->day(15)->format('Y-m-d');
 
                 $firstHalfApproved = SalaryPayroll::where('employment_type', $employmentTypeId)
                     ->where('cut_off_period', $firstHalfCutoff)
                     ->where('status', 'approved')
                     ->exists();
 
-                if (!$firstHalfApproved) {
+                if (! $firstHalfApproved) {
                     return [
                         'valid' => false,
                         'title' => 'First Half Not Approved',
-                        'message' => 'You cannot generate the second half payroll until the first half is approved.'
+                        'message' => 'You cannot generate the second half payroll until the first half is approved.',
                     ];
                 }
             }
         }
-        // Everything else invalid
+
+        // --------------------
+        // INVALID (crosses halves)
+        // --------------------
         else {
+
             return [
                 'valid' => false,
-                'title' => 'Oops',
-                'message' => 'Invalid cut-off period. Only 1–15 or 16–end of month is allowed.'
+                'title' => 'Invalid Cut-off Period',
+                'message' => 'Cut-off period cannot cross from the first half (1-15) to the second half (16-end of month).',
             ];
         }
 

@@ -874,7 +874,7 @@ class DailyTimeRecordService {
     private function getScheduledInOut($schedule, $date = null, $firstLog = null)
     {
         if ($schedule->work_setup === 'hybrid') {
-            $in = Carbon::parse("{$date} {$schedule->latest_in}");
+           /* $in = Carbon::parse("{$date} {$schedule->latest_in}");
 
             if ($firstLog) {
                 $firstLogTime = Carbon::parse($firstLog);
@@ -888,7 +888,19 @@ class DailyTimeRecordService {
             $breakOut = Carbon::parse("{$date} {$schedule->break_out}");
             $breakIn = Carbon::parse("{$date} {$schedule->break_in}");
 
-            return [$in, $out, $breakOut, $breakIn];
+            return [$in, $out, $breakOut, $breakIn];*/
+
+            //dd($schedule->work_hours, $schedule->latest_in, $schedule->break_out, $schedule->break_in);
+
+            $scheduledIn = Carbon::parse("{$date} {$schedule->latest_in}");
+            $scheduledOut = Carbon::parse("{$date} {$schedule->latest_in}")
+                ->addHours($schedule->work_hours + 1);
+               // dd($scheduledOut);
+
+            $breakOut = Carbon::parse("{$date} {$schedule->break_out}");
+            $breakIn = Carbon::parse("{$date} {$schedule->break_in}");
+
+            return [$scheduledIn, $scheduledOut, $breakOut, $breakIn];
         }
 
         if ($schedule->start_shift && $schedule->end_shift) {
