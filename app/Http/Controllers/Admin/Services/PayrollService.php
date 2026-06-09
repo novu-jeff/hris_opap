@@ -338,7 +338,7 @@ class PayrollService extends Controller {
         ]);
         $totalAbsences = $summary['absences'];          # Days
         $workPerWeek = $summary['workingDaysPerWeek'];  # 5 or 6 days
-        $tardiness_mins = $summary['tardiness'];        # Minutes
+        $tardiness_mins = $summary['tardiness_freq'];        # Minutes
         $undertime_mins = $summary['undertime'];        # Minutes
         $workingDaysInCutoff = $summary['total_days_of_work'];
 
@@ -346,7 +346,7 @@ class PayrollService extends Controller {
 
         if ($payType === 'monthly') {
             # DOLE standard: 22 or 26 working days per month
-            $daysPerMonth = $workPerWeek > 5 ? 26 : 22;
+          /*  $daysPerMonth = $workPerWeek > 5 ? 26 : 22;
 
             $daily_rate = $salary / $daysPerMonth;
             $hourly_rate = $daily_rate / 8; # 8 hours per day
@@ -363,7 +363,36 @@ class PayrollService extends Controller {
             $tardinessDeduction = $minute_rate * $tardiness_mins;
             $undertimeDeduction = $minute_rate * $undertime_mins;
 
+            $TOTAL_AUT = $absenceDeduction + $tardinessDeduction + $undertimeDeduction;*/
+
+            $daysPerMonth = $workPerWeek > 5 ? 26 : 22;
+
+            $daily_rate = $salary / $daysPerMonth;
+            $hourly_rate = $daily_rate / 8; # 8 hours per day
+            $minute_rate = $hourly_rate / 60;
+
+            $absenceDeduction = $daily_rate * $totalAbsences;
+            $tardinessDeduction = $minute_rate * $tardiness_mins;
+            $undertimeDeduction = $minute_rate * $undertime_mins;
+
+              
+
             $TOTAL_AUT = $absenceDeduction + $tardinessDeduction + $undertimeDeduction;
+
+            Log::info('computeAutDeduction result', [
+                'absenceDeduction' => $absenceDeduction,
+                'tardinessDeduction' => $tardinessDeduction,
+                'undertimeDeduction' => $undertimeDeduction,
+                'TOTAL_AUT' => $TOTAL_AUT,
+                'daily_rate' => $daily_rate,
+                'hourly_rate' => $hourly_rate,
+                'minute_rate' => $minute_rate,
+                'totalAbsences' => $totalAbsences,
+                'workPerWeek' => $workPerWeek,
+                'tardiness_mins' => $tardiness_mins,
+                'undertime_mins' => $undertime_mins,
+                'workingDaysInCutoff' => $workingDaysInCutoff
+            ]);
         }
 
         if ($payType === 'daily') {

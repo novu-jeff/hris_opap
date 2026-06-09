@@ -796,20 +796,9 @@ class PayrollExportPremium implements FromCollection, WithEvents
                             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                     }
     
-                // FOOTER BOXES
-                /*
-REPLACE ONLY YOUR FOOTER BOXES SECTION
-(Current problem is the signature/footer layout)
-
-FROM:
- // FOOTER BOXES
- $footer = $highestRow + 4;
-
-TO:
- use this exact version below
-*/
-
-$footer = $highestRow + 2;
+                 // FOOTER BOXES
+            
+$footer = $highestRow + 4;
 
 /*
 ==================================================
@@ -824,17 +813,17 @@ $sheet->mergeCells("A{$footer}:H{$footer}");
 $sheet->setCellValue("A{$footer}", 'A  PREPARED BY:');
 
 // middle certified
-$sheet->mergeCells("I{$footer}:P{$footer}");
+$sheet->mergeCells("I{$footer}:M{$footer}");
 $sheet->setCellValue(
-    "I{$footer}",
-    'CERTIFIED: Services duly rendered as stated.'
+"I{$footer}",
+'CERTIFIED: Services duly rendered as stated.'
 );
 
 // C
-$sheet->mergeCells("Q{$footer}:V{$footer}");
+$sheet->mergeCells("N{$footer}:T{$footer}");
 $sheet->setCellValue(
-    "Q{$footer}",
-    'C  APPROVED FOR PAYMENT:'
+"N{$footer}",
+'C  APPROVED FOR PAYMENT:'
 );
 
 /*
@@ -847,24 +836,42 @@ $nameRow = $footer + 2;
 $signameRow = $footer + 1;
 
 $sheet->mergeCells("A{$signameRow}:H{$signameRow}");
+$sheet->setCellValue(
+"A{$signameRow}",
+'________________________________'
+);
+
+$sheet->mergeCells("I{$signameRow}:M{$signameRow}");
+$sheet->setCellValue(
+"I{$signameRow}",
+'________________________________'
+);
+
+$sheet->mergeCells("N{$signameRow}:T{$signameRow}");
+$sheet->setCellValue(
+"N{$signameRow}",
+'________________________________'
+);
+
+$sheet->mergeCells("A{$signameRow}:H{$signameRow}");
 $sheet->mergeCells("A{$nameRow}:H{$nameRow}");
 $sheet->setCellValue(
-    "A{$nameRow}",
-    strtoupper($this->preparedByName ?: 'BEA MILAN A. CLERIGO')
+"A{$nameRow}",
+strtoupper($this->preparedByName ?: 'BEA MILAN A. CLERIGO')
 );
 
-$sheet->mergeCells("I{$signameRow}:P{$signameRow}");
-$sheet->mergeCells("I{$nameRow}:P{$nameRow}");
+$sheet->mergeCells("I{$signameRow}:M{$signameRow}");
+$sheet->mergeCells("I{$nameRow}:M{$nameRow}");
 $sheet->setCellValue(
-    "I{$nameRow}",
-    strtoupper($this->certifiedByName ?: 'DIR. FRANCISCO F. MENDOZA, JR.')
+"I{$nameRow}",
+strtoupper($this->certifiedByName ?: 'DIR. FRANCISCO F. MENDOZA, JR.')
 );
 
-$sheet->mergeCells("Q{$signameRow}:V{$signameRow}");
-$sheet->mergeCells("Q{$nameRow}:V{$nameRow}");
+$sheet->mergeCells("N{$signameRow}:T{$signameRow}");
+$sheet->mergeCells("N{$nameRow}:T{$nameRow}");
 $sheet->setCellValue(
-    "Q{$nameRow}",
-    'PA ARNUFO R. PAJARILLO, JR.'
+"N{$nameRow}",
+'PA ARNUFO R. PAJARILLO, JR.'
 );
 
 /*
@@ -875,25 +882,27 @@ POSITIONS + DATE
 
 $positionRow = $nameRow + 1;
 
-$sheet->mergeCells("A{$positionRow}:F{$positionRow}");
+$sheet->mergeCells("A{$positionRow}:H{$positionRow}");
+
+
 $sheet->setCellValue(
-    "A{$positionRow}",
-    strtoupper($this->preparedByPosition ?: 'SAO-HRMS')
+"A{$positionRow}",
+strtoupper($this->preparedByPosition ?: 'SAO-HRMS')
 );
 
-$sheet->mergeCells("G{$positionRow}:H{$positionRow}");
+
 $sheet->setCellValue("G{$positionRow}", 'DATE');
 
-$sheet->mergeCells("I{$positionRow}:P{$positionRow}");
+$sheet->mergeCells("I{$positionRow}:M{$positionRow}");
 $sheet->setCellValue(
-    "I{$positionRow}",
-    strtoupper($this->certifiedByPosition ?: 'DIRECTOR IV - HRMS')
+"I{$positionRow}",
+strtoupper($this->certifiedByPosition ?: 'DIRECTOR IV - HRMS')
 );
 
-$sheet->mergeCells("Q{$positionRow}:V{$positionRow}");
+$sheet->mergeCells("N{$positionRow}:T{$positionRow}");
 $sheet->setCellValue(
-    "Q{$positionRow}",
-    'Presidential Assistant for Internal Management Cluster'
+"N{$positionRow}",
+'Presidential Assistant for Internal Management Cluster'
 );
 
 /*
@@ -906,24 +915,24 @@ B | D | E
 $lower = $positionRow + 2;
 
 /* B */
-$sheet->mergeCells("A{$lower}:P{$lower}");
+$sheet->mergeCells("A{$lower}:M{$lower}");
 $sheet->setCellValue(
-    "A{$lower}",
-    'B  CERTIFIED: Supporting documents complete and proper; and cash available in the amount of'
+"A{$lower}",
+'B  CERTIFIED: Supporting documents complete and proper; and cash available in the amount of'
 );
 
 /* D */
-$sheet->mergeCells("Q{$lower}:U{$lower}");
+$sheet->mergeCells("N{$lower}:T{$lower}");
 $sheet->setCellValue(
-    "Q{$lower}",
-    'D  CERTIFIED: Each employee whose name appears on the payroll has'
+"N{$lower}",
+'D  CERTIFIED: Each employee whose name appears on the payroll has'
 );
 
 /* E */
 $sheet->mergeCells("V{$lower}:V{$lower}");
 $sheet->setCellValue(
-    "V{$lower}",
-    'E'
+"V{$lower}",
+'E'
 );
 
 /*
@@ -935,18 +944,18 @@ BOTTOM NAMES
 $bottomNameRow = $lower + 3;
 $sigbottomNameRow = $lower + 2;
 
-$sheet->mergeCells("A{$sigbottomNameRow}:P{$sigbottomNameRow}");
-$sheet->mergeCells("A{$bottomNameRow}:P{$bottomNameRow}");
+$sheet->mergeCells("A{$sigbottomNameRow}:G{$sigbottomNameRow}");
+$sheet->mergeCells("A{$bottomNameRow}:G{$bottomNameRow}");
 $sheet->setCellValue(
-    "A{$bottomNameRow}",
-    'JENNIE CLAIRE L. MORDENO'
+"A{$bottomNameRow}",
+'JENNIE CLAIRE L. MORDENO'
 );
 
-$sheet->mergeCells("Q{$sigbottomNameRow}:U{$sigbottomNameRow}");
-$sheet->mergeCells("Q{$bottomNameRow}:U{$bottomNameRow}");
+$sheet->mergeCells("N{$sigbottomNameRow}:T{$sigbottomNameRow}");
+$sheet->mergeCells("N{$bottomNameRow}:T{$bottomNameRow}");
 $sheet->setCellValue(
-    "Q{$bottomNameRow}",
-    'ALEX C. ORENDAIN'
+"N{$bottomNameRow}",
+'ALEX C. ORENDAIN'
 );
 
 /*
@@ -957,22 +966,22 @@ BOTTOM POSITIONS
 
 $bottomPositionRow = $bottomNameRow + 1;
 
-$sheet->mergeCells("A{$bottomPositionRow}:M{$bottomPositionRow}");
+$sheet->mergeCells("A{$bottomPositionRow}:E{$bottomPositionRow}");
 $sheet->setCellValue(
-    "A{$bottomPositionRow}",
-    'Officer-in-Charge, Director IV-FMS'
+"A{$bottomPositionRow}",
+'Officer-in-Charge, Director IV-FMS'
 );
 
-$sheet->mergeCells("N{$bottomPositionRow}:P{$bottomPositionRow}");
+$sheet->mergeCells("F{$bottomPositionRow}:G{$bottomPositionRow}");
 $sheet->setCellValue(
-    "N{$bottomPositionRow}",
-    'Date'
+"F{$bottomPositionRow}",
+'Date'
 );
 
-$sheet->mergeCells("Q{$bottomPositionRow}:U{$bottomPositionRow}");
+$sheet->mergeCells("N{$bottomPositionRow}:T{$bottomPositionRow}");
 $sheet->setCellValue(
-    "Q{$bottomPositionRow}",
-    'Administrative Officer V'
+"N{$bottomPositionRow}",
+'Administrative Officer V'
 );
 
 /*
@@ -986,45 +995,74 @@ $sheet->setCellValue("V" . ($lower + 2), 'Date:');
 $sheet->setCellValue("V" . ($lower + 3), 'JEV No.:');
 $sheet->setCellValue("V" . ($lower + 4), 'Date:');
 
+
+$sheet->getStyle("A{$nameRow}:T{$nameRow}")
+->getFont()
+->setBold(true)
+->setSize(11);
+
+$sheet->getStyle("A{$bottomNameRow}:T{$bottomNameRow}")
+->getFont()
+->setBold(true)
+->setSize(11);
+
+$sheet->getStyle("A{$footer}:T" . ($bottomPositionRow))
+->getAlignment()
+->setHorizontal(Alignment::HORIZONTAL_CENTER)
+->setVertical(Alignment::VERTICAL_CENTER);
+
+
+$sheet->getStyle("A{$footer}:T{$footer}")
+->applyFromArray([
+'font' => [
+    'bold' => true,
+    'size' => 10,
+],
+'fill' => [
+    'fillType' => Fill::FILL_SOLID,
+    'startColor' => [
+        'rgb' => 'D9D9D9'
+    ]
+]
+]);
 /*
 ==================================================
 BORDERS
 ==================================================
 */
 
-$sheet->getStyle("A{$footer}:V" . ($lower + 5))
-    ->getBorders()
-    ->getAllBorders()
-    ->setBorderStyle(Border::BORDER_THIN);
+$sheet->getStyle("A{$footer}:T" . ($lower + 5))
+->getBorders()
+->getAllBorders()
+->setBorderStyle(Border::BORDER_THIN);
 
-$sheet->getStyle("A{$footer}:V" . ($lower + 5))
-    ->getAlignment()
-    ->setVertical(Alignment::VERTICAL_CENTER);
+$sheet->getStyle("A{$footer}:T" . ($lower + 5))
+->getAlignment()
+->setVertical(Alignment::VERTICAL_CENTER);
+            
+
+            $moneyColumns = [
+                'L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC'
+            ];
+
+            foreach ($moneyColumns as $col) {
+                $sheet->getStyle("{$col}" . ($headerRow + 1) . ":{$col}{$highestRow}")
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0.00');
+            }
                 
 
-                $moneyColumns = [
-                    'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC'
-                ];
-    
-                foreach ($moneyColumns as $col) {
-                    $sheet->getStyle("{$col}" . ($headerRow + 1) . ":{$col}{$highestRow}")
-                        ->getNumberFormat()
-                        ->setFormatCode('#,##0.00');
-                }
-                       
-    
-                // PAGE SETUP
-                $sheet->getPageSetup()
-                    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
-                    ->setPaperSize(PageSetup::PAPERSIZE_LEGAL)
-                    ->setFitToWidth(1)
-                    ->setFitToHeight(0);
-    
-                $sheet->freezePane('A8');
-            }
-        ];
-    }
-    
-    
-    }
-    
+            // PAGE SETUP
+            $sheet->getPageSetup()
+                ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                ->setPaperSize(PageSetup::PAPERSIZE_LEGAL)
+                ->setFitToWidth(1)
+                ->setFitToHeight(0);
+
+            $sheet->freezePane('A8');
+        }
+    ];
+}
+
+
+}
