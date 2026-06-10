@@ -47,14 +47,21 @@
                         </span>
                     </button>-->
                 @else
-                    <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="request">
+                    <!--<button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="request">
                         <span wire:loading.remove wire:target="request">
                             Request For Payslip <i class="fa-solid fa-file-arrow-down ms-2"></i>
                         </span>
                         <span wire:loading wire:target="request">
                             Sending Request <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
                         </span>
-                    </button>
+                    </button>-->
+                    <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="downloadDirect">
+                        <span wire:loading.remove wire:target="downloadDirect">
+                            Download Payslip <i class="fa-solid fa-download ms-2"></i>
+                        </span>
+                        <span wire:loading wire:target="downloadDirect">
+                            Downloading <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                        </span>
                 @endif
             </div>
             <div>

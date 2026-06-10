@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Payroll\Process;
 
-
+use App\Jobs\GeneratePayslipsJob;
 use App\Http\Controllers\Admin\Services\Payroll\SalaryService;
 use App\Http\Controllers\Admin\Services\OtherServices;
 use App\Http\Controllers\Admin\Services\PayrollService;
@@ -63,6 +63,10 @@ class Salary extends Component
     public $aut_month2 = [];
     public $aut_month3 = [];
     public $aut_total = [];
+
+    public $payslip_status;
+    public $payslip_generated;
+    public $payslip_total;
 
     public $total_deductions = [];
     public $net_amount = [];
@@ -166,6 +170,12 @@ class Salary extends Component
 
         $this->isApproved = $records['payroll']['status'] === 'approved';
         $this->records = $records;
+
+        $payroll = SalaryPayroll::find($this->payroll_id);
+
+        $this->payslip_status = $payroll->payslip_status;
+        $this->payslip_generated = $payroll->payslip_generated;
+        $this->payslip_total = $payroll->payslip_total;
 
         $this->isFirstCutoff  = $this->isFirstHalf();
         $this->isSecondCutoff = ! $this->isFirstCutoff;
@@ -793,7 +803,7 @@ public function selectEmployee($id)
                           //$rlip = $hasDeductions ? round(floatval($basic_salary * 0.09), 2) : 0;
                           $rlip = $hasDeductions ? floor(floatval($basic_salary * 0.09) * 100) / 100 : 0;
                           $w_tax = $hasDeductions ? round(floatval($gw_tax ?? 0), 2) : 0;
-      
+                        
                       }else{
                         $salaryBase = max($basic_salary, 10000);
                         Log::info('Salary Philhealth items', ['salaryBase' => $salaryBase, 'basicSalary' => $basic_salary]);
@@ -1129,7 +1139,7 @@ public function selectEmployee($id)
                 'aut_month3' => $aut_month3,
                 'aut_total' => $aut_total,
                 'disallowance' => 0,
-                'overpayment' => 0,
+                'overpayment' => $overpay,
                 'total_deductions' => round($total_deduction, 2),
                 'net_amount' => $net,
                 'dbp' => $dbp,
@@ -1426,6 +1436,15 @@ private function findOrCreateSection($data)
         ]);
     }
 
+    public function refreshPayslipProgress()
+    {
+        $payroll = SalaryPayroll::find($this->payroll_id);
+
+        $this->payslip_status = $payroll->payslip_status;
+        $this->payslip_generated = $payroll->payslip_generated;
+        $this->payslip_total = $payroll->payslip_total;
+    }
+
     /* ======================================================
      * APPROVE
      * ====================================================== */
@@ -1441,16 +1460,44 @@ private function findOrCreateSection($data)
         }
 
         DB::transaction(function () {
-            SalaryPayroll::where('id', $this->payroll_id)
-                ->update(['status' => 'approved']);
 
-            SalaryItemsPayroll::where('payroll_id', $this->payroll_id)
-                ->update(
-                    $this->isFirstHalf()
-                        ? ['is_first_half_locked' => 1]
-                        : ['is_second_half_locked' => 1]
-                );
+            $update = [
+                'status' => 'approved',
+            ];
+        
+            if (! $this->isFirstHalf()) {
+        
+                $update['payslip_status'] = 'processing';
+                $update['payslip_generated'] = 0;
+                $update['payslip_total'] = SalaryItemsPayroll::where(
+                    'payroll_id',
+                    $this->payroll_id
+                )->count();
+            }
+        
+            SalaryPayroll::where('id', $this->payroll_id)
+                ->update($update);
+        
+            SalaryItemsPayroll::where(
+                'payroll_id',
+                $this->payroll_id
+            )->update(
+                $this->isFirstHalf()
+                    ? [
+                        'is_first_half_locked' => 1,
+                    ]
+                    : [
+                        'is_second_half_locked' => 1,
+                    ]
+            );
+        
         });
+
+        if (! $this->isFirstHalf()) {
+
+            GeneratePayslipsJob::dispatch($this->payroll_id);
+        
+        }
 
         return redirect()->route('payroll.process', [
             'type' => $this->type,

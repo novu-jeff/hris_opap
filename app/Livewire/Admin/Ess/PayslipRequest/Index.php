@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Admin\Ess\PayslipRequest;
 
+use ZipArchive;
+use Illuminate\Support\Facades\File;
+
 use App\Models\EmployeeAccount;
 use App\Models\EmployeePayslipRequest;
 use App\Models\SalaryItemsPayroll;
@@ -237,52 +240,202 @@ class Index extends Component
         return $query->whereRaw("DAY(SUBSTRING_INDEX(cut_off_period, ' to ', 1)) = 16");
     }
 
-    public function downloadDirect($employeeNo, $payrollId)
+ 
+
+    public function downloadDirect(
+        string $employeeNo,
+        int $payrollId
+    )
     {
-        $payroll = SalaryItemsPayroll::with(
-            'information.section',
-            'payroll',
-            'deductions.loan.loanType'
-        )
-        ->where('employee_no', $employeeNo)
-        ->where('payroll_id', $payrollId)
-        ->first();
-
-        if (!$payroll) {
-            return $this->dispatch('alert', [
-                'showAlert' => true,
-                'status' => 'error',
-                'title' => 'Oops!',
-                'message' => 'Payslip not found.',
-            ]);
+        $relativePath =
+            "payslips/payroll_{$payrollId}/{$employeeNo}.pdf";
+    
+        $fullPath =
+            storage_path(
+                'app/' . $relativePath
+            );
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Download existing PDF
+        |--------------------------------------------------------------------------
+        */
+    
+        if (File::exists($fullPath)) {
+    
+            return response()->download(
+                $fullPath,
+                "{$employeeNo}.pdf"
+            );
+    
         }
-
-        $payslipView = $this->buildPayslipViewData($payroll);
-
-        $supervisingOfficer = $this->getEmployeeByPosition(
-            'Supervising Administrative Officer'
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Generate if missing
+        |--------------------------------------------------------------------------
+        */
+    
+        $service = app(
+            \App\Services\PayslipPdfService::class
         );
-
-        $payrollDate = \Carbon\Carbon::parse(
-            $payroll->payroll->payroll_date
-        )->format('F d, Y');
-
-        $filename = $employeeNo .
-            ' | Payslip for ' .
-            $payrollDate .
-            '.pdf';
-
-        $pdf = Pdf::loadView('admin.payslip-pdf', [
-            'payslip' => $payroll,
-            'payslipView' => $payslipView,
-            'supervisingOfficer' => $supervisingOfficer,
-        ]);
-
-        return response()->streamDownload(
-            fn() => print($pdf->output()),
-            $filename
+    
+        $generatedPath =
+            $service->generateAndSave(
+                $employeeNo,
+                $payrollId
+            );
+    
+        if (! $generatedPath) {
+    
+            session()->flash(
+                'error',
+                'Unable to generate payslip.'
+            );
+    
+            return;
+    
+        }
+    
+        $generatedFullPath =
+            storage_path(
+                'app/' . $generatedPath
+            );
+    
+        if (! File::exists($generatedFullPath)) {
+    
+            session()->flash(
+                'error',
+                'Payslip file not found.'
+            );
+    
+            return;
+    
+        }
+    
+        return response()->download(
+            $generatedFullPath,
+            "{$employeeNo}.pdf"
         );
     }
+
+    public function downloadAllPayslips()
+{
+    set_time_limit(0);
+
+    $tempDir = storage_path('app/temp');
+
+    if (! File::exists($tempDir)) {
+        File::makeDirectory($tempDir, 0755, true);
+    }
+
+    $zipName = 'All_SecondHalf_Payslips_' . now()->format('YmdHis') . '.zip';
+
+    $zipPath = $tempDir . '/' . $zipName;
+
+    if (File::exists($zipPath)) {
+        File::delete($zipPath);
+    }
+
+    $zip = new ZipArchive();
+
+    if (
+        $zip->open(
+            $zipPath,
+            ZipArchive::CREATE | ZipArchive::OVERWRITE
+        ) !== true
+    ) {
+        session()->flash(
+            'error',
+            'Unable to create ZIP file.'
+        );
+
+        return;
+    }
+
+    SalaryItemsPayroll::query()
+        ->join(
+            'payroll_salary',
+            'payroll_salary_items.payroll_id',
+            '=',
+            'payroll_salary.id'
+        )
+        ->whereNotNull('payroll_salary_items.payslip_path')
+
+        // Only second-half payrolls (16th to end of month)
+        ->whereRaw("
+        DAY(
+            STR_TO_DATE(
+                SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', 1),
+                '%Y-%m-%d'
+            )
+        ) = 16
+    
+        AND
+    
+        STR_TO_DATE(
+            SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', -1),
+            '%Y-%m-%d'
+        ) = LAST_DAY(
+            STR_TO_DATE(
+                SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', -1),
+                '%Y-%m-%d'
+            )
+        )
+    ")
+
+    ->select(
+        'payroll_salary_items.*',
+        'payroll_salary.cut_off_period'
+    )
+
+        ->chunk(200, function ($items) use ($zip) {
+
+            foreach ($items as $item) {
+
+                $path = storage_path(
+                    'app/' . $item->payslip_path
+                );
+
+                if (
+                    $item->payslip_path &&
+                    File::exists($path)
+                ) {
+
+                    // Prevent duplicate filenames
+                    $start = explode(
+                        ' to ',
+                        $item->cut_off_period
+                    )[0];
+                    
+                    $folder = \Carbon\Carbon::parse($start)
+                        ->format('F_Y');
+                    
+                    $zip->addFile(
+                        $path,
+                        $folder . '/' . basename($path)
+                    );
+
+                }
+
+            }
+
+        }, 'payroll_salary_items.id');
+
+    $zip->close();
+
+    return response()->download(
+        $zipPath,
+        $zipName
+    )->deleteFileAfterSend(true);
+}
+
+
+
+    public function test()
+{
+    dd('WORKING');
+}
 
     public function render()
     {

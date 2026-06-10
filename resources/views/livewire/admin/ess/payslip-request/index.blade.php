@@ -87,7 +87,24 @@
                         All Payslips
                     </a>
                 </li>
+                
             </ul>
+            <button
+                wire:click="downloadAllPayslips"
+                wire:loading.attr="disabled"
+                class="btn btn-success"
+            >
+                <span wire:loading.remove wire:target="downloadAllPayslips">
+                    <i class="fa-solid fa-download"></i>
+                    Download All
+                </span>
+
+                <span wire:loading wire:target="downloadAllPayslips">
+                    <span class="spinner-border spinner-border-sm"></span>
+                    Generating...
+                </span>
+            </button>
+            
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
                     <div class="row mb-4">
@@ -281,5 +298,30 @@
             </div>
         </div>
     </div>  
+    <div
+    wire:loading.flex
+    wire:target="downloadAllPayslips"
+    class="position-fixed top-0 start-0 w-100 h-100
+           bg-dark bg-opacity-50
+           justify-content-center
+           align-items-center"
+    style="z-index:99999;"
+>
+
+    <div class="bg-white p-4 rounded shadow text-center">
+
+        <div class="spinner-border text-primary mb-3"></div>
+
+        <h5>
+            Generating payslips...
+        </h5>
+
+        <p class="mb-0">
+            Please wait. Do not refresh the page.
+        </p>
+
+    </div>
+
+</div>
 </div>
 
