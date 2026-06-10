@@ -154,6 +154,54 @@ class Payslip extends Component
         ]);
     }
 
+    public function downloadDirect()
+    {
+        $payroll = SalaryItemsPayroll::with(
+            'information.section',
+            'payroll',
+            'deductions.loan.loanType'
+        )
+        ->where('employee_no', $this->employee_no)
+        ->where('payroll_id', $this->payroll->payroll_id)
+        ->first();
+
+        if (!$payroll) {
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Oops!',
+                'message' => 'Payslip not found.',
+            ]);
+        }
+
+        $payslipView = $this->buildPayslipViewData($payroll);
+
+        $supervisingOfficer = $this->getEmployeeByPosition(
+            'Supervising Administrative Officer'
+        );
+
+        $payrollDate = \Carbon\Carbon::parse(
+            $payroll->payroll->payroll_date
+        )->format('F d, Y');
+
+        $filename = $this->employee_no .
+            ' | Payslip for ' .
+            $payrollDate .
+            '.pdf';
+
+        $pdf = Pdf::loadView('admin.payslip-pdf', [
+            'payslip' => $payroll,
+            'payslipView' => $payslipView,
+            'supervisingOfficer' => $supervisingOfficer,
+            'use_employee' => 1,
+        ]);
+
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            $filename
+        );
+    }
+
 
 
 

@@ -18,7 +18,10 @@ class SalaryPayroll extends Model
         'hasDeductions',
         'use_realtime_aut',
         'selected_employees',
-        'status'
+        'status',
+        'payslip_status',
+        'payslip_generated',
+        'payslip_total',
     ];
 
     public function employment_type() {

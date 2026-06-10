@@ -11,6 +11,55 @@
         @endif
     </div>
     <hr>
+
+{{-- Payslip Generation Progress --}}
+<div wire:poll.2s="refreshPayslipProgress">
+
+    @if($payslip_status === 'processing')
+
+        @php
+            $percent = $payslip_total > 0
+                ? round(($payslip_generated / $payslip_total) * 100)
+                : 0;
+        @endphp
+
+        <div class="alert alert-info mb-3">
+
+            <div class="d-flex justify-content-between mb-2">
+                <strong>
+                    Generating Payslips...
+                </strong>
+
+                <strong>
+                    {{ $payslip_generated }}
+                    /
+                    {{ $payslip_total }}
+                </strong>
+            </div>
+
+            <div class="progress" style="height: 24px;">
+
+                <div
+                    class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                    role="progressbar"
+                    style="width: {{ $percent }}%;"
+                >
+                    {{ $percent }}%
+                </div>
+
+            </div>
+
+        </div>
+
+    @elseif($payslip_status === 'completed')
+
+        <div class="alert alert-success mb-3">
+            ✅ Payslip generation completed.
+        </div>
+
+    @endif
+
+</div>
     @if(!$isApproved)
     <button class="btn btn-success mb-3" wire:click="$set('showAddModal', true)">
         + Add Employee

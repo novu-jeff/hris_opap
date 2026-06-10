@@ -491,7 +491,7 @@ class SalaryService extends Controller {
                           $gbel = 0;
                           $taxType = $employee['tax_type'] ?? null;
       
-                         //dd($taxType);
+                        // dd($taxType);
       
                          $tax_3 = $tax_5 = $tax_8 = $tax_10 = 0;
 
@@ -504,6 +504,10 @@ class SalaryService extends Controller {
                                     break;
 
                                 case 'TAX_5': // 5%
+                                    Log::info('tax_5', [
+                                        'taxBase' => $taxBase,
+                                        'tax_5' => $tax_5
+                                    ]);
                                     $tax_5 = round($taxBase * 0.05, 2);
                                     break;
 
@@ -741,7 +745,7 @@ class SalaryService extends Controller {
                         $gsel = $firstHalfRecord->gsel;
                         $gbel = $firstHalfRecord->gbel;
                         $disallowance = $firstHalfRecord->disallowance;
-                        $overpayment = $firstHalfRecord->overpayment;
+                        $overpay = $firstHalfRecord->overpayment;
 
                         $tax_3 = $ctax_3;
                         $tax_5 = $ctax_5;

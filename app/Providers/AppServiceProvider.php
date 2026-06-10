@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
         'App\Jobs\PayrollJob',
         'App\Jobs\EmployeeUpload',
         'App\Jobs\ChangeEmployeeNoJob',
+        'App\Jobs\GeneratePayslipsJob',
     ];
 
     /**

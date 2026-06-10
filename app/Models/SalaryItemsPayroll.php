@@ -74,6 +74,7 @@ class SalaryItemsPayroll extends Model
                 'tax_11',
                 'gsel',
                 'gbel',
+                'payslip_path',
                 
             ];
         }
