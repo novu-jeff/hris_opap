@@ -251,16 +251,9 @@ class Index extends Component
             "payslips/payroll_{$payrollId}/{$employeeNo}.pdf";
     
         $fullPath =
-            storage_path(
-                'app/' . $relativePath
-            );
+            storage_path('app/' . $relativePath);
     
-        /*
-        |--------------------------------------------------------------------------
-        | Download existing PDF
-        |--------------------------------------------------------------------------
-        */
-    
+        // File already exists
         if (File::exists($fullPath)) {
     
             return response()->download(
@@ -270,46 +263,52 @@ class Index extends Component
     
         }
     
-        /*
-        |--------------------------------------------------------------------------
-        | Generate if missing
-        |--------------------------------------------------------------------------
-        */
-    
         $service = app(
             \App\Services\PayslipPdfService::class
         );
     
-        $generatedPath =
-            $service->generateAndSave(
+        try {
+    
+            $generatedPath = $service->generateAndSave(
                 $employeeNo,
                 $payrollId
             );
     
-        if (! $generatedPath) {
+        } catch (\Throwable $e) {
     
-            session()->flash(
-                'error',
-                'Unable to generate payslip.'
-            );
+            logger()->error($e);
     
-            return;
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Error',
+                'message' => 'Unable to generate payslip. Please contact the administrator.',
+            ]);
+    
+        }
+    
+        if (!$generatedPath) {
+    
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Error',
+                'message' => 'Unable to generate payslip.',
+            ]);
     
         }
     
         $generatedFullPath =
-            storage_path(
-                'app/' . $generatedPath
-            );
+            storage_path('app/' . $generatedPath);
     
-        if (! File::exists($generatedFullPath)) {
+        if (!File::exists($generatedFullPath)) {
     
-            session()->flash(
-                'error',
-                'Payslip file not found.'
-            );
-    
-            return;
+            return $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => 'error',
+                'title' => 'Error',
+                'message' => 'Payslip file not found.',
+            ]);
     
         }
     
@@ -325,12 +324,11 @@ class Index extends Component
 
     $tempDir = storage_path('app/temp');
 
-    if (! File::exists($tempDir)) {
+    if (!File::exists($tempDir)) {
         File::makeDirectory($tempDir, 0755, true);
     }
 
     $zipName = 'All_SecondHalf_Payslips_' . now()->format('YmdHis') . '.zip';
-
     $zipPath = $tempDir . '/' . $zipName;
 
     if (File::exists($zipPath)) {
@@ -345,13 +343,15 @@ class Index extends Component
             ZipArchive::CREATE | ZipArchive::OVERWRITE
         ) !== true
     ) {
-        session()->flash(
-            'error',
-            'Unable to create ZIP file.'
-        );
-
-        return;
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Error',
+            'message' => 'Unable to create ZIP file.',
+        ]);
     }
+
+    $filesAdded = 0;
 
     SalaryItemsPayroll::query()
         ->join(
@@ -364,32 +364,31 @@ class Index extends Component
 
         // Only second-half payrolls (16th to end of month)
         ->whereRaw("
-        DAY(
-            STR_TO_DATE(
-                SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', 1),
-                '%Y-%m-%d'
-            )
-        ) = 16
-    
-        AND
-    
-        STR_TO_DATE(
-            SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', -1),
-            '%Y-%m-%d'
-        ) = LAST_DAY(
+            DAY(
+                STR_TO_DATE(
+                    SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', 1),
+                    '%Y-%m-%d'
+                )
+            ) = 16
+
+            AND
+
             STR_TO_DATE(
                 SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', -1),
                 '%Y-%m-%d'
+            ) = LAST_DAY(
+                STR_TO_DATE(
+                    SUBSTRING_INDEX(payroll_salary.cut_off_period, ' to ', -1),
+                    '%Y-%m-%d'
+                )
             )
+        ")
+        ->select(
+            'payroll_salary_items.*',
+            'payroll_salary.cut_off_period'
         )
-    ")
-
-    ->select(
-        'payroll_salary_items.*',
-        'payroll_salary.cut_off_period'
-    )
-
-        ->chunk(200, function ($items) use ($zip) {
+        ->orderBy('payroll_salary_items.id')
+        ->chunk(200, function ($items) use ($zip, &$filesAdded) {
 
             foreach ($items as $item) {
 
@@ -398,36 +397,61 @@ class Index extends Component
                 );
 
                 if (
-                    $item->payslip_path &&
+                    !empty($item->payslip_path) &&
                     File::exists($path)
                 ) {
 
-                    // Prevent duplicate filenames
                     $start = explode(
                         ' to ',
                         $item->cut_off_period
                     )[0];
-                    
-                    $folder = \Carbon\Carbon::parse($start)
+
+                    $folder = Carbon::parse($start)
                         ->format('F_Y');
-                    
+
                     $zip->addFile(
                         $path,
                         $folder . '/' . basename($path)
                     );
 
+                    $filesAdded++;
                 }
-
             }
-
-        }, 'payroll_salary_items.id');
+        });
 
     $zip->close();
 
-    return response()->download(
-        $zipPath,
-        $zipName
-    )->deleteFileAfterSend(true);
+    // No files found
+    if ($filesAdded === 0) {
+
+        if (File::exists($zipPath)) {
+            File::delete($zipPath);
+        }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'No Payslips Found',
+            'message' => 'No second-half payslips found to download.',
+        ]);
+
+       
+    }
+
+    // Extra safety check
+    if (!File::exists($zipPath)) {
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Error',
+            'message' => 'ZIP file could not be created.',
+        ]);
+    }
+
+    return response()
+        ->download($zipPath, $zipName)
+        ->deleteFileAfterSend(true);
 }
 
 
