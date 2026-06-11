@@ -217,6 +217,7 @@ class Index extends Component
             'payslip' => $payroll,
             'payslipView' => $payslipView,
             'supervisingOfficer' => $supervisingOfficer,
+            'use_employee' => 0,
         ]);
 
         return response()->streamDownload(fn() => print($pdf->output()), $filename);

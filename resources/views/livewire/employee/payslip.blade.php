@@ -36,8 +36,24 @@
                 </div>
                 @if($requestStatus && $requestStatus == 'pending')
                     <button class="btn btn-danger text-uppercase fw-bold px-4 py-3">Request already Submitted</button>
-                @elseif($requestStatus && $requestStatus === 'approved')
+                    <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="downloadDirect">
+                        <span wire:loading.remove wire:target="downloadDirect">
+                            Download Payslip <i class="fa-solid fa-download ms-2"></i>
+                        </span>
+                        <span wire:loading wire:target="downloadDirect">
+                            Downloading <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                        </span>
+                    </button>
+               @elseif($requestStatus && $requestStatus === 'approved')
                     <button class="btn btn-success text-uppercase fw-bold px-4 py-3">Request Approved</button>
+                    <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="downloadDirect">
+                        <span wire:loading.remove wire:target="downloadDirect">
+                            Download Payslip <i class="fa-solid fa-download ms-2"></i>
+                        </span>
+                        <span wire:loading wire:target="downloadDirect">
+                            Downloading <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
+                        </span>
+                    </button>
                     <!--<button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="download">
                         <span wire:loading.remove wire:target="download">
                             Download Payslip <i class="fa-solid fa-download ms-2"></i>
@@ -47,14 +63,14 @@
                         </span>
                     </button>-->
                 @else
-                    <!--<button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="request">
+                    <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="request">
                         <span wire:loading.remove wire:target="request">
                             Request For Payslip <i class="fa-solid fa-file-arrow-down ms-2"></i>
                         </span>
                         <span wire:loading wire:target="request">
                             Sending Request <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
                         </span>
-                    </button>-->
+                    </button>
                     <button type="button" class="btn btn-primary px-5 py-3 text-uppercase fw-bold" wire:click="downloadDirect">
                         <span wire:loading.remove wire:target="downloadDirect">
                             Download Payslip <i class="fa-solid fa-download ms-2"></i>
@@ -62,6 +78,7 @@
                         <span wire:loading wire:target="downloadDirect">
                             Downloading <i class="fa-solid fa-spinner ms-2 fa-spin"></i>
                         </span>
+                    </button>
                 @endif
             </div>
             <div>
