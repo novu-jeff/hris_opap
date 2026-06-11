@@ -51,9 +51,9 @@ class PayslipPdfService
 
               
 
-        $provider = [
-            'client_logo' => config('app.client_logo'),
-        ];
+            $provider = [
+                'client_logo' => config('meta.novulutions.client_logo'),
+            ];
 
         if (! File::exists($directory)) {
 
