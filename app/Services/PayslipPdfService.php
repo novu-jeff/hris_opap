@@ -65,14 +65,36 @@ class PayslipPdfService
 
         }
 
+        // Sanitize employee name for use in filename
+        $employeeName = strtoupper($payroll->name);
+
+        $employeeName = preg_replace(
+            '/[^A-Za-z0-9\s]/',
+            '',
+            $employeeName
+        );
+
+        $employeeName = preg_replace(
+            '/\s+/',
+            '_',
+            trim($employeeName)
+        );
+
+        // Example:
+        // EMP-001_JOHN_DOE.pdf
+        $fileName =
+            $employeeNo .
+            '_' .
+            $employeeName .
+            '.pdf';
+
         $fullPath =
             $directory .
             '/' .
-            $employeeNo .
-            '.pdf';
+            $fileName;
         
             logger()->info('Rendering PDF', [
-                'employee' => $employeeNo,
+                'employee' => $fileName,
             ]);
 
         $pdf = Pdf::loadView(
@@ -97,7 +119,7 @@ class PayslipPdfService
         ]);
 
         $relative =
-            "payslips/payroll_{$payrollId}/{$employeeNo}.pdf";
+            "payslips/payroll_{$payrollId}/{$fileName}";
 
             $payroll->update([
                 'payslip_path' => $relative,

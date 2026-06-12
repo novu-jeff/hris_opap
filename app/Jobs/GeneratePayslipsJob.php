@@ -2,8 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Services\PayslipGeneratorService;
-use App\Services\PayslipPdfService;
+use App\Jobs\GenerateSinglePayslipJob;
 use App\Models\SalaryItemsPayroll;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,49 +16,31 @@ class GeneratePayslipsJob implements ShouldQueue
 
     public int $payrollId;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(int $payrollId)
-    {
+    public function __construct(
+        int $payrollId
+    ) {
         $this->payrollId = $payrollId;
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(PayslipPdfService $service): void
+    public function handle(): void
     {
+
         SalaryItemsPayroll::where(
             'payroll_id',
             $this->payrollId
         )
         ->pluck('employee_no')
-        ->each(function ($employeeNo) use ($service) {
+        ->each(function ($employeeNo) {
 
-            try {
+            GenerateSinglePayslipJob::dispatch(
 
-                logger()->info('Generating payslip', [
-                    'employee_no' => $employeeNo,
-                    'payroll_id' => $this->payrollId,
-                ]);
+                $employeeNo,
 
-                $service->generateAndSave(
-                    $employeeNo,
-                    $this->payrollId
-                );
+                $this->payrollId
 
-            } catch (\Throwable $e) {
-
-                logger()->error('GeneratePayslipsJob failed', [
-                    'employee_no' => $employeeNo,
-                    'message' => $e->getMessage(),
-                    'line' => $e->getLine(),
-                    'file' => $e->getFile(),
-                ]);
-
-            }
+            );
 
         });
+
     }
 }
