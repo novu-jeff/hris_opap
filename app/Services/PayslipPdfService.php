@@ -15,138 +15,159 @@ class PayslipPdfService
         string $employeeNo,
         int $payrollId
     ): ?string {
+        try {
 
-        $payroll = SalaryItemsPayroll::with(
-            'information.section',
-            'payroll',
-            'deductions.loan.loanType'
-        )
-        ->where('employee_no', $employeeNo)
-        ->where('payroll_id', $payrollId)
-        ->first();
+            $payroll = SalaryItemsPayroll::with(
+                'information.section',
+                'payroll',
+                'deductions.loan.loanType'
+            )
+            ->where('employee_no', $employeeNo)
+            ->where('payroll_id', $payrollId)
+            ->first();
 
-        if (! $payroll) {
+            if (! $payroll) {
 
-            logger()->error('Payroll not found', [
-                'employee_no' => $employeeNo,
-                'payroll_id' => $payrollId,
-            ]);
-        
-            return null;
-        }
-
-        $payslipView = $this->buildPayslipViewData(
-            $payroll
-        );
-
-        $supervisingOfficer =
-            $this->getEmployeeByPosition(
-                'Supervising Administrative Officer'
-            );
-
-        $directory =
-            storage_path(
-                "app/payslips/payroll_{$payrollId}"
-            );
-
-              
-
-            $provider = [
-                'client_logo' => config('meta.novulutions.client_logo'),
-            ];
-
-        if (! File::exists($directory)) {
-
-            File::makeDirectory(
-                $directory,
-                0755,
-                true
-            );
-
-        }
-
-        // Sanitize employee name for use in filename
-        $employeeName = strtoupper($payroll->name);
-
-        $employeeName = preg_replace(
-            '/[^A-Za-z0-9\s]/',
-            '',
-            $employeeName
-        );
-
-        $employeeName = preg_replace(
-            '/\s+/',
-            '_',
-            trim($employeeName)
-        );
-
-        // Example:
-        // EMP-001_JOHN_DOE.pdf
-        $fileName =
-            $employeeNo .
-            '_' .
-            $employeeName .
-            '.pdf';
-
-        $fullPath =
-            $directory .
-            '/' .
-            $fileName;
-        
-            logger()->info('Rendering PDF', [
-                'employee' => $fileName,
-            ]);
-
-        $pdf = Pdf::loadView(
-            'admin.payslip-pdf',
-            [
-                'payslip' => $payroll,
-                'payslipView' => $payslipView,
-                'supervisingOfficer' => $supervisingOfficer,
-                'provider' => $provider,
-                'use_employee' => 0,
-            ]
-        );
-
-        file_put_contents(
-            $fullPath,
-            $pdf->output()
-        );
-
-        logger()->info('PDF saved', [
-            'path' => $fullPath,
-            'exists' => file_exists($fullPath),
-        ]);
-
-        $relative =
-            "payslips/payroll_{$payrollId}/{$fileName}";
-
-            $payroll->update([
-                'payslip_path' => $relative,
-            ]);
-            
-            // ------------------------------------
-            // Update generation progress
-            // ------------------------------------
-            
-            SalaryPayroll::where('id', $payrollId)
-                ->increment('payslip_generated');
-            
-            $salaryPayroll = SalaryPayroll::find($payrollId);
-            
-            if (
-                $salaryPayroll &&
-                $salaryPayroll->payslip_generated >=
-                $salaryPayroll->payslip_total
-            ) {
-            
-                $salaryPayroll->update([
-                    'payslip_status' => 'completed',
+                logger()->error('Payroll not found', [
+                    'employee_no' => $employeeNo,
+                    'payroll_id' => $payrollId,
                 ]);
             
+                return null;
             }
+
+            $payslipView = $this->buildPayslipViewData(
+                $payroll
+            );
+
+            $supervisingOfficer =
+                $this->getEmployeeByPosition(
+                    'Supervising Administrative Officer'
+                );
+
+            $directory =
+                storage_path(
+                    "app/payslips/payroll_{$payrollId}"
+                );
+
+                
+
+                $provider = [
+                    'client_logo' => config('meta.novulutions.client_logo'),
+                ];
+
+            if (! File::exists($directory)) {
+
+                File::makeDirectory(
+                    $directory,
+                    0755,
+                    true
+                );
+
+            }
+
+            // Sanitize employee name for use in filename
+            $employeeName = strtoupper($payroll->name);
+
+            $employeeName = preg_replace(
+                '/[^A-Za-z0-9\s]/',
+                '',
+                $employeeName
+            );
+
+            $employeeName = preg_replace(
+                '/\s+/',
+                '_',
+                trim($employeeName)
+            );
+
+            // Example:
+            // EMP-001_JOHN_DOE.pdf
+            $fileName =
+                $employeeNo .
+                '_' .
+                $employeeName .
+                '.pdf';
+
+            $fullPath =
+                $directory .
+                '/' .
+                $fileName;
             
-            return $relative;
+                logger()->info('Rendering PDF', [
+                    'employee' => $fileName,
+                ]);
+
+            $pdf = Pdf::loadView(
+                'admin.payslip-pdf',
+                [
+                    'payslip' => $payroll,
+                    'payslipView' => $payslipView,
+                    'supervisingOfficer' => $supervisingOfficer,
+                    'provider' => $provider,
+                    'use_employee' => 0,
+                ]
+            );
+
+            $output = $pdf->output();
+
+            file_put_contents(
+                $fullPath,
+                $output
+            );
+
+            unset($output);
+            unset($pdf);
+
+            gc_collect_cycles();
+
+            logger()->info('PDF saved', [
+                'path' => $fullPath,
+                'exists' => file_exists($fullPath),
+            ]);
+
+            $relative =
+                "payslips/payroll_{$payrollId}/{$fileName}";
+
+                $payroll->update([
+                    'payslip_path' => $relative,
+                ]);
+                
+                // ------------------------------------
+                // Update generation progress
+                // ------------------------------------
+                
+                SalaryPayroll::where('id', $payrollId)
+                    ->increment('payslip_generated');
+                
+                $salaryPayroll = SalaryPayroll::find($payrollId);
+                
+                if (
+                    $salaryPayroll &&
+                    $salaryPayroll->payslip_generated >=
+                    $salaryPayroll->payslip_total
+                ) {
+                
+                    $salaryPayroll->update([
+                        'payslip_status' => 'completed',
+                    ]);
+                
+                }
+                
+                return $relative;
+
+        } catch (\Throwable $e) {
+
+            logger()->error('Payslip generation failed', [
+                'employee_no' => $employeeNo,
+                'payroll_id' => $payrollId,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+    
+            return null;
+        }
     }
 
     private function buildPayslipViewData($payslip)

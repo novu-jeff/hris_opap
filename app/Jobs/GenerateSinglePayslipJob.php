@@ -29,14 +29,28 @@ class GenerateSinglePayslipJob implements ShouldQueue
         PayslipPdfService $service
     ): void {
 
-        logger()->info('GenerateSinglePayslipJob', [
-            'employee_no' => $this->employeeNo,
-            'payroll_id' => $this->payrollId,
-        ]);
+        try {
 
-        $service->generateAndSave(
-            $this->employeeNo,
-            $this->payrollId
-        );
+            logger()->info('GenerateSinglePayslipJob', [
+                'employee_no' => $this->employeeNo,
+                'payroll_id' => $this->payrollId,
+            ]);
+    
+            $service->generateAndSave(
+                $this->employeeNo,
+                $this->payrollId
+            );
+    
+        } catch (\Throwable $e) {
+    
+            logger()->error('GenerateSinglePayslipJob failed', [
+                'employee_no' => $this->employeeNo,
+                'payroll_id' => $this->payrollId,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+    
+        }
     }
 }
