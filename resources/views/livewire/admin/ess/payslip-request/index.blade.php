@@ -89,7 +89,55 @@
                 </li>
                 
             </ul>
-            <button
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label>From Date</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        wire:model="fromDate"
+                    >
+                </div>
+            
+                <div class="col-md-3">
+                    <label>To Date</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        wire:model="toDate"
+                    >
+                </div>
+
+                @if($status === 'granted')
+                <div class="col-md-3 d-flex align-items-end">
+                    <button
+                        wire:click="downloadGrantedPayslips"
+                        class="btn btn-success"
+                    >
+                        <i class="fa-solid fa-download"></i>
+                        Download Granted Payslip
+                    </button>
+                </div>
+                @endif
+
+                @if($status === 'all')
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button
+                            wire:click="downloadAllPayslips"
+                            class="btn btn-success"
+                        >
+                            <i class="fa-solid fa-download"></i>
+                            Download All Payslips
+                        </button>
+                    </div>
+                @endif
+
+
+               
+            </div>
+
+           <!-- <button
                 wire:click="downloadAllPayslips"
                 wire:loading.attr="disabled"
                 class="btn btn-success"
@@ -103,7 +151,7 @@
                     <span class="spinner-border spinner-border-sm"></span>
                     Generating...
                 </span>
-            </button>
+            </button>-->
             
             <div class="tab-content mt-5" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
