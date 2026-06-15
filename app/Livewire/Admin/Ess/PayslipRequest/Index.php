@@ -39,6 +39,9 @@ class Index extends Component
     public $search = '';
     public $requestStatus;
 
+    public $fromDate;
+    public $toDate;
+
     // Load a single request to view modal
     public function view(int $id) {
         $this->selected_id = $id;
@@ -319,7 +322,393 @@ class Index extends Component
         );
     }
 
-    public function downloadAllPayslips()
+
+public function downloadGrantedPayslips()
+{
+    set_time_limit(0);
+
+    if (!$this->fromDate || !$this->toDate) {
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Date Range Required',
+            'message' => 'Please select both From Date and To Date.',
+        ]);
+    }
+
+    $tempDir = storage_path('app/temp');
+
+    if (!File::exists($tempDir)) {
+        File::makeDirectory($tempDir, 0755, true);
+    }
+
+    $zipName = 'Approved_Payslip_Requests_' .
+        Carbon::parse($this->fromDate)->format('Ymd') .
+        '_to_' .
+        Carbon::parse($this->toDate)->format('Ymd') .
+        '.zip';
+
+    $zipPath = $tempDir . '/' . $zipName;
+
+    if (File::exists($zipPath)) {
+        File::delete($zipPath);
+    }
+
+    $zip = new ZipArchive();
+
+    if (
+        $zip->open(
+            $zipPath,
+            ZipArchive::CREATE | ZipArchive::OVERWRITE
+        ) !== true
+    ) {
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Error',
+            'message' => 'Unable to create ZIP file.',
+        ]);
+    }
+
+    $filesAdded = 0;
+
+    EmployeePayslipRequest::query()
+        ->where('status', 'approved')
+        ->where('isDeleted', 0)
+        ->whereBetween('created_at', [
+            Carbon::parse($this->fromDate)->startOfDay(),
+            Carbon::parse($this->toDate)->endOfDay(),
+        ])
+        ->orderBy('created_at')
+        ->chunk(25, function ($requests) use ($zip, &$filesAdded) {
+
+            foreach ($requests as $request) {
+
+                $payroll = SalaryItemsPayroll::where(
+                    'employee_no',
+                    $request->employee_no
+                )
+                ->where(
+                    'payroll_id',
+                    $request->payroll_id
+                )
+                ->first();
+
+                if (!$payroll) {
+                    continue;
+                }
+
+                /**
+                 * Generate if payslip_path is empty
+                 */
+                if (empty($payroll->payslip_path)) {
+
+                    try {
+
+                        $generatedPath = app(
+                            \App\Services\PayslipPdfService::class
+                        )->generateAndSave(
+                            $payroll->employee_no,
+                            $payroll->payroll_id
+                        );
+
+                        if ($generatedPath) {
+
+                            $payroll->update([
+                                'payslip_path' => $generatedPath,
+                            ]);
+
+                            $payroll->refresh();
+                        }
+
+                    } catch (\Throwable $e) {
+
+                        logger()->error($e);
+
+                        continue;
+                    }
+                }
+
+                $path = storage_path(
+                    'app/' . $payroll->payslip_path
+                );
+
+                /**
+                 * Regenerate if file is missing
+                 */
+                if (!File::exists($path)) {
+
+                    try {
+
+                        $generatedPath = app(
+                            \App\Services\PayslipPdfService::class
+                        )->generateAndSave(
+                            $payroll->employee_no,
+                            $payroll->payroll_id
+                        );
+
+                        if ($generatedPath) {
+
+                            $payroll->update([
+                                'payslip_path' => $generatedPath,
+                            ]);
+
+                            $payroll->refresh();
+
+                            $path = storage_path(
+                                'app/' . $payroll->payslip_path
+                            );
+                        }
+
+                    } catch (\Throwable $e) {
+
+                        logger()->error($e);
+
+                        continue;
+                    }
+                }
+
+                if (File::exists($path)) {
+
+                    $folder = Carbon::parse(
+                        $request->created_at
+                    )->format('Y-m');
+
+                    $zip->addFile(
+                        $path,
+                        $folder . '/' . basename($path)
+                    );
+
+                    $filesAdded++;
+                }
+            }
+        });
+
+    $zip->close();
+
+    if ($filesAdded === 0) {
+
+        if (File::exists($zipPath)) {
+            File::delete($zipPath);
+        }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'No Payslips Found',
+            'message' => 'No approved payslip requests found for the selected date range.',
+        ]);
+    }
+
+    return response()
+        ->download($zipPath, $zipName)
+        ->deleteFileAfterSend(true);
+}
+
+
+
+
+public function downloadAllPayslips()
+{
+    set_time_limit(0);
+
+    if (!$this->fromDate || !$this->toDate) {
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Date Range Required',
+            'message' => 'Please select both From Date and To Date.',
+        ]);
+
+    }
+
+    $tempDir = storage_path('app/temp');
+
+    if (!File::exists($tempDir)) {
+        File::makeDirectory($tempDir, 0755, true);
+    }
+
+    $zipName =
+        'Payslips_' .
+        Carbon::parse($this->fromDate)->format('Ymd') .
+        '_to_' .
+        Carbon::parse($this->toDate)->format('Ymd') .
+        '.zip';
+
+    $zipPath = $tempDir . '/' . $zipName;
+
+    if (File::exists($zipPath)) {
+        File::delete($zipPath);
+    }
+
+    $zip = new ZipArchive();
+
+    if (
+        $zip->open(
+            $zipPath,
+            ZipArchive::CREATE | ZipArchive::OVERWRITE
+        ) !== true
+    ) {
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'Error',
+            'message' => 'Unable to create ZIP file.',
+        ]);
+
+    }
+
+    $filesAdded = 0;
+
+    SalaryItemsPayroll::query()
+        ->join(
+            'payroll_salary',
+            'payroll_salary_items.payroll_id',
+            '=',
+            'payroll_salary.id'
+        )
+        ->whereBetween(
+            'payroll_salary.payroll_date',
+            [
+                $this->fromDate,
+                $this->toDate,
+            ]
+        )
+        ->select(
+            'payroll_salary_items.*',
+            'payroll_salary.cut_off_period',
+            'payroll_salary.payroll_date'
+        )
+        ->orderBy('payroll_salary.payroll_date')
+        ->chunk(25, function ($items) use ($zip, &$filesAdded) {
+
+            foreach ($items as $item) {
+
+                /**
+                 * Generate payslip if payslip_path is empty
+                 */
+                if (empty($item->payslip_path)) {
+
+                    try {
+
+                        $generatedPath = app(
+                            \App\Services\PayslipPdfService::class
+                        )->generateAndSave(
+                            $item->employee_no,
+                            $item->payroll_id
+                        );
+
+                        if ($generatedPath) {
+
+                            SalaryItemsPayroll::where(
+                                'id',
+                                $item->id
+                            )->update([
+                                'payslip_path' => $generatedPath,
+                            ]);
+
+                            $item->payslip_path = $generatedPath;
+                        }
+
+                    } catch (\Throwable $e) {
+
+                        logger()->error($e);
+
+                        continue;
+                    }
+                }
+
+                $path = storage_path(
+                    'app/' . $item->payslip_path
+                );
+
+                /**
+                 * If file does not exist, regenerate it
+                 */
+                if (!File::exists($path)) {
+
+                    try {
+
+                        $generatedPath = app(
+                            \App\Services\PayslipPdfService::class
+                        )->generateAndSave(
+                            $item->employee_no,
+                            $item->payroll_id
+                        );
+
+                        if ($generatedPath) {
+
+                            SalaryItemsPayroll::where(
+                                'id',
+                                $item->id
+                            )->update([
+                                'payslip_path' => $generatedPath,
+                            ]);
+
+                            $item->payslip_path = $generatedPath;
+
+                            $path = storage_path(
+                                'app/' . $generatedPath
+                            );
+                        }
+
+                    } catch (\Throwable $e) {
+
+                        logger()->error($e);
+
+                        continue;
+                    }
+                }
+
+                /**
+                 * Add file to ZIP
+                 */
+                if (File::exists($path)) {
+
+                    $folder = Carbon::parse(
+                        $item->payroll_date
+                    )->format('F_Y');
+
+                    $zip->addFile(
+                        $path,
+                        $folder . '/' . basename($path)
+                    );
+
+                    $filesAdded++;
+                }
+            }
+        });
+
+    $zip->close();
+
+    if ($filesAdded === 0) {
+
+        if (File::exists($zipPath)) {
+            File::delete($zipPath);
+        }
+
+        return $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'error',
+            'title' => 'No Payslips Found',
+            'message' => 'No payslips found for the selected date range.',
+        ]);
+    }
+
+    return response()
+        ->download(
+            $zipPath,
+            $zipName
+        )
+        ->deleteFileAfterSend(true);
+}
+
+
+
+    public function downloadAllPayslips_bk()
 {
     set_time_limit(0);
 
@@ -389,7 +778,7 @@ class Index extends Component
             'payroll_salary.cut_off_period'
         )
         ->orderBy('payroll_salary_items.id')
-        ->chunk(200, function ($items) use ($zip, &$filesAdded) {
+        ->chunk(25, function ($items) use ($zip, &$filesAdded) {
 
             foreach ($items as $item) {
 
