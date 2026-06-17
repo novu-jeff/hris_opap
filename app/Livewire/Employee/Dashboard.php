@@ -172,6 +172,52 @@ class Dashboard extends Component
 
     private function getLogs()
     {
+        $employeeNo = Auth::user()->employee_no;
+
+        $start = now()->startOfDay()->toDateTimeString();
+        $end   = now()->endOfDay()->toDateTimeString();
+
+        $logs = EmployeeTimelogs::getLogsForPeriodFromBothSources(
+            $employeeNo,
+            $start,
+            $end
+        );
+
+        $this->latestLogs = [
+            'clock_in'  => null,
+            'break_out' => null,
+            'break_in'  => null,
+            'clock_out' => null,
+        ];
+
+        foreach ($logs as $index => $log) {
+
+            // Add formatted time for blade
+            $log->formatted_time = Carbon::parse($log->timestamp)
+                ->format('h:i A');
+
+            switch ($index) {
+                case 0:
+                    $this->latestLogs['clock_in'] = $log;
+                    break;
+
+                case 1:
+                    $this->latestLogs['break_out'] = $log;
+                    break;
+
+                case 2:
+                    $this->latestLogs['break_in'] = $log;
+                    break;
+
+                case 3:
+                    $this->latestLogs['clock_out'] = $log;
+                    break;
+            }
+        }
+    }
+
+    private function getLogs_bk()
+    {
         $employee_no = Auth::user()->employee_no;
 
         $logs = EmployeeTimelogs::where('employee_id', $employee_no)
