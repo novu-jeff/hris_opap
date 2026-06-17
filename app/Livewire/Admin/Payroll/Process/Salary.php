@@ -431,9 +431,10 @@ public function recompute($sectionIndex, $employeeIndex, $field = null)
 
         $netCents = (int) round($netAmount * 100); 
         // Second cutoff (16–end): recompute second half ONLY
-        Log::info('Second cutoff (16–end)', ['originalfirstHalf' => $payrollItem['net_first_half'],'lbpPayroll' => $lbpPayroll]);
+       
         $firstHalf  = round((float) ($payrollItem['net_first_half'] ?? 0), 2);
-        $secondHalf = round($netCents - $firstHalf, 2);
+        $secondHalf = round($netAmount - $firstHalf, 2);
+        Log::info('Second cutoff (16–end)', ['originalfirstHalf' => $payrollItem['net_first_half'],'lbpPayroll' => $lbpPayroll, 'netCents' => $netAmount, 'firstHalf' => $firstHalf, 'secondHalf' => $secondHalf]);
     }
 
     // HARD LOCK: prevent editing wrong half
