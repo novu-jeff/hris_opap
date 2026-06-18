@@ -112,7 +112,8 @@
                                 @php
                                     $dateKey = str_replace('/', '-', $item['date']);
                                     $logList = $item['logs'] ?? [];
-                                    $accomplishment = collect($logList)->firstWhere('accomplishment');
+                                   // $accomplishment = collect($logList)->firstWhere('accomplishment');
+                                    $accomplishment = collect($logList)->last();
                                     $hasImage = collect($logList)->contains(fn($log) => !empty($log['captured_image']));
                                 @endphp
 
@@ -180,34 +181,114 @@
                                                     @endif
 
                                                     @if(!empty($accomplishment))
-                                                        <tr>
-                                                            <td colspan="4">
-                                                                <div class="text-start mt-2 px-3">
-                                                                    <p class="mb-2 fw-bold">Accomplishment Report:</p>
-                                            @php
-                                                $accomplishmentFile = $accomplishment['accomplishment'] ?? null;
-                                                $accomplishmentPath = $accomplishmentFile ? 'accomplishments/' . $accomplishmentFile : null;
-                                                $accomplishmentExists = $accomplishmentPath
-                                                    ? Storage::disk('public')->exists($accomplishmentPath)
-                                                    : false;
-                                            @endphp
-                                            @if($accomplishmentExists)
-                                                <p class="text-primary d-flex align-items-center gap-2 mt-3">
-                                                    <i class="fa-solid fa-download"></i>
-                                                    <a href="{{ Storage::disk('public')->url($accomplishmentPath) }}" download>
-                                                        {{ $accomplishmentFile }}
-                                                    </a>
-                                                </p>
-                                            @else
-                                                <p class="text-warning d-flex align-items-center gap-2 mt-3">
-                                                    <i class="fa-solid fa-triangle-exclamation"></i>
-                                                    <span>Accomplishment file not found. Please re-upload.</span>
-                                                </p>
-                                            @endif
-                                                                </div>
-                                                            </td>    
-                                                        </tr>  
+                                                    <tr>
+                                                        <td colspan="4">
+                                                            <div class="text-start p-3">
+                                                    
+                                                                <h6 class="fw-bold mb-3">
+                                                                    <i class="fa-solid fa-clipboard-check me-2"></i>
+                                                                    Daily Accomplishment
+                                                                </h6>
+                                                    
+                                                                {{-- Accomplishment Type --}}
+                                                                @if(!empty($accomplishment['accomplishment_type']))
+                                                                    <div class="mb-2">
+                                                                        <strong>Type:</strong>
+                                                                        <span class="badge bg-primary">
+                                                                            {{ $accomplishment['accomplishment_type'] }}
+                                                                        </span>
+                                                                    </div>
+                                                                @endif
+                                                    
+                                                                {{-- Accomplishment Details --}}
+                                                                @if(!empty($accomplishment['accomplishment_details']))
+                                                                    <div class="mb-3">
+                                                                        <strong>Details:</strong>
+                                                                        <div class="border rounded p-2 bg-light text-dark mt-1">
+                                                                            {{ $accomplishment['accomplishment_details'] }}
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
+
+                                                        @if(
+                                                            !empty($accomplishment['accomplishment']) ||
+                                                            !empty($accomplishment['accomplishment_type']) ||
+                                                            !empty($accomplishment['accomplishment_details'])
+                                                        )
+
+                                                        <a
+                                                            href="{{ route('employee.accomplishment.download', [
+                                                                'employee' => $item['bsd_no'],
+                                                                'date' => \Carbon\Carbon::createFromFormat('j/n/Y', $item['date'])->format('Y-m-d')
+                                                            ]) }}"
+                                                            class="btn btn-primary btn-sm">
+
+                                                            <i class="fa-solid fa-download"></i>
+                                                            Download Accomplishment Report
+
+                                                        </a>
+
+                                                        @endif
+
+
+                                                    
+                                                                {{-- Uploaded PDF --}}
+                                                                @php
+                                                                    $accomplishmentFile = $accomplishment['accomplishment'] ?? null;
+                                                    
+                                                                    $accomplishmentPath = $accomplishmentFile
+                                                                        ? 'accomplishments/' . $accomplishmentFile
+                                                                        : null;
+                                                    
+                                                                    $accomplishmentExists = $accomplishmentPath
+                                                                        ? Storage::disk('public')->exists($accomplishmentPath)
+                                                                        : false;
+                                                                @endphp
+                                                    
+                                                                @if($accomplishmentFile)
+                                                    
+                                                                    @if($accomplishmentExists)
+                                                    
+                                                                        <div class="alert alert-success d-flex justify-content-between align-items-center mt-3 mb-0">
+                                                    
+                                                                            <div>
+                                                                                <i class="fa-solid fa-file-pdf text-danger me-2"></i>
+                                                    
+                                                                                <strong>
+                                                                                    {{ $accomplishmentFile }}
+                                                                                </strong>
+                                                                            </div>
+                                                    
+                                                                            <a
+                                                                                href="{{ Storage::disk('public')->url($accomplishmentPath) }}"
+                                                                                class="btn btn-sm btn-primary"
+                                                                                download>
+                                                    
+                                                                                <i class="fa-solid fa-download me-1"></i>
+                                                                                Download
+                                                    
+                                                                            </a>
+                                                    
+                                                                        </div>
+                                                    
+                                                                    @else
+                                                    
+                                                                        <div class="alert alert-warning mt-3 mb-0">
+                                                                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                                    
+                                                                            Accomplishment file not found.
+                                                                        </div>
+                                                    
+                                                                    @endif
+                                                    
+                                                                @endif
+                                                    
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                     @endif
+                                                
+                                                    
                                                 </tbody>
                                             </table>
                                             </div>

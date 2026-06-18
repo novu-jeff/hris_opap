@@ -211,7 +211,9 @@ class Clock extends Component
                     'time' => optional(Carbon::parse($log->timestamp))->format('H:i:s'),
                     'captured_image' => $log->captured_image,
                     'captured_location' => $log->captured_location,
-                    'accomplishment' => $log->accomplishment ?? null
+                    'accomplishment' => $log->accomplishment,
+                    'accomplishment_type' => $log->accomplishment_type,
+                    'accomplishment_details' => $log->accomplishment_details,
                 ];
 
                 $baseData = [

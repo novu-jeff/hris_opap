@@ -89,6 +89,7 @@ use App\Http\Controllers\Employee\TeamController as EmployeeTeamController;
 use App\Http\Controllers\Employee\RequestStatusController as EmployeeRequestStatusController;
 use App\Http\Controllers\Employee\RemainingCreditController as EmployeeRemainingCreditController;
 use App\Http\Controllers\Employee\TutorialController;
+use App\Http\Controllers\Employee\EmployeeAccomplishmentReportController;
 use App\Http\Controllers\Home\SavedJobsController;
 use App\Http\Controllers\Home\SettingsController;
 use App\Http\Controllers\TestController;
@@ -543,6 +544,14 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
             Route::get('{id}', [TimeAdjustmentsController::class, 'show'])
                 ->name('employee.time-adjustments.show');
         });
+
+       
+        Route::get(
+            '/employee/accomplishment/download/{employee}/{date}',
+            [EmployeeAccomplishmentReportController::class, 'download']
+        )->name('employee.accomplishment.download');
+
+
 
         Route::prefix('payslip')->group(function() {
             Route::get('/', [PayslipController::class, 'index'])
