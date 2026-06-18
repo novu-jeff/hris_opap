@@ -41,6 +41,7 @@
                 @foreach([
                     'Cutt Off Period' =>  $payslipView['fullMonthCutoff'],
                     'Employee\'s Name' => $payslip['name'],
+                    'Employee\'s No' => $payslip['employee_no'],
                     'Position' => $payslip['position'],
                     'Unit' => $payslip['information']['section']['name'],
                 ] as $label => $value)
@@ -173,8 +174,8 @@
 
             {{-- ISSUED BY --}}
             <div class="info border-section p-3 mt-3 text-center">
-                <div>Issued by: <span class="text-decoration-underline">{{ $supervisingOfficer['full_name'] }}</span></div>
-                <div>{{ $supervisingOfficer['position_name'] }}</div>
+                <div>Issued by: <span class="text-decoration-underline">MARIESER T. ALMELOR</span></div>
+                <div>Chief Administrative Officer</div>
             </div>
 
         </div>
