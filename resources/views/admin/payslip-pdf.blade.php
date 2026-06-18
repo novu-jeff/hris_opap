@@ -169,6 +169,10 @@
                     <td>{{ strtoupper($payslip['name']) }}</td>
                 </tr>
                 <tr>
+                    <td>EMPLOYEE'S NO :</td>
+                    <td>{{ strtoupper($payslip['employee_no']) }}</td>
+                </tr>
+                <tr>
                     <td>POSITION :</td>
                     <td>{{ strtoupper($payslip['position']) }}</td>
                 </tr>
@@ -303,9 +307,11 @@
             <div class="footer">
                 <div>
                     Issued by:
-                    {{ $supervisingOfficer['full_name'] }}
+                    MARIESER T. ALMELOR
                 </div>
-
+                <div>
+                    Chief Administrative Officer
+                </div>
                 <div>
                     Date:
                     {{ now()->format('d F Y') }}

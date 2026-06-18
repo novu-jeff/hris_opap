@@ -132,7 +132,7 @@ class Payslip extends Component
             $payroll_date = Carbon::parse($this->payroll->payroll_date)->format('F d, Y');
             $filename = $this->employee_no . '|Payslip for ' . $payroll_date . '.pdf';
 
-            $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');
+            $supervisingOfficer = $this->getEmployeeByPosition('Chief Administrative Officer');
 
             $pdf = Pdf::loadView('employee.payslip-pdf', [
                 'payslip' => $this->payroll,
@@ -177,7 +177,7 @@ class Payslip extends Component
         $payslipView = $this->buildPayslipViewData($payroll);
 
         $supervisingOfficer = $this->getEmployeeByPosition(
-            'Supervising Administrative Officer'
+            'Chief Administrative Officer'
         );
 
         $payrollDate = \Carbon\Carbon::parse(
@@ -369,7 +369,7 @@ class Payslip extends Component
 
     public function render()
     {
-        $supervisingOfficer = $this->getEmployeeByPosition('Supervising Administrative Officer');
+        $supervisingOfficer = $this->getEmployeeByPosition('Chief Administrative Officer');
 
      
 
