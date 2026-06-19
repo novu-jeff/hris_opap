@@ -107,9 +107,30 @@ class EmployeeUploadService extends Controller
                 'employee_no' => $data['employee no.']
             ]);
 
-            $employeeInfo = EmployeeInformation::updateOrCreate(
-                ['employee_no' => $data['employee no.']],
+            $existingEmployee = EmployeeInformation::where(
+                'employee_no',
+                $data['employee no.']
+            )->exists();
+            
+            if ($existingEmployee) {
+                $duplicateRows[] = [
+                    'row' => $i + 1,
+                    'employee_no' => $data['employee no.'],
+                    'reason' => 'Employee number already exists'
+                ];
+            
+                Log::notice('Employee already exists, skipping upload', [
+                    'employee_no' => $data['employee no.'],
+                    'row' => $i + 1,
+                ]);
+            
+                // Skip the entire row so nothing gets overwritten
+                continue;
+            }
+
+            $employeeInfo = EmployeeInformation::create(
                 [
+                    'employee_no' => $data['employee no.'],
                     'bsd_no' => $data['bsd no.'],
                     'bank_account_no' => $data['bank account no.'],
                     'date_hired' => $this->transformDate($data['date hired']),
@@ -123,7 +144,7 @@ class EmployeeUploadService extends Controller
                 ]
             );
 
-            if (!$employeeInfo->wasRecentlyCreated) {
+            /*if (!$employeeInfo->wasRecentlyCreated) {
                 $duplicateRows[] = [
                     'row' => $i + 1,
                     'employee_no' => $data['employee no.'],
@@ -132,11 +153,29 @@ class EmployeeUploadService extends Controller
                 Log::notice('Duplicate employee information detected', [
                     'employee_no' => $data['employee no.']
                 ]);
-            }
+            }*/
 
-            EmployeePersonal::updateOrCreate(
-                ['employee_no' => $data['employee no.']],
+            Log::info('Creating employee personal', [
+                'employee_no' => $data['employee no.'],
+                'lastname' => $data['lastname'],
+                'firstname' => $data['firstname'],
+                'middlename' => $data['middlename'],
+                'present_address' => $data['address'],
+                'sex' => strtolower($data['sex'] ?? ''),
+                'civil_status' => strtolower($data['civil status'] ?? ''),
+                'birthday' => $this->transformDate($data['birthday']),
+                'age' => $data['age'],
+                'bp_no' => $data['bp no'],
+                'gsis_no' => $data['gsis id'],
+                'pagibig_no' => $data['pagibig id'],
+                'sss_no' => $data['sss id'],
+                'philhealth_no' => $data['philhealth id'],
+                'tin_no' => $data['tin id'],
+            ]);
+
+            EmployeePersonal::create(
                 [
+                    'employee_no' => $data['employee no.'],
                     'lastname' => $data['lastname'],
                     'firstname' => $data['firstname'],
                     'middlename' => $data['middlename'],

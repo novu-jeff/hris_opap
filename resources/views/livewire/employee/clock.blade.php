@@ -102,10 +102,22 @@
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">
                         {{ \Carbon\Carbon::now()->format('F Y') }}
-                    </h1>                    
+                    </h1> 
+                                      
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <a
+                            href="{{ route('employee.accomplishment.download.monthly') }}"
+                            class="btn btn-success">
+                
+                            <i class="fa-solid fa-file-pdf me-1"></i>
+                            Download Monthly Report
+                
+                        </a>
+                    </div>
+                
                     @if (!empty($logs))
                         <div class="accordion" id="logsAccordion">
                             @foreach($logs as $item)

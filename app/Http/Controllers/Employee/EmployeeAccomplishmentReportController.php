@@ -57,4 +57,42 @@ class EmployeeAccomplishmentReportController extends Controller
             '.pdf'
         );
     }
+
+
+    public function downloadMonthly()
+    {
+        $employeeNo = auth()->user()->employee_no;
+
+        $employee = EmployeeInformation::with('personal')
+            ->where('employee_no', $employeeNo)
+            ->firstOrFail();
+
+        $logs = EmployeeTimelogs::where('employee_id', $employeeNo)
+            ->whereMonth('timestamp', now()->month)
+            ->whereYear('timestamp', now()->year)
+            ->orderBy('timestamp')
+            ->get()
+            ->groupBy(function ($item) {
+                return Carbon::parse($item->timestamp)->format('Y-m-d');
+            });
+
+        $pdf = Pdf::loadView(
+            'employee.pdf.employee-accomplishment-report-monthly',
+            [
+                'employee' => $employee,
+                'month'    => now(),
+                'logs'     => $logs,
+            ]
+        );
+
+        return $pdf->download(
+            'Monthly_Accomplishment_Report_' .
+            $employee->employee_no .
+            '_' .
+            now()->format('Ym') .
+            '.pdf'
+        );
+    }
+
+
 }
