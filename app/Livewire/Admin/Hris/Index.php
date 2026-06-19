@@ -316,6 +316,7 @@ class Index extends Component
 
             $spreadsheet = IOFactory::load($absolutePath);
             $sheetNames  = $spreadsheet->getSheetNames();
+            
             $sheetsData  = Excel::toArray(new EmployeeImports, $absolutePath);
 
             $this->validateUploaded($spreadsheet, $sheetNames);
@@ -329,7 +330,7 @@ class Index extends Component
 
             foreach ($sheetsData as $index => $sheet) {
                 $sheetName = $sheetNames[$index];
-
+                Log::info($sheetName);
                 $sheet = array_slice($sheet, 1);
                 $sheet = array_filter($sheet, fn ($row) =>
                     isset($row[0]) && !empty($row[0]) &&
