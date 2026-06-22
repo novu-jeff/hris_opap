@@ -838,12 +838,35 @@ class DailyTimeRecordService {
         }
 
         # Undertime
-        if ($lastLog->lessThan($scheduledOut)) {
+       /* if ($lastLog->lessThan($scheduledOut)) {
             $minutesUndertime = $scheduledOut->diffInMinutes($lastLog);
+            Log::info('minutesUndertime', ['minutesUndertime' => $minutesUndertime, 'scheduledOut' => $scheduledOut, 'lastLog' => $lastLog]);
             $UNDERTIME_MINUTES += $minutesUndertime;
             $UNDERTIME_FREQ++;
             $ownRemark[] = 'Undertime';
             // Intentionally not logging per-employee/per-day undertime in production.
+        }*/
+
+        if (empty($timeOut)) {
+            // No logout = whole day deduction (8 hours)
+            $UNDERTIME_MINUTES += 480;
+            $UNDERTIME_FREQ++;
+            Log::info('UNDERTIME_MINUTES', ['UNDERTIME_MINUTES' => $UNDERTIME_MINUTES]);
+            $ownRemark[] = 'Undertime';
+            $ownRemark[] = 'No Logout';
+        } elseif ($lastLog->lessThan($scheduledOut)) {
+            // Normal undertime computation
+            $minutesUndertime = $scheduledOut->diffInMinutes($lastLog);
+        
+            Log::info('minutesUndertime', [
+                'minutesUndertime' => $minutesUndertime,
+                'scheduledOut' => $scheduledOut,
+                'lastLog' => $lastLog,
+            ]);
+        
+            $UNDERTIME_MINUTES += $minutesUndertime;
+            $UNDERTIME_FREQ++;
+            $ownRemark[] = 'Undertime';
         }
 
         return [
