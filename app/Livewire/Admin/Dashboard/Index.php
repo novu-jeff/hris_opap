@@ -73,7 +73,50 @@ class Index extends Component
             ->first();
 
         $clockinout = EmployeeTimelogs::whereDate('created_at', Carbon::today())->get();
-        
+        $mergedLogs = EmployeeTimelogs::getTodayAttendanceSummary();
+       // dd($mergedLogs);
+
+        $clockedIn = 0;
+        $clockedOut = 0;
+        $inProgress = 0;
+
+        foreach ($mergedLogs as $employeeId => $logs) {
+
+            $count = $logs->count();
+
+            if ($count > 0) {
+                $clockedIn++;
+            }
+
+            $hasClockOut = false;
+
+            // Flexible schedule
+            if ($count >= 2) {
+                $hasClockOut = true;
+            }
+
+            // Breaktime schedule
+            if ($count >= 4) {
+                $hasClockOut = true;
+            }
+
+            if ($hasClockOut) {
+                $clockedOut++;
+            } else {
+                $inProgress++;
+            }
+        }
+
+        $clockedIn = $mergedLogs->count();
+
+        $clockedOut = $mergedLogs->filter(function ($logs) {
+            return $logs->count() >= 2;
+        })->count();
+
+        $inProgress = $clockedIn - $clockedOut;
+
+
+
         $this->companyInfo = $this->getCompanyInformation();
 
         $payrollCounts = DB::table('payroll_salary')
@@ -93,9 +136,9 @@ class Index extends Component
             ],
             'employee' => $employeeCounts,
             'clockinout' => [
-                'clockin' => $clockinout->whereNotNull('clock_in')->count(),
-                'inprogress' => $clockinout->whereNotNull('clock_in')->whereNull('clock_out')->count(),
-                'clockout' => $clockinout->whereNotNull('clock_out')->count(),
+                'clockin' => $clockedIn,
+                'inprogress' => $inProgress,
+                'clockout' => $clockedOut,
             ],
             'leave' => [
                 'pending' => $leaveCounts['pending'] ?? 0,

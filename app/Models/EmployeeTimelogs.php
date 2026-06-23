@@ -119,6 +119,27 @@ class EmployeeTimelogs extends Model
         }
     }
 
+    public static function getTodayAttendanceSummary()
+    {
+        $today = Carbon::today();
+
+        $webLogs = DB::connection('mysql')
+            ->table('timelogs')
+            ->whereDate('timestamp', $today)
+            ->get();
+
+        $attendanceLogs = DB::connection('mysql2')
+            ->table('attendances')
+            ->whereDate('timestamp', $today)
+            ->get();
+
+        $merged = $webLogs
+            ->concat($attendanceLogs)
+            ->groupBy('employee_id');
+
+        return $merged;
+    }
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
