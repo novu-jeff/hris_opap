@@ -15,36 +15,27 @@
                                     $hideClockCard = $hideClockInDueToExternalLog;
                                 @endphp
                                 @if(!$hideClockCard)
-                                <div
-                                    data-status="{{ $status }}"
-                                    id="clockActionCard"
-                                    class="@if(!$hideClockCard)clock-process @endif card border-3
-                                        {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }}
-                                        {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }}
-                                        {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}"
-                                >
+                                <div data-status="{{ $status }}"
+                                    class="@if(!$hideClockCard)clock-process @endif card border-3 
+                                        {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }} 
+                                        {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }} 
+                                        {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}" 
+                                    wire:target="capture">
                                     <div class="card-body d-flex align-items-center">
                                         <div>
                                             <div class="d-flex justify-content-center">
-                                                <span class="clock-label">
+                                                <span wire:loading.remove wire:target="capture">
                                                 </span>
-
-                                                <span class="clock-loading d-none">
+                                                <span wire:loading wire:target="capture">
                                                     <i class="fa-solid fa-spinner fa-spin"></i>
                                                 </span>
                                             </div>
-
                                             <div class="text-center fw-bold text-uppercase mt-1">
-                                                <span class="clock-label">
-                                                    {{ $status }}
-                                                </span>
-
-                                                <span class="clock-loading d-none">
-                                                    Processing...
-                                                </span>
+                                                <span wire:loading.remove wire:target="capture"> {{$status}}</span>
+                                                <span wire:loading wire:target="capture">Saving...</span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div>      
                                 </div>
                                 @endif
                                 @if ($hideClockCard)
@@ -449,38 +440,4 @@
     $(function() {
         initializeClockFace();
     })
-
-    let clockProcessing = false;
-
-$(document).on('click', '.clock-process', function (e) {
-
-    if (clockProcessing) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    clockProcessing = true;
-
-    const card = $('#clockActionCard');
-
-    card.addClass('clock-process-disabled');
-
-    $('.clock-label').addClass('d-none');
-    $('.clock-loading').removeClass('d-none');
-});
-
-window.addEventListener('reset-clock-button', function () {
-
-    clockProcessing = false;
-
-    const card = $('#clockActionCard');
-
-    card.removeClass('clock-process-disabled');
-
-    $('.clock-label').removeClass('d-none');
-    $('.clock-loading').addClass('d-none');
-});
 </script>
-
-
