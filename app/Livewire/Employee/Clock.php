@@ -50,6 +50,8 @@ class Clock extends Component
     public $accomplishment_type;
     public $accomplishment_details;
 
+    public $isProcessing = false;
+
    /* public $accomplishmentOptions = [
         'System Development',
         'Bug Fixing',
@@ -297,7 +299,155 @@ class Clock extends Component
         return $this->status === 'Clock Out' || $this->isForcedOut;
     }
 
-   public function triggerClock()
+    
+
+    public function triggerClock()
+    {
+        if ($this->isProcessing) {
+            return;
+        }
+
+        $this->isProcessing = true;
+
+        try {
+
+            if ($this->hideClockInDueToExternalLog && $this->status === 'Clock In') {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'info',
+                    'title' => 'Already checked in',
+                    'message' => 'Your attendance was already recorded today (e.g. biometric device).',
+                ]);
+                return;
+            }
+
+            if($this->status == 'Done') {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'info',
+                    'title' => 'Please be informed',
+                    'message' => 'You\'ve completed today\'s work.',
+                ]);
+                return;
+            }
+
+            if (!$this->isFaceDetected) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'info',
+                    'title' => 'No Face Detected',
+                    'message' => 'No face detected. Please ensure your face is visible to the camera.',
+                ]);
+                return;
+            }
+
+            if (empty($this->imageCaptured)) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Image Missing',
+                    'message' => 'No image was captured.',
+                ]);
+
+                return;
+            }
+
+            if (
+                $this->accomplishment_type === 'Upload Accomplishment Report'
+                && !$this->upload_accomplishment
+            ) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Required',
+                    'message' => 'Please upload an accomplishment report.',
+                ]);
+
+                return;
+            }
+
+            if (
+                ($this->status === 'Clock Out' || $this->isForcedOut)
+                && empty($this->accomplishment_type)
+            ) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Accomplishment Required',
+                    'message' => 'Please select your accomplishment before clocking out.',
+                ]);
+
+                return;
+            }
+
+            if (
+                $this->accomplishment_type === 'Others'
+                && empty($this->accomplishment_details)
+            ) {
+                $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Required',
+                    'message' => 'Please specify your accomplishment.',
+                ]);
+
+                return;
+            }
+
+            if (
+                $this->accomplishment_type === 'Upload Accomplishment Report'
+                && $this->upload_accomplishment
+            ) {
+                $file = $this->upload_accomplishment;
+
+                $fileName = $this->employee_no . '_' . time() . '.' .
+                    $file->getClientOriginalExtension();
+
+                $file->storeAs(
+                    'accomplishments',
+                    $fileName,
+                    'public'
+                );
+
+                $this->accomplishment = $fileName;
+            }
+
+            $service = app(ClockInOutService::class);
+
+            $toProcess = [
+                'timestamp' => Carbon::now(),
+                'captured_image' => $this->imageCaptured,
+                'captured_location' => $this->gps_location,
+                'accomplishment' => $this->accomplishment ?? null,
+                'accomplishment_type' => $this->accomplishment_type,
+                'accomplishment_details' => $this->accomplishment_details,
+            ];
+
+            $response = $service->process(
+                $this->entry,
+                $toProcess,
+                $this->employee_no
+            );
+
+            $this->dispatch('alert', [
+                'showAlert' => true,
+                'status' => $response['alert'],
+                'title' => $response['title'],
+                'message' => $response['message'],
+            ]);
+
+            $this->toggleStatus();
+
+            // Re-enable button on frontend
+            $this->dispatch('reset-clock-button');
+
+        } finally {
+
+            $this->isProcessing = false;
+        }
+    }
+
+   public function triggerClock_bk()
     {
         if ($this->hideClockInDueToExternalLog && $this->status === 'Clock In') {
             $this->dispatch('alert', [
@@ -444,7 +594,8 @@ class Clock extends Component
         ]);
 
         $this->toggleStatus();
-        
+
+        $this->dispatch('reset-clock-button');
     }
 
     public function delete()
