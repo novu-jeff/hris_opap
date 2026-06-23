@@ -654,7 +654,7 @@ class Index extends Component
         // -------------------------------
         // DUPLICATE PAYROLL CHECK
         // -------------------------------
-        if ($employmentTypeId) {
+       /* if ($employmentTypeId) {
             $exists = $this->activeSalaryPayrollExists(
                 $employmentTypeId,
                 $cutoff,
@@ -670,7 +670,7 @@ class Index extends Component
             }
 
            
-        }
+        }*/
 
         // All good
         return ['valid' => true];
@@ -1032,7 +1032,7 @@ class Index extends Component
         // DUPLICATE PAYROLL CHECK
         // ------------------------------------------------------
 
-        if($type == 'salary'){
+       /* if($type == 'salary'){
             $exists = $this->activeSalaryPayrollExists(
                 $employmentTypeId,
                 $this->cut_off_period,
@@ -1043,7 +1043,7 @@ class Index extends Component
                 
                 return $this->showErrorAlert('Duplicate Payroll', 'This payroll already exists for the same cut-off period and payroll date.');
             }
-       }
+       }*/
 
 //dd('checking');
         // Create payroll record
