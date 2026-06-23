@@ -83,9 +83,12 @@ class DailyTimeRecordService {
         
 
 
-        $employee = EmployeePersonal::where('employee_no', $employee_no)
+       /* $employee = EmployeePersonal::where('employee_no', $employee_no)
             ->first()
-            ->toArray() ?? [];
+            ->toArray() ?? [];*/
+        $employee = optional(
+            EmployeePersonal::where('employee_no', $employee_no)->first()
+        )->toArray() ?? [];    
 
 
         $logs = $this->processLogs($employee, $logs);
