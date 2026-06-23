@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\Reports\Payroll\PayrollOtReportController;
 use App\Http\Controllers\Admin\Reports\Pagibig\PagibigController;
 use App\Http\Controllers\Admin\Reports\Philhealth\PhilhealthController;
 use App\Http\Controllers\Admin\Reports\SSS\SSSController;
+use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DtrController;
 use App\Http\Controllers\Admin\RequestStatusController as ESSRequestStatusController;
 use App\Http\Controllers\Admin\SchedulerController;
 use App\Http\Controllers\Admin\Settings\HRIS\BankInformationController;
@@ -350,6 +351,11 @@ Route::prefix('admin')->group(function() {
 
             Route::get('pagibig', [PagibigController::class, 'index'])
                 ->name('reports.pagibig');
+
+            Route::get(
+                '/reports/dtr/download-all/{month}/{year}/{employees}',
+                [DtrController::class, 'downloadAll']
+            )->name('dtr.download-all');    
         });
         
         Route::prefix('others/uploads')->group( function() {
