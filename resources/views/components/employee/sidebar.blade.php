@@ -51,9 +51,9 @@
             <i class="fa-solid fa-briefcase"></i> Official Business
         </a>
 
-       <!-- <a href="{{ route('employee.clock') }}" class="menu-item clock-button">
+        <a href="{{ route('employee.clock') }}" class="menu-item clock-button">
             <i class="fa-solid fa-clock"></i> Clock In / Out
-        </a>-->
+        </a>
         <a href="{{ route('employee.team') }}" class="menu-item">
             <i class="fa-solid fa-users"></i> My Team
         </a>
