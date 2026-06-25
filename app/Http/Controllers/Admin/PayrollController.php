@@ -16,7 +16,11 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        $employmentTypes = EmployementTypes::with(['setting'])->get();
+        $employmentTypes = EmployementTypes::with('setting')
+        ->orderByRaw("
+            FIELD(code, 'RC', 'COS', 'COS2', 'JO', 'RC2')
+        ")
+        ->get();
 
         $defaultActions = 'salary';
         $defaultEmploymentType = $employmentTypes[0]->name;
