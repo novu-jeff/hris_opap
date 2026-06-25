@@ -72,7 +72,15 @@ class Index extends Component
         $this->shifts = ShiftSchedule::all();
         $this->schedules = EmployeeSchedule::all();
         $this->roles = EmployementTypes::all();
-        $this->employmentTypes = EmployementTypes::all();
+        $this->employmentTypes = EmployementTypes::orderByRaw("
+                FIELD(code,
+                    'RC',
+                    'COS',
+                    'COS2',
+                    'JO',
+                    'RC2'
+                )
+            ")->get();
 
         if(session('dispatch') == 'isTransfering') {
             $this->dispatch('alert', [
