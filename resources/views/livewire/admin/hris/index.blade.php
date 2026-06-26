@@ -180,6 +180,12 @@
                     </li>
                 @endforeach
                 <li class="nav-item d-flex gap-3 my-3" role="presentation">
+                    <a href="{{ route('hris.index', ['employment_type' => 'inactive']) }}"
+                    class="nav-link text-uppercase fw-bold {{ $selectedType === 'inactive' ? 'active' : '' }}">
+                        Inactive
+                    </a>
+                </li>
+                <li class="nav-item d-flex gap-3 my-3" role="presentation">
                     <a href="{{ route('hris.index', ['employment_type' => 'unassigned']) }}"
                     class="nav-link text-uppercase fw-bold {{ $selectedType === 'unassigned' ? 'active' : '' }}">
                         Unassigned
