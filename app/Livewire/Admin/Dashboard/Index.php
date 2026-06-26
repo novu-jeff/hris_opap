@@ -14,6 +14,7 @@ use App\Models\SocialSecurityBilling;
 use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
+use App\Models\JobPosts;
 use Carbon\Carbon;
 use Faker\Provider\ar_EG\Company;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,24 @@ class Index extends Component
                 ->pluck('total', 'status')
                 ->toArray();
 
+            $vacantPositions = JobPosts::with('employment_type')
+                ->whereHas('employment_type', function ($q) {
+                    $q->whereIn('code', ['RC', 'COS']);
+                })
+                ->get();
+            
+            $vacantStats = $vacantPositions
+                ->groupBy(fn ($job) => $job->employment_type->code)
+                ->map(function ($jobs) {
+                    return [
+                        'employment_type' => $jobs->first()->employment_type->name,
+                        'employment_code' => $jobs->first()->employment_type->code,
+                        'positions' => $jobs->count(),   // Total job posts
+                    ];
+                });
+            
+            $totalPositions = $vacantStats->sum('positions');      
+
         $this->stats = [
             'recruitment' => [
                 'pending' => $recruitmentCounts['pending'] ?? 0,
@@ -161,6 +180,10 @@ class Index extends Component
             'payroll' => [
                 'approved' => $payrollCounts['approved'] ?? 0,
                 'pending'  => $payrollCounts['pending'] ?? 0,
+            ],
+            'vacant_positions' => [
+                'positions' => $vacantStats,
+                'total' => $totalPositions,
             ],
         ];
         

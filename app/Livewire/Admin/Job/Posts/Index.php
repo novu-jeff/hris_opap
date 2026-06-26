@@ -18,6 +18,12 @@ class Index extends Component
     protected $paginationTheme = 'bootstrap';
     public $entries = 5;
     public $search = '';
+    public $employment_type = '';
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'employment_type' => ['except' => ''],
+    ];
 
     public function remove(bool $isNotify = true, int $id = null) {
 
@@ -74,7 +80,15 @@ class Index extends Component
     public function render()
     {
 
-        $model = JobPosts::query();
+        //$model = JobPosts::query();
+        $model = JobPosts::query()->with('employment_type');
+
+        if ($this->employment_type) {
+
+            $model->whereHas('employment_type', function ($q) {
+                $q->where('code', $this->employment_type);
+            });
+        }
 
         if ($this->search) {
 
