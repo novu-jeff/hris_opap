@@ -565,7 +565,7 @@ class Index extends Component
                 'showAlert' => true,
                 'status' => 'error',
                 'title' => 'Oops!',
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Errors: ' . $e->getMessage(),
                 'isRemoveRowDT' => false,
                 'isReloadDT' => true,
             ]);
@@ -721,6 +721,7 @@ class Index extends Component
         DB::beginTransaction();
         
         $record = JobApplicants::with('applicant', 'job')->find($this->selected_id);
+       // dd($this->selected_id,$record->toArray());
 
         if(!$record) {
 
@@ -735,7 +736,7 @@ class Index extends Component
 
         try {
 
-            $process->save(true, $record->user_id, $this->selected_id);
+            $process->save(true, '',$record->id, null);
 
             $account = EmployeeAccount::where('applicant_id', $record->applicant->id)
                 ->first();
@@ -762,7 +763,7 @@ class Index extends Component
                 'password' => $password['plain'],
             ];
 
-            Mail::to($record->applicant->email)
+           Mail::to($record->applicant->email)
                 ->send(new SendEmployeeAccount($data));
 
             DB::commit();
