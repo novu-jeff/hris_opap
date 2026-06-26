@@ -226,6 +226,47 @@
                         <div class="col-12 mb-3">
                             <div class="card">
                                 <div class="card-header bg-primary text-white px-4">
+                                    <h5 class="my-2 text-uppercase fw-bold">
+                                        <i class="fa fa-briefcase me-2"></i>
+                                        Vacant Positions
+                                    </h5>
+                                </div>
+                        
+                                <div class="card-body">
+                        
+                                    @foreach($stats['vacant_positions']['positions'] as $vacancy)
+
+                                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+
+                                        <div>
+                                            <strong>{{ $vacancy['employment_type'] }}</strong><br>
+                                            <small>{{ $vacancy['positions'] }} Position(s)</small>
+                                        </div>
+
+                                        <a href="{{ route('job.posts.index', [
+                                            'employment_type' => $vacancy['employment_code']
+                                        ]) }}"
+                                        class="btn btn-sm btn-primary">
+                                            View
+                                        </a>
+
+                                    </div>
+
+                                    @endforeach
+
+                                    <hr>
+
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total Positions</span>
+                                        <span>{{ $stats['vacant_positions']['total'] }}</span>
+                                    </div>
+                        
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white px-4">
                                     <h5 class="my-2 text-uppercase fw-bold">Payroll Summary</h5>
                                 </div>
                                 <div class="card-body px-4">
