@@ -33,16 +33,24 @@ use function PHPUnit\Framework\isEmpty;
 class HRISProcessingService extends Controller
 {
 
-    public function save(bool $isFirstTime = false, string $employee_no, ?string $job_id = null, ?string $target, ?array $data = null) 
-    {    
+    public function save( bool $isFirstTime = false, ?string $employee_no = null, ?string $job_id = null, ?string $target = null, ?array $data = null) 
+    {   
+       
 
-        $record = ApplicantUsers::with(['applied' => function ($query) use ($job_id) {
+        $record = ApplicantUsers::with([
+            'applied' => function ($query) use ($job_id) {
                 $query->where('id', $job_id)->with('offer');
-            }])
-            ->whereHas('applied', function ($query) use ($job_id) {
-                $query->where('id', $job_id);
-            })
-            ->first();
+            }
+        ])
+        ->whereHas('applied', function ($query) use ($job_id) {
+            $query->where('id', $job_id);
+        })
+        ->first();
+
+      /*  dd([
+            'jobApplicantId' => $job_id,
+            'record' => $record?->toArray(),
+        ]);*/
         
         if ($isFirstTime && $record) {
 
@@ -269,7 +277,7 @@ class HRISProcessingService extends Controller
             'height' => $data['height'] ?? null,
             'weight' => $data['weight'] ?? null,
             'blood_type' => $data['blood_type'] ?? null,
-            'bp_no' => $data['bp_no'],
+            'bp_no' => $data['bp_no'] ?? null,
             'gsis_no' => $data['gsis_no'] ?? null,
             'pagibig_no' => $data['pagibig_no'] ?? null,
             'philhealth_no' => $data['philhealth_no'] ?? null,
