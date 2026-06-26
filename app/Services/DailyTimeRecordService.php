@@ -973,99 +973,125 @@ Log::info('return aut', ['aut' => $aut]);
         
         if ($officialBusiness) {
 
-            /*
-            |--------------------------------------------------------------------------
-            | HR POLICY
-            |--------------------------------------------------------------------------
-            | Official Business is considered WORK TIME.
-            |--------------------------------------------------------------------------
-            |
-            | Case 1
-            | IN -> OB -> OUT
-            | Worked = IN -> OUT
-            |
-            | Case 2
-            | OB -> IN -> OUT
-            | Worked = OB + Office
-            |
-            | Case 3
-            | OB only
-            | Worked = OB only
-            |--------------------------------------------------------------------------
-            */
-        
             $obDeparture = Carbon::parse($date.' '.$officialBusiness->departure_time);
             $obArrival   = Carbon::parse($date.' '.$officialBusiness->arrival_time);
         
-            $obMinutes = $obDeparture->diffInMinutes($obArrival);
+            $requiredMinutes = (int) ($employeeSchedule->work_hours * 60);
         
-            $requiredMinutes = (int)($employeeSchedule->work_hours * 60);
+            /*
+            |--------------------------------------------------------------------------
+            | Official Business is credited as WORK.
+            |--------------------------------------------------------------------------
+            |
+            | Total Worked Minutes
+            |
+            | =
+            | Office Before OB
+            | +
+            | Official Business
+            | +
+            | Office After OB
+            |
+            */
         
             $workedMinutes = 0;
         
-            // -------------------------------------------------------
-            // CASE 1 : Employee logged in before leaving for OB
-            // -------------------------------------------------------
-            if (!empty($timeIn) && !empty($timeOut) && $firstLog->lte($obDeparture)) {
+            /*
+            |--------------------------------------------------------------------------
+            | Office Before Official Business
+            |--------------------------------------------------------------------------
+            */
         
-                $workedMinutes = $firstLog->diffInMinutes($lastLog);
+            if (!empty($timeIn)) {
         
-                if (
-                    $employeeSchedule->is_breaktime_required &&
-                    !empty($breakOut) &&
-                    !empty($breakIn)
-                ) {
-                    $workedMinutes -= Carbon::parse($date.' '.$breakOut)
-                        ->diffInMinutes(
-                            Carbon::parse($date.' '.$breakIn)
-                        );
-                }
-            }
+                $officeStart = $firstLog;
         
-            // -------------------------------------------------------
-            // CASE 2 : Employee logged only after returning from OB
-            // -------------------------------------------------------
-            elseif (!empty($timeIn) && !empty($timeOut)) {
+                $officeEnd = $lastLog;
         
-                $officeMinutes = $firstLog->diffInMinutes($lastLog);
+                /*
+                |--------------------------------------------------------------------------
+                | Employee left for OB after clocking in
+                |--------------------------------------------------------------------------
+                */
         
-                if (
-                    $employeeSchedule->is_breaktime_required &&
-                    !empty($breakOut) &&
-                    !empty($breakIn)
-                ) {
-                    $officeMinutes -= Carbon::parse($date.' '.$breakOut)
-                        ->diffInMinutes(
-                            Carbon::parse($date.' '.$breakIn)
-                        );
+                if ($firstLog->lt($obDeparture)) {
+        
+                    $officeEnd = $obDeparture;
+        
+                    $workedMinutes += $officeStart->diffInMinutes($officeEnd);
                 }
         
-                $workedMinutes = $obMinutes + $officeMinutes;
             }
         
-            // -------------------------------------------------------
-            // CASE 3 : No office logs
-            // -------------------------------------------------------
-            else {
+            /*
+            |--------------------------------------------------------------------------
+            | Official Business Minutes
+            |--------------------------------------------------------------------------
+            */
         
-                $workedMinutes = $obMinutes;
+            $obMinutes = $obDeparture->diffInMinutes($obArrival);
+        
+            $workedMinutes += $obMinutes;
+        
+            /*
+            |--------------------------------------------------------------------------
+            | Returned to office after OB
+            |--------------------------------------------------------------------------
+            */
+        
+            if (!empty($timeOut) && $lastLog->gt($obArrival)) {
+        
+                $workedMinutes += $obArrival->diffInMinutes($lastLog);
+        
             }
         
-            Log::info('OB Worked Minutes', [
-                'timeIn' => $timeIn,
-                'timeOut' => $timeOut,
-                'obDeparture' => $obDeparture->format('H:i'),
-                'obArrival' => $obArrival->format('H:i'),
-                'workedMinutes' => $workedMinutes,
-                'requiredMinutes' => $requiredMinutes,
+            /*
+            |--------------------------------------------------------------------------
+            | Deduct lunch only once
+            |--------------------------------------------------------------------------
+            */
+        
+            if (
+                $employeeSchedule->is_breaktime_required &&
+                !empty($breakOut) &&
+                !empty($breakIn)
+            ) {
+        
+                $lunchMinutes = Carbon::parse($date.' '.$breakOut)
+                    ->diffInMinutes(
+                        Carbon::parse($date.' '.$breakIn)
+                    );
+        
+                $workedMinutes -= $lunchMinutes;
+            }
+        
+            Log::info('Official Business Computation', [
+        
+                'office_before_ob' => isset($officeStart)
+                    ? $officeStart->format('H:i').' - '.$officeEnd->format('H:i')
+                    : null,
+        
+                'ob' => $obDeparture->format('H:i').' - '.$obArrival->format('H:i'),
+        
+                'returned_after_ob' =>
+                    (!empty($timeOut) && $lastLog->gt($obArrival))
+                        ? $obArrival->format('H:i').' - '.$lastLog->format('H:i')
+                        : null,
+        
+                'worked_minutes' => $workedMinutes,
+        
+                'required_minutes' => $requiredMinutes,
+        
             ]);
         
             if ($workedMinutes < $requiredMinutes) {
         
                 $UNDERTIME_MINUTES = $requiredMinutes - $workedMinutes;
+        
                 $UNDERTIME_FREQ++;
         
                 $ownRemark[] = 'Undertime';
+        
             }
         
         } else {
