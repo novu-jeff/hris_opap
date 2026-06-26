@@ -197,6 +197,9 @@ class DailyTimeRecordService {
         $leaves = $this->getTotalLeaves($employee_no, $dateInput);
         $leavesCount += $leaves['count'];
         $leavesCollection = collect($leaves['dates']);
+        
+        $officialBusiness = $this->getOfficialBusiness($employee_no, $dateInput);
+        $officialBusinessCollection = collect($officialBusiness['dates']);
 
        // $overtime = $this->getTotalOvertime($employee_no, $dateInput);
        $overtime = $this->getUpdatedTotalOvertime($employee_no, $dateInput);
@@ -236,7 +239,31 @@ class DailyTimeRecordService {
                 $isLeave  = true;
             }
 
-            $checkAttendance = $this->checkAttendance($dateString,$date_is_in_logs,$weeklySchedule, $dayName, $isFuture, $isLeave);
+            $matchOfficialBusiness = $officialBusinessCollection->first(function ($obs) use ($dateString) {
+                return $obs->date === $dateString;
+            });
+            
+            $isOfficialBusiness = false;
+            
+            if ($matchOfficialBusiness) {
+            
+                $isOfficialBusiness = true;
+            
+                $remarks[] = 'Official Business';
+            }
+
+            if ($matchOfficialBusiness) {
+
+                $formattedLogs[$dateString]['official_business'] = [
+                    'destination'    => $matchOfficialBusiness->destination,
+                    'purpose'        => $matchOfficialBusiness->purpose,
+                    'departure_time' => $matchOfficialBusiness->departure_time,
+                    'arrival_time'   => $matchOfficialBusiness->arrival_time,
+                ];
+            
+            }
+
+            $checkAttendance = $this->checkAttendance($dateString,$date_is_in_logs,$weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness);
             
             if ($checkAttendance['isAbsent']) $absences++;
             if ($checkAttendance['isWorkedDays']) $workedDays++;
@@ -263,12 +290,15 @@ class DailyTimeRecordService {
                 return $ot->date === $dateString;
             });
 
+           
+
             if (isset($logs[$dateString])) {
                 $formattedLogs[$dateString] = $logs[$dateString];
 
                 # aut 
-                $aut = $this->undertimeAndTardiness($employee_no, $employeeSchedule, $dateLogs,$dateString);
-
+                $aut = $this->undertimeAndTardiness($employee_no, $employeeSchedule, $dateLogs,$dateString, $matchOfficialBusiness);
+//dd($aut);
+Log::info('return aut', ['aut' => $aut]);
                 # Assign the correct values to formatted logs
                 $formattedLogs[$dateString]['aut']['tardiness']['minutes'] = $aut['tardiness_minutes'];
                 $formattedLogs[$dateString]['aut']['undertime']['minutes'] = $aut['undertime_minutes'];
@@ -307,6 +337,21 @@ class DailyTimeRecordService {
                 $formattedLogs[$dateString]['isFuture'] = $isFuture;
                 $formattedLogs[$dateString]['is_break_required'] = $is_break_required;
             } else {
+
+                 // No timelog but has an approved Official Business
+                if ($isOfficialBusiness) {
+
+                    $remarks[] = 'No Attendance Record';
+
+                    $formattedLogs[$dateString]['official_business'] = [
+                        'destination'    => $matchOfficialBusiness->destination,
+                        'purpose'        => $matchOfficialBusiness->purpose,
+                        'departure_time' => $matchOfficialBusiness->departure_time,
+                        'arrival_time'   => $matchOfficialBusiness->arrival_time,
+                    ];
+
+                }
+
                 $formattedLogs[$dateString] = [
                     'bsd_no' => null,
                     'clock_in' => null,
@@ -529,6 +574,41 @@ class DailyTimeRecordService {
         ];
     }
 
+    private function getOfficialBusiness($employeeNo, $dateInput)
+    {
+        $query = DB::table('employee_business_slips')
+            ->select(
+                'date_filed as date',
+                'departure_time',
+                'arrival_time',
+                'destination',
+                'purpose'
+            )
+            ->where('employee_no', $employeeNo)
+            ->where('status', 'approved')
+            ->where('isDeleted', false);
+
+        if (is_string($dateInput) && preg_match('/^\d{2}-\d{4}$/', $dateInput)) {
+
+            [$month, $year] = explode('-', $dateInput);
+
+            $query->whereMonth('date_filed', (int) $month)
+                ->whereYear('date_filed', (int) $year);
+
+        } elseif (is_array($dateInput) && count($dateInput) === 2) {
+
+            $query->whereBetween('date_filed', $dateInput);
+
+        }
+
+        $records = $query->get();
+
+        return [
+            'count' => $records->count(),
+            'dates' => $records,
+        ];
+    }
+
     /**
      * Check and determine the attendance status and related remarks for a specific date.
      *
@@ -553,7 +633,7 @@ class DailyTimeRecordService {
      *                                    - 'isWorkedOnLegalHolidays': bool
      *                                    - 'isWorkedOnSpecialHolidays': bool
      */
-    private function checkAttendance($dateString,  $date_is_in_logs, $weeklySchedule, $dayName, $isFuture, $isLeave)
+    private function checkAttendance($dateString,  $date_is_in_logs, $weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness = false)
     {
         # Skip if today
         if (Carbon::parse($dateString)->isToday()) {
@@ -650,7 +730,8 @@ class DailyTimeRecordService {
                 $ownRemarks[] = 'Holiday Work';
             }
             $workedDays = true;
-        } elseif ($isScheduled && !$isHoliday && !$isFuture && !$isLeave) {
+        } elseif ($isScheduled && !$isHoliday && !$isFuture && !$isLeave &&
+        !$isOfficialBusiness) {
             $absent = true;
             $ownRemarks[] = 'Absent';
         }
@@ -795,7 +876,7 @@ class DailyTimeRecordService {
      *                                     - 'remarks': Array of remarks (e.g. Late, Undertime, Discrepancy)
      *                                     - 'is_break_required': Whether break time was required on that day
      */
-    private function undertimeAndTardiness($employee_no, $employeeSchedule, $log, $date)
+    private function undertimeAndTardiness($employee_no, $employeeSchedule, $log, $date, $officialBusiness = null)
     {
         $TARDINESS_MINUTES = 0;
         $TARDINESS_FREQ = 0;
@@ -827,17 +908,56 @@ class DailyTimeRecordService {
 
         # Get scheduled shift
         [$scheduledIn, $scheduledOut, $scheduledBreakIn, $scheduledBreakOut] = $this->getScheduledInOut($employeeSchedule, $date, $firstLog);
-
+      // dd($scheduledIn, $scheduledOut);
         if (!$scheduledIn || !$scheduledOut) {
             Log::warning("Missing schedule for {$employee_no} on {$date}");
         }
 
-        # Tardiness
-        if ($firstLog->greaterThan($scheduledIn)) {
-            $minutesLate = $firstLog->diffInMinutes($scheduledIn);
-            $TARDINESS_MINUTES += $minutesLate;
-            $TARDINESS_FREQ++;
-            $ownRemark[] = 'Late';
+        if ($officialBusiness) {
+
+            $obDeparture = Carbon::parse($date.' '.$officialBusiness->departure_time);
+            $obArrival   = Carbon::parse($date.' '.$officialBusiness->arrival_time);
+        
+        }
+        
+        if ($officialBusiness) {
+
+            if ($obDeparture->lte($scheduledIn)) {
+        
+                // Employee left for official business
+                // Ignore late
+            } else {
+        
+                if ($firstLog->greaterThan($scheduledIn)) {
+        
+                    $minutesLate = $firstLog->diffInMinutes($scheduledIn);
+        
+                    if ($firstLog->greaterThan($obDeparture)) {
+        
+                        $minutesLate = $obDeparture->diffInMinutes($scheduledIn);
+        
+                    }
+        
+                    if ($minutesLate > 0) {
+                        Log::info('Minutes late', ['minutesLate' => $minutesLate]);
+                        $TARDINESS_MINUTES += $minutesLate;
+                        $TARDINESS_FREQ++;
+                        $ownRemark[] = 'Late';
+        
+                    }
+        
+                }
+        
+            }
+        
+        } else {
+            # Tardiness
+            if ($firstLog->greaterThan($scheduledIn)) {
+                $minutesLate = $firstLog->diffInMinutes($scheduledIn);
+                $TARDINESS_MINUTES += $minutesLate;
+                $TARDINESS_FREQ++;
+                $ownRemark[] = 'Late';
+            }
         }
 
         # Undertime
@@ -849,28 +969,128 @@ class DailyTimeRecordService {
             $ownRemark[] = 'Undertime';
             // Intentionally not logging per-employee/per-day undertime in production.
         }*/
-
-        if (empty($timeOut)) {
-            // No logout = whole day deduction (8 hours)
-            $UNDERTIME_MINUTES += 480;
-            $UNDERTIME_FREQ++;
-            Log::info('UNDERTIME_MINUTES', ['UNDERTIME_MINUTES' => $UNDERTIME_MINUTES]);
-            $ownRemark[] = 'Undertime';
-            $ownRemark[] = 'No Logout';
-        } elseif ($lastLog->lessThan($scheduledOut)) {
-            // Normal undertime computation
-            $minutesUndertime = $scheduledOut->diffInMinutes($lastLog);
         
-            Log::info('minutesUndertime', [
-                'minutesUndertime' => $minutesUndertime,
-                'scheduledOut' => $scheduledOut,
-                'lastLog' => $lastLog,
+        
+        if ($officialBusiness) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | HR POLICY
+            |--------------------------------------------------------------------------
+            | Official Business is considered WORK TIME.
+            |--------------------------------------------------------------------------
+            |
+            | Case 1
+            | IN -> OB -> OUT
+            | Worked = IN -> OUT
+            |
+            | Case 2
+            | OB -> IN -> OUT
+            | Worked = OB + Office
+            |
+            | Case 3
+            | OB only
+            | Worked = OB only
+            |--------------------------------------------------------------------------
+            */
+        
+            $obDeparture = Carbon::parse($date.' '.$officialBusiness->departure_time);
+            $obArrival   = Carbon::parse($date.' '.$officialBusiness->arrival_time);
+        
+            $obMinutes = $obDeparture->diffInMinutes($obArrival);
+        
+            $requiredMinutes = (int)($employeeSchedule->work_hours * 60);
+        
+            $workedMinutes = 0;
+        
+            // -------------------------------------------------------
+            // CASE 1 : Employee logged in before leaving for OB
+            // -------------------------------------------------------
+            if (!empty($timeIn) && !empty($timeOut) && $firstLog->lte($obDeparture)) {
+        
+                $workedMinutes = $firstLog->diffInMinutes($lastLog);
+        
+                if (
+                    $employeeSchedule->is_breaktime_required &&
+                    !empty($breakOut) &&
+                    !empty($breakIn)
+                ) {
+                    $workedMinutes -= Carbon::parse($date.' '.$breakOut)
+                        ->diffInMinutes(
+                            Carbon::parse($date.' '.$breakIn)
+                        );
+                }
+            }
+        
+            // -------------------------------------------------------
+            // CASE 2 : Employee logged only after returning from OB
+            // -------------------------------------------------------
+            elseif (!empty($timeIn) && !empty($timeOut)) {
+        
+                $officeMinutes = $firstLog->diffInMinutes($lastLog);
+        
+                if (
+                    $employeeSchedule->is_breaktime_required &&
+                    !empty($breakOut) &&
+                    !empty($breakIn)
+                ) {
+                    $officeMinutes -= Carbon::parse($date.' '.$breakOut)
+                        ->diffInMinutes(
+                            Carbon::parse($date.' '.$breakIn)
+                        );
+                }
+        
+                $workedMinutes = $obMinutes + $officeMinutes;
+            }
+        
+            // -------------------------------------------------------
+            // CASE 3 : No office logs
+            // -------------------------------------------------------
+            else {
+        
+                $workedMinutes = $obMinutes;
+            }
+        
+            Log::info('OB Worked Minutes', [
+                'timeIn' => $timeIn,
+                'timeOut' => $timeOut,
+                'obDeparture' => $obDeparture->format('H:i'),
+                'obArrival' => $obArrival->format('H:i'),
+                'workedMinutes' => $workedMinutes,
+                'requiredMinutes' => $requiredMinutes,
             ]);
         
-            $UNDERTIME_MINUTES += $minutesUndertime;
-            $UNDERTIME_FREQ++;
-            $ownRemark[] = 'Undertime';
-        }
+            if ($workedMinutes < $requiredMinutes) {
+        
+                $UNDERTIME_MINUTES = $requiredMinutes - $workedMinutes;
+                $UNDERTIME_FREQ++;
+        
+                $ownRemark[] = 'Undertime';
+            }
+        
+        } else {
+        
+            if (empty($timeOut)) {
+        
+                $UNDERTIME_MINUTES += 480;
+                $UNDERTIME_FREQ++;
+        
+                $ownRemark[] = 'Undertime';
+                $ownRemark[] = 'No Logout';
+        
+            } elseif ($lastLog->lessThan($scheduledOut)) {
+        
+                $minutesUndertime = $scheduledOut->diffInMinutes($lastLog);
+        
+                $UNDERTIME_MINUTES += $minutesUndertime;
+                $UNDERTIME_FREQ++;
+        
+                $ownRemark[] = 'Undertime';
+            }
+        } 
+        
+        Log::info('Under time minutes', ['UNDERTIME_MINUTES' => $UNDERTIME_MINUTES, 'UNDERTIME_FREQ' => $UNDERTIME_FREQ, 'ownRemark' => $ownRemark]);
+        Log::info('Tardiness minutes', ['TARDINESS_MINUTES' => $TARDINESS_MINUTES, 'TARDINESS_FREQ' => $TARDINESS_FREQ, 'ownRemark' => $ownRemark]);
 
         return [
             'tardiness_minutes' => $TARDINESS_MINUTES,
