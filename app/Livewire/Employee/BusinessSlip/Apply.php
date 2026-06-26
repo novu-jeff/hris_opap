@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use App\Models\EmployeeBusinessSlipAttachment;
 
 class Apply extends Component
 {
@@ -23,6 +26,11 @@ class Apply extends Component
     $approved_by_id;
 
     public $record_id;
+
+    use WithFileUploads;
+
+    public $attachments = [];
+    public $preview_attachments = [];
 
     protected $listeners = ['save'];
 
@@ -79,6 +87,8 @@ class Apply extends Component
             $this->purpose = $dataToEdit->purpose;
             $this->departure_time = Carbon::parse($dataToEdit->departure_time)->format('h:i A');
             $this->arrival_time = Carbon::parse($dataToEdit->arrival_time)->format('h:i A');
+
+            $this->preview_attachments = $dataToEdit->attachments->toArray() ?? [];
         }
     
         $this->firstname = $employee->first()->firstname;
@@ -98,6 +108,9 @@ class Apply extends Component
             'purpose' => 'required|max:255',
             'departure_time' =>  'required',
             'arrival_time' =>  'required',
+
+            'attachments' => 'required|array|min:1',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
         ];
     
         return $rules;
@@ -126,7 +139,7 @@ class Apply extends Component
                 $departure_time = Carbon::createFromFormat('h:i A', $this->departure_time)->format('H:i:s');
                 $arrival_time = Carbon::createFromFormat('h:i A', $this->arrival_time)->format('H:i:s');
 
-                $model::updateOrCreate(
+                $model = EmployeeBusinessSlip::updateOrCreate(
                     ['id' => $this->record_id],
                     [
                         'employee_no' => $this->employee_no,
@@ -137,6 +150,24 @@ class Apply extends Component
                         'arrival_time' => $arrival_time
                     ]
                 );
+
+                foreach ($this->attachments as $attachment) {
+
+                    $filename = strtolower(
+                        time() . '_' . str_replace(' ', '_', $attachment->getClientOriginalName())
+                    );
+                
+                    $path = $attachment->storeAs(
+                        'official-business-slip',
+                        $filename,
+                        'public'
+                    );
+                
+                    EmployeeBusinessSlipAttachment::create([
+                        'employee_business_slip_id' => $model->id,
+                        'attachment' => $path,
+                    ]);
+                }
 
                 DB::commit();
 
@@ -156,8 +187,19 @@ class Apply extends Component
                     $redirect = route('ess.obs');
                     $user->notify(new Notifications('info', $message, $redirect, 'admin'));
 
-                    $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'section', 'position', 'department', 'branch');
+                   // $this->resetExcept('employee_id', 'employee_no', 'firstname', 'lastname', 'middlename', 'section', 'position', 'department', 'branch');
+                    $this->reset([
+                        'date_filed',
+                        'destination',
+                        'purpose',
+                        'departure_time',
+                        'arrival_time',
+                        'attachments',
+                        'preview_attachments',
+                    ]);
+                    $this->dispatch('form-reset');
 
+                   // $this->loadRecords();
                     return;
 
                 } else {
@@ -179,6 +221,25 @@ class Apply extends Component
                 ]);
             }
 
+        }
+    }
+
+    public function removeAttachment($id)
+    {
+        $record = EmployeeBusinessSlipAttachment::find($id);
+
+        if ($record) {
+
+            Storage::disk('public')->delete($record->attachment);
+
+            $record->delete();
+
+            $this->preview_attachments = array_values(
+                array_filter(
+                    $this->preview_attachments,
+                    fn($item) => $item['id'] != $id
+                )
+            );
         }
     }
 

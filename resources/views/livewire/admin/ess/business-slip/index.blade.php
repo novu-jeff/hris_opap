@@ -63,7 +63,29 @@
                                    value="{{ isset($view_records) ? \Carbon\Carbon::createFromFormat('H:i:s', $view_records->arrival_time)->format('g:i A') : '' }}" 
                                    readonly>
                         </div>
-                    </div>                    
+                    </div>  
+                    @if($view_records && $view_records->attachments->count())
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <label class="mb-2">Attachments</label>
+
+                                <div class="attachments">
+                                    <ul class="list-unstyled text-uppercase">
+                                        @foreach($view_records->attachments as $item)
+                                            <li class="mb-2">
+                                                <a
+                                                    href="{{ Storage::url($item->attachment) }}"
+                                                    target="_blank"
+                                                >
+                                                    {{ basename($item->attachment) }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    @endif                  
                 </div>
 
                    
