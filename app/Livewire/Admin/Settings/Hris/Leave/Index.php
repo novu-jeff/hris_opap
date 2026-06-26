@@ -22,6 +22,15 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
 
+    public $showModal = false;
+
+    public $code;
+    public $name;
+    public $credits = 0;
+    public $isCummulative = false;
+
+    public $editingId = null;
+
     // public function remove(bool $isNotify = true, int $id = null) {
 
     //     if (Gate::denies('write leave-types')) {
@@ -74,22 +83,106 @@ class Index extends Component
     //     }
     // }
 
-    public function render() {
+    public function openModal()
+    {
+        $this->resetForm();
+    
+        $this->showModal = true;
+    }
 
-        $model = LeaveType::query();
+    protected function rules()
+    {
+        return [
+            'code' => 'required|max:20|unique:leave_types,code,' . $this->editingId,
+            'name' => 'required|max:100',
+        ];
+    }
 
-        if ($this->search) {
+    public function resetForm()
+    {
+        $this->reset([
+            'editingId',
+            'code',
+            'name',
+            'credits',
+            'isCummulative',
+        ]);
 
-            $this->resetPage(); 
+        $this->credits = 0;
+        $this->isCummulative = false;
 
-            $records = $model->where('code', 'like', '%' . $this->search . '%')
-                ->orWhere('name', 'like', '%' . $this->search . '%');
+        $this->resetValidation();
+    }
+
+    public function edit($id)
+    {
+        $leaveType = LeaveType::findOrFail($id);
+
+        $this->editingId = $leaveType->id;
+        $this->code = $leaveType->code;
+        $this->name = $leaveType->name;
+        $this->credits = $leaveType->credits;
+        $this->isCummulative = $leaveType->isCummulative;
+
+        $this->resetValidation();
+
+        $this->showModal = true;
+    }
+
+    public function save()
+    {
+        $this->validate();
+
+        if ($this->editingId) {
+
+            $leaveType = LeaveType::findOrFail($this->editingId);
+
+            $leaveType->update([
+                'code' => strtoupper($this->code),
+                'name' => $this->name,
+                'credits' => $this->credits,
+                'isCummulative' => $this->isCummulative,
+            ]);
+
+            $message = 'Leave type updated successfully.';
+
+        } else {
+
+            LeaveType::create([
+                'code' => strtoupper($this->code),
+                'name' => $this->name,
+                'credits' => $this->credits,
+                'isCummulative' => $this->isCummulative,
+            ]);
+
+            $message = 'Leave type added successfully.';
         }
 
-        $records = $model->latest()->paginate($this->entries);
+        $this->showModal = false;
+
+        $this->resetForm();
+
+        $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Success!',
+            'message' => $message,
+        ]);
+    }
+
+    public function render()
+    {
+        $records = LeaveType::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('code', 'like', '%' . $this->search . '%')
+                    ->orWhere('name', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->latest()
+            ->paginate($this->entries);
 
         return view('livewire.admin.settings.hris.leave.index', [
-            'records' => $records
+            'records' => $records,
         ]);
     }
 }
