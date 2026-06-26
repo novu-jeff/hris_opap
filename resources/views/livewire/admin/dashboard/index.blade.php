@@ -18,11 +18,23 @@
                                 <div class="swiper-container">
                                     <div class="swiper-wrapper">
                                         @forelse($stats['employee'] as $types)
-                                            <div class="swiper-slide text-uppercase bg-info p-3 rounded-3 text-white">
-                                                <p class="mb-0 fw-bold">{{$types['employment_type']}}</p>
-                                                <hr>
-                                                <h1>{{$types['employee_count']}}</h1>
-                                            </div>
+                                        <div class="swiper-slide">
+                                            <a href="{{ $types['url'] }}" class="employee-card-link">
+
+                                                <div class="employee-card text-uppercase bg-info p-3 rounded-3 text-white">
+                                        
+                                                    <p class="mb-0 fw-bold">
+                                                        {{ $types['employment_type'] }}
+                                                    </p>
+                                        
+                                                    <hr>
+                                        
+                                                    <h1>{{ $types['employee_count'] }}</h1>
+                                        
+                                                </div>
+                                        
+                                            </a>
+                                        </div>
                                         @empty
                                             <div class="w-100 text-uppercase bg-info p-3 rounded-3 text-white">
                                                 No employment types to show

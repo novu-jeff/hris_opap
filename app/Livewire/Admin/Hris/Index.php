@@ -688,12 +688,16 @@ class Index extends Component
         if ($this->selectedType !== null) {
             if ($this->selectedType === 'unassigned') {
                 $query->whereNull('employment_type_id')
-                    ->where('isDeleted', false);
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
+            } else if($this->selectedType === 'inactive') {
+                $query->where('status', 'inactive');
             } else if($this->selectedType === 'archived') {
                 $query->where('isDeleted', true);
             } else {
                 $query->where('employment_type_id', $this->selectedType)
-                    ->where('isDeleted', false);
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
             }
         } else {
              $query->where('isDeleted', false);

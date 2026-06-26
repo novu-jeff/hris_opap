@@ -43,7 +43,7 @@ class Index extends Component
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
 
-        $employeeCounts = EmployementTypes::withCount('employees')->get();
+       /* $employeeCounts = EmployementTypes::withCount('employees')->get();
 
         // Format the result for easier readability (optional)
         $employeeCounts = $employeeCounts->map(function ($type) {
@@ -51,7 +51,60 @@ class Index extends Component
                 'employment_type' => $type->name,
                 'employee_count' => $type->employees_count,
             ];
-        });
+        });*/
+
+        $employeeCounts = [];
+
+        // Employment Types
+        //$employmentTypes = EmployementTypes::orderBy('name')->get();
+        $employmentTypes = EmployementTypes::whereIn('code', [
+            'RC',
+            'COS',
+            'COS2',
+            'JO',
+            'RC2',
+        ])->orderByRaw("
+            FIELD(code, 'RC', 'COS', 'COS2', 'JO', 'RC2')
+        ")
+        ->get();
+
+        foreach ($employmentTypes as $type) {
+
+            $employeeCounts[] = [
+                'employment_type' => $type->name,
+                'employee_count' => EmployeeInformation::where(
+                    'employment_type_id',
+                    $type->id
+                )
+                ->where('status', 'active')
+                ->where('isDeleted', 0)
+                ->count(),
+                'url' => route('hris.index', [
+                    'employment_type' => $type->id
+                ]),
+            ];
+        }
+
+        // Inactive Employees
+        $employeeCounts[] = [
+            'employment_type' => 'Inactive',
+            'employee_count' => EmployeeInformation::where('status', 'inactive')->count(),
+            'url' => route('hris.index', [
+                'employment_type' => 'inactive'
+            ]),
+        ];
+
+        // Unassigned Employees
+        $employeeCounts[] = [
+            'employment_type' => 'Unassigned',
+            'employee_count' => EmployeeInformation::whereNull('employment_type_id')
+                ->where('status', 'active')
+                ->where('isDeleted', 0)
+                ->count(),
+            'url' => route('hris.index', [
+                'employment_type' => 'unassigned'
+            ]),    
+        ];
             
         $leaveCounts = EmployeeLeave::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
