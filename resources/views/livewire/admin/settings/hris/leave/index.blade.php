@@ -1,6 +1,16 @@
 <div class="card border-0 mt-3">
     <div class="card-body p-0">
         <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-end">
+                <button
+                    class="btn btn-success"
+                    wire:click="openModal">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Leave Type
+                </button>
+            </div>    
+        </div>    
+        <div class="row mb-4">
             <div class="col-md-6 d-flex align-items-center gap-2">
                 <label for="entries" class="form-label mb-0">Show entries:</label>
                 <select id="entries" wire:model.live="entries" class="form-select w-auto">
@@ -18,6 +28,7 @@
                 </select>
             </div>
             <div class="col-md-6 text-end d-flex justify-content-end align-items-center gap-2">
+                
                 <label for="search" class="form-label mb-0">Search:</label>
                 <input id="search" wire:model.live="search" type="text" class="form-control w-50" placeholder="Search something...">
             </div>
@@ -40,7 +51,12 @@
                                 <a href="{{route('leave.show', ['leave' => $record->id])}}" class="btn btn-secondary mx-1 text-white">
                                     <i class="fa-solid fa-plus"></i>
                                 </a>
-                                {{-- <a href="{{route('leave.edit', ['leave' => $record->id])}}" class="btn btn-primary mx-1">
+                                <button
+                                    class="btn btn-primary mx-1"
+                                    wire:click="edit({{ $record->id }})">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                                                {{-- <a href="{{route('leave.edit', ['leave' => $record->id])}}" class="btn btn-primary mx-1">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a> --}}
                                 {{-- <button wire:click="remove(true, {{$record->id}})" class="btn btn-danger mx-1">
@@ -55,6 +71,76 @@
                     @endforelse
                 </tbody>
             </table>
+            @if($showModal)
+        <div class="modal fade show d-block" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ $editingId ? 'Edit Leave Type' : 'Add Leave Type' }}
+                        </h5>
+
+                        <button
+                            class="btn-close"
+                            wire:click="$set('showModal', false)">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+                            <label>Code</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                wire:model.defer="code">
+
+                            @error('code')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Name</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                wire:model.defer="name">
+
+                            @error('name')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                       
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button
+                            class="btn btn-secondary"
+                            wire:click="$set('showModal', false)">
+                            Cancel
+                        </button>
+
+                        <button
+                            class="btn btn-success"
+                            wire:click="save">
+                            {{ $editingId ? 'Update' : 'Save' }}
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-backdrop fade show"></div>
+        @endif
         </div>
         <div class="mt-4">
             {{ $records->links(data: ['scrollTo' => false]) }}
