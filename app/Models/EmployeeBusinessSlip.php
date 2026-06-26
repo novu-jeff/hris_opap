@@ -35,4 +35,12 @@ class EmployeeBusinessSlip extends Model
         return $this->belongsTo(User::class, 'id');
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(
+            EmployeeBusinessSlipAttachment::class,
+            'employee_business_slip_id'
+        );
+    }
+
 }
