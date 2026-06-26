@@ -28,7 +28,16 @@ class Index extends Component
 
     public function mount() {
         $this->monthYear = Carbon::now();
-        $this->employmentTypes = EmployementTypes::all();
+        //$this->employmentTypes = EmployementTypes::all();
+        $this->employmentTypes = EmployementTypes::orderByRaw("
+                FIELD(code,
+                    'RC',
+                    'COS',
+                    'COS2',
+                    'JO',
+                    'RC2'
+                )
+            ")->get();
         $this->selectedMonth = now()->format('Y-m');
     }
 
@@ -45,9 +54,13 @@ class Index extends Component
 
             if ($this->selectedType !== null) {
                 if ($this->selectedType === 'unassigned') {
-                    $query->whereNull('employment_type_id');
+                    $query->whereNull('employment_type_id')
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
                 } else {
-                    $query->where('employment_type_id', $this->selectedType);
+                    $query->where('employment_type_id', $this->selectedType)
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
                 }
             }
 
