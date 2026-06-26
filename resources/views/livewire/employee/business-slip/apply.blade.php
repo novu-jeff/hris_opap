@@ -108,6 +108,53 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-12 mb-4">
+                            <label class="mb-2">
+                                Attachments <span class="text-danger">*</span>
+                            </label>
+                        
+                            <div class="mt-1 mb-3">
+                                <small class="text-muted fw-bold">
+                                    Please attach supporting documents related to your official business.
+                                </small>
+                            </div>
+                        
+                            <input
+                                type="file"
+                                wire:model="attachments"
+                                id="attachments"
+                                class="form-control mb-1"
+                                multiple
+                            >
+                        
+                            <small class="text-muted fst-italic">
+                                <span class="text-danger">*</span> Accepts multiple files
+                            </small>
+                        
+                            @error('attachments')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        
+                            @if(!empty($preview_attachments))
+                                <ul class="list-unstyled mt-3">
+                                    @foreach($preview_attachments as $item)
+                                        <li class="d-flex align-items-center gap-2 mb-2">
+                                            <a href="{{ Storage::url($item['attachment']) }}" download>
+                                                {{ basename($item['attachment']) }}
+                                            </a>
+                        
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm text-danger"
+                                                wire:click="removeAttachment({{ $item['id'] }})"
+                                            >
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
                     </div>
                     <hr class="mx-3">
                     <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
@@ -118,3 +165,24 @@
         </div>
     </form>    
 </div>
+
+<script>
+
+
+    document.addEventListener('livewire:init', () => {
+     
+
+        Livewire.on('form-reset', () => {
+
+   
+
+            // Clear file input
+            console.log('Resetting file input');
+            const fileInput = document.getElementById('attachments');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+        });
+    });
+</script>
