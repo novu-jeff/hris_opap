@@ -88,6 +88,29 @@
                             </div>
                         @endif
                     </div>
+                    @if($view_records && $view_records->attachments->count())
+                    <div class="col-12 mb-4">
+                        <label class="mb-2">Attachments</label>
+
+                        <div class="attachments">
+                            <ul class="list-unstyled text-uppercase">
+                                @foreach($view_records->attachments as $item)
+                                    <li class="list-unstyled-item">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a
+                                                href="{{ Storage::url($item->attachment) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {{ basename($item->attachment) }}
+                                            </a>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
 
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')

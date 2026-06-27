@@ -15,9 +15,13 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use App\Models\EmployeeLeaveAttachment;
+
 class Apply extends Component
 {
-
+    use WithFileUploads;
     public $type;
     public $duration;
     public $from;
@@ -46,7 +50,9 @@ class Apply extends Component
     public bool $isDurationDisabled = false;
     public $scheduledDates;
     public $currentYear;
-
+    public $attachments = [];
+    public $preview_attachments = [];
+    
     protected $listeners = ['setSelectedDates', 'save', 'setTime'];
 
     public function mount() {
@@ -95,8 +101,9 @@ class Apply extends Component
             $this->study = $records->study;
             $this->study_other_purpose = $records->study_other_purpose;
             $this->commutation = $records->commutation;
+            $this->preview_attachments = $records->attachments->toArray() ?? [];
         }
-
+       
         $this->scheduledDates = $this->gatherDates($employee_no);
 
     }
@@ -192,6 +199,9 @@ class Apply extends Component
             'commutation' => 'required|in:yes,no',
             'selectedDates' => 'required|array|min:1'
         ];
+
+        $rules['attachments'] = 'required|array|min:1';
+        $rules['attachments.*'] = 'file|mimes:jpg,jpeg,png,pdf|max:5120';
 
 
         // Conditional validation based on type
@@ -419,6 +429,24 @@ class Apply extends Component
                     'commutation' => $this->commutation ?? null,
                 ]);
 
+                foreach ($this->attachments as $attachment) {
+
+                    $filename = strtolower(
+                        time().'_'.str_replace(' ', '_', $attachment->getClientOriginalName())
+                    );
+                
+                    $path = $attachment->storeAs(
+                        'leave',
+                        $filename,
+                        'public'
+                    );
+                
+                    EmployeeLeaveAttachment::create([
+                        'employee_leave_id' => $employeeLeave->id,
+                        'attachment' => $path,
+                    ]);
+                }
+
                 // If updating, remove old dates first
                 if ($this->record_id) {
                     EmployeeLeaveDates::where('employee_leave_id', $employeeLeave->id)->delete();
@@ -450,6 +478,12 @@ class Apply extends Component
 
                     $this->resetExcept('employee_no', 'employee_id', 'leaveTypes');
                     $this->accepts_autwopay = false;
+                    $this->reset([
+                        'attachments',
+                        'preview_attachments',
+                    ]);
+                    
+                    $this->dispatch('form-reset');
 
                     return;
                 } else {
@@ -471,6 +505,25 @@ class Apply extends Component
                 ]);
             }
 
+        }
+    }
+
+    public function removeAttachment($id)
+    {
+        $record = EmployeeLeaveAttachment::find($id);
+
+        if ($record) {
+
+            Storage::disk('public')->delete($record->attachment);
+
+            $record->delete();
+
+            $this->preview_attachments = array_values(
+                array_filter(
+                    $this->preview_attachments,
+                    fn($item) => $item['id'] != $id
+                )
+            );
         }
     }
 
