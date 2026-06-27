@@ -132,6 +132,53 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 mb-4">
+                        <label class="mb-2">
+                            Attachments
+                            <span class="text-danger">*</span>
+                        </label>
+                    
+                        <div class="mt-1 mb-3">
+                            <small class="text-muted fw-bold">
+                                Note: Please attach supporting documents (Medical Certificate, Travel Order, etc.)
+                            </small>
+                        </div>
+                    
+                        <input
+                            type="file"
+                            wire:model="attachments"
+                            class="form-control mb-1"
+                            multiple
+                            id="attachments">
+                    
+                        <small class="text-muted fst-italic">
+                            Accepts JPG, PNG and PDF files (Maximum 5MB each)
+                        </small>
+                    
+                        @error('attachments')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    
+                        @if($preview_attachments)
+                            <ul class="list-unstyled mt-3">
+                                @foreach($preview_attachments as $item)
+                                    <li class="d-flex align-items-center gap-2">
+                                        <a href="{{ Storage::url($item['attachment']) }}"
+                                           download>
+                                            {{ basename($item['attachment']) }}
+                                        </a>
+                    
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm text-danger"
+                                            wire:click="removeAttachment({{ $item['id'] }})">
+                                            <i class="fa-solid fa-times"></i>
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
@@ -301,6 +348,19 @@ $(function () {
         calendar.render();
         $(calendarEl).data('calendar-initialized', true);
     }, 300);
+});
+document.addEventListener('livewire:init', () => {
+
+Livewire.on('form-reset', () => {
+
+    const fileInput = document.getElementById('attachments');
+
+    if (fileInput) {
+        fileInput.value = '';
+    }
+
+});
+
 });
 </script>
 

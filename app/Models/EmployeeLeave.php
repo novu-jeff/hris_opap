@@ -40,4 +40,9 @@ class EmployeeLeave extends Model
         return $this->hasMany(EmployeeLeaveDates::class, 'employee_leave_id', 'id');
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(EmployeeLeaveAttachment::class);
+    }
+
 }
