@@ -135,4 +135,9 @@ class EmployeeInformation extends Model
         return $this->belongsTo(ShiftSchedule::class, 'schedule_id');
     }
 
+    public function offsetRequests()
+    {
+        return $this->hasMany(EmployeeOffsetRequest::class, 'employee_information_id');
+    }
+
 }
