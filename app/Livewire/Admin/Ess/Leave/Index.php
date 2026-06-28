@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Services\LeaveCardService;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeLeave;
 use App\Models\EmployeeLeaveCard;
+use App\Models\EmployeeInformation;
 use App\Models\LeaveCredits;
 use App\Models\LeaveType;
 use App\Notifications\Notifications;
@@ -41,7 +42,14 @@ class Index extends Component
     }
 
     public function loadRecords(int $id) {
-        $view_records = EmployeeLeave::with('dates', 'employment', 'employee', 'leave_type')
+        $view_records = EmployeeLeave::with([
+            'dates',
+            'employment',
+            'employee.personal',
+            'employee.section',
+            'leave_type',
+            'attachments',
+        ])
             ->where('id', $id)
             ->first();
 
@@ -289,7 +297,13 @@ class Index extends Component
             $status = $this->status;
         }
 
-        $model = EmployeeLeave::with('employment', 'employee', 'leave_type')
+        $model = EmployeeLeave::with([
+            'employment',
+            'employee.personal',
+            'employee.section',
+            'leave_type',
+            'dates',
+        ])
             ->where('status', $status)
             ->where('isDeleted', false);
 
