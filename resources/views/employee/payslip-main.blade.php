@@ -1,426 +1,1035 @@
-<div class="payslip-wrapper">
-    {{-- Protected Payslip --}}
-    <div class="payslip-container" id="payslipProtected">
+<div class="inner-content">
 
-        <div class="inner-content">
-            {{-- HEADER --}}
-            <div class="header d-flex justify-content-center gap-3 align-items-center text-center px-5">
-                <div class="logo">
-                    <img style="width: 100px !important;" src="{{ asset('/img/' . $provider['client_logo']) }}">            
-                </div>    
-                <div class="header-text fw-bold text-center">
-                    Office of the Presidential Adviser on Peace, Reconciliation and Unity <br>
-                    PAYROLL PAYMENT SLIP
-                </div>
-            </div>
+    @php
+        [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
 
-            {{-- EMPLOYEE INFO --}}
-            <!--'Payroll Date' => \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y'),-->
-            <!--'Cutt Off Period' => collect(explode(' to ', $payslip['payroll']['cut_off_period']))
-                        ->map(fn($date, $i) => \Carbon\Carbon::parse($date)->format($i === 0 ? 'F j' : 'F j, Y'))
-                        ->implode(' to '),-->
-            @php
-               
-                // Parse cut-off period
-                [$start, $end] = explode(' to ', $payslip['payroll']['cut_off_period']);
+        $startDate = \Carbon\Carbon::parse($start);
 
-                $startDate = \Carbon\Carbon::parse($start);
+        $fullMonthCutoff =
+            $startDate->copy()->startOfMonth()->format('F j')
+            .' - '.
+            $startDate->copy()->endOfMonth()->format('F j, Y');
 
-                // Full month range based on the payroll month
-                $fullMonthStart = $startDate->copy()->startOfMonth();
-                $fullMonthEnd   = $startDate->copy()->endOfMonth();
+        $earnings = [
+            'Monthly Basic Salary' => $payslip['basic_salary'],
+        ];
 
-                $fullMonthCutoff = $fullMonthStart->format('F j')
-                    . ' – ' .
-                    $fullMonthEnd->format('F j, Y');
-            @endphp
+        if($payslip['employment_type_id'] == 1){
+            $earnings['Personnel Economic Relief Allowance'] = $payslip['pera'];
+            $earnings['Gross Amount Earned'] = $payslip['gross_amount_earned'];
+        }
 
+      
 
+        $deductions = [
+            'GSIS Contribution' => $payslip['rlip'],
+            'PAG-IBIG Contribution' => $payslip['hdmf'],
+            'PhilHealth Contribution' => $payslip['philhealth'],
+            'GSIS Conso Loan' => $payslip['consoloan'],
+            'GSIS Emergency Loan' => $payslip['emergency_loan'],
+            'GSIS PLREG' => $payslip['plreg'],
+        ];
 
-            <div class="info border-section p-3 mt-3">
-                @foreach([
-                    'Cutt Off Period' =>  $payslipView['fullMonthCutoff'],
-                    'Employee\'s Name' => $payslip['name'],
-                    'Employee\'s No' => $payslip['employee_no'],
-                    'Position' => $payslip['position'],
-                    'Unit' => $payslip['information']['section']['name'],
-                ] as $label => $value)
-                    <div class="d-flex align-items-start border-bottom py-1">
-                        <div class="label fw-bold">{{ $label }}:</div>
-                        <div class="value ms-2">{{ $value }}</div>
-                    </div>
-                @endforeach
-            </div>
+        if($payslip['employment_type_id']==1){
+            $deductions['GSIS MPL'] = $payslip['mpl'];
+        }else{
+            $deductions['MPL'] = $payslip['mpl'];
+        }
 
-            {{-- EARNINGS --}}
-            <div class="info border-section p-3 mt-3">
-                <div class="tle px-2 fw-bold">*** Earnings ***</div>
-                <div class="d-flex align-items-start border-bottom py-1">
-                    <div class="label">Monthly Basic Salary:</div>
-                    <div class="value ms-2">PHP {{ number_format($payslip['basic_salary'], 2) }}</div>
-                </div>
-                @php
-                if ($payslip['employment_type_id'] == 1) {
-                @endphp    
-                <div class="d-flex align-items-start border-bottom py-1">
-                    <div class="label">Personnel Economic Relief Allowance:</div>
-                    <div class="value ms-2">PHP {{ number_format($payslip['pera'], 2)}}</div>
-                </div>
-                <div class="d-flex align-items-start border-bottom py-1">
-                    <div class="label">Gross Amount Earned:</div>
-                    <div class="value ms-2">PHP {{ number_format($payslip['gross_amount_earned'], 2)}}</div>
-                </div>
-                @php
-                  }
-                @endphp 
-               
-            </div>
+        $deductions += [
+            'GSIS MPL Lite' => $payslip['mpl_lite'],
+            'GSIS CPL' => $payslip['cpl'],
+            'GSIS GSEL' => $payslip['gsel'],
+            'GSIS GBEL' => $payslip['gbel'],
+            'MP2' => $payslip['mp2'],
+        ];
 
-            {{-- DEDUCTIONS --}}
-            <div class="info border-section p-3 mt-3">
-                <div class="tle px-2 fw-bold">*** Deductions ***</div>
+        if($payslip['employment_type_id']==1){
+            $deductions['MPL STLMS'] = $payslip['mplstlms'];
+        }
 
-                @php
-                $deductions = [
-                    'GSIS Contribution' => $payslip['rlip'],
-                    'PAG-IBIG Contribution' => $payslip['hdmf'],
-                    'Phil Health Contribution' => $payslip['philhealth'],
-                    'GSIS Conso Loan' => $payslip['consoloan'],
-                    'GSIS Emergency Loan' => $payslip['emergency_loan'],
-                    'GSIS PLREG' => $payslip['plreg'],
-                ];
+        $deductions += [
+            'Cir375-ECQ' => $payslip['cir375_cir449'],
+            'BIR Withholding Tax' => $payslip['w_tax'],
+            'UCA' => $payslip['uca'],
+            'Disallowance' => $payslip['disallowance'],
+            'Late / UT / Absences' => $payslip['aut'],
+            'Overpayment' => $payslip['overpayment'],
+            'Tax 3%' => $payslip['tax_3'],
+            'Tax 5%' => $payslip['tax_5'],
+            'Tax 8%' => $payslip['tax_8'],
+            'Tax 10%' => $payslip['tax_10'],
+        ];
+    @endphp
 
-                // Insert AFTER GSIS PLREG
-                if ($payslip['employment_type_id'] == 1) {
-                    $deductions['GSIS MPL'] = $payslip['mpl'];
-                }else{
-                    $deductions['GSIS MPL'] = '0.00';
-                }
-                $deductions += [
-                    'GSIS MPL Lite' => $payslip['mpl_lite'],
-                    'GSIS CPL' => $payslip['cpl'],
-                    'GSIS GSEL' => $payslip['gsel'],
-                    'GSIS GBEL' => $payslip['gbel'],
-                    'MP2' => $payslip['mp2'],
-                ];
+    {{-- HEADER --}}
+    <div class="ps-header">
 
-                // Insert AFTER HDMF MP2
-                if ($payslip['employment_type_id'] != 1) {
-                    $deductions['MPL'] = $payslip['mpl'];
-                }
-
-                if ($payslip['employment_type_id'] == 1) {
-                    $deductions['MPL STLMS'] = $payslip['mplstlms'];
-                }
-
-                $deductions += [
-                    'Cir375-ECQ' => $payslip['cir375_cir449'],
-                    'BIR Withholding TAX' => $payslip['w_tax'],
-                    'UCA' => $payslip['uca'],
-                    'DISALLOWANCE' => $payslip['disallowance'],
-                    'Lates / Undertime / Absences' => $payslip['aut'],
-                    'OVERPAYMENT' => $payslip['overpayment'],
-                    'TAX 3%' => $payslip['tax_3'],
-                    'TAX 5%' => $payslip['tax_5'],
-                    'TAX 8%' => $payslip['tax_8'],
-                    'TAX 10%' => $payslip['tax_10'],
-                ];
-            @endphp
-
-            @foreach($deductions as $label => $value)
-                <div class="d-flex align-items-start border-bottom py-1">
-                    <div class="label">{{ $label }}:</div>
-                    <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
-                </div>
-            @endforeach
-            </div>
-
-    @if($payslip->deductions->where('reference_type', 'loan')->count())
-
-        @foreach($payslip->deductions->where('reference_type', 'loan') as $deduction)
-            <div class="d-flex align-items-start border-bottom py-1">
-                <div class="label">
-                    {{ $deduction->loan->loanType->name ?? 'Loan Deduction' }}
-                </div>
-                <div class="value ms-2">
-                    PHP {{ number_format($deduction->amount, 2) }}
-                </div>
-            </div>
-        @endforeach
-    @endif
-
-
-            <div class="d-flex align-items-start border-bottom py-1 fw-bold">
-                <div class="label">Total Deductions:</div>
-                <div class="value ms-2">
-                    PHP {{ number_format($payslip['total_deductions'], 2) }}
-                </div>
-            </div>
-
-            {{-- NET PAY --}}
-            <div class="info border-section p-3 mt-3">
-                <div class="tle px-2 fw-bold">*** Net Pay ***</div>
-                @foreach([
-                    'Net Amount' => $payslip['net_amount'],
-                    'Amount Due (15)' => $payslip['net_first_half'],
-                    'Amount Due (30)' => $payslip['net_second_half'],
-                ] as $label => $value)
-                    <div class="d-flex align-items-start border-bottom py-1">
-                        <div class="label">{{ $label }}:</div>
-                        <div class="value ms-2">PHP {{ number_format($value, 2) }}</div>
-                    </div>
-                @endforeach
-            </div>
-
-            {{-- ISSUED BY --}}
-            <div class="info border-section p-3 mt-3 text-center">
-                <div>Issued by: <span class="text-decoration-underline">MARIESER T. ALMELOR</span></div>
-                <div>Chief Administrative Officer</div>
-            </div>
-
+        <div class="ps-logo">
+            <img src="{{ asset('/img/'.$provider['client_logo']) }}">
         </div>
+
+        <div class="ps-title">
+            <h2>OFFICE OF THE PRESIDENTIAL ADVISER</h2>
+            <h2>ON PEACE, RECONCILIATION AND UNITY</h2>
+
+            <div class="subtitle">
+                PAYROLL PAYMENT SLIP
+            </div>
+        </div>
+
     </div>
 
-    {{-- SECURITY OVERLAYS --}}
-    <div class="payslip-overlay"></div>
+    {{-- EMPLOYEE INFORMATION --}}
+    <table class="table table-bordered employee-table">
 
-    <div class="payslip-watermark-diagonal-1">CONFIDENTIAL1 • {{$payslip['name']}} • DO NOT COPY</div>
-    <div class="payslip-watermark-diagonal-2">CONFIDENTIAL 2• {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-3">CONFIDENTIAL 3• {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-4">CONFIDENTIAL4 • {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-diagonal-5">CONFIDENTIAL5 • {{$payslip['name']}} • DO NOT COPY</div>
-<div class="payslip-watermark-center-large">CONFIDENTIAL</div>
-</div>
+        <tr>
 
+            <th width="15%">Employee No.</th>
+            <td width="35%">
+                {{ $payslip['employee_no'] }}
+            </td>
 
-<style>
-/* Wrapper */
-.payslip-wrapper {
-    position: relative;
-    max-width: 900px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
+            <th width="15%">Employee Name</th>
+            <td width="35%">
+                {{ $payslip['name'] }}
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <th>Position</th>
+            <td>{{ $payslip['position'] }}</td>
+
+            <th>Unit</th>
+            <td>{{ $payslip['information']['section']['name'] }}</td>
+
+        </tr>
+
+        <tr>
+
+            <th>Payroll Date</th>
+
+            <td>
+                {{ \Carbon\Carbon::parse($payslip['payroll']['payroll_date'])->format('F d, Y') }}
+            </td>
+
+            <th>Cut-off Period</th>
+
+            <td>
+
+                {{ $fullMonthCutoff }}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    {{-- EARNINGS / DEDUCTIONS --}}
+    <div class="row g-3 mt-3">
+
+        {{-- EARNINGS --}}
+        <div class="col-md-6">
+
+            <table class="table table-bordered payroll-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th colspan="2">
+                            EARNINGS
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach($earnings as $title=>$amount)
+
+                        <tr>
+
+                            <td>
+
+                                {{ $title }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                {{ number_format($amount,2) }}
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                    @for($i=count($earnings);$i<18;$i++)
+
+                        <tr>
+
+                            <td>&nbsp;</td>
+
+                            <td></td>
+
+                        </tr>
+
+                    @endfor
+
+                    <tr class="table-total">
+
+                        <td>
+
+                            TOTAL EARNINGS
+
+                        </td>
+
+                        <td class="text-end">
+
+                            {{ number_format($payslip['gross_amount_earned'],2) }}
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {{-- DEDUCTIONS --}}
+        <div class="col-md-6">
+
+            <table class="table table-bordered payroll-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th colspan="2">
+
+                            DEDUCTIONS
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach($deductions as $title=>$amount)
+
+                        <tr>
+
+                            <td>
+
+                                {{ $title }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                {{ number_format($amount,2) }}
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                    {{-- Dynamic Loan Deductions --}}
+
+                    @foreach($payslip->deductions->where('reference_type','loan') as $loan)
+
+                        <tr>
+
+                            <td>
+
+                                {{ $loan->loan->loanType->name ?? 'Loan Deduction' }}
+
+                            </td>
+
+                            <td class="text-end">
+
+                                {{ number_format($loan->amount,2) }}
+
+                            </td>
+
+                        </tr>
+
+                        @endforeach
+
+                        @php
+                            $loanTotal = $payslip->deductions
+                                ->where('reference_type', 'loan')
+                                ->sum('amount');
+                        @endphp
+    
+                        @for(
+                            $i = count($deductions) + $payslip->deductions->where('reference_type','loan')->count();
+                            $i < 18;
+                            $i++
+                        )
+    
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                            </tr>
+    
+                        @endfor
+    
+                        <tr class="table-total">
+    
+                            <td>
+                                TOTAL DEDUCTIONS
+                            </td>
+    
+                            <td class="text-end fw-bold">
+                                {{ number_format($payslip['total_deductions'],2) }}
+                            </td>
+    
+                        </tr>
+    
+                    </tbody>
+    
+                </table>
+    
+            </div>
+    
+        </div>
+    
+        {{-- NET PAY SUMMARY --}}
+    
+        <div class="netpay-card mt-4">
+    
+            <div class="netpay-title">
+    
+                NET PAY SUMMARY
+    
+            </div>
+    
+            <table class="table table-bordered mb-0">
+    
+                <thead>
+    
+                    <tr>
+    
+                        <th>{{ $payslip['employment_type_id'] == 1 ? 'Gross Earnings' : 'Total Earnings' }}</th>
+    
+                        <th>Total Deductions</th>
+    
+                        <th>Net Amount</th>
+    
+                        <th>Amount Due (15)</th>
+    
+                        <th>Amount Due (30)</th>
+    
+                    </tr>
+    
+                </thead>
+    
+                <tbody>
+    
+                    <tr>
+    
+                        <td class="text-end">
+                            {{ number_format(
+                                $payslip['employment_type_id'] == 1
+                                    ? $payslip['gross_amount_earned']
+                                    : $payslip['basic_salary'],
+                                2
+                            ) }}
+    
+                        </td>
+    
+                        <td class="text-end">
+    
+                            {{ number_format($payslip['total_deductions'],2) }}
+    
+                        </td>
+    
+                        <td class="text-end fw-bold text-success">
+    
+                            {{ number_format($payslip['net_amount'],2) }}
+    
+                        </td>
+    
+                        <td class="text-end">
+    
+                            {{ number_format($payslip['net_first_half'],2) }}
+    
+                        </td>
+    
+                        <td class="text-end">
+    
+                            {{ number_format($payslip['net_second_half'],2) }}
+    
+                        </td>
+    
+                    </tr>
+    
+                </tbody>
+    
+            </table>
+    
+        </div>
+    
+        {{-- FOOTER --}}
+    
+        <div class="row mt-5 align-items-end">
+    
+            <div class="col-6">
+    
+                <div class="signature-title">
+    
+                    Prepared / Approved By
+    
+                </div>
+    
+                <div class="signature-name">
+    
+                    MARIESER T. ALMELOR
+    
+                </div>
+    
+                <div class="signature-position">
+    
+                    Chief Administrative Officer
+    
+                </div>
+    
+            </div>
+    
+            <div class="col-6 text-end">
+    
+                <table class="table table-borderless table-sm footer-table">
+    
+                    <tr>
+    
+                        <td width="45%">
+                            Generated On
+                        </td>
+    
+                        <td>
+                            {{ now()->format('F d, Y h:i A') }}
+                        </td>
+    
+                    </tr>
+    
+                    <tr>
+    
+                        <td>
+                            Payroll Period
+                        </td>
+    
+                        <td>
+    
+                            {{ $fullMonthCutoff }}
+    
+                        </td>
+    
+                    </tr>
+    
+                </table>
+    
+            </div>
+    
+        </div>
+    
+    </div>
+    <div class="payslip-watermark">
+
+        CONFIDENTIAL
+    
+    </div>
+ <style>   
+
+    /* ===============================
+   PAGE
+================================ */
+
+@page{
+    size:A4 landscape;
+    margin:10mm;
 }
 
-/* Container */
-.payslip-container {
-    position: relative;
-    z-index: 5;
-    background: #fff;
-    padding: 20px;
-    border: 2px solid #333;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+body{
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#333;
+    font-size:11px;
+    background:#f4f6f9;
 }
 
-/* Section borders */
-.border-section {
-    border: 1px solid #333;
-    border-radius: 5px;
+/* ===============================
+   WRAPPER
+================================ */
+
+.payslip-wrapper{
+    width:100%;
+    max-width:1400px;
+    margin:30px auto;
+    padding:20px;
 }
 
-/* Row bottom lines */
-.border-bottom {
-    border-bottom: 1px dashed #999;
+.payslip-container{
+    width:100%;
+    /*min-width:1200px;*/
+    background:#fff;
+    border:1px solid #d6d6d6;
+    border-radius:8px;
+    padding:25px;
+    position:relative;
 }
 
-/* Overlay */
-.payslip-overlay {
-    position: absolute;
-    top:0; left:0;
-    width: 100%; height: 100%;
-    background: repeating-linear-gradient(
-        45deg,
-        rgba(255,255,255,0.03) 0,
-        rgba(255,255,255,0.03) 2px,
-        transparent 2px,
-        transparent 5px
-    );
-    pointer-events: none;
-    z-index: 10;
+/* ===============================
+   HEADER
+================================ */
+
+.ps-header{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:25px;
+
+    width:100%;
+
 }
 
-/* Watermark 1 (center diagonal) */
-.payslip-watermark {
-    position: absolute;
+.ps-logo{
+
+    width:110px;
+
+    text-align:center;
+
+}
+
+.ps-logo img{
+
+    width:85px;
+
+}
+
+.ps-title{
+
+    flex:1;
+
+    text-align:center;
+
+}
+
+.ps-title h2{
+
+    margin:0;
+
+    color:#0F4C81;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+}
+
+.subtitle{
+
+    margin-top:6px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+}
+
+/* ===============================
+   EMPLOYEE TABLE
+================================ */
+
+.employee-table{
+
+    width:100%;
+
+    table-layout:fixed;
+
+    border-collapse:collapse;
+
+    margin-bottom:20px;
+
+}
+
+.employee-table th{
+
+    background:#F2F6FA;
+
+    color:#0F4C81;
+
+    font-weight:700;
+
+    width:15%;
+
+    vertical-align:middle;
+
+}
+
+.employee-table td{
+
+    background:#fff;
+
+}
+
+.employee-table th,
+.employee-table td{
+
+    border:1px solid #d8d8d8;
+
+    padding:8px;
+
+}
+
+/* ===============================
+   PAYROLL TABLES
+================================ */
+
+.payroll-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    font-size:10px;
+
+}
+
+.payroll-table thead th{
+
+    background:#0F4C81;
+
+    color:#fff;
+
+    text-align:center;
+
+    padding:10px;
+
+    font-size:12px;
+
+}
+
+.payroll-table td{
+
+    padding:6px 8px;
+
+    border:1px solid #ececec;
+
+}
+
+.payroll-table tr:nth-child(even){
+
+    background:#fafafa;
+
+}
+
+.table-total{
+
+    background:#F3F6F9;
+
+    font-weight:bold;
+
+}
+
+.table-total td{
+
+    border-top:2px solid #0F4C81;
+
+}
+
+/* ===============================
+   NET PAY
+================================ */
+
+.netpay-card{
+
+    margin-top:25px;
+
+    border:2px solid #198754;
+
+    border-radius:6px;
+
+    overflow:hidden;
+
+}
+
+.netpay-title{
+
+    background:#198754;
+
+    color:#fff;
+
+    text-align:center;
+
+    font-weight:bold;
+
+    padding:10px;
+
+    font-size:14px;
+
+}
+
+.netpay-card table{
+
+    width:100%;
+
+    margin:0;
+
+}
+
+.netpay-card th{
+
+    background:#EAF7EA;
+
+    text-align:center;
+
+    padding:8px;
+
+}
+
+.netpay-card td{
+
+    text-align:right;
+
+    padding:10px;
+
+    font-size:12px;
+
+}
+
+.text-success{
+
+    color:#198754 !important;
+
+    font-size:14px;
+
+}
+
+/* ===============================
+   FOOTER
+================================ */
+
+.signature-title{
+
+    font-size:11px;
+
+    margin-bottom:35px;
+
+}
+
+.signature-name{
+
+    font-weight:bold;
+
+    text-decoration:underline;
+
+    font-size:12px;
+
+}
+
+.signature-position{
+
+    font-size:11px;
+
+}
+
+.footer-table td{
+
+    padding:2px 6px;
+
+    font-size:10px;
+
+}
+
+.payslip-container.blur{
+
+    filter:blur(18px);
+
+    transition:.2s;
+
+}
+
+/* ===============================
+   WATERMARK
+================================ */
+
+.payslip-watermark{
+
+    position:absolute;
+
     top:50%;
+
     left:50%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    font-size: 60px;
-    font-weight: 900;
-    color: rgba(255,0,0,0.15);
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 20;
+
+    transform:translate(-50%,-50%) rotate(-30deg);
+
+    font-size:120px;
+
+    font-weight:900;
+
+    color:rgba(255,0,0,.05);
+
+    white-space:nowrap;
+
+    pointer-events:none;
+
+    z-index:1;
+
 }
 
-/* Watermark 2 (bottom-right) */
-.payslip-watermark-bottom {
-    position: absolute;
-    bottom: 365px;
-    right: 15px;
-    font-size: 25px;
-    font-weight: 700;
-    color: rgba(255,0,0,0.1);
-    pointer-events: none;
-    z-index: 20;
+/* ===============================
+   SECURITY
+================================ */
+
+.payslip-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    pointer-events:none;
+
+    background:repeating-linear-gradient(
+
+        45deg,
+
+        rgba(255,255,255,.02),
+
+        rgba(255,255,255,.02) 3px,
+
+        transparent 3px,
+
+        transparent 8px
+
+    );
+
 }
 
-/* Blur effect */
-.payslip-container.blur {
-    filter: blur(25px);
-    transition: filter 0.3s;
+/* ===============================
+   UTILITIES
+================================ */
+
+.text-end{
+
+    text-align:right;
+
 }
 
-/* Overlay only covers payslip */
-.payslip-overlay,
-.payslip-watermark,
-.payslip-watermark-bottom {
-    position: absolute;
-    pointer-events: none; /* IMPORTANT: allows clicks to pass through */
-    z-index: 10; /* above payslip but below page elements like chatbox */
+.text-center{
+
+    text-align:center;
+
 }
 
-/* Payslip container */
-.payslip-container {
-    position: relative;
-    z-index: 5;
+.fw-bold{
+
+    font-weight:bold;
+
 }
 
-/* Diagonal watermark #1 */
-.payslip-watermark-diagonal-1,
-.payslip-watermark-diagonal-2,
-.payslip-watermark-diagonal-3,
-.payslip-watermark-diagonal-4,
-.payslip-watermark-diagonal-5     {
-    position: absolute;
-    font-size: 40px;
-    font-weight: 100;
-    color: rgba(255, 0, 0, 0.08);
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 20;
+/* ===============================
+   PRINT
+================================ */
+
+@media print{
+
+    body{
+
+        background:#fff;
+
+    }
+
 }
 
-/* Diagonal #1: top-left to bottom-right */
-.payslip-watermark-diagonal-1 {
-    top: 25%;
-    left: -40%;
-    transform: rotate(25deg);
-}
-
-/* Diagonal #2: bottom-left to top-right */
-.payslip-watermark-diagonal-2 {
-    bottom: 30%;
-    left: -40%;
-    transform: rotate(25deg);
-}
-
-/* Diagonal #2: bottom-left to top-right */
-.payslip-watermark-diagonal-3 {
-    bottom: 10%;
-    left: -40%;
-    transform: rotate(25deg);
-}
-
-/* Diagonal #2: bottom-left to top-right */
-.payslip-watermark-diagonal-4 {
-    top: 10%;
-    left: -40%;
-    transform: rotate(25deg);
-}
-
-/* Diagonal #2: bottom-left to top-right */
-.payslip-watermark-diagonal-5 {
-    top: 40%;
-    left: -40%;
-    transform: rotate(25deg);
-}
-
-/* Large center watermark */
-.payslip-watermark-center-large {
-    position: absolute;
-    top: 55%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 100px;
-    font-weight: 900;
-    color: rgba(255, 0, 0, 0.05);
-    pointer-events: none;
-    z-index: 20;
-    white-space: nowrap;
-}
-
-/* Keep previous bottom-right watermark */
-.payslip-watermark-bottom {
-    bottom: 15px;
-    right: 15px;
-    font-size: 25px;
-    font-weight: 700;
-    color: rgba(255, 0, 0, 0.1);
-    pointer-events: none;
-    z-index: 20;
-}
-
-/* Prevent printing */
-@media print {
-    body * { display: none !important; }
-}
 </style>
 
-
 <script>
-const payslip = document.getElementById('payslipProtected');
 
-// Disable Ctrl/Cmd + P
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        alert("Printing is disabled on this page.");
-    }
-});
-
-// Disable right-click and selection
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('selectstart', e => e.preventDefault());
-
-
-
-// Blur on PrintScreen
-document.addEventListener('keyup', e => {
-    if (e.key === "PrintScreen") {
-        payslip.classList.add('blur');
-        setTimeout(() => payslip.classList.remove('blur'), 1200);
-    }
-});
-
-// Only blur when the entire window loses focus (user switches tab or minimizes)
-/*window.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        payslip.classList.add('blur');
-    } else {
-        payslip.classList.remove('blur');
-    }
-});*/
-
-// Blur when tab loses focus
-window.addEventListener('blur', () => payslip.classList.add('blur'));
-window.addEventListener('focus', () => payslip.classList.remove('blur'));
-
-// Detect DevTools
-let devtoolsOpen = false;
-setInterval(() => {
-    const start = performance.now();
-    debugger;
-    if (performance.now() - start > 100) {
-        if (!devtoolsOpen) {
-            devtoolsOpen = true;
-            payslip.classList.add('blur');
-        }
-    } else {
-        if (devtoolsOpen) {
-            devtoolsOpen = false;
-            payslip.classList.remove('blur');
-        }
-    }
-}, 300);
-</script>
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        const payslip = document.getElementById('payslipProtected');
+    
+        if (!payslip) return;
+    
+        const blur = () => payslip.classList.add('blur');
+        const clearBlur = () => payslip.classList.remove('blur');
+    
+        /* ==========================
+           Disable Right Click
+        ========================== */
+    
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+        });
+    
+        /* ==========================
+           Disable Text Selection
+        ========================== */
+    
+        document.addEventListener('selectstart', e => {
+            e.preventDefault();
+        });
+    
+        /* ==========================
+           Disable Copy
+        ========================== */
+    
+        document.addEventListener('copy', e => {
+            e.preventDefault();
+        });
+    
+        /* ==========================
+           Disable Cut
+        ========================== */
+    
+        document.addEventListener('cut', e => {
+            e.preventDefault();
+        });
+    
+        /* ==========================
+           Disable Drag
+        ========================== */
+    
+        document.addEventListener('dragstart', e => {
+            e.preventDefault();
+        });
+    
+        /* ==========================
+           Disable Ctrl + P
+        ========================== */
+    
+        document.addEventListener('keydown', e => {
+    
+            const key = e.key.toLowerCase();
+    
+            if ((e.ctrlKey || e.metaKey) && key === 'p') {
+    
+                e.preventDefault();
+    
+                alert('Printing has been disabled.');
+    
+            }
+    
+        });
+    
+        /* ==========================
+           Blur on Print Screen
+        ========================== */
+    
+        document.addEventListener('keyup', e => {
+    
+            if (e.key === 'PrintScreen') {
+    
+                blur();
+    
+                navigator.clipboard.writeText('');
+    
+                setTimeout(clearBlur,1500);
+    
+            }
+    
+        });
+    
+        /* ==========================
+           Blur when tab inactive
+        ========================== */
+    
+        document.addEventListener('visibilitychange', () => {
+    
+            if(document.hidden){
+    
+                blur();
+    
+            }else{
+    
+                clearBlur();
+    
+            }
+    
+        });
+    
+        /* ==========================
+           Blur when browser loses focus
+        ========================== */
+    
+        window.addEventListener('blur', blur);
+    
+        window.addEventListener('focus', clearBlur);
+    
+        /* ==========================
+           DevTools Detection
+        ========================== */
+    
+        let opened = false;
+    
+        setInterval(() => {
+    
+            const before = performance.now();
+    
+            debugger;
+    
+            const after = performance.now();
+    
+            if(after - before > 120){
+    
+                if(!opened){
+    
+                    opened = true;
+    
+                    blur();
+    
+                }
+    
+            }else{
+    
+                if(opened){
+    
+                    opened = false;
+    
+                    clearBlur();
+    
+                }
+    
+            }
+    
+        },500);
+    
+        /* ==========================
+           Detect Window Resize
+        ========================== */
+    
+        setInterval(() => {
+    
+            const widthGap = window.outerWidth - window.innerWidth;
+    
+            const heightGap = window.outerHeight - window.innerHeight;
+    
+            if(widthGap > 170 || heightGap > 170){
+    
+                blur();
+    
+            }
+    
+        },1000);
+    
+    });
+    
+    </script>
