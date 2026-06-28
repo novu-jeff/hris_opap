@@ -225,6 +225,7 @@
                     <tr>
                         <th></th>
                         <th>Employee No</th>
+                        <th>Unit</th>
                         <th>Employee Name</th>
                         <th>Date Hired</th>
                         <th>Actions</th>
@@ -260,6 +261,11 @@
                                 @endif
                             </td>
                             <td>{{$item->employee_no}}</td>
+                            <td>
+                                <span class="{{ $item->section ? '' : 'text-muted fst-italic' }}">
+                                    {{ strtoupper($item->section?->code ?? 'NO SECTION') }}
+                                </span>
+                            </td>
                             <td>
                                 @if(!$item->isTransferingEmp)
                                     {!! $fullname ?? '<span class="text-muted fst-italic">No Name</span>' !!}

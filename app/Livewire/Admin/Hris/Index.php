@@ -683,7 +683,35 @@ class Index extends Component
 
     public function render()
     {
-        $query = EmployeeInformation::with('account', 'personal');
+       // $query = EmployeeInformation::with('account', 'personal', 'section');
+
+       $query = EmployeeInformation::with([
+        'account',
+        'personal',
+        'section.department',
+    ])
+    ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
+    ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
+    ->select('employee_information.*')
+    ->orderByRaw("
+        CASE
+            WHEN employee_information.section_id IS NULL THEN 999
+            ELSE FIELD(
+                departments.code,
+                'EO',
+                'P1',
+                'P2',
+                'P3',
+                'P4',
+                'P5',
+                'P6',
+                'P7',
+                'P8'
+            )
+        END
+    ")
+    ->orderBy('sections.name')
+    ->orderBy('employee_information.employee_no');
 
         if ($this->selectedType !== null) {
             if ($this->selectedType === 'unassigned') {
