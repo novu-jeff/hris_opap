@@ -30,6 +30,7 @@
                             <thead>
                                 <tr>
                                     <th>Employee No.</th>
+                                    <th>Unit</th>
                                     <th>Employee Name</th>
                                     <th>Updates Made</th>
                                     <th>Date Applied</th>
@@ -40,6 +41,11 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record['id']}}">
                                         <td>{{$record['employee_no']}}</td>
+                                        <td>
+                                            <span class="{{ $record['section_code'] == 'NO SECTION' ? 'text-muted fst-italic' : '' }}">
+                                                {{ strtoupper($record['section_code']) }}
+                                            </span>
+                                        </td>
                                         <td>{{$record['name']}}</td>
                                         <td>{{$record['types']}}</td>
                                         <td>{{$record['date_applied']}}</td>

@@ -22,6 +22,13 @@ class EmployeePayslipRequest extends Model
         return $this->hasOne(EmployeePersonal::class, 'employee_no', 'employee_no');
     }
 
+     // Employment Information
+     public function information()
+     {
+         return $this->hasOne(EmployeeInformation::class, 'employee_no', 'employee_no');
+     }
+ 
+
     public function payroll() {
         return $this->hasOne(SalaryPayroll::class, 'id', 'payroll_id');
     }

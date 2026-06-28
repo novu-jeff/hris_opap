@@ -861,6 +861,7 @@ public function downloadAllPayslips()
     
             $model = SalaryItemsPayroll::with([
                 'information.personal',
+                'information.section',
                 'payroll'
             ])
             ->join(
@@ -901,6 +902,7 @@ public function downloadAllPayslips()
     
             $model = EmployeePayslipRequest::with([
                 'employee',
+                'information.section',
                 'payroll'
             ])
             ->where('employee_payslip_request.status', $status)

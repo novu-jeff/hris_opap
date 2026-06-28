@@ -10,6 +10,7 @@ use App\Models\EmployeeUpdateEmploymentHistory;
 use App\Models\EmployeeUpdateOtherWorks;
 use App\Models\EmployeeUpdateParents;
 use App\Models\EmployeeUpdatePersonal;
+use App\Models\EmployeeInformation;
 use App\Models\EmployeeUpdateSkillsHobbies;
 use App\Models\EmployeeUpdateTrainings;
 use Illuminate\Support\Facades\Gate;
@@ -68,6 +69,10 @@ class Index extends Component
 
     $personal = EmployeePersonal::where('employee_no', $employee_no)->first();
 
+    $information = EmployeeInformation::with('section')
+    ->where('employee_no', $employee_no)
+    ->first();
+
     return [
         'employee_no' => $employee_no,
         'type' => $latest['type'],
@@ -75,7 +80,7 @@ class Index extends Component
         'name' => $personal
             ? trim("{$personal->firstname} {$personal->middlename} {$personal->lastname}")
             : 'N/A',
-
+        'section_code' => $information?->section?->code ?? 'NO SECTION',
         // IMPORTANT: store raw timestamp for sorting
         'date_applied_raw' => $latest['updated_at'] ?? null,
 

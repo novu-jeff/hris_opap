@@ -182,6 +182,7 @@
                             <thead>
                                 <tr>
                                     <th>Employee No</th>
+                                    <th>Unit</th>
                                     <th>Employee Name</th>
                                     <th>Payroll Date</th>
                                     <th>Date Requested</th>
@@ -267,7 +268,11 @@
                                             <td>
                                                 {{ $record->employee_no }}
                                             </td>
-                            
+                                            <td>
+                                                <span class="{{ $record->information?->section ? '' : 'text-muted fst-italic' }}"> 
+                                                    {{ strtoupper($record->information?->section?->code ?? 'NO SECTION') }}
+                                                </span>    
+                                            </td>
                                             <td>
                                                 {{ $record->employee->firstname . ' ' . $record->employee->lastname }}
                                             </td>
