@@ -165,6 +165,7 @@
                             <thead>
                                 <tr>
                                     <th>Employee No</th>
+                                    <th>Unit</th>
                                     <th>Employee Name</th>
                                     <th>Leave Type</th>
                                     <th>Days Covered</th>
@@ -176,6 +177,7 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td>{{$record->employee_no}}</td>
+                                        <td>{{ strtoupper(optional($record->employee->section)->name ?? '') }}</td>
                                         <td>{{$record->employee->personal->firstname . ' ' . $record->employee->personal->lastname}}</td>
                                         <td>{{$record->leave_type->name}}</td>
                                         <td>{{ count($record->dates) }} {{ count($record->dates) === 1 ? 'Day' : 'Days' }}</td>
