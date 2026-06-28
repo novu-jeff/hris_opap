@@ -177,7 +177,11 @@
                                 @forelse($records as $record)
                                     <tr data-id="{{$record->id}}">
                                         <td>{{$record->employee_no}}</td>
-                                        <td>{{ strtoupper(optional($record->employee->section)->code ?? '') }}</td>
+                                        <td>
+                                            <span class="{{ $record->employee->section ? '' : 'text-muted fst-italic' }}"> 
+                                            {{ strtoupper(optional($record->employee->section)->code ?? 'NO SECTION') }}
+                                            </span>    
+                                        </td>
                                         <td>{{$record->employee->personal->firstname . ' ' . $record->employee->personal->lastname}}</td>
                                         <td>{{$record->leave_type->name}}</td>
                                         <td>{{ count($record->dates) }} {{ count($record->dates) === 1 ? 'Day' : 'Days' }}</td>
