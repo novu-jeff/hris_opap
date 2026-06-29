@@ -11,11 +11,15 @@ class EmployeeOffsetCredit extends Model
 
     protected $fillable = [
         'employee_information_id',
+        'employee_no',
         'overtime_id',
         'earned_hours',
         'used_hours',
         'remaining_hours',
         'earned_date',
+        'source',
+        'reference_no',
+        'remarks',
     ];
 
     protected $casts = [

@@ -43,8 +43,12 @@
             <i class="fa-solid fa-coins"></i> Leave Credits
         </a>-->
 
-        <a href="{{ route('employee.atro') }}" class="menu-item">
+        <!--<a href="{{ route('employee.atro') }}" class="menu-item">
             <i class="fa-solid fa-business-time"></i> Overtime (ATRO)
+        </a>-->
+
+        <a href="{{ route('employee.offset.index') }}" class="menu-item">
+            <i class="fa-solid fa-calendar-check"></i> Authority to Offset
         </a>
 
         <a href="{{ route('employee.obs.index') }}" class="menu-item">

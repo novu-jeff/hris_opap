@@ -96,6 +96,20 @@
                     <i class="fa-solid fa-clock"></i> Authority To Render Overtime Application</a>
                 @endcan
 
+                @can('read atro')
+                <a href="" class="submenu-item">
+                    <i class="fa-solid fa-business-time"></i>
+                    Authority to Render Offsetting
+                </a>
+                @endcan
+
+                @can('read atro')
+                <a href="{{ route('ess.offset-credits') }}" class="submenu-item">
+                    <i class="fa-solid fa-coins"></i>
+                    Offset Credits
+                </a>
+                @endcan
+
                 @can('read time-adjustments')
                 <a href="{{ route('ess.time-adjustments') }}" class="submenu-item">
                     <i class="fa-solid fa-clock-rotate-left"></i> Time Adjustments</a>

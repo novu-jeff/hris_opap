@@ -11,6 +11,7 @@ class EmployeeOffsetRequest extends Model
 
     protected $fillable = [
         'employee_information_id',
+        'employee_no',
         'office_order_no',
         'filing_date',
         'date_from',
@@ -34,6 +35,11 @@ class EmployeeOffsetRequest extends Model
     public function employee()
     {
         return $this->belongsTo(EmployeeInformation::class, 'employee_information_id');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(EmployeeOffsetAttachment::class);
     }
 
    /* public function recommender()
