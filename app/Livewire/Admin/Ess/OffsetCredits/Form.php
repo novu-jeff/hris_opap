@@ -10,64 +10,90 @@ use Livewire\Component;
 class Form extends Component
 {
     public $record_id;
+    public $record;
 
-    public $employees = [];
     protected $listeners = [
-        'employee-selected' => 'setEmployee',
+        'setEmployees',
+        'onChange',
     ];
 
-    public array $fields = [
+    public $employees = [];
 
-        'employee_no' => '',
+    public $fields = [
+        'employee_no' => null,
         'earned_hours' => '',
         'earned_date' => '',
         'source' => 'Manual',
         'reference_no' => '',
         'remarks' => '',
-
     ];
 
     public function mount()
     {
-        $this->employees = EmployeeInformation::with('personal')
-            ->where('isDeleted', false)
-            ->orderBy('employee_no')
-            ->get();
+       
+   
 
         if ($this->record_id) {
 
-            $record = EmployeeOffsetCredit::findOrFail($this->record_id);
+            $this->record = EmployeeOffsetCredit::with('employee.personal')
+        ->findOrFail($this->record_id);
 
             $this->fields = [
 
-                'employee_no' => $record->employee_no,
-                'earned_hours' => $record->earned_hours,
-                'earned_date' => \Carbon\Carbon::parse($record->earned_date)->format('Y-m-d'),
-                'source' => $record->source ?? 'Manual',
-                'reference_no' => $record->reference_no,
-                'remarks' => $record->remarks,
+                'employee_no' => $this->record->employee_no,
+                'earned_hours' => $this->record->earned_hours,
+                'earned_date' => \Carbon\Carbon::parse($this->record->earned_date)->format('Y-m-d'),
+                'source' => $this->record->source ?? 'Manual',
+                'reference_no' => $this->record->reference_no,
+                'remarks' => $this->record->remarks,
 
             ];
+
+            //$this->employees = $this->getEmployees();
+
+           
 
         } else {
 
             $this->fields['earned_date'] = now()->toDateString();
             $this->fields['reference_no'] = $this->generateReferenceNo();
 
+        
+
+            $this->employees = EmployeeInformation::with('personal')
+            ->where('isDeleted', false)
+            ->where('status', 'Active')
+            ->orderBy('employee_no')
+            ->get();
+
+
+            $this->js("
+                setTimeout(() => {
+                    Livewire.dispatch('init-select', {
+                        employees: " . json_encode($this->employees) . ",
+                        selected: " . json_encode($this->fields['employee_no']) . "
+                    });
+                }, 200);
+            ");
+
         }
 
-        $this->dispatch('init-select2');
-
-        if ($this->record_id) {
-            $this->dispatch('set-selected-employee', [
-                'employee_no' => $this->fields['employee_no']
-            ]);
-        }
+        
     }
 
-    public function setEmployee($data)
+    public function setEmployees($employees)
     {
-        $this->fields['employee_no'] = $data['employee_no'];
+        $this->fields['employee_no'] = $employees ?? [];
+    }
+
+    public function setEmployee($employeeNo)
+    {
+        $this->fields['employee_no'] = $employeeNo;
+    }
+
+    public function onChange(array $data) {
+        $this->fields['employee_no'] = $data;
+        $this->dispatch('set_select');
     }
 
     protected function rules()
@@ -91,6 +117,8 @@ class Form extends Component
 
     public function save()
     {
+
+       // dd($this->fields);
         $this->validate();
 
         if ($this->record_id) {
@@ -156,6 +184,8 @@ class Form extends Component
             STR_PAD_LEFT
         );
     }
+
+  
 
     public function render()
     {

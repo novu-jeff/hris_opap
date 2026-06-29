@@ -19,26 +19,31 @@
                             <span class="text-danger">*</span>
                         </label>
                     
+                        @if($record_id)
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="({{ $record->employee_no }}) {{ $record->employee->personal->firstname }} {{ $record->employee->personal->lastname }}"
+                            readonly>
+
+                    @else
+
                         <div wire:ignore>
-                            <select id="employee_select" class="form-select">
-                                <option value="">Select Employee</option>
-                        
-                                @foreach($employees as $employee)
-                                <option
-                                value="{{ $employee->employee_no }}"
-                                @selected($fields['employee_no'] == $employee->employee_no)
-                            >
-                                ({{ $employee->employee_no }})
-                                {{ $employee->personal->firstname }}
-                                {{ $employee->personal->lastname }}
-                            </option>
-                                @endforeach
+                            <select
+                                class="form-select multi-select"
+                                data-placeholder="Select Employee">
                             </select>
                         </div>
+
+                        @error('fields.employee_no')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+
+                    @endif
+
                     
-                    @error('fields.employee_no')
-                    <div class="text-danger">{{ $message }}</div>
-                    @enderror
+                    
     
                 </div>
     
@@ -141,71 +146,63 @@
     
     </form>
  
-    @push('scripts')
-<script>
-document.addEventListener('livewire:init', () => {
+    @section('script')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            console.log('initialized');
+    Livewire.on('init-select', (data) => {
 
-    Livewire.on('init-select2', () => {
+        setTimeout(() => {
+console.log(data.employees);
+            let el = $('.multi-select');
 
-        let select = $('#employee_select');
+            if (el.length === 0) return;
 
-        if (select.hasClass('select2-hidden-accessible')) {
-            select.select2('destroy');
-        }
+            el.empty();
 
-        select.select2({
-            width: '100%',
-            placeholder: 'Search Employee',
-        });
-
-        select.trigger('change');
-
-        select.on('change', function () {
-
-            Livewire.dispatch('employee-selected', {
-                employee_no: $(this).val()
+            data.employees.forEach(emp => {
+                let option = new Option(
+                    `(${emp.employee_no}) ${emp.personal.firstname} ${emp.personal.lastname}`,
+                    emp.employee_no,
+                    false,
+                    false
+                );
+                el.append(option);
             });
 
-        });
+            if (el.hasClass("select2-hidden-accessible")) {
+                el.select2('destroy');
+            }
+            
+            
+                el.select2({
+                    width: '100%',
+                    placeholder: 'Select employee(s)', // 🔥 ADD
+                });
 
-    });
+                el.off('change').on('change', function () {
 
-    Livewire.on('set-selected-employee', (event) => {
+                let employeeNo = $(this).val();
 
-        $('#employee_select')
-            .val(event.employee_no)
-            .trigger('change');
+                @this.set('fields.employee_no', employeeNo);
 
+                });
+
+               
+               // toggleSaveButton();
+            // 🔥 ADD THIS (CRITICAL FIX)
+            let selected = data.selected || [];
+
+            if (selected.length) {
+                el.val(selected).trigger('change');
+                window.selectedEmployees = selected; // keep JS in sync
+            }
+
+        }, 300);
     });
 
 });
-document.addEventListener('livewire:navigated', initEmployeeSelect);
 
-function initEmployeeSelect(){
 
-    let select = $('#employee_select');
-
-    if(select.hasClass('select2-hidden-accessible')){
-        select.select2('destroy');
-    }
-
-    select.select2({
-        width:'100%',
-        placeholder:'Search Employee'
-    });
-
-    select.trigger('change');
-
-    select.off('change');
-
-    select.on('change', function(){
-
-        $wire.fields.employee_no = $(this).val();
-
-    });
-
-}
-
-document.addEventListener('DOMContentLoaded', initEmployeeSelect);
-</script>
-@endpush
+    </script>
+@endsection
