@@ -2,7 +2,11 @@
     <label class="mb-2" for="file">File Upload</label>
     <input type="file" wire:model="file" id="file" class="form-control" wire:loading.attr="disabled" wire:target="upload_file">
     <div class="mt-2 text-muted fw-bold text-uppercase d-flex justify-content-between align-items-center" style="font-size: 13px">
-        <small>Note: only csv files are allowed.</small>
+        <small class="text-muted">
+            Supported formats:
+            {{ implode(', ', $supportedFormats) }}
+        </small> 
+        <small>download <a href="{{asset('templates/timelogs_upload_template.csv')}}" class="text-primary">sample file</a></small>
     </div>
     <div wire:loading wire:target="file" class="mt-2 text-center text-muted">
         <p>Please Wait... <i class="fa-solid fa-spinner fa-spin"></i></p>
