@@ -73,7 +73,8 @@ class Index extends Component
     public function render()
     {
         $query = EmployeeOffsetCredit::with([
-            'employee.personal'
+            'employee.personal',
+            'employee.section'
         ]);
 
         if ($this->search) {
