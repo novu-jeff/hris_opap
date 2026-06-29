@@ -29,12 +29,19 @@
 
                     @else
 
-                        <div wire:ignore>
-                            <select
-                                class="form-select multi-select"
-                                data-placeholder="Select Employee">
-                            </select>
-                        </div>
+                    <div wire:ignore>
+                        <select id="employee_select" class="form-select">
+                            <option value="">Select Employee</option>
+                    
+                            @foreach($employees as $employee)
+                                <option value="{{ $employee->employee_no }}">
+                                    ({{ $employee->employee_no }})
+                                    {{ $employee->personal->firstname }}
+                                    {{ $employee->personal->lastname }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                         @error('fields.employee_no')
                             <div class="text-danger">{{ $message }}</div>
@@ -148,60 +155,22 @@
  
     @section('script')
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            console.log('initialized');
-    Livewire.on('init-select', (data) => {
+        
 
-        setTimeout(() => {
-console.log(data.employees);
-            let el = $('.multi-select');
+        document.addEventListener('livewire:init', () => {
 
-            if (el.length === 0) return;
+            let el = $('#employee_select');
 
-            el.empty();
-
-            data.employees.forEach(emp => {
-                let option = new Option(
-                    `(${emp.employee_no}) ${emp.personal.firstname} ${emp.personal.lastname}`,
-                    emp.employee_no,
-                    false,
-                    false
-                );
-                el.append(option);
+            el.select2({
+                width: '100%',
+                placeholder: 'Select Employee'
             });
 
-            if (el.hasClass("select2-hidden-accessible")) {
-                el.select2('destroy');
-            }
-            
-            
-                el.select2({
-                    width: '100%',
-                    placeholder: 'Select employee(s)', // 🔥 ADD
-                });
+            el.on('change', function () {
+                @this.set('fields.employee_no', $(this).val());
+            });
 
-                el.off('change').on('change', function () {
-
-                let employeeNo = $(this).val();
-
-                @this.set('fields.employee_no', employeeNo);
-
-                });
-
-               
-               // toggleSaveButton();
-            // 🔥 ADD THIS (CRITICAL FIX)
-            let selected = data.selected || [];
-
-            if (selected.length) {
-                el.val(selected).trigger('change');
-                window.selectedEmployees = selected; // keep JS in sync
-            }
-
-        }, 300);
-    });
-
-});
+        });
 
 
     </script>

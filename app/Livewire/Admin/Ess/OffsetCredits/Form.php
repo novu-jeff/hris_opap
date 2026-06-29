@@ -67,14 +67,7 @@ class Form extends Component
             ->get();
 
 
-            $this->js("
-                setTimeout(() => {
-                    Livewire.dispatch('init-select', {
-                        employees: " . json_encode($this->employees) . ",
-                        selected: " . json_encode($this->fields['employee_no']) . "
-                    });
-                }, 200);
-            ");
+           
 
         }
 
