@@ -46,6 +46,8 @@
 
                         <th>Employee No.</th>
 
+                        <th>Unit</th>
+
                         <th>Employee</th>
 
                         <th>Earned</th>
@@ -70,6 +72,11 @@
 
                             <td>
                                 {{ $record->employee->employee_no }}
+                            </td>
+                            <td>
+                                <span class="{{ $record->employee->section ? '' : 'text-muted fst-italic' }}"> 
+                                    {{ strtoupper(optional($record->employee->section)->code ?? 'NO SECTION') }}
+                                </span>  
                             </td>
 
                             <td>
