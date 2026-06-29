@@ -15,6 +15,7 @@ use App\Models\JobApplicants;
 use App\Models\OtherDeductions;
 use App\Models\OtherEarnings;
 use App\Models\JobPosts;
+use App\Models\EmployeeOffsetRequest;
 use Carbon\Carbon;
 use Faker\Provider\ar_EG\Company;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,11 @@ class Index extends Component
         $atroCounts = EmployeeAtro::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
             ->pluck('total', 'status')->toArray();
+
+        $offsetCounts = EmployeeOffsetRequest::groupBy('status')
+            ->select('status', DB::raw('count(*) as total'))
+            ->pluck('total', 'status')
+            ->toArray();    
 
         $earnings = OtherEarnings::all();
         $deductions = OtherDeductions::all();
@@ -237,6 +243,11 @@ class Index extends Component
             'vacant_positions' => [
                 'positions' => $vacantStats,
                 'total' => $totalPositions,
+            ],
+            'offset' => [
+                'pending' => $offsetCounts['pending'] ?? 0,
+                'granted' => $offsetCounts['approved'] ?? 0,
+                'rejected' => $offsetCounts['disapproved'] ?? 0,
             ],
         ];
         
