@@ -22,15 +22,14 @@
 
                 {{--@can('write offset-credits')--}}
 
-                <a
-                    href="{{ route('ess.offset-credits.create') }}"
-                    class="btn btn-success px-5 py-3">
-
-                    <i class="fa-solid fa-plus"></i>
-
-                    Add Credits
-
-                </a>
+                <div class="d-flex align-items-center">
+                    <a
+                        href="{{ route('ess.offset-credits.create') }}"
+                        class="btn btn-success btn-lg">
+                        <i class="fa-solid fa-plus me-2"></i>
+                        Add Credits
+                    </a>
+                </div>
 
                 {{--@endcan--}}
 
