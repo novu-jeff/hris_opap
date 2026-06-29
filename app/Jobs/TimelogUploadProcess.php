@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\EmployeeTimelogs;
+use App\Models\EmployeeInformation;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -31,78 +33,214 @@ class TimelogUploadProcess implements ShouldQueue
      * Execute the job.
      */
     public function handle(): void
-    {
-        if ($this->batch()->cancelled()) {
-            Log::info('Job batch was cancelled.');
-            return;
+{
+    if ($this->batch()?->cancelled()) {
+        Log::info('Timelog upload batch cancelled.');
+        return;
+    }
+
+    $attendanceRecords = [];
+    $timelogRecords = [];
+
+    $grouped = collect($this->data)
+        ->filter(fn ($row) => !empty($row['bsdno']) && !empty($row['logdatetime']))
+        ->groupBy(function ($row) {
+            return $row['bsdno'] . '|' .
+                Carbon::parse($row['logdatetime'])->format('Y-m-d');
+        });
+
+    foreach ($grouped as $rows) {
+
+        $rows = collect($rows)
+            ->sortBy(fn ($row) => Carbon::parse($row['logdatetime']))
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Employee Once
+        |--------------------------------------------------------------------------
+        */
+
+        $first = $rows->first();
+
+        $employee = EmployeeInformation::where('bsd_no', $first['bsdno'])
+            ->orWhere('employee_no', $first['bsdno'])
+            ->first();
+
+        if (!$employee) {
+
+            Log::warning('Employee not found.', [
+                'uploaded_value' => $first['bsdno'],
+            ]);
+
+            continue;
         }
 
-        $records = [];
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Existing Records Once Per Employee Per Day
+        |--------------------------------------------------------------------------
+        */
 
-        foreach ($this->data as $item) {
-            $timestamp = null;
+        $date = Carbon::parse($first['logdatetime'])->toDateString();
 
-            if (!empty($item['logdatetime'])) {
-                $formats = ['d/m/Y H:i:s', 'd/m/Y H:i'];
+        if (!empty($employee->bsd_no)) {
 
-                foreach ($formats as $format) {
-                    try {
-                        $timestamp = Carbon::createFromFormat($format, $item['logdatetime'])->format('Y-m-d H:i:s');
-                        break;
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
+            $deleted = DB::connection('mysql2')
+                ->table('attendances')
+                ->where('employee_id', $employee->bsd_no)
+                ->whereDate('timestamp', $date)
+                ->delete();
 
-                if (!$timestamp) {
-                    continue;
-                }
+            Log::info('Deleted biometric attendance before import.', [
+                'employee_id' => $employee->bsd_no,
+                'date' => $date,
+                'deleted' => $deleted,
+            ]);
+
+        } else {
+
+            $deleted = DB::connection('mysql')
+                ->table('timelogs')
+                ->where('employee_id', $employee->employee_no)
+                ->whereDate('timestamp', $date)
+                ->delete();
+
+            Log::info('Deleted web timelogs before import.', [
+                'employee_id' => $employee->employee_no,
+                'date' => $date,
+                'deleted' => $deleted,
+            ]);
+
+        }
+
+        foreach ($rows as $index => $item) {
+
+            try {
+                $timestamp = Carbon::parse($item['logdatetime'])
+                    ->format('Y-m-d H:i:s');
+            } catch (\Throwable $e) {
+
+                Log::warning('Invalid timestamp', [
+                    'employee' => $item['bsdno'],
+                    'value' => $item['logdatetime'],
+                ]);
+
+                continue;
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | Determine IN / OUT
+            |--------------------------------------------------------------------------
+            */
 
-        $external = config('app.external_timelogs');
-        \log::dedug('timelog upload process', [
-            'external' => $external,
-            'item' => $item,
-            'timestamp' => $timestamp,
+            if (!empty($item['type'])) {
+
+                $status = strtoupper(trim($item['type']));
+
+                $status = match ($status) {
+                    'IN'  => 0,
+                    'OUT' => 1,
+                    default => (int) $status,
+                };
+
+            } else {
+
+                $status = $index % 2;
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Resolve Employee
+            |--------------------------------------------------------------------------
+            */
+
+            $employee = EmployeeInformation::where('bsd_no', $item['bsdno'])
+                ->orWhere('employee_no', $item['bsdno'])
+                ->first();
+
+            if (!$employee) {
+
+                Log::warning('Employee not found.', [
+                    'uploaded_value' => $item['bsdno'],
+                ]);
+
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | BIOMETRIC (mysql2.attendances)
+            |--------------------------------------------------------------------------
+            */
+
+            if (!empty($employee->bsd_no)) {
+
+                $attendanceRecords[] = [
+                    'sn'          => 'RUU5242500021',
+                    'table'       => 'ATTLOG',
+                    'stamp'       => '9999',
+                    'employee_id' => $employee->bsd_no,
+                    'timestamp'   => $timestamp,
+                    'status1'     => $status,
+                    'isWeb'       => false,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
+        
+            } else {
+        
+                $timelogRecords[] = [
+                    'employee_id' => $employee->employee_no,
+                    'timestamp'   => $timestamp,
+                    'status'      => $status,
+                    'isWeb'       => false,
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
+        
+            }
+
+        }
+
+            /*
+            |--------------------------------------------------------------------------
+            | WEB TIMELOGS (mysql.timelogs)
+            |--------------------------------------------------------------------------
+            */
+
+            
+
+        
+
+    }
+
+    if (!empty($attendanceRecords)) {
+
+        DB::connection('mysql2')
+            ->table('attendances')
+            ->insert($attendanceRecords);
+
+        Log::info('Attendance uploaded.', [
+            'count' => count($attendanceRecords),
         ]);
 
-        if ($external) {
-            $records[] = [
-                'sn' => 'RUU5242500021',
-                'table' => 'ATTLOG',
-                'stamp' => '9999',
-                'employee_id' => $item['bsdno'] ?? null,
-                'timestamp' => $timestamp,
-                'status1' => $item['type'] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        } else {
-            $records[] = [
-                'employee_id' => $item['bsdno'] ?? null,
-                'timestamp' => $timestamp,
-                'status' => $item['type'] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-            \LOG::DEBUG('internal timelog upload', [
-                'employee_id' => $item['bsdno'] ?? null,
-                'timestamp' => $timestamp,
-                'status' => $item['type'] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-
-
-        }
-
-        if (!empty($records)) {
-            EmployeeTimelogs::insert($records);
-        }
     }
+
+    if (!empty($timelogRecords)) {
+
+        DB::connection('mysql')
+            ->table('timelogs')
+            ->insert($timelogRecords);
+
+        Log::info('Timelogs uploaded.', [
+            'count' => count($timelogRecords),
+        ]);
+
+    }
+}
 
 
     public function failed(Throwable $exception)
