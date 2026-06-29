@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsCo
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\OffsetCreditsController;
+use App\Http\Controllers\Admin\AdminOffsetController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
@@ -282,6 +283,16 @@ Route::prefix('admin')->group(function() {
 
             Route::get('time-adjustments', [ESSTimeAdjustmentsController::class, 'index'])
                 ->name('ess.time-adjustments');
+
+            Route::get(
+                'authority-to-render-offsetting',
+                [AdminOffsetController::class, 'index']
+            )->name('ess.offset');
+            
+            Route::get(
+                'authority-to-render-offsetting/{id}',
+                [AdminOffsetController::class, 'show']
+            )->name('ess.offset.show');    
 
             Route::get(
                 'offset-credits',
