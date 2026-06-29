@@ -153,6 +153,41 @@
                     <div class="col-12 mb-3">
                         <div class="card">
                             <div class="card-header bg-primary text-white px-4">
+                                <h5 class="my-2 text-uppercase fw-bold">Authority to Offset Applications</h5>
+                            </div>
+                            <div class="card-body px-3 d-flex">
+                                <div class="d-lg-flex gap-3 w-100">
+                                    <div class="mb-3 w-100 text-uppercase bg-secondary p-3 rounded-3 text-white">
+                                        <p class="mb-0 fw-bold">Pending</p>
+                                        <hr>
+                                        <h1>{{$stats['offset']['pending']}}</h1>
+                                        <div class="float-end">
+                                            <a href="{{route('ess.offset', ['status' => 'pending'])}}" class="text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 w-100 text-uppercase bg-success p-3 rounded-3 text-white">
+                                        <p class="mb-0 fw-bold">Granted</p>
+                                        <hr>
+                                        <h1>{{$stats['offset']['granted']}}</h1>
+                                        <div class="float-end">
+                                            <a href="{{route('ess.offset', ['status' => 'granted'])}}" class="text-white">View</a>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 w-100 text-uppercase bg-danger p-3 rounded-3 text-white">
+                                        <p class="mb-0 fw-bold">Disapproved</p>
+                                        <hr>
+                                        <h1>{{$stats['offset']['rejected']}}</h1>
+                                        <div class="float-end">
+                                            <a href="{{route('ess.offset', ['status' => 'disapproved'])}}" class="text-white">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            <!--  <div class="col-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white px-4">
                                 <h5 class="my-2 text-uppercase fw-bold">Authority To Render Overtime Applications</h5>
                             </div>
                             <div class="card-body px-3 d-flex">
@@ -184,7 +219,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                     
                 </div>
                 <div class="col-12 col-md-5">
