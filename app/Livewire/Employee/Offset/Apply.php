@@ -230,7 +230,7 @@ class Apply extends Component
                     new Notifications(
                         'info',
                         $message,
-                        route('ess.offset-credits'), // temporary
+                        route('ess.offset'), // temporary
                         'admin'
                     )
                 );

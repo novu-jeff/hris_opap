@@ -91,13 +91,13 @@
                 </a>
                 @endcan
 
-                @can('read atro')
+                {{--@can('read atro')
                 <a href="{{ route('ess.atro') }}" class="submenu-item">
                     <i class="fa-solid fa-clock"></i> Authority To Render Overtime Application</a>
-                @endcan
+                @endcan--}}
 
                 @can('read atro')
-                <a href="" class="submenu-item">
+                <a href="{{ route('ess.offset') }}" class="submenu-item">
                     <i class="fa-solid fa-business-time"></i>
                     Authority to Render Offsetting
                 </a>
