@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ESSFAQController;
 use App\Http\Controllers\Admin\TimeAdjustmentsController as ESSTimeAdjustmentsController;
 use App\Http\Controllers\Admin\OfficialBusinessSlipController;
 use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\OffsetCreditsController;
 use App\Http\Controllers\Admin\Reports\BIR\BIRController;
 use App\Http\Controllers\Admin\Reports\DailyTimeRecord\DailyTimeRecordController;
 use App\Http\Controllers\Admin\Reports\Payroll\PayrollReportController;
@@ -82,6 +83,7 @@ use App\Http\Controllers\Employee\ATROController as EmployeeATROController;
 use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController;
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\BusinessSlipController;
+use App\Http\Controllers\Employee\OffsetController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TimeAdjustmentsController;
@@ -280,6 +282,21 @@ Route::prefix('admin')->group(function() {
 
             Route::get('time-adjustments', [ESSTimeAdjustmentsController::class, 'index'])
                 ->name('ess.time-adjustments');
+
+            Route::get(
+                'offset-credits',
+                [OffsetCreditsController::class, 'index']
+            )->name('ess.offset-credits');
+            
+            Route::get(
+                'offset-credits/create',
+                [OffsetCreditsController::class, 'create']
+            )->name('ess.offset-credits.create');
+            
+            Route::get(
+                'offset-credits/{id}/edit',
+                [OffsetCreditsController::class, 'edit']
+            )->name('ess.offset-credits.edit');    
         
             Route::prefix('announcements')->group(function() {
                 Route::get('/', [ESSAnnouncementController::class, 'index'])
@@ -537,6 +554,19 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
             Route::get('{id}/edit', [EmployeeLoanController::class, 'edit'])->name('employee.loan.edit');
            
                 
+        });
+
+        Route::prefix('authority-to-render-offsetting')->group(function () {
+
+            Route::get('/', [OffsetController::class, 'index'])
+                ->name('employee.offset.index');
+        
+            Route::get('apply', [OffsetController::class, 'create'])
+                ->name('employee.offset.apply');
+        
+            Route::get('edit/{id}', [OffsetController::class, 'edit'])
+                ->name('employee.offset.edit');
+        
         });
 
         Route::prefix('time-adjustments')->group(function() {
