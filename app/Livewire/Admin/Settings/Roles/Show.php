@@ -36,7 +36,7 @@ class Show extends Component
             'recruitment' => ['jobs', 'applicants'],
             'hris' => ['hris'],
             'timekeeping' => ['timelogs', 'correction-timelogs'],
-            'payroll' => [],
+            'payroll' => ['payroll-period', 'payroll-configuration'],
             'ess' => [
                 'leave', 'obs', 'atro', 'time-adjustments', 'payslip-request', 'announcements', 
                 'employee-profile-approval', 'messages', 'faqs'],
@@ -45,7 +45,7 @@ class Show extends Component
                 'company-information', 'scheduler', 'branches', 'departments', 'sections', 'assessments', 'requirements',
                 'users', 'roles', 'bank-information', 'employment-type', 'positions', 'violations',
                 'leave-types', 'leave-credits', 'gsis-billing', 'employee-earnings', 'employee-deductions', 'other-earnings', 'other-deductions',
-                'shift-schedule', 'employee-schedule', 'holidays', 'payroll-period', 'payroll-configuration',
+                'shift-schedule', 'employee-schedule', 'holidays',
             ],
             'employee' => [
                 'apply-leave', 'clock-in-out', 'apply-atro', 'apply-time-adjustments', 'payslip', 'employee-payslip-request', 'employee-messages',

@@ -36,11 +36,14 @@
         @endcanany
 
         <!-- HRIS -->
+        @can('read hris')
         <a href="{{ route('hris.index') }}" class="menu-item">
             <i class="fa-solid fa-users"></i> HRIS
         </a>
+        @endcan
 
         <!-- Timekeeping -->
+        @can('read timelogs')
         @if(config('app.allow_upload_timelogs'))
         <div class="menu-group">
             <p class="menu-group-title"><i class="fa-solid fa-clock"></i> Timekeeping</p>
@@ -55,11 +58,20 @@
             </div>
         </div>
         @endif
+        @endcan
 
         <!-- Payroll -->
+        @can('read payroll-period')
         <a href="{{ route('payroll.index') }}" class="menu-item">
             <i class="fa-solid fa-dollar-sign"></i> Payroll
         </a>
+        @endcan
+
+        @can('read payroll-configuration')
+        <a href="{{ route('payroll.configuration') }}" class="menu-item">
+            <i class="fa-solid fa-dollar-sign"></i> Payroll Configuration
+        </a>
+        @endcan
 
          <!-- ESS -->
         @canany([
@@ -155,39 +167,39 @@
                 <a href="{{ route('reports.dtr') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Daily Time Record</a>
                 @endcan
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Salary Payroll Record</a>
                 @endcan
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.eme-rata.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> RA/TA Payroll Record</a>
                 @endcan 
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.eme.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> EME Payroll Record</a>
                 @endcan 
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.mid-year.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Mid Year Payroll Record</a>
                 @endcan
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.premium.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Premium Payroll Record</a>
                 @endcan 
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.ot.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Overtime Payroll Record</a>
                 @endcan 
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{ route('reports.gratuity.payroll') }}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Gratuity Payroll Record</a>
                 @endcan   
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{asset('templates/unlad-kawani.xlsx')}}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> Unlad Kawani Payroll Record</a>
                 @endcan 
-                @can('read dtr')
+                @can('read payroll-report')
                 <a href="{{asset('templates/DBP.xlsx')}}" class="submenu-item">
                     <i class="fa-solid fa-clipboard-list"></i> DBP Payroll Record</a>
                 @endcan 
