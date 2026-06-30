@@ -34,7 +34,14 @@ class Upload extends Component
     public $batch_id;
     public $actionBy;
 
+    public $progress = 0;
+    public $totalRecords = 0;
+    public $processedRecords = 0;
+    public $progressKey = '';
+
     protected $listeners = ['cancelUpload'];
+
+    
 
     public function mount() {
         $this->actionBy = Auth::user();
@@ -359,7 +366,7 @@ private function createChunks(array $rows): void
         mkdir($this->tempPath, 0777, true);
     }
 
-    $chunks = array_chunk($rows, 500);
+    $chunks = array_chunk($rows, 100);
 
     foreach ($chunks as $index => $chunk) {
 
@@ -474,7 +481,66 @@ public function upload_file()
             throw new \Exception('No temporary files found.');
         }
 
+        /*
+    |--------------------------------------------------------------------------
+    | Initialize Progress
+    |--------------------------------------------------------------------------
+    */
+
+    $totalRecords = 0;
+
+    foreach ($files as $file) {
+
+        $handle = fopen($file, 'r');
+
+        if (!$handle) {
+            continue;
+        }
+
+        // Skip header
+        fgetcsv($handle);
+
+        while (($row = fgetcsv($handle)) !== false) {
+
+            if (array_filter($row)) {
+                $totalRecords++;
+            }
+
+        }
+
+    fclose($handle);
+
+        }
+
+        $this->totalRecords = $totalRecords;
+
+        $this->processedRecords = 0;
+
+        $this->progress = 0;
+
+        $this->progressKey = 'timelog_upload_' . uniqid();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Save progress key in session
+        |--------------------------------------------------------------------------
+        */
+        session([
+            'timelog_progress_key' => $this->progressKey,
+        ]);
+
+        cache()->put($this->progressKey, [
+            'processed' => 0,
+            'total' => $totalRecords,
+        ], now()->addHour());
+
         $jobs = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Jobs
+        |--------------------------------------------------------------------------
+        */
 
         foreach ($files as $file) {
 
@@ -510,7 +576,10 @@ public function upload_file()
 
             if (!empty($data)) {
 
-                $jobs[] = new TimelogUploadProcess($data);
+                $jobs[] = new TimelogUploadProcess(
+                    $data,
+                    $this->progressKey
+                );
 
             }
 
@@ -521,7 +590,7 @@ public function upload_file()
             throw new \Exception('No valid timelog records found.');
         }
 
-        Bus::batch($jobs)
+        $batch = Bus::batch($jobs)
 
             ->name('Timekeeping Upload - ' . $this->monthYear)
 
@@ -563,12 +632,28 @@ public function upload_file()
 
             ->dispatch();
 
-        $this->dispatch('alert', [
+            /*
+            |--------------------------------------------------------------------------
+            | Save batch id (optional)
+            |--------------------------------------------------------------------------
+            */
+            $this->batch_id = $batch->id;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Show progress modal
+            |--------------------------------------------------------------------------
+            */
+            $this->dispatch('show-progress');
+
+            
+
+       /* $this->dispatch('alert', [
             'status' => 'success',
             'title' => 'Upload Started',
             'showAlert' => true,
             'message' => 'Timelog import has started. You will receive a notification when it finishes.',
-        ]);
+        ]);*/
 
     } catch (\Throwable $e) {
 
@@ -583,14 +668,61 @@ public function upload_file()
             'message' => $e->getMessage(),
         ]);
 
-    } finally {
+    } 
+}
+
+public function refreshProgress()
+{
+    Log::info('Polling...');
+   
+    
+
+    if (empty($this->progressKey)) {
+        $this->progressKey = session('timelog_progress_key');
+    }
+    
+    if (empty($this->progressKey)) {
+        return;
+    }
+
+    Log::info([
+        'progressKey' => $this->progressKey,
+    ]);
+
+    $progress = cache()->get($this->progressKey);
+
+    Log::info([
+        'cache_read' => $progress,
+    ]);
+
+    if (!$progress) {
+        return;
+    }
+
+    $this->processedRecords = $progress['processed'];
+    $this->totalRecords = $progress['total'];
+
+    $this->progress = $this->totalRecords > 0
+        ? round(($this->processedRecords / $this->totalRecords) * 100)
+        : 0;
+
+    if ($this->progress >= 100) {
 
         $this->isUploading = false;
 
+        cache()->forget($this->progressKey);
+
+        $this->dispatch('upload-finished');
+
+        $this->dispatch('alert', [
+            'status' => 'success',
+            'title' => 'Upload Complete',
+            'showAlert' => true,
+            'message' => 'Timelog import completed successfully.',
+        ]);
+
     }
 }
-
-
    
 
     private function checkIfValidFormat(array &$headers): void

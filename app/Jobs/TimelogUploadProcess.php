@@ -20,13 +20,15 @@ class TimelogUploadProcess implements ShouldQueue
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $data;
+    public $progressKey;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($data)
+    public function __construct($data, $progressKey)
     {
         $this->data = $data;
+        $this->progressKey = $progressKey;
     }
 
     /**
@@ -279,6 +281,31 @@ class TimelogUploadProcess implements ShouldQueue
             'count' => count($timelogRecords),
         ]);
 
+    }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Update Progress
+    |--------------------------------------------------------------------------
+    */
+    Log::info([
+        'progressKey' => $this->progressKey,
+        'cache' => cache()->get($this->progressKey),
+    ]);
+
+    $progress = cache()->get($this->progressKey);
+
+    if ($progress) {
+
+        $progress['processed'] += count($this->data);
+
+        cache()->put(
+            $this->progressKey,
+            $progress,
+            now()->addHour()
+        );
+
+        Log::info('Progress updated', $progress);
     }
 }
 

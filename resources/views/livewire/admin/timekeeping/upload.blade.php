@@ -22,24 +22,62 @@
         @endif
     </div>
     @if($upload_preview)
-        <div class="mt-4 d-flex justify-content-end">
-            <button class="btn btn-primary px-5 py-3 text-uppercase fw-bold" 
-                    wire:click="upload_file"
-                    wire:loading.attr="disabled">
-                <span wire:loading.remove>Upload File</span>
-                <span wire:loading wire:target="upload_file">Importing <i class="fa-solid fa-spinner fa-spin"></i></span>
+        <div class="mt-4 d-flex justify-content-end" wire:ignore>
+            <button
+                class="btn btn-primary px-5 py-3 text-uppercase fw-bold"
+                wire:click="upload_file"
+                wire:loading.attr="disabled">
+        
+                <span>Upload File</span>
+        
             </button>
         </div>
     @endif
 
-    <div class="modal" id="modal-loading" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal" id="modal-loading" wire:ignore.self data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-body text-center pt-5 pb-3">
-                    <div class="loading-spinner mb-2"></div>
-                    <p id="progress-text" class="text-uppercase">Uploading...</p> 
-                    <button id="cancel-job" class="btn btn-danger mt-2 text-uppercase">Cancel Upload</button>
+    
+                <div class="modal-body">
+    
+                    <div wire:poll.1s="refreshProgress">
+    
+                        <h5 class="text-center mb-4">
+                            Uploading Timelogs...
+                        </h5>
+    
+                        <div class="progress" style="height:28px;">
+    
+                            <div
+                                class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                role="progressbar"
+                                style="width: {{ $progress }}%;"
+                            >
+                                {{ $progress }}%
+                            </div>
+    
+                        </div>
+    
+                        <div class="mt-3 text-center">
+    
+                            <strong>
+                                {{ number_format($processedRecords) }}
+                                /
+                                {{ number_format($totalRecords) }}
+                            </strong>
+    
+                            <br>
+    
+                            <small class="text-muted">
+                                records imported
+                            </small>
+    
+                        </div>
+    
+                    </div>
+    
                 </div>
+    
             </div>
         </div>
     </div>
@@ -65,3 +103,31 @@
     </style>
 </div>
 
+<script>
+    document.addEventListener('livewire:init', () => {
+
+        Livewire.on('show-progress', () => {
+
+            const modal = new bootstrap.Modal(
+                document.getElementById('modal-loading')
+            );
+
+            modal.show();
+
+            });
+
+
+    Livewire.on('upload-finished', () => {
+
+        const modal = bootstrap.Modal.getInstance(
+            document.getElementById('modal-loading')
+        );
+
+        if (modal) {
+            modal.hide();
+        }
+
+    });
+
+});
+</script>

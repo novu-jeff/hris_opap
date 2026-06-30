@@ -148,7 +148,18 @@ class LeaveCardService extends Controller
                 ->first();
 
             if ($credit) {
-                $credit->credits -= $data->daysCovered;
+                /*$credit->credits -= $data->daysCovered;
+                $credit->as_of = now()->format('Y-m');
+                $credit->save();*/
+                $duration = $leave_info['duration'] ?? 'wholeday';
+
+                $daysCovered = count($leave_info['dates']);
+
+                $leaveEquivalent = $duration === 'wholeday'
+                    ? $daysCovered
+                    : $daysCovered / 2;
+
+                $credit->credits = max(0, $credit->credits - $leaveEquivalent);
                 $credit->as_of = now()->format('Y-m');
                 $credit->save();
             }

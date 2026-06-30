@@ -52,9 +52,16 @@ class Show extends Component
 
     public function loadRecords()
     {
-        $employees = EmployeeInformation::with(['personal'])
-            ->where('employment_type_id', 1)
-            ->get();
+        $query = EmployeeInformation::with('personal')
+        ->where('status', 'active')
+        ->where('isDeleted', false);
+
+        if ($this->id != 14) {
+            // All leave types except Wellness Leave
+            $query->where('employment_type_id', 1);
+        }
+
+        $employees = $query->get();
 
         $leaveType = LeaveType::where('id', $this->id)
             ->first();
@@ -491,8 +498,14 @@ class Show extends Component
     public function render()
     {
 
-        $model = EmployeeInformation::with(['personal'])
-            ->where('employment_type_id', 1);
+        $model = EmployeeInformation::with('personal')
+            ->where('status', 'active')
+            ->where('isDeleted', false);
+
+        if ($this->id != 14) {
+            // All leave types except Wellness Leave
+            $model->where('employment_type_id', 1);
+        }
 
         if ($this->search) {
             $this->resetPage();
