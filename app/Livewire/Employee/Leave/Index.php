@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
 use App\Models\LeaveType;
+use App\Models\LeaveCredits;
 
 class Index extends Component
 {
@@ -311,18 +312,26 @@ class Index extends Component
          * ONLY VL AND SL LEAVE TYPES WITH BALANCES
          * -----------------------------
          */
-        $leaveTypes = LeaveType::whereIn('code', ['VL', 'SL'])->get();
+        $leaveTypes = LeaveType::whereIn('code', ['VL', 'SL', 'WL'])->get();
 
-        $this->leaveBalances = $leaveTypes->map(function ($type) {
+        $this->leaveBalances = $leaveTypes->map(function ($type) use ($employee_no) {
             $balance = 0;
 
-            if ($this->currentMonthCard) {
-                $balance = match($type->code) {
-                    'VL' => $this->currentMonthCard->vl_bal,
-                    'SL' => $this->currentMonthCard->sl_bal,
-                    default => 0,
-                };
-            }
+            
+               
+                if (in_array($type->code, ['VL', 'SL'])) {
+                    if ($this->currentMonthCard) {
+                    $balance = match ($type->code) {
+                        'VL' => $this->currentMonthCard?->vl_bal ?? 0,
+                        'SL' => $this->currentMonthCard?->sl_bal ?? 0,
+                    };
+                    }
+                } else {
+                    $balance = LeaveCredits::where('employee_no', $employee_no)
+                        ->where('leave_type_id', $type->id)
+                        ->value('credits') ?? 0;
+                }
+            
 
             return [
                 'code'    => $type->code,
