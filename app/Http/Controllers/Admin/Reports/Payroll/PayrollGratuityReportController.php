@@ -8,6 +8,18 @@ use Illuminate\Http\Request;
 
 class PayrollGratuityReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (! auth()->user()->hasPermissionTo('write payroll-report')) {
+                return redirect()
+                    ->route('admin.dashboard')
+                    ->with('error', 'You do not have permission to access the Payroll module.');
+            }
+        
+            return $next($request);
+        })->only('index');
+    }
     /**
      * Show payroll report
      */

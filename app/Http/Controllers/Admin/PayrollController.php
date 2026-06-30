@@ -13,6 +13,18 @@ class PayrollController extends Controller
 
     public $payroll_id;
     public $employment_type;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (! auth()->user()->hasPermissionTo('write payroll-period')) {
+                return redirect()
+                    ->route('admin.dashboard')
+                    ->with('error', 'You do not have permission to access the Payroll module.');
+            }
+        
+            return $next($request);
+        })->only('index');
+    }
 
     public function index(Request $request)
     {
