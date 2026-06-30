@@ -42,12 +42,54 @@ class TimelogUploadProcess implements ShouldQueue
     $attendanceRecords = [];
     $timelogRecords = [];
 
-    $grouped = collect($this->data)
+   /* $grouped = collect($this->data)
         ->filter(fn ($row) => !empty($row['bsdno']) && !empty($row['logdatetime']))
         ->groupBy(function ($row) {
             return $row['bsdno'] . '|' .
                 Carbon::parse($row['logdatetime'])->format('Y-m-d');
-        });
+        }); */
+
+        $grouped = collect($this->data)
+
+        ->filter(function ($row) {
+    
+            if (empty($row['bsdno']) || empty($row['logdatetime'])) {
+                return false;
+            }
+    
+            // Skip header rows
+            if (
+                strtolower(trim($row['bsdno'])) === 'bsdno' ||
+                strtolower(trim($row['logdatetime'])) === 'logdatetime' ||
+                strtolower(trim($row['logdatetime'])) === 'date time'
+            ) {
+                return false;
+            }
+    
+            try {
+    
+                Carbon::parse($row['logdatetime']);
+    
+                return true;
+    
+            } catch (\Throwable $e) {
+    
+                Log::warning('Skipping invalid row', [
+                    'row' => $row,
+                ]);
+    
+                return false;
+    
+            }
+    
+        })
+    
+        ->groupBy(function ($row) {
+    
+            return trim($row['bsdno']) . '|' .
+                Carbon::parse($row['logdatetime'])->format('Y-m-d');
+    
+        });    
 
     foreach ($grouped as $rows) {
 
@@ -84,7 +126,22 @@ class TimelogUploadProcess implements ShouldQueue
 
         $date = Carbon::parse($first['logdatetime'])->toDateString();
 
+      
+
+        $attendanceExists = false;
+
         if (!empty($employee->bsd_no)) {
+
+            $attendanceExists = !empty($employee->bsd_no)
+            && DB::connection('mysql2')
+                ->table('attendances')
+                ->where('employee_id', $employee->bsd_no)
+                ->whereDate('timestamp', $date)
+                ->exists();
+
+        }
+
+        if ($attendanceExists) {
 
             $deleted = DB::connection('mysql2')
                 ->table('attendances')
@@ -151,24 +208,7 @@ class TimelogUploadProcess implements ShouldQueue
 
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Resolve Employee
-            |--------------------------------------------------------------------------
-            */
-
-            $employee = EmployeeInformation::where('bsd_no', $item['bsdno'])
-                ->orWhere('employee_no', $item['bsdno'])
-                ->first();
-
-            if (!$employee) {
-
-                Log::warning('Employee not found.', [
-                    'uploaded_value' => $item['bsdno'],
-                ]);
-
-                continue;
-            }
+           
 
             /*
             |--------------------------------------------------------------------------
