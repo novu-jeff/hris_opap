@@ -152,11 +152,11 @@
         
                                 @if($record->status=='approved')
         
-                                    <button
+                                  <!--  <button
                                         wire:click="download({{$record->id}})"
                                         class="btn btn-success btn-sm">
                                         <i class="fa-solid fa-download"></i>
-                                    </button>
+                                    </button> -->
         
                                 @endif
         
