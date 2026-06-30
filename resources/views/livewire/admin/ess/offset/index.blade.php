@@ -173,7 +173,7 @@
 
             </div>
 
-            @if($view_records->status == 'Pending')
+            @if($view_records->status == 'pending')
 
             <div class="modal-footer">
 
