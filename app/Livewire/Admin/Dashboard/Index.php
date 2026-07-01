@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
@@ -153,31 +154,32 @@ class Index extends Component
             }
 
             $hasClockOut = false;
-
+            Log::info($count);
             // Flexible schedule
-            if ($count >= 2) {
+            if ($count > 3) {
                 $hasClockOut = true;
             }
 
             // Breaktime schedule
-            if ($count >= 4) {
+          /*  if ($count >= 4) {
                 $hasClockOut = true;
-            }
+            }*/
 
             if ($hasClockOut) {
+                Log::info('Clocked out');
                 $clockedOut++;
             } else {
                 $inProgress++;
             }
         }
 
-        $clockedIn = $mergedLogs->count();
+       /* $clockedIn = $mergedLogs->count();
 
         $clockedOut = $mergedLogs->filter(function ($logs) {
             return $logs->count() >= 2;
         })->count();
 
-        $inProgress = $clockedIn - $clockedOut;
+        $inProgress = $clockedIn - $clockedOut;*/
 
 
 
