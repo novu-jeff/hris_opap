@@ -109,19 +109,23 @@ class Index extends Component
             
         $leaveCounts = EmployeeLeave::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
+            ->where('isDeleted', 0)
             ->pluck('total', 'status')->toArray();
 
         
         $obsCounts = EmployeeBusinessSlip::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
+            ->where('isDeleted', 0)
             ->pluck('total', 'status')->toArray();
 
         $atroCounts = EmployeeAtro::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
+            ->where('isDeleted', 0)
             ->pluck('total', 'status')->toArray();
 
         $offsetCounts = EmployeeOffsetRequest::groupBy('status')
             ->select('status', DB::raw('count(*) as total'))
+            ->where('isDeleted', 0)
             ->pluck('total', 'status')
             ->toArray();    
 
