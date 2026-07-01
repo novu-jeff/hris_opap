@@ -1,18 +1,8 @@
 <div class="dtr-copy">
 
     <div class="header">
-        @php
-        $logo = !empty($provider['client_logo'])
-            ? public_path('img/' . $provider['client_logo'])
-            : null;
-    @endphp
-
-    @if($logo && file_exists($logo))
-        <img
-            src="{{ $logo }}"
-            class="logo"
-        >
-    @endif
+       
+    <img src="{{ asset('/img/' . $provider['client_logo']) }}" class="logo"> 
 
         <div class="office-title">
             Office of the Presidential Adviser<br>
