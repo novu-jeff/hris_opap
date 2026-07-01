@@ -148,12 +148,14 @@ class Index extends Component
         foreach ($mergedLogs as $employeeId => $logs) {
 
             $count = $logs->count();
+            
 
             if ($count > 0) {
                 $clockedIn++;
             }
 
             $hasClockOut = false;
+            Log::info($employeeId);
             Log::info($count);
             // Flexible schedule
             if ($count > 3) {
