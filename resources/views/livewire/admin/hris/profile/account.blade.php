@@ -43,7 +43,21 @@
                                     <span class="text-danger">{{ $message }}</span> 
                                 @enderror
                             </div>
-                        </div>   
+                        </div>  
+                        <div class="col-12 col-md-12 mb-3">
+                            <label class="mb-2">Reset Password</label>
+                        
+                            <input
+                                type="checkbox"
+                                wire:model="records.employee_account.reset_password"
+                                id="records.employee_account.reset_password"
+                                class="form-check-input ms-1">
+                        
+                            <p class="text-uppercase fw-bold text-danger" style="font-size:10px">
+                                By checking this, the employee's password will be reset to
+                                <strong>password</strong> and they will be required to change it on their next login.
+                            </p>
+                        </div> 
                     </div>
                 @endif
             </div>

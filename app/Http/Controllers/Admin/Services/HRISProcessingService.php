@@ -219,6 +219,13 @@ class HRISProcessingService extends Controller
                 $record->password = Hash::make($data['password']);
             }
 
+            // Reset password
+            if (!empty($data['reset_password'])) {
+                $record->password = Hash::make('password');
+                $record->isNew = 1;
+                $record->last_password_updated = now();
+            }
+
             $record->save();
 
             if (!$record->hasRole('employee')) {

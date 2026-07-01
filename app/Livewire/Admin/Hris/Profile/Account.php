@@ -43,6 +43,9 @@ class Account extends Component
             array_map(fn($field) => $field === 'personal_email' ? $personalEmail : ($data[$field] ?? null), $fields)
         );
 
+        $formattedAccount['notify_user'] = false;
+        $formattedAccount['reset_password'] = false;
+
         return $formattedAccount;
     }
     
@@ -51,7 +54,8 @@ class Account extends Component
             'records.employee_account.personal_email' => 'required|email',
             'records.employee_account.notify_user' => 'nullable|boolean',
             'records.employee_account.password' => 'nullable|min:8|same:records.employee_account.confirm_password',
-            'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8'
+            'records.employee_account.confirm_password' => 'required_with:records.employee_account.password|min:8',
+            'records.employee_account.reset_password' => 'nullable|boolean',
         ];
     }
 
@@ -152,14 +156,32 @@ class Account extends Component
 
         try {
 
+            if ($this->records['employee_account']['reset_password'] ?? false) {
+                $this->records['employee_account']['password'] = 'password';
+            }
+
             $process = new HRISProcessingService;
             $process->save(false, $id, $id, 'account', $this->records);
 
+            // Reset password if requested
+            if ($this->records['employee_account']['reset_password'] ?? false) {
+                EmployeeAccount::where('employee_no', $id)->update([
+                    'password' => bcrypt('password'),
+                    'isNew' => 1,
+                    'last_password_updated' => now(),
+                ]);
+            }
+
             DB::commit();
+
+            /*$this->records['employee_account']['password'] = null;
+            $this->records['employee_account']['confirm_password'] = null;
+            $this->records['employee_account']['notify_user'] = null;*/
 
             $this->records['employee_account']['password'] = null;
             $this->records['employee_account']['confirm_password'] = null;
-            $this->records['employee_account']['notify_user'] = null;
+            $this->records['employee_account']['notify_user'] = false;
+            $this->records['employee_account']['reset_password'] = false;
 
             return $this->dispatch('alert', [
                 'status' => 'success',
