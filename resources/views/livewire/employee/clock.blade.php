@@ -10,70 +10,89 @@
                 <div class="row capture-content">
                     <div class="col-12 col-md-5">
                         <div class="row">
+                    
+                            {{-- Clock In / Clock Out --}}
                             <div class="col-12 mb-3">
                                 @php
                                     $hideClockCard = $hideClockInDueToExternalLog;
                                 @endphp
+                    
                                 @if(!$hideClockCard)
-                                <div
-                                    data-status="{{ $status }}"
-                                    id="clockActionCard"
-                                    class="@if(!$hideClockCard)clock-process @endif card border-3
-                                        {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }}
-                                        {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }}
-                                        {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}"
-                                >
-                                    <div class="card-body d-flex align-items-center">
-                                        <div>
-                                            <div class="d-flex justify-content-center">
-                                                <span class="clock-label">
-                                                </span>
-
-                                                <span class="clock-loading d-none">
-                                                    <i class="fa-solid fa-spinner fa-spin"></i>
-                                                </span>
-                                            </div>
-
-                                            <div class="text-center fw-bold text-uppercase mt-1">
-                                                <span class="clock-label">
-                                                    {{ $status }}
-                                                </span>
-
-                                                <span class="clock-loading d-none">
-                                                    Processing...
-                                                </span>
+                                    <div
+                                        data-status="{{ $status }}"
+                                        id="clockActionCard"
+                                        class="clock-process card border-3
+                                            {{ in_array($status, ['Clock In', 'Clock Out']) ? 'border-primary bg-primary text-white' : '' }}
+                                            {{ in_array($status, ['Lunch In', 'Lunch Out']) ? 'border-secondary bg-secondary text-white' : '' }}
+                                            {{ $status === 'Done' ? 'border-danger bg-danger text-white' : '' }}"
+                                    >
+                                        <div class="card-body d-flex align-items-center">
+                                            <div>
+                    
+                                                <div class="d-flex justify-content-center">
+                                                    <span class="clock-label"></span>
+                    
+                                                    <span class="clock-loading d-none">
+                                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                                    </span>
+                                                </div>
+                    
+                                                <div class="text-center fw-bold text-uppercase mt-1">
+                                                    <span class="clock-label">
+                                                        {{ $status }}
+                                                    </span>
+                    
+                                                    <span class="clock-loading d-none">
+                                                        Processing...
+                                                    </span>
+                                                </div>
+                    
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @else
+                                    <p class="text-center small text-muted mt-2 mb-0">
+                                        Attendance already recorded today (device/biometric). Web clocking is disabled.
+                                    </p>
                                 @endif
-                                @if ($hideClockCard)
-                                    <p class="text-center small text-muted mt-2 mb-0">Attendance already recorded today (device/biometric). Web clock logs is not available.</p>
-                                @endif
-                               
                             </div>
-                            @if(!$hideClockCard)
+                    
+                            {{-- ALWAYS SHOW CLOCK LOGS --}}
                             <div class="col-12 mb-3">
-                                <div class="card border-3 bg-dark text-white w-100" wire:click="showLogs" wire:target="showLogs">
+                                <div
+                                    class="card border-3 bg-dark text-white w-100"
+                                    wire:click="showLogs"
+                                    wire:target="showLogs">
+                    
                                     <div class="card-body d-flex align-items-center">
                                         <div>
+                    
                                             <div class="d-flex justify-content-center">
                                                 <span wire:loading.remove wire:target="showLogs">
                                                     <i class="fa-regular fa-calendar-check"></i>
                                                 </span>
+                    
                                                 <span wire:loading wire:target="showLogs">
                                                     <i class="fa-solid fa-spinner fa-spin"></i>
                                                 </span>
                                             </div>
+                    
                                             <div class="text-center fw-bold text-uppercase mt-1">
-                                                <span wire:loading.remove wire:target="showLogs">Clock Logs</span>
-                                                <span wire:loading wire:target="showLogs">Please Wait...</span>
+                                                <span wire:loading.remove wire:target="showLogs">
+                                                    Clock Logs
+                                                </span>
+                    
+                                                <span wire:loading wire:target="showLogs">
+                                                    Please Wait...
+                                                </span>
                                             </div>
+                    
                                         </div>
                                     </div>
+                    
                                 </div>
                             </div>
-                            @endif
+                    
                         </div>
                     </div>
                     <div class="col-12 col-md-7">
@@ -110,21 +129,27 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5 text-uppercase fw-bold" id="staticBackdropLabel">
-                        {{ \Carbon\Carbon::now()->format('F Y') }}
+                        @foreach($availableMonths as $month)
+
+<a
+    href="{{ route('employee.accomplishment.download.monthly', [
+        'year' => $month->year,
+        'month' => $month->month,
+    ]) }}"
+    class="btn btn-success mb-2">
+
+    {{ \Carbon\Carbon::create($month->year, $month->month, 1)->format('F Y') }}
+
+</a>
+
+@endforeach
                     </h1> 
                                       
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-end mb-3">
-                        <a
-                            href="{{ route('employee.accomplishment.download.monthly') }}"
-                            class="btn btn-success">
-                
-                            <i class="fa-solid fa-file-pdf me-1"></i>
-                            Download Monthly Report
-                
-                        </a>
+                      
                     </div>
                 
                     @if (!empty($logs))

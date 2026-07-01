@@ -52,6 +52,8 @@ class Clock extends Component
 
     public $isProcessing = false;
 
+    public $availableMonths = [];
+
    /* public $accomplishmentOptions = [
         'System Development',
         'Bug Fixing',
@@ -187,12 +189,27 @@ class Clock extends Component
     }
 }
 
+public function showLogs()
+{
+    $this->logs = $this->getLogs();
 
-    public function showLogs()
+    $this->availableMonths = EmployeeTimelogs::where('employee_id', $this->employee_id)
+        ->selectRaw('YEAR(timestamp) as year, MONTH(timestamp) as month')
+        ->distinct()
+        ->orderByDesc('year')
+        ->orderByDesc('month')
+        ->limit(3)
+        ->get();
+
+    $this->dispatch('showModal', ['modal' => 'logs_modal']);
+}
+
+
+   /* public function showLogs()
     {
        $this->logs = $this->getLogs();
         $this->dispatch('showModal', ['modal' => 'logs_modal']);
-    }
+    }*/
 
     private function getLogs()
     {
@@ -200,7 +217,11 @@ class Clock extends Component
             ->where('employee_id', $this->employee_id)
             ->whereMonth('timestamp', now()->month)
             ->whereYear('timestamp', now()->year)
-            ->get();
+            ->get();    
+        /*$records = EmployeeTimelogs::with('employee.personal')
+        ->where('employee_id', $this->employee_id)
+        ->orderByDesc('timestamp')
+        ->get();    */
 
         return $records
             ->groupBy(fn($record) => optional(Carbon::parse($record->timestamp))->format('j/n/Y') . '|' . ($record->employee_id ?? 'undefined'))

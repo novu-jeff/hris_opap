@@ -598,8 +598,13 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
             [EmployeeAccomplishmentReportController::class, 'download']
         )->name('employee.accomplishment.download');
 
-        Route::get( '/employee/accomplishment-report/monthly', 
+       /* Route::get( '/employee/accomplishment-report/monthly', 
         [EmployeeAccomplishmentReportController::class, 'downloadMonthly'] 
+        )->name('employee.accomplishment.download.monthly');*/
+
+        Route::get(
+            '/employee/accomplishment-report/monthly/{year}/{month}',
+            [EmployeeAccomplishmentReportController::class, 'downloadMonthly']
         )->name('employee.accomplishment.download.monthly');
 
 
