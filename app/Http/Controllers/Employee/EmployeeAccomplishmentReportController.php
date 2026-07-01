@@ -58,8 +58,49 @@ class EmployeeAccomplishmentReportController extends Controller
         );
     }
 
+    public function downloadMonthly($year, $month)
+{
+    $employeeNo = auth()->user()->employee_no;
 
-    public function downloadMonthly()
+    $employee = EmployeeInformation::with('personal')
+        ->where('employee_no', $employeeNo)
+        ->firstOrFail();
+
+    $logs = EmployeeTimelogs::where('employee_id', $employeeNo)
+        ->whereYear('timestamp', $year)
+        ->whereMonth('timestamp', $month)
+        ->orderBy('timestamp')
+        ->get()
+        ->groupBy(function ($item) {
+            return Carbon::parse($item->timestamp)->format('Y-m-d');
+        });
+
+    if ($logs->isEmpty()) {
+        abort(404, 'No accomplishment records found for this month.');
+    }
+
+    $selectedMonth = Carbon::create($year, $month, 1);
+
+    $pdf = Pdf::loadView(
+        'employee.pdf.employee-accomplishment-report-monthly',
+        [
+            'employee' => $employee,
+            'month'    => $selectedMonth,
+            'logs'     => $logs,
+        ]
+    );
+
+    return $pdf->download(
+        'Monthly_Accomplishment_Report_' .
+        $employee->employee_no .
+        '_' .
+        $selectedMonth->format('Ym') .
+        '.pdf'
+    );
+}
+
+
+    public function downloadMonthly_bk()
     {
         $employeeNo = auth()->user()->employee_no;
 
