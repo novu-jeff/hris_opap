@@ -12,6 +12,13 @@ class AdminOffsetController extends Controller
         return view('admin.ess.offset.index', compact('status'));
     }
 
+    public function edit($id)
+    {
+        return view('admin.ess.offset.edit', [
+            'id' => $id,
+        ]);
+    }   
+
     public function show($id)
     {
         return view('admin.ess.offset.show', compact('id'));

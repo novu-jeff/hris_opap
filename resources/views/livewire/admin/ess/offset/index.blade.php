@@ -67,38 +67,44 @@
                 <div class="row">
 
                     <div class="col-md-4 mb-3">
-
+                
                         <label>Date Filed</label>
-
+                
                         <input
                             class="form-control"
                             value="{{ format_date($view_records->filing_date,'date_string') }}"
                             readonly>
-
+                
                     </div>
-
+                
                     <div class="col-md-4 mb-3">
-
-                        <label>Date From</label>
-
+                
+                        <label>Offset Date</label>
+                
                         <input
                             class="form-control"
-                            value="{{ format_date($view_records->date_from,'date_string') }}"
+                            value="{{ format_date($view_records->offset_date,'date_string') }}"
                             readonly>
-
+                
                     </div>
-
+                
                     <div class="col-md-4 mb-3">
-
-                        <label>Date To</label>
-
+                
+                        <label>Request Type</label>
+                
                         <input
                             class="form-control"
-                            value="{{ format_date($view_records->date_to,'date_string') }}"
+                            value="
+                                @switch($view_records->request_type)
+                                    @case('AM') AM Half Day @break
+                                    @case('PM') PM Half Day @break
+                                    @case('WHOLE_DAY') Whole Day @break
+                                @endswitch
+                            "
                             readonly>
-
+                
                     </div>
-
+                
                 </div>
 
                 {{-- Offset Details --}}
@@ -110,7 +116,7 @@
 
                         <input
                             class="form-control"
-                            value="{{ $view_records->office_order_no }}"
+                            value="{{ $view_records->office_order_no ?: 'Will be generated upon approval' }}"
                             readonly>
 
                     </div>
@@ -171,6 +177,32 @@
 
                 @endif
 
+                @if(
+                $view_records->status == 'pending' ||
+                ($view_records->status == 'approved' && $isEdit)
+            )
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Remarks / Reason for Disapproval
+                    <span class="text-danger">*</span>
+                </label>
+
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    wire:model.defer="remarks"
+                    placeholder="Enter the reason for disapproval..."></textarea>
+
+                @error('remarks')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+
+            </div>
+
+            @endif
+
             </div>
 
             @if($view_records->status == 'pending')
@@ -194,6 +226,33 @@
                 </button>
 
             </div>
+
+            @endif
+            @if($view_records->status == 'disapproved')
+
+                <button
+                    wire:click="approved"
+                    class="btn btn-success">
+
+                    <i class="fa-solid fa-check me-1"></i>
+
+                    Approve
+
+                </button>
+
+            @endif
+
+            @if($view_records->status == 'approved')
+
+                <button
+                    wire:click="changeToDisapproved"
+                    class="btn btn-danger">
+
+                    <i class="fa-solid fa-arrow-rotate-left me-1"></i>
+
+                    Change to Disapproved
+
+                </button>
 
             @endif
 
@@ -250,12 +309,13 @@
                                     <th>Employee No.</th>
                                     <th>Employee Name</th>
                                     <th>Office Order No.</th>
-                                    <th>Date Filed</th>
+                                    <th>Offset Date</th>
+                                    <th>Request Type</th>
                                     <th>Hours</th>
                                     <th>Status</th>
                                     <th width="180">Action</th>
                                 </tr>
-                            </thead>
+                                </thead>
                             
                             <tbody>
                             @forelse($records as $record)
@@ -269,15 +329,68 @@
                                     {{ $record->employee->personal->lastname }}
                                 </td>
                             
-                                <td>{{ $record->office_order_no ?: '-' }}</td>
-                            
-                                <td>{{ format_date($record->filing_date,'date_string') }}</td>
-                            
+                                <td>
+                                    @if($record->status == 'disapproved')
+                                
+                                        <span class="badge bg-danger">
+                                            N/A
+                                        </span>
+                                
+                                    @elseif($record->office_order_no)
+                                
+                                        {{ $record->office_order_no }}
+                                
+                                    @else
+                                
+                                        <span class="badge bg-secondary">
+                                            Pending
+                                        </span>
+                                
+                                    @endif
+                                </td>
+                                
+                                <td>{{ format_date($record->offset_date,'date_string') }}</td>
+                                
+                                <td>
+                                    @switch($record->request_type)
+                                        @case('AM')
+                                            <span class="badge bg-info">
+                                                AM Half Day
+                                            </span>
+                                            @break
+                                
+                                        @case('PM')
+                                            <span class="badge bg-warning text-dark">
+                                                PM Half Day
+                                            </span>
+                                            @break
+                                
+                                        @case('WHOLE_DAY')
+                                            <span class="badge bg-success">
+                                                Whole Day
+                                            </span>
+                                            @break
+                                    @endswitch
+                                </td>
+                                
                                 <td>{{ number_format($record->hours_requested,2) }}</td>
                             
                                 <td>{!! status_alert($record->status) !!}</td>
                             
                                 <td>
+
+                                    @if($record->status == 'approved')
+
+                                        <button
+                                            class="btn btn-warning btn-sm"
+                                            wire:click="view({{ $record->id }}, true)"
+                                            title="Correct Approval">
+                                
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                
+                                        </button>
+                                
+                                    @endif
                             
                                     <button
                                         class="btn btn-primary"

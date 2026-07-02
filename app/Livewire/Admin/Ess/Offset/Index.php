@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Ess\Offset;
 use App\Models\EmployeeAccount;
 use App\Models\EmployeeOffsetCredit;
 use App\Models\EmployeeOffsetRequest;
+use App\Models\EmployeeOffsetCreditUsage;
 use App\Notifications\Notifications;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -22,28 +23,100 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
 
+    public $isEdit = false;
+
+    public $remarks = '';
+
     protected $listeners = [
         'approved',
         'disapproved',
-        'remove'
+        'changeToDisapproved',
+        'remove',
     ];
 
-    public function view($id)
+    public function view($id, $edit = false)
     {
         $this->selected_id = $id;
+        $this->isEdit = $edit;
 
         $this->view_records = EmployeeOffsetRequest::with([
             'attachments',
             'employee.personal',
-        ])->find($id);
+        ])->findOrFail($id);
 
-        if ($this->view_records) {
+        $this->remarks = $this->view_records->remarks;
 
-            $this->dispatch('showModal', [
-                'modal' => 'showModal'
+        $this->dispatch('showModal', [
+            'modal' => 'showModal'
+        ]);
+    }
+
+    public function changeToDisapproved($notify = true)
+    {
+        if ($notify) {
+    
+            $this->dispatch('showConfirmation', [
+                'title'   => 'Change to Disapproved?',
+                'message' => 'This will restore the employee\'s offset credits.',
+                'action'  => 'changeToDisapproved'
             ]);
-
+    
+            return;
         }
+
+        // ADD HERE
+        $this->validate([
+            'remarks' => 'required|string|max:1000',
+        ]);
+    
+        $record = EmployeeOffsetRequest::findOrFail($this->selected_id);
+    
+        if ($record->status != 'approved') {
+            return;
+        }
+    
+        $usages = EmployeeOffsetCreditUsage::where(
+            'employee_offset_request_id',
+            $record->id
+        )->get();
+    
+        foreach ($usages as $usage) {
+    
+            $credit = EmployeeOffsetCredit::find($usage->employee_offset_credit_id);
+    
+            if (!$credit) {
+                continue;
+            }
+    
+            $credit->used_hours -= $usage->hours_used;
+            $credit->remaining_hours += $usage->hours_used;
+            $credit->save();
+    
+            $usage->delete();
+        }
+    
+        $record->status = 'disapproved';
+        $record->office_order_no = null;
+        $record->remarks = $this->remarks;
+        $record->save();
+    
+        EmployeeAccount::where('employee_no', $record->employee_no)
+            ->first()?->notify(
+                new Notifications(
+                    'warning',
+                    'Your approved Offset application has been changed to DISAPPROVED.',
+                    route('employee.offset.index'),
+                    'employee'
+                )
+            );
+    
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'success',
+            'title'     => 'Success',
+            'message'   => 'Offset application changed to disapproved.',
+            'redirect'  => '_reload'
+        ]);
     }
 
     public function approved($notify = true)
@@ -60,38 +133,57 @@ class Index extends Component
         }
 
         $record = EmployeeOffsetRequest::where('id',$this->selected_id)
-            ->where('status','pending')
+            ->whereIn('status', ['pending', 'disapproved'])
             ->first();
 
         if(!$record){
             return;
         }
 
-        $record->status='approved';
-       // $record->action_by_id=Auth::id();
+        if (empty($record->office_order_no)) {
+            $record->office_order_no = $this->generateOfficeOrderNo();
+        }
+        $record->status = 'approved';
+        $record->remarks = null;
         $record->save();
+       
+        // Deduct credits only if they haven't already been deducted
+        if (
+            EmployeeOffsetCreditUsage::where(
+                'employee_offset_request_id',
+                $record->id
+            )->doesntExist()
+        ) {
 
-        // FIFO deduction
-        $remaining = $record->hours_requested;
+            // FIFO deduction
+            $remaining = $record->hours_requested;
 
-        $credits = EmployeeOffsetCredit::where('employee_no',$record->employee_no)
-            ->where('remaining_hours','>',0)
-            ->orderBy('earned_date')
-            ->get();
+            $credits = EmployeeOffsetCredit::where('employee_no',$record->employee_no)
+                ->where('remaining_hours','>',0)
+                ->orderBy('earned_date')
+                ->get();
 
-        foreach($credits as $credit){
+            foreach($credits as $credit){
 
-            if($remaining<=0){
-                break;
+                if($remaining<=0){
+                    break;
+                }
+
+                $deduct=min($credit->remaining_hours,$remaining);
+
+                $credit->used_hours += $deduct;
+                $credit->remaining_hours -= $deduct;
+                $credit->save();
+
+                // Record which credit was consumed
+                EmployeeOffsetCreditUsage::create([
+                    'employee_offset_request_id' => $record->id,
+                    'employee_offset_credit_id'  => $credit->id,
+                    'hours_used'                 => $deduct,
+                ]);
+
+                $remaining -= $deduct;
             }
-
-            $deduct=min($credit->remaining_hours,$remaining);
-
-            $credit->used_hours += $deduct;
-            $credit->remaining_hours -= $deduct;
-            $credit->save();
-
-            $remaining -= $deduct;
         }
 
         $user = EmployeeAccount::where('employee_no',$record->employee_no)->first();
@@ -112,6 +204,29 @@ class Index extends Component
             'message'=>'Offset application approved.'
         ]);
     }
+    private function generateOfficeOrderNo()
+    {
+        $year = now()->year;
+
+        $last = EmployeeOffsetRequest::whereYear('created_at', $year)
+            ->whereNotNull('office_order_no')
+            ->latest('id')
+            ->first();
+
+        $next = 1;
+
+        if ($last) {
+
+            preg_match('/(\d+)$/', $last->office_order_no, $matches);
+
+            $next = isset($matches[1])
+                ? ((int) $matches[1]) + 1
+                : 1;
+
+        }
+
+        return sprintf('ATRO-%s-%06d', $year, $next);
+    }
 
     public function disapproved($notify=true)
     {
@@ -126,6 +241,11 @@ class Index extends Component
             return;
         }
 
+        // ADD HERE
+        $this->validate([
+            'remarks' => 'required|string|max:1000',
+        ]);
+
         $record = EmployeeOffsetRequest::where('id',$this->selected_id)
             ->where('status','pending')
             ->first();
@@ -135,14 +255,19 @@ class Index extends Component
         }
 
         $record->status='disapproved';
-       // $record->action_by_id=Auth::id();
+        $record->remarks = $this->remarks;
         $record->save();
 
         EmployeeAccount::where('employee_no',$record->employee_no)
             ->first()?->notify(
                 new Notifications(
                     'error',
-                    'Your Offset application <strong>#'.format_id($record->id,6).'</strong> has been <strong>DISAPPROVED</strong>.',
+                    'Your Offset application <strong>#'
+                    . format_id($record->id, 6)
+                    . '</strong> has been <strong>DISAPPROVED</strong>.<br><br>
+                    Reason: <strong>'
+                    . e($this->remarks)
+                    . '</strong>',
                     route('employee.offset.index'),
                     'employee'
                 )
@@ -178,7 +303,6 @@ class Index extends Component
         }
 
         $record->isDeleted=true;
-      //  $record->action_by_id=Auth::id();
         $record->save();
 
         EmployeeAccount::where('employee_no',$record->employee_no)

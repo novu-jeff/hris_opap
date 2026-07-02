@@ -35,7 +35,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body d-flex align-items-center justify-content-center">
         
-                        @if($remainingHours > 0)
+                        @if($remainingHours >= 4)
 
                             <a href="{{ route('employee.offset.apply') }}"
                             class="btn btn-primary btn-lg w-100 py-3">
@@ -96,13 +96,14 @@
                         <th>No.</th>
                         <th>Office Order No.</th>
                         <th>Date Filed</th>
-                        <th>Date Covered</th>
+                        <th>Offset Date</th>
+                        <th>Request Type</th>
                         <th>Hours</th>
-        
+                
                         @if($status == 'all')
                             <th>Status</th>
                         @endif
-        
+                
                         <th width="180">Action</th>
                     </tr>
                 </thead>
@@ -111,67 +112,99 @@
         
                     @forelse($records as $record)
         
-                        <tr>
-        
-                            <td>#{{ format_id($record->id,6) }}</td>
-        
-                            <td>{{ $record->office_order_no }}</td>
-        
+                    <tr>
+
+                        <td>#{{ format_id($record->id, 6) }}</td>
+                    
+                        
                             <td>
-                                {{ \Carbon\Carbon::parse($record->filing_date)->format('M d, Y') }}
+                                @if($record->status == 'disapproved')
+                            
+                                    <span class="badge bg-danger">
+                                        N/A
+                                    </span>
+                            
+                                @elseif($record->office_order_no)
+                            
+                                    {{ $record->office_order_no }}
+                            
+                                @else
+                            
+                                    <span class="badge bg-secondary">
+                                        Pending Approval
+                                    </span>
+                            
+                                @endif
                             </td>
-        
-                            <td>
-                                {{ \Carbon\Carbon::parse($record->date_from)->format('M d, Y') }}
-                                -
-                                {{ \Carbon\Carbon::parse($record->date_to)->format('M d, Y') }}
-                            </td>
-        
-                            <td>{{ number_format($record->hours_requested,2) }}</td>
-        
-                            @if($status == 'all')
-                                <td>{!! status_alert($record->status) !!}</td>
+                           
+                        
+                    
+                        <td>
+                            {{ \Carbon\Carbon::parse($record->filing_date)->format('M d, Y') }}
+                        </td>
+                    
+                        <td>
+                            {{ \Carbon\Carbon::parse($record->offset_date)->format('M d, Y') }}
+                        </td>
+                    
+                        <td>
+                            @switch($record->request_type)
+                                @case('AM')
+                                    <span class="badge bg-info">AM Half Day</span>
+                                    @break
+                    
+                                @case('PM')
+                                    <span class="badge bg-warning text-dark">PM Half Day</span>
+                                    @break
+                    
+                                @case('WHOLE_DAY')
+                                    <span class="badge bg-success">Whole Day</span>
+                                    @break
+                            @endswitch
+                        </td>
+                    
+                        <td>
+                            {{ number_format($record->hours_requested, 2) }}
+                        </td>
+                    
+                        @if($status == 'all')
+                            <td>{!! status_alert($record->status) !!}</td>
+                        @endif
+                    
+                        <td>
+                    
+                            @if($record->status == 'pending')
+                    
+                                <a href="{{ route('employee.offset.edit', $record->id) }}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                    
+                                <button
+                                    wire:click="cancel(true, {{ $record->id }})"
+                                    class="btn btn-danger btn-sm">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                    
+                            @elseif($record->status == 'approved')
+                    
+                                {{-- Download Office Order here if needed --}}
+                                {{-- <button class="btn btn-success btn-sm">
+                                    <i class="fa-solid fa-download"></i>
+                                </button> --}}
+                    
+                            @elseif($record->status == 'disapproved')
+                    
+                                <a href="{{ route('employee.offset.edit', $record->id) }}"
+                                   class="btn btn-secondary btn-sm">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                    
                             @endif
-        
-                            <td>
-        
-                                @if($record->status=='pending')
-        
-                                    <a href="{{ route('employee.offset.edit',$record->id) }}"
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
-        
-                                    <button
-                                        wire:click="cancel(true,{{$record->id}})"
-                                        class="btn btn-danger btn-sm">
-                                        <i class="fa-solid fa-ban"></i>
-                                    </button>
-        
-                                @endif
-        
-                                @if($record->status=='approved')
-        
-                                  <!--  <button
-                                        wire:click="download({{$record->id}})"
-                                        class="btn btn-success btn-sm">
-                                        <i class="fa-solid fa-download"></i>
-                                    </button> -->
-        
-                                @endif
-        
-                                @if($record->status=='disapproved')
-        
-                                    <a href="{{ route('employee.offset.edit',$record->id) }}"
-                                       class="btn btn-secondary btn-sm">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </a>
-        
-                                @endif
-        
-                            </td>
-        
-                        </tr>
+                    
+                        </td>
+                    
+                    </tr>
         
                     @empty
         

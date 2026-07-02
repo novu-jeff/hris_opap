@@ -288,6 +288,11 @@ Route::prefix('admin')->group(function() {
                 'authority-to-render-offsetting',
                 [AdminOffsetController::class, 'index']
             )->name('ess.offset');
+
+            Route::get(
+                'authority-to-render-offsetting/{id}/edit',
+                [AdminOffsetController::class, 'edit']
+            )->name('ess.offset.edit');
             
             Route::get(
                 'authority-to-render-offsetting/{id}',
