@@ -67,7 +67,7 @@
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
-                                @if($record->status == 'granted')
+                                @if($record->status == 'approved')
                                     <a href="javascript:void(0)" wire:click="download({{$record->id}})" class="btn btn-primary mx-1" title="Download Official Business">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
