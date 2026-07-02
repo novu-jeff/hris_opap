@@ -127,106 +127,91 @@
 
 
                     {{-- Offset Details --}}
-                    <h6 class="border-bottom pb-2 mt-5 mb-3">
-                        Offset Details
-                    </h6>
+                <h6 class="border-bottom pb-2 mt-5 mb-3">
+                    Offset Details
+                </h6>
 
-                    <div class="row">
+                <div class="row">
 
-                        <div class="col-md-6 mb-3">
+                    {{-- Offset Date --}}
+                    <div class="col-md-4 mb-3">
 
-                            <label class="form-label">
-                                Office Order No.
-                            </label>
+                        <label class="form-label">
+                            Offset Date
+                            <span class="text-danger">*</span>
+                        </label>
 
-                            <input
-                                type="text"
-                                class="form-control @error('fields.office_order_no') is-invalid @enderror"
-                                wire:model="fields.office_order_no">
+                        <input
+                            type="date"
+                            class="form-control @error('fields.offset_date') is-invalid @enderror"
+                            wire:model="fields.offset_date">
 
-                            @error('fields.office_order_no')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-
-                            <label class="form-label">
-                                Date From
-                                <span class="text-danger">*</span>
-                            </label>
-
-                            <input
-                                type="date"
-                                class="form-control @error('fields.date_from') is-invalid @enderror"
-                                wire:model="fields.date_from">
-
-                            @error('fields.date_from')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-
-                            <label class="form-label">
-                                Date To
-                                <span class="text-danger">*</span>
-                            </label>
-
-                            <input
-                                type="date"
-                                class="form-control @error('fields.date_to') is-invalid @enderror"
-                                wire:model="fields.date_to">
-
-                            @error('fields.date_to')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-
-                        </div>
+                        @error('fields.offset_date')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
 
                     </div>
 
+                    {{-- Request Type --}}
+                    <div class="col-md-4 mb-3">
 
-                    <div class="row">
+                        <label class="form-label">
+                            Request Type
+                            <span class="text-danger">*</span>
+                        </label>
 
-                        <div class="col-md-4 mb-3">
+                        <select
+                            class="form-select @error('fields.request_type') is-invalid @enderror"
+                            wire:model.live="fields.request_type">
 
-                            <label class="form-label">
-                                Hours Requested
-                                <span class="text-danger">*</span>
-                            </label>
+                            <option value="">Select Request Type</option>
+                            <option value="AM">AM Half Day (4 Hours)</option>
+                            <option value="PM">PM Half Day (4 Hours)</option>
+                            <option value="WHOLE_DAY">Whole Day (8 Hours)</option>
 
-                            <input
-                                type="number"
-                                step="0.5"
-                                min="0.5"
-                                class="form-control @error('fields.hours_requested') is-invalid @enderror"
-                                wire:model.live="fields.hours_requested">
+                        </select>
+
+                        @error('fields.request_type')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+
+                    </div>
+
+                    {{-- Hours Requested --}}
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label">
+                            Hours
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            wire:model="fields.hours_requested"
+                            readonly>
 
                             @error('fields.hours_requested')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-
-                        </div>
-
-                        <div class="col-md-8 mb-3">
-
-                            <label class="form-label">
-                                Remaining Credits
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                value="{{ number_format($this->remainingBalance, 2) }} Hours"
-                                readonly>
-
-                        </div>
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror    
 
                     </div>
 
+                    {{-- Remaining Balance --}}
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label">
+                            Balance
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ number_format($this->remainingBalance, 2) }}"
+                            readonly>
+
+                    </div>
+
+                </div>
 
                     {{-- Purpose --}}
                     <div class="mb-4">
@@ -349,7 +334,7 @@
                         <textarea
                             class="form-control"
                             rows="4"
-                            readonly>{{ $fields['disapproval_note'] }}</textarea>
+                            readonly>{{ $fields['remarks'] }}</textarea>
 
                     </div>
 

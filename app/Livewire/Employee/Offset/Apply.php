@@ -30,11 +30,11 @@ class Apply extends Component
 
     public array $fields = [
         'filing_date' => '',
-        'office_order_no' => '',
-        'date_from' => '',
-        'date_to' => '',
+        'offset_date' => '',
+        'request_type' => '',
         'hours_requested' => '',
         'reason' => '',
+        'remarks' => '',
     ];
 
     protected $listeners = ['save'];
@@ -55,13 +55,12 @@ class Apply extends Component
             $this->fields = [
 
                 'filing_date' => $record->filing_date,
-                'office_order_no' => $record->office_order_no,
-                'date_from' => $record->date_from,
-                'date_to' => $record->date_to,
+                'offset_date' => $record->offset_date,
+                'request_type' => $record->request_type,
                 'hours_requested' => $record->hours_requested,
                 'reason' => $record->reason,
+                'remarks' => $record->remarks,
                 'status' => $record->status,
-                'disapproval_note' => $record->disapproval_note,
 
             ];
 
@@ -85,6 +84,23 @@ class Apply extends Component
         }
     }
 
+    public function updatedFieldsRequestType($value)
+    {
+        switch ($value) {
+            case 'AM':
+            case 'PM':
+                $this->fields['hours_requested'] = 4;
+                break;
+
+            case 'WHOLE_DAY':
+                $this->fields['hours_requested'] = 8;
+                break;
+
+            default:
+                $this->fields['hours_requested'] = 0;
+        }
+    }
+
     private function loadCredits()
     {
         $credits = EmployeeOffsetCredit::where('employee_no', $this->employee_no);
@@ -98,13 +114,10 @@ class Apply extends Component
     {
         return [
 
-            'fields.office_order_no' => 'nullable|max:100',
+            'fields.offset_date' => 'required|date',
+            'fields.request_type' => 'required|in:AM,PM,WHOLE_DAY',
 
             'fields.filing_date' => 'required|date',
-
-            'fields.date_from' => 'required|date',
-
-            'fields.date_to' => 'required|date|after_or_equal:fields.date_from',
 
             'fields.hours_requested' => [
 
@@ -112,9 +125,11 @@ class Apply extends Component
 
                 'numeric',
 
-                'min:0.5',
-
                 function ($attribute, $value, $fail) {
+
+                    if (!in_array($value, [4, 8])) {
+                        $fail('Offset request must be either 4 hours (half-day) or 8 hours (whole day).');
+                    }
 
                     if ($value > $this->remainingHours) {
 
@@ -185,15 +200,13 @@ class Apply extends Component
 
                     'employee_no' => $this->employee_no,
 
-                    'office_order_no' => $this->fields['office_order_no'],
-
                     'filing_date' => $this->fields['filing_date'],
 
-                    'date_from' => $this->fields['date_from'],
-
-                    'date_to' => $this->fields['date_to'],
+                    'offset_date' => $this->fields['offset_date'],
 
                     'hours_requested' => $this->fields['hours_requested'],
+
+                    'request_type' => $this->fields['request_type'],
 
                     'reason' => $this->fields['reason'],
 
@@ -240,13 +253,10 @@ class Apply extends Component
                 $offset = EmployeeOffsetRequest::findOrFail($this->record_id);
                 $offset->update([
 
-                        'office_order_no' => $this->fields['office_order_no'],
+                        'offset_date' => $this->fields['offset_date'],
+                        'request_type' => $this->fields['request_type'],
 
                         'filing_date' => $this->fields['filing_date'],
-
-                        'date_from' => $this->fields['date_from'],
-
-                        'date_to' => $this->fields['date_to'],
 
                         'hours_requested' => $this->fields['hours_requested'],
 
