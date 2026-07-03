@@ -356,7 +356,7 @@
     <div class="modal fade" wire:ignore.self id="clockInModal" tabindex="-1" aria-labelledby="clockInModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-3">
-            <form wire:submit.prevent="triggerClock" enctype="multipart/form-data">
+            <div>
 
                 <div class="modal-header border-0 pt-2 pb-0">
                     <h5 class="modal-title text-uppercase fw-bold" id="clockInModalLabel">Captured Image Preview</h5>
@@ -452,18 +452,19 @@
                         Retake
                     </button>
 
-                    <button type="submit"
+                    <button type="button"
+                        id="clockProceedBtn"
                         class="btn btn-primary py-3 px-5 text-uppercase fw-bold d-flex align-items-center gap-2"
-                        wire:target="{{ $status === 'Clock Out' || $isForcedOut ? 'saveAccomplishment' : 'triggerClock' }}"
-                        wire:loading.attr="disabled">
+                        wire:loading.attr="disabled"
+                        wire:target="triggerClock">
                         <span>Proceed</span>
-                        <span wire:loading wire:target="{{ 'triggerClock' }}">
+                        <span wire:loading wire:target="triggerClock">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </span>
                     </button>
                 </div>
 
-            </form>
+            </div>
         </div>
     </div>
 </div>

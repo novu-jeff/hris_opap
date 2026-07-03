@@ -52,6 +52,8 @@ class Clock extends Component
 
     public $isProcessing = false;
 
+    public ?string $captureSessionId = null;
+
     public $availableMonths = [];
 
    /* public $accomplishmentOptions = [
@@ -76,9 +78,10 @@ class Clock extends Component
 
     protected $listeners = [
         'getLocation',
-        'imageCaptured',
+        'prepareCapture',
+        'clearCapture',
         'triggerClockForced',
-        'saveAccomplishment'
+        'saveAccomplishment',
     ];
 
     protected $rules = [
@@ -320,9 +323,46 @@ public function showLogs()
         return $this->status === 'Clock Out' || $this->isForcedOut;
     }
 
+    private function resolveCurrentEntry(): int
+    {
+        $timestamp = now()->format('Y-m-d');
+        $bsd_no = $this->bsd_emp_identical
+            ? $this->employee_no
+            : app(DailyTimeRecordService::class)->getBsdNo($this->employee_no);
+
+        return EmployeeTimelogs::where('employee_id', $bsd_no)
+            ->where('timestamp', 'LIKE', "{$timestamp}%")
+            ->count();
+    }
+
+    private function clearCaptureState(): void
+    {
+        $this->imageCaptured = null;
+        $this->isFaceDetected = false;
+        $this->captureSessionId = null;
+    }
+
+    private function abortClockAttempt(string $title, string $message, string $alert = 'info'): void
+    {
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => $alert,
+            'title' => $title,
+            'message' => $message,
+        ]);
+        $this->dispatch('reset-proceed-button');
+        $this->dispatch('reset-clock-button');
+    }
+
+    public function clearCapture(): void
+    {
+        $this->clearCaptureState();
+        $this->dispatch('reset-proceed-button');
+    }
+
     
 
-    public function triggerClock()
+    public function triggerClock(?string $imageData = null)
     {
         if ($this->isProcessing) {
             return;
@@ -331,45 +371,51 @@ public function showLogs()
         $this->isProcessing = true;
 
         try {
+            if ($imageData) {
+                $this->imageCaptured = $imageData;
+            }
+
+            $this->toggleStatus();
 
             if ($this->hideClockInDueToExternalLog && $this->status === 'Clock In') {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Already checked in',
-                    'message' => 'Your attendance was already recorded today (e.g. biometric device).',
-                ]);
+                $this->abortClockAttempt(
+                    'Already checked in',
+                    'Your attendance was already recorded today (e.g. biometric device).'
+                );
                 return;
             }
 
-            if($this->status == 'Done') {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'Please be informed',
-                    'message' => 'You\'ve completed today\'s work.',
-                ]);
+            if ($this->status == 'Done') {
+                $this->abortClockAttempt(
+                    'Please be informed',
+                    'You\'ve completed today\'s work.'
+                );
                 return;
             }
 
             if (!$this->isFaceDetected) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'info',
-                    'title' => 'No Face Detected',
-                    'message' => 'No face detected. Please ensure your face is visible to the camera.',
-                ]);
+                $this->abortClockAttempt(
+                    'No Face Detected',
+                    'No face detected. Please ensure your face is visible to the camera.'
+                );
                 return;
             }
 
             if (empty($this->imageCaptured)) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Image Missing',
-                    'message' => 'No image was captured.',
-                ]);
+                $this->abortClockAttempt(
+                    'Image Missing',
+                    'No image was captured.',
+                    'error'
+                );
+                return;
+            }
 
+            if (empty($this->captureSessionId)) {
+                $this->abortClockAttempt(
+                    'Session Expired',
+                    'This capture session is no longer valid. Please retake your photo.',
+                    'error'
+                );
                 return;
             }
 
@@ -377,13 +423,11 @@ public function showLogs()
                 $this->accomplishment_type === 'Upload Accomplishment Report'
                 && !$this->upload_accomplishment
             ) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Required',
-                    'message' => 'Please upload an accomplishment report.',
-                ]);
-
+                $this->abortClockAttempt(
+                    'Required',
+                    'Please upload an accomplishment report.',
+                    'error'
+                );
                 return;
             }
 
@@ -391,13 +435,11 @@ public function showLogs()
                 ($this->status === 'Clock Out' || $this->isForcedOut)
                 && empty($this->accomplishment_type)
             ) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Accomplishment Required',
-                    'message' => 'Please select your accomplishment before clocking out.',
-                ]);
-
+                $this->abortClockAttempt(
+                    'Accomplishment Required',
+                    'Please select your accomplishment before clocking out.',
+                    'error'
+                );
                 return;
             }
 
@@ -405,13 +447,11 @@ public function showLogs()
                 $this->accomplishment_type === 'Others'
                 && empty($this->accomplishment_details)
             ) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Required',
-                    'message' => 'Please specify your accomplishment.',
-                ]);
-
+                $this->abortClockAttempt(
+                    'Required',
+                    'Please specify your accomplishment.',
+                    'error'
+                );
                 return;
             }
 
@@ -433,7 +473,7 @@ public function showLogs()
                 $this->accomplishment = $fileName;
             }
 
-            $service = app(ClockInOutService::class);
+            $entry = $this->resolveCurrentEntry();
 
             $toProcess = [
                 'timestamp' => Carbon::now(),
@@ -444,11 +484,17 @@ public function showLogs()
                 'accomplishment_details' => $this->accomplishment_details,
             ];
 
+            // Consume session immediately so duplicate Proceed clicks cannot reuse it.
+            $this->captureSessionId = null;
+
+            $service = app(ClockInOutService::class);
             $response = $service->process(
-                $this->entry,
+                $entry,
                 $toProcess,
                 $this->employee_no
             );
+
+            $this->clearCaptureState();
 
             $this->dispatch('alert', [
                 'showAlert' => true,
@@ -458,8 +504,7 @@ public function showLogs()
             ]);
 
             $this->toggleStatus();
-
-            // Re-enable button on frontend
+            $this->dispatch('close-clock-modal');
             $this->dispatch('reset-clock-button');
 
         } finally {
@@ -626,11 +671,29 @@ public function showLogs()
         $this->toggleStatus();
     }
 
-    public function imageCaptured($imageData, $isFaceDetected = false, $isForcedOut = false)
+    public function prepareCapture($sessionId, $isFaceDetected = true, $isForcedOut = false): void
     {
+        if (is_array($sessionId)) {
+            [$sessionId, $isFaceDetected, $isForcedOut] = array_pad($sessionId, 3, null);
+        }
+
+        $this->captureSessionId = $sessionId;
+        $this->isFaceDetected = filter_var($isFaceDetected, FILTER_VALIDATE_BOOLEAN);
+        $this->isForcedOut = filter_var($isForcedOut, FILTER_VALIDATE_BOOLEAN);
+        $this->imageCaptured = null;
+    }
+
+    /** @deprecated Use prepareCapture(); kept for backward compatibility. */
+    public function imageCaptured($imageData, $isFaceDetected = false, $isForcedOut = false, $sessionId = null)
+    {
+        if (is_array($imageData) && isset($imageData[0]) && is_string($imageData[0]) && str_starts_with($imageData[0], 'data:image')) {
+            [$imageData, $isFaceDetected, $isForcedOut, $sessionId] = array_pad($imageData, 4, null);
+        }
+
         $this->imageCaptured = $imageData;
-        $this->isFaceDetected = $isFaceDetected;
-        $this->isForcedOut = $isForcedOut;
+        $this->isFaceDetected = filter_var($isFaceDetected, FILTER_VALIDATE_BOOLEAN);
+        $this->isForcedOut = filter_var($isForcedOut, FILTER_VALIDATE_BOOLEAN);
+        $this->captureSessionId = $sessionId;
     }
 
     public function updatedUploadAccomplishment()
