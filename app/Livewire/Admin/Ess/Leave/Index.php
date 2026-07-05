@@ -24,7 +24,7 @@ class Index extends Component
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
-    protected $listeners = ['remove', 'disapproved', 'approved'];
+    protected $listeners = ['remove', 'disapproved', 'approved', 'revertToPending'];
     public $accepts_autwopay;
 
     protected $paginationTheme = 'bootstrap';
@@ -262,52 +262,118 @@ class Index extends Component
 
     }
 
-    public function remove(bool $isNotify = true, ? int $id = null) {
+    public function approveDisapproved()
+    {
+        $record = EmployeeLeave::with('dates', 'employment')
+            ->where('id', $this->selected_id)
+            ->where('status', 'disapproved')
+            ->first();
 
-        if($isNotify) {
+        if (!$record) {
+            return;
+        }
 
-            $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to delete this leave application <b>#' . strtoupper(format_id($id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'remove';
+        // clear disapproval remarks
+        $record->remarks = null;
 
-            $this->selected_id = $id;
+        // change status
+        $record->status = 'approved';
+        $record->action_by_id = Auth::id();
+        $record->save();
+
+        // deduct leave credits
+        $leaveCardService = new LeaveCardService;
+        $leaveCardService->init($record->employee_no, 'leave_approval', $record);
+
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'success',
+            'title' => 'Success',
+            'message' => 'Leave application has been approved.'
+        ]);
+
+        $this->loadRecords($record->id);
+
+        $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+
+        $user?->notify(new Notifications(
+            'success',
+            'Your leave application <strong>#'.format_id($record->id,6).'</strong> has been <strong>APPROVED</strong>.',
+            route('employee.leave'),
+            'employee'
+        ));
+    }
+
+    
+
+    public function revertToPending(bool $isNotify = true)
+    {
+        if ($isNotify) {
+
             $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
+                'title'   => 'Revert Application?',
+                'message' => 'This leave application will be returned to Pending for re-evaluation.',
+                'action'  => 'revertToPending'
             ]);
 
-        }  else {
+            return;
+        }
 
-            $record = EmployeeLeave::find($this->selected_id);
+        $record = EmployeeLeave::with('dates')->find($this->selected_id);
 
-            if($record) {
+        if (!$record) {
+            return;
+        }
 
-                $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-                $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>REMOVED</strong>. Click this notification to view more details.', route('employee.leave'), 'employee'));
+        // Only process approved applications
+        if ($record->status === 'approved') {
 
-                $record->isDeleted = true;
-                $record->action_by_id = Auth::user()->id;
-                $record->save();
+            $leaveType = LeaveType::find($record->leave_id);
 
-                $this->dispatch('alert', [
-                    'status' => 'success',
-                    'title' => 'Success!',
-                    'id' => $this->selected_id,
-                    'isRemoveRowDT' => true,
-                    'message' => 'Leave Application #' . strtoupper(format_id($record->id, 6)) . ' has deleted successfully.'
-                ]);
+            // VL / SL require Leave Card reversal
+            if ($leaveType && $leaveType->isCummulative) {
 
-            } else {
                 return $this->dispatch('alert', [
                     'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!',
-                    'isRemoveRowDT' => false,
-                    'message' => 'Error: ID does not exists'
+                    'status'    => 'warning',
+                    'title'     => 'Not Allowed',
+                    'message'   => 'Approved Vacation Leave and Sick Leave cannot yet be reverted because the Leave Card has already been updated.'
                 ]);
             }
+
+            // Restore credits for non-cumulative leave types (WL, ML, PL, etc.)
+            $leaveCredit = LeaveCredits::where('employee_no', $record->employee_no)
+                ->where('leave_type_id', $record->leave_id)
+                ->first();
+
+            if ($leaveCredit) {
+
+                $daysCovered = $record->dates->count();
+
+                $leaveEquivalent = $record->duration === 'wholeday'
+                    ? $daysCovered
+                    : ($daysCovered / 2);
+
+                $leaveCredit->credits += $leaveEquivalent;
+                $leaveCredit->as_of = now()->format('Y-m');
+                $leaveCredit->save();
+            }
         }
+
+        $record->update([
+            'status'       => 'pending',
+            'remarks'      => null,
+            'action_by_id' => Auth::id(),
+        ]);
+
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status'    => 'success',
+            'title'     => 'Success',
+            'message'   => 'Leave application has been reverted to Pending.'
+        ]);
+
+        $this->loadRecords($record->id);
     }
 
     public function render()
