@@ -187,6 +187,14 @@
                                 </button>
                     
                             @elseif($record->status == 'approved')
+
+                            <a
+                            href="{{ route('employee.offset.download',$record->id) }}"
+                            class="btn btn-success btn-sm">
+                            
+                            <i class="fa-solid fa-download"></i>
+                            
+                            </a>
                     
                                 {{-- Download Office Order here if needed --}}
                                 {{-- <button class="btn btn-success btn-sm">
