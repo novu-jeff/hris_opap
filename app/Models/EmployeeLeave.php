@@ -19,6 +19,8 @@ class EmployeeLeave extends Model
         'location_specific',
         'confinement',
         'illness',
+        'remarks',
+        'action_by_id',
         'study',
         'study_other_purpose',
         'commutation',

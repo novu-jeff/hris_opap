@@ -31,6 +31,8 @@ class Index extends Component
     public $entries = 10;
     public $search = '';
 
+    public $disapproval_remarks = '';
+
     public function view(int $id) {
         $this->selected_id = $id;
         $this->loadRecords($id);
@@ -71,26 +73,39 @@ class Index extends Component
         
         $this->loadRecords($this->selected_id);
 
-        if($isNotify) {
+        if ($isNotify) {
+
+            if (blank(trim($this->disapproval_remarks))) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Remarks Required',
+                    'message' => 'Please provide the reason for disapproval.'
+                ]);
+            }
 
             $title = 'Are you sure to continue?';
             $message = 'Please be informed that you are about to disapprove this leave application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'disapproved';
+
             $this->dispatch('showConfirmation', [
                 'title' => $title,
                 'message' => $message,
-                'action' => $action
+                'action' => 'disapproved'
             ]);
 
         } else {
 
             $record = EmployeeLeave::where('id', $this->selected_id)
-                ->where('status', 'pending')
-                ->first();
+            ->where('status', 'pending')
+            ->first();
 
-            $record->status = 'disapproved';
-            $record->action_by_id = Auth::user()->id;
-            $record->save();
+            $record->update([
+                'status' => 'disapproved',
+                'remarks' => $this->disapproval_remarks,
+                'action_by_id' => Auth::id(),
+            ]);
+
+            $this->reset('disapproval_remarks');
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
@@ -102,7 +117,14 @@ class Index extends Component
             ]);
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('error', 'You\'re leave application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>DISAPPROVED</strong>.', route('employee.leave'), 'employee'));
+            $user?->notify(new Notifications(
+                'error',
+                'Your leave application <strong>#' . format_id($record->id, 6) .
+                '</strong> was <strong>DISAPPROVED</strong>.<br><br>
+                <strong>Reason:</strong><br>' . e($record->remarks),
+                route('employee.leave'),
+                'employee'
+            ));
         }
     }
 

@@ -111,7 +111,34 @@
                         </div>
                     </div>
                 @endif
+                @if (isset($view_records->status) && $view_records->status === 'pending')
 
+                <div class="col-12 mb-3">
+                    <label class="form-label">
+                        Remarks <span class="text-danger">*</span>
+                    </label>
+            
+                    <textarea
+                        wire:model.defer="disapproval_remarks"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Enter reason for disapproval..."></textarea>
+                </div>
+            @endif
+            @if (isset($view_records->status) && $view_records->status === 'disapproved')
+
+            <div class="col-12 mb-4">
+                <label class="mb-2 text-danger fw-bold">
+                    Reason for Disapproval
+                </label>
+
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    readonly>{{ $view_records->remarks }}</textarea>
+            </div>
+
+            @endif
                 </div>
                 @if (isset($view_records->status) && $view_records->status === 'pending')
                     <div class="modal-footer">

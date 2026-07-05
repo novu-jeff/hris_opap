@@ -124,13 +124,26 @@
                                         @endif
 
                                         @if($record->status == 'disapproved')
+                                       
+
                                             <button wire:click="remove(true, {{ $record->id }})" class="btn btn-danger mx-1">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         @endif
                                     </td>
                                 </tr>
-
+                                @if($record->status == 'disapproved' && !empty($record->remarks))
+                                <tr>
+                                    <td colspan="{{ $status == 'all' ? 5 : 4 }}" class="bg-light">
+                                        <span class="text-danger fw-bold">
+                                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                                            Reason for Disapproval:
+                                        </span>
+                                        <br>
+                                        {{ $record->remarks }}
+                                    </td>
+                                </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="12" class="text-center fw-bold py-3">No data was found</td>
