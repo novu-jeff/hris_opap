@@ -146,6 +146,30 @@
                         <button wire:click="approved" class="btn btn-primary text-uppercase fw-medium">Approve</button>
                     </div>
                 @endif
+               
+                @if(isset($view_records->status) && $view_records->status === 'approved')
+                <div class="modal-footer">
+                    <button wire:click="revertToPending"
+                        class="btn btn-warning">
+                        Revert to Pending
+                    </button>
+                </div>
+                @endif
+
+                @if(isset($view_records->status) && $view_records->status === 'disapproved')
+                <div class="modal-footer">
+                    <button wire:click="revertToPending"
+                        class="btn btn-warning">
+                        Revert to Pending
+                    </button>
+                    <div class="modal-footer">
+                        <button wire:click="approveDisapproved"
+                            class="btn btn-success text-uppercase fw-medium">
+                            Approve Instead
+                        </button>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

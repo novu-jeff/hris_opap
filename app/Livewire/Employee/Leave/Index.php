@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\EmployeeAtro;
 use App\Models\EmployeeBusinessSlip;
+use App\Models\EmployeeOffsetRequest;
 use App\Models\LeaveType;
 use App\Models\LeaveCredits;
 
@@ -129,31 +130,31 @@ class Index extends Component
     
             if($records->leave_id == 1 || $records->leave_id == 6) {
                 if($records->location == 'ph') {
-                    $sheet->setCellValue('J18', '/');
+                    $sheet->setCellValue('K18', '/');
                     $sheet->setCellValue('N18', strtoupper($records->location_specific) ?? '');
                 } else {
-                    $sheet->setCellValue('J19', '/');
+                    $sheet->setCellValue('K19', '/');
                     $sheet->setCellValue('N19', strtoupper($records->location_specific) ?? '');
                 }
             }
     
             if($records->leave_id == 3) {
                 if($records->confinement == 'hospital') {
-                    $sheet->setCellValue('J18', '/');
-                    $sheet->setCellValue('N18', strtoupper($records->illness) ?? '');
+                    $sheet->setCellValue('K18', '/');
+                    $sheet->setCellValue('O18', strtoupper($records->illness) ?? '');
                 } else {
-                    $sheet->setCellValue('J21', '/');
-                    $sheet->setCellValue('N21', strtoupper($records->illness) ?? '');
+                    $sheet->setCellValue('K21', '/');
+                    $sheet->setCellValue('O21', strtoupper($records->illness) ?? '');
                 }
             }
     
             if($records->leave_id == 8) {
                 if($records->study == 'completion_masters') {
-                    $sheet->setCellValue('J26', '/');
+                    $sheet->setCellValue('K26', '/');
                 } elseif($records->study == 'examination') {
-                    $sheet->setCellValue('J27', '/');
+                    $sheet->setCellValue('K27', '/');
                 } else {
-                    $sheet->setCellValue('M28', strtoupper($records->study_other_purpose) ?? '');
+                    $sheet->setCellValue('O28', strtoupper($records->study_other_purpose) ?? '');
                 }
             }
     
@@ -190,12 +191,14 @@ class Index extends Component
                 case 'VL':
                     $vl_latest  = $leaveCardBalance->vl_bal ?? 0;
                     $vl_covered = $daysCovered;
+                    $vl_latest = $vl_latest + $vl_covered;
                     $vl_bal     = $vl_latest - $vl_covered;
                     break;
             
                 case 'SL':
                     $sl_latest  = $leaveCardBalance->sl_bal ?? 0;
                     $sl_covered = $daysCovered;
+                    $sl_latest = $sl_latest + $sl_covered;
                     $sl_bal     = $sl_latest - $sl_covered;
                     break;
             
@@ -209,7 +212,7 @@ class Index extends Component
                     break;
             }
 
-            $sheet->setCellValue('F42', $currentTimestamp ?? '');
+            $sheet->setCellValue('F43', $currentTimestamp ?? '');
 
             $sheet->setCellValue('F46', $vl_latest ?? 0);
             $sheet->setCellValue('F47', $vl_covered ?? 0);
@@ -472,10 +475,10 @@ class Index extends Component
             ],
             'atro' => [
                 'title' => 'ATRO Application',
-                'count' => EmployeeAtro::where('employee_no', $this->user_id)
+                'count' => EmployeeOffsetRequest::where('employee_no', $this->user_id)
                     ->where('status', 'pending')
                     ->count(),
-                'route' => 'employee.atro',
+                'route' => 'employee.offset.index',
             ],
             /*'time_adjustments' => [
                 'title' => 'Time Adjustments',
