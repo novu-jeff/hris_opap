@@ -77,7 +77,7 @@ class Index extends Component
         
         $employee_no = $this->user_id;
     
-        $records = EmployeeLeave::with('employee.personal', 'employee.positions')->where('employee_no', $employee_no)
+        $records = EmployeeLeave::with('dates','employee.personal', 'employee.positions')->where('employee_no', $employee_no)
             ->where('id', $leave_id)
             ->first();
     
@@ -96,11 +96,11 @@ class Index extends Component
             $spreadsheet = IOFactory::load($template);
             $sheet = $spreadsheet->getActiveSheet();
     
-            $sheet->setCellValue('G9', strtoupper($records->employee->personal->lastname) ?? '');
-            $sheet->setCellValue('I9', strtoupper($records->employee->personal->firstname) ?? '');
-            $sheet->setCellValue('N9', strtoupper($records->employee->personal->middlename) ?? '');
-            $sheet->setCellValue('O11', strtoupper($records->employee->salary) ?? '');
-            $sheet->setCellValue('H11', strtoupper($records->employee->positions->name) ?? '');
+            $sheet->setCellValue('H9', strtoupper($records->employee->personal->lastname) ?? '');
+            $sheet->setCellValue('J9', strtoupper($records->employee->personal->firstname) ?? '');
+            $sheet->setCellValue('O9', strtoupper($records->employee->personal->middlename) ?? '');
+            $sheet->setCellValue('P11', strtoupper($records->employee->salary) ?? '');
+            $sheet->setCellValue('I11', strtoupper($records->employee->positions->name) ?? '');
 
             // Set created date
             $sheet->setCellValue('F11', Carbon::parse($records->created_at)->format('m/d/y'));
@@ -119,7 +119,8 @@ class Index extends Component
                 10 => 'C26',
                 11 => 'C27',
                 12 => 'C28',
-                13 => 'C29',
+                14 => 'C29',
+                13 => 'C30',
             ];
     
             if (isset($leaveType[$records->leave_id])) {
@@ -156,33 +157,26 @@ class Index extends Component
                 }
             }
     
-            $sheet->setCellValue($records->commutation == 'YES' ? 'J34' : 'J33', '/');
+            $sheet->setCellValue($records->commutation == 'YES' ? 'K34' : 'K35', '/');
     
-            $from = Carbon::parse($records->from);
-            $to = isset($records->to) ? Carbon::parse($records->to) : null;
-            $daysCovered = $to ? $from->diffInDays($to) + 1 : 1;
+            $leaveDates = $records->dates
+            ->sortBy('date')
+            ->pluck('date');
 
+        $daysCovered = $leaveDates->count();
 
-            $holidays = Holiday::pluck('date')->map(function ($date) {
-                return Carbon::createFromFormat('m-d', $date)->format('m-d'); // Normalize to MM-DD
-            })->toArray();
-
-            $period = $to ? CarbonPeriod::create($from, $to) : CarbonPeriod::create($from, $from);
-            $dates = [];
-
-            foreach ($period as $date) {
-                $formattedDate = $date->format('m-d'); 
-                $dayOfWeek = $date->format('D'); 
-
-                if ($dayOfWeek !== 'Sat' && $dayOfWeek !== 'Sun' && !in_array($formattedDate, $holidays)) {
-                    $dates[] = $date->format('m/d/y');
-                }
-            }
+        $dates = $leaveDates
+            ->map(function ($date) {
+                return Carbon::parse($date)->format('m/d/y');
+            })
+            ->toArray();
 
             $leaveCardBalance = $this->getLeaveCard();
             $currentTimestamp = Carbon::now()->format('F Y');
 
-            if($records->leave_id == 1) {
+            $leaveType = $records->leave_type?->code;
+
+           /* if($records->leave_id == 1) {
                 $vl_latest = $leaveCardBalance->vl_bal;
                 $vl_covered = number_format($daysCovered, 2);
                 $vl_bal = $vl_latest - $vl_covered;
@@ -190,20 +184,47 @@ class Index extends Component
                 $sl_latest = $leaveCardBalance->sl_bal;
                 $sl_covered = number_format($daysCovered, 2);
                 $sl_bal = $sl_latest - $sl_covered;
+            }*/
+
+            switch ($leaveType) {
+                case 'VL':
+                    $vl_latest  = $leaveCardBalance->vl_bal ?? 0;
+                    $vl_covered = $daysCovered;
+                    $vl_bal     = $vl_latest - $vl_covered;
+                    break;
+            
+                case 'SL':
+                    $sl_latest  = $leaveCardBalance->sl_bal ?? 0;
+                    $sl_covered = $daysCovered;
+                    $sl_bal     = $sl_latest - $sl_covered;
+                    break;
+            
+                case 'WL':
+                    $wl_latest = LeaveCredits::where('employee_no', $employee_no)
+                        ->where('leave_type_id', $records->leave_id)
+                        ->value('credits') ?? 0;
+            
+                    $wl_covered = $daysCovered;
+                    $wl_earned     = $wl_latest + $wl_covered;
+                    break;
             }
 
             $sheet->setCellValue('F42', $currentTimestamp ?? '');
 
-            $sheet->setCellValue('F45', $vl_latest ?? 0);
-            $sheet->setCellValue('F46', $vl_covered ?? 0);
-            $sheet->setCellValue('F47', $vl_bal ?? 0);
+            $sheet->setCellValue('F46', $vl_latest ?? 0);
+            $sheet->setCellValue('F47', $vl_covered ?? 0);
+            $sheet->setCellValue('F48', $vl_bal ?? 0);
 
-            $sheet->setCellValue('G45', $sl_latest ?? 0);
-            $sheet->setCellValue('G46', $sl_covered ?? 0);
-            $sheet->setCellValue('G47', $sl_bal ?? 0);
+            $sheet->setCellValue('G46', $sl_latest ?? 0);
+            $sheet->setCellValue('G47', $sl_covered ?? 0);
+            $sheet->setCellValue('G48', $sl_bal ?? 0);
 
-            $sheet->setCellValue('E33', $daysCovered . ($daysCovered > 1 ? ' days' : ' day'));
-            $sheet->setCellValue('E35', implode(', ', $dates));
+            $sheet->setCellValue('H46', $wl_earned ?? 0);
+            $sheet->setCellValue('H47', $wl_covered ?? 0);
+            $sheet->setCellValue('H48', $wl_latest  ?? 0);
+
+            $sheet->setCellValue('E34', $daysCovered . ($daysCovered > 1 ? ' days' : ' day'));
+            $sheet->setCellValue('E36', implode(', ', $dates));
     
             return response()->streamDownload(function () use ($spreadsheet) {
                 $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');

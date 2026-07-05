@@ -129,9 +129,8 @@ class Index extends Component
 
     public function download($id)
     {
-        //
-        // PDF / DOCX generation
-        // Implement after Offset Form is finalized.
+        return app(\App\Services\OffsetPdfService::class)
+        ->download($id);
     }
 
     public function render()

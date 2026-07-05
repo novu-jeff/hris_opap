@@ -90,14 +90,10 @@ class DailyTimeRecordService {
             EmployeePersonal::where('employee_no', $employee_no)->first()
         )->toArray() ?? [];    
 
+        $offsets = $this->getApprovedOffsets($employee_no, $dateInput);
 
-        $logs = $this->processLogs($employee, $logs);
-
-        Log::info('DTR  Process logs', [
-            'employees' => $employee_no,
-            'logs' => $logs,
-
-        ]);
+        $logs = $this->processLogs($employee, $logs, collect($offsets['dates']));
+       
        
         $dtr = $this->computeDTR($employee_no, $logs, $dateInput);
 
@@ -201,6 +197,9 @@ class DailyTimeRecordService {
         $officialBusiness = $this->getOfficialBusiness($employee_no, $dateInput);
         $officialBusinessCollection = collect($officialBusiness['dates']);
 
+        $offsets = $this->getApprovedOffsets($employee_no, $dateInput);
+        $offsetsCollection = collect($offsets['dates']);
+
        // $overtime = $this->getTotalOvertime($employee_no, $dateInput);
        $overtime = $this->getUpdatedTotalOvertime($employee_no, $dateInput);
       
@@ -263,7 +262,31 @@ class DailyTimeRecordService {
             
             }
 
-            $checkAttendance = $this->checkAttendance($dateString,$date_is_in_logs,$weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness);
+            $matchOffset = $offsetsCollection->first(function ($offset) use ($dateString) {
+                return $offset->date === $dateString;
+            });
+            
+            $isOffset = $matchOffset != null;
+
+            if ($matchOffset) {
+
+                switch ($matchOffset->request_type) {
+            
+                    case 'AM':
+                        $remarks[] = 'Offset (AM)';
+                        break;
+            
+                    case 'PM':
+                        $remarks[] = 'Offset (PM)';
+                        break;
+            
+                    case 'WHOLE_DAY':
+                        $remarks[] = 'Offset';
+                        break;
+                }
+            }
+
+            $checkAttendance = $this->checkAttendance($dateString,$date_is_in_logs,$weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness, $isOffset);
             
             if ($checkAttendance['isAbsent']) $absences++;
             if ($checkAttendance['isWorkedDays']) $workedDays++;
@@ -294,9 +317,75 @@ class DailyTimeRecordService {
 
             if (isset($logs[$dateString])) {
                 $formattedLogs[$dateString] = $logs[$dateString];
+                
+                /*
+|--------------------------------------------------------------------------
+| Normalize logs for approved Offset
+|--------------------------------------------------------------------------
+|
+| We only normalize the logs used for AUT computation.
+| The original DTR logs remain unchanged.
+|
+*/
+
+$autLogs = $dateLogs;
+
+            if ($matchOffset) {
+
+                switch ($matchOffset->request_type) {
+
+                    case 'AM':
+
+                        /*
+                        * If only one afternoon log exists,
+                        * treat it as the afternoon IN.
+                        */
+
+                        if (
+                            !empty($autLogs['clock_in']) &&
+                            empty($autLogs['clock_out']) &&
+                            Carbon::parse($autLogs['clock_in'])->hour >= 12
+                        ) {
+
+                            $autLogs['lunch_in'] = $autLogs['clock_in'];
+
+                            $autLogs['clock_in'] = null;
+
+                        }
+
+                        
+
+                        break;
+
+                    case 'PM':
+
+                        /*
+                        * PM Offset
+                        * Morning work only.
+                        */
+
+                        if (
+                            empty($autLogs['clock_out']) &&
+                            !empty($autLogs['lunch_out'])
+                        ) {
+                            $autLogs['clock_out'] = $autLogs['lunch_out'];
+                        }
+
+                        break;
+
+                    case 'WHOLE_DAY':
+
+                        /*
+                        * No normalization needed.
+                        * undertimeAndTardiness() already returns early.
+                        */
+
+                        break;
+                }
+            }
 
                 # aut 
-                $aut = $this->undertimeAndTardiness($employee_no, $employeeSchedule, $dateLogs,$dateString, $matchOfficialBusiness);
+                $aut = $this->undertimeAndTardiness($employee_no, $employeeSchedule, $autLogs,$dateString, $matchOfficialBusiness, $matchOffset);
 //dd($aut);
 Log::info('return aut', ['aut' => $aut]);
                 # Assign the correct values to formatted logs
@@ -633,7 +722,7 @@ Log::info('return aut', ['aut' => $aut]);
      *                                    - 'isWorkedOnLegalHolidays': bool
      *                                    - 'isWorkedOnSpecialHolidays': bool
      */
-    private function checkAttendance($dateString,  $date_is_in_logs, $weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness = false)
+    private function checkAttendance($dateString,  $date_is_in_logs, $weeklySchedule, $dayName, $isFuture, $isLeave, $isOfficialBusiness = false, $isOffset = false)
     {
         # Skip if today
         if (Carbon::parse($dateString)->isToday()) {
@@ -731,7 +820,7 @@ Log::info('return aut', ['aut' => $aut]);
             }
             $workedDays = true;
         } elseif ($isScheduled && !$isHoliday && !$isFuture && !$isLeave &&
-        !$isOfficialBusiness) {
+        !$isOfficialBusiness && !$isOffset) {
             $absent = true;
             $ownRemarks[] = 'Absent';
         }
@@ -876,8 +965,10 @@ Log::info('return aut', ['aut' => $aut]);
      *                                     - 'remarks': Array of remarks (e.g. Late, Undertime, Discrepancy)
      *                                     - 'is_break_required': Whether break time was required on that day
      */
-    private function undertimeAndTardiness($employee_no, $employeeSchedule, $log, $date, $officialBusiness = null)
+    private function undertimeAndTardiness($employee_no, $employeeSchedule, $log, $date, $officialBusiness = null, $offset = null)
     {
+        
+        
         $TARDINESS_MINUTES = 0;
         $TARDINESS_FREQ = 0;
 
@@ -886,11 +977,41 @@ Log::info('return aut', ['aut' => $aut]);
 
         $ownRemark = [];
 
+        $ignoreLate = false;
+        $ignoreUndertime = false;
+
         if ($employeeSchedule->is_breaktime_required) {
-            $timeIn = $log['clock_in'];
+            /*
+            |--------------------------------------------------------------------------
+            | Offset Normalization
+            |--------------------------------------------------------------------------
+            */
+
+            if ($offset && $offset->request_type === 'AM') {
+
+                // Afternoon work starts after lunch
+                $timeIn = $log['lunch_out'] ?? $log['clock_in'];
+
+            } else {
+
+                $timeIn = $log['clock_in'];
+
+            }
+
+            if ($offset && $offset->request_type === 'PM') {
+
+                // Morning work ends before lunch
+                $timeOut = $log['lunch_in'] ?? $log['clock_out'];
+
+            } else {
+
+                $timeOut = $log['clock_out'];
+
+            }
+
             $breakOut = $log['lunch_out'];
-            $breakIn = $log['lunch_in'];
-            $timeOut = $log['clock_out'];
+            $breakIn  = $log['lunch_in'];
+
             if (!$timeIn || !$timeOut || !$breakOut || !$breakIn) {
                 $ownRemark[] = 'Discrepancy';
             }
@@ -911,6 +1032,90 @@ Log::info('return aut', ['aut' => $aut]);
       // dd($scheduledIn, $scheduledOut);
         if (!$scheduledIn || !$scheduledOut) {
             Log::warning("Missing schedule for {$employee_no} on {$date}");
+        }
+        
+
+        /*
+|--------------------------------------------------------------------------
+| Offset Rules
+|--------------------------------------------------------------------------
+|
+| Ignore Late only if the employee actually started in the afternoon.
+| Ignore Undertime only if the employee actually finished in the morning.
+|
+*/
+
+        if ($offset) {
+
+            switch ($offset->request_type) {
+
+                case 'WHOLE_DAY':
+
+                    return [
+                        'tardiness_minutes' => 0,
+                        'tardiness_freq' => 0,
+                        'undertime_minutes' => 0,
+                        'undertime_freq' => 0,
+                        'remarks' => ['Offset'],
+                        'is_break_required' => $employeeSchedule->is_breaktime_required ?? false,
+                    ];
+
+                case 'AM':
+
+                    /*
+                    * Ignore Late only if first biometric log
+                    * is AFTER lunch.
+                    */
+
+                    if (
+                        !empty($timeIn) &&
+                        $firstLog->gte($scheduledBreakIn)
+                    ) {
+                        $ignoreLate = true;
+                        //$ownRemark[] = 'Offset (AM)';
+                    }
+
+                    break;
+
+                case 'PM':
+
+                    /*
+                    * Ignore Undertime only if the employee
+                    * has no afternoon work.
+                    */
+
+                    if (
+                        empty($timeOut) ||
+                        (
+                            !empty($timeOut) &&
+                            $lastLog->lte($scheduledBreakOut)
+                        )
+                    ) {
+                        $ignoreUndertime = true;
+                      //  $ownRemark[] = 'Offset (PM)';
+                    }
+
+                    break;
+            }
+
+        }
+
+        /*
+|--------------------------------------------------------------------------
+| WHOLE DAY OFFSET
+|--------------------------------------------------------------------------
+*/
+        if ($offset && $offset->request_type === 'WHOLE_DAY') {
+
+            return [
+                'tardiness_minutes' => 0,
+                'tardiness_freq' => 0,
+                'undertime_minutes' => 0,
+                'undertime_freq' => 0,
+                'remarks' => ['Offset'],
+                'is_break_required' => $employeeSchedule->is_breaktime_required ?? false,
+            ];
+
         }
 
         if ($officialBusiness) {
@@ -952,12 +1157,31 @@ Log::info('return aut', ['aut' => $aut]);
         
         } else {
             # Tardiness
-            if ($firstLog->greaterThan($scheduledIn)) {
+            $lateReference = $scheduledIn;
+            if (
+                $offset &&
+                $offset->request_type === 'AM'
+            ) {
+                $lateReference = $scheduledBreakOut;
+               // $ownRemark[] = 'Offset (AM)';
+            }
+
+            if ($firstLog->greaterThan($lateReference)) {
+
+                $minutesLate = $firstLog->diffInMinutes($lateReference);
+        
+                $TARDINESS_MINUTES += $minutesLate;
+                $TARDINESS_FREQ++;
+        
+                $ownRemark[] = 'Late';
+            }
+
+           /* if ($firstLog->greaterThan($scheduledIn) && !$ignoreLate) {
                 $minutesLate = $firstLog->diffInMinutes($scheduledIn);
                 $TARDINESS_MINUTES += $minutesLate;
                 $TARDINESS_FREQ++;
                 $ownRemark[] = 'Late';
-            }
+            }*/
         }
 
         # Undertime
@@ -1096,22 +1320,50 @@ Log::info('return aut', ['aut' => $aut]);
         
         } else {
         
+            /*
+            |--------------------------------------------------------------------------
+            | Undertime
+            |--------------------------------------------------------------------------
+            |
+            | Normal Day
+            |     Compare against scheduled OUT.
+            |
+            | PM Offset
+            |     Compare against Lunch Out (morning session end).
+            |
+            */
+
+            $undertimeReference = $scheduledOut;
+//dd($lastLog, $undertimeReference, $scheduledOut, $scheduledBreakIn);
+            if ($offset && $offset->request_type === 'PM') {
+
+                $undertimeReference = $scheduledBreakIn;
+
+               // $ownRemark[] = 'Offset (PM)';
+            }
+
             if (empty($timeOut)) {
-        
-                $UNDERTIME_MINUTES += 480;
-                $UNDERTIME_FREQ++;
-        
-                $ownRemark[] = 'Undertime';
-                $ownRemark[] = 'No Logout';
-        
-            } elseif ($lastLog->lessThan($scheduledOut)) {
-        
-                $minutesUndertime = $scheduledOut->diffInMinutes($lastLog);
-        
+
+                $minutesUndertime = $scheduledIn->diffInMinutes($undertimeReference);
+
                 $UNDERTIME_MINUTES += $minutesUndertime;
                 $UNDERTIME_FREQ++;
-        
-                $ownRemark[] = 'Undertime';
+
+                $ownRemark[] = 'Undertimesss';
+                $ownRemark[] = 'No Logout';
+
+            } elseif ($lastLog->lessThan($undertimeReference)) {
+//dd($lastLog, $undertimeReference);
+                $minutesUndertime = $undertimeReference->diffInMinutes($lastLog);
+
+                if ($minutesUndertime > 0) {
+
+                    $UNDERTIME_MINUTES += $minutesUndertime;
+                    $UNDERTIME_FREQ++;
+
+                    $ownRemark[] = 'Undertime';
+
+                }
             }
         } 
         
@@ -1146,6 +1398,7 @@ Log::info('return aut', ['aut' => $aut]);
     private function getScheduledInOut($schedule, $date = null, $firstLog = null)
     {
         if ($schedule->work_setup === 'hybrid') {
+            
            $in = Carbon::parse("{$date} {$schedule->latest_in}");
 
             if ($firstLog) {
@@ -1244,6 +1497,39 @@ Log::info('return aut', ['aut' => $aut]);
             'raw_minutes' => $totalMinutes,
         ];
     } 
+
+    private function getApprovedOffsets($employeeNo, $dateInput)
+    {
+        $query = DB::table('employee_offset_requests')
+            ->select(
+                'offset_date as date',
+                'request_type',
+                'hours_requested'
+            )
+            ->where('employee_no', $employeeNo)
+            ->where('status', 'approved')
+            ->where('isDeleted', false);
+
+        if (is_string($dateInput) && preg_match('/^\d{2}-\d{4}$/', $dateInput)) {
+
+            [$month, $year] = explode('-', $dateInput);
+
+            $query->whereMonth('offset_date', (int)$month)
+                ->whereYear('offset_date', (int)$year);
+
+        } elseif (is_array($dateInput) && count($dateInput) === 2) {
+
+            $query->whereBetween('offset_date', $dateInput);
+
+        }
+
+        $records = $query->get();
+
+        return [
+            'count' => $records->count(),
+            'dates' => $records,
+        ];
+    }
     
     private function getUpdatedTotalOvertime($employeeNo, $dateInput)
     {
@@ -1290,7 +1576,7 @@ Log::info('return aut', ['aut' => $aut]);
      * @param  array   $logs      The array of log entries.
      * @return array              Processed logs grouped by date with time records and details.
      */
-    private function processLogs($employee, $logs)
+    private function processLogs($employee, $logs, $offsets)
     {
         $groupedLogs = [];
 
@@ -1314,7 +1600,17 @@ Log::info('return aut', ['aut' => $aut]);
             $firstEntry = $entries[0];
 
             $record = $this->initializeRecord($employee, $firstEntry, $date);
-            $this->assignTimestamps($record, $timestamps);
+            $date = Carbon::parse($date)->toDateString();
+
+            Log::info('initializeRecord: ', ['record' => $record]);
+
+            $offset = $offsets->first(function ($item) use ($date) {
+                return $item->date == $date;
+            });
+
+            Log::info('offset: ', ['offset' => $offset]);
+
+            $this->assignTimestamps($record, $timestamps, $offset);
 
             $record['timelogs'] = [];
 
@@ -1383,7 +1679,7 @@ Log::info('return aut', ['aut' => $aut]);
      * @param \Illuminate\Support\Collection $timestamps   Collection of Carbon instances
      * @return void
      */
-    private function assignTimestamps(&$record, $timestamps) {
+    private function assignTimestamps(&$record, $timestamps, $offset = null) {
 
        // dd()
 
@@ -1400,11 +1696,53 @@ Log::info('return aut', ['aut' => $aut]);
         } elseif ($timestamps->count() === 2) {
           //  dd('here3');
             # Special case: exactly two logs
-            $record['clock_in'] = $timestamps[0]->format('h:i A');
-            $record['clock_out'] = $timestamps[1]->format('h:i A');
+            if ($offset && $offset->request_type == 'AM') {
+
+                /*
+                 * Afternoon only
+                 */
+        
+                $record['lunch_out'] = $timestamps[0]->format('h:i A');
+                $record['clock_out'] = $timestamps[1]->format('h:i A');
+        
+            } elseif ($offset && $offset->request_type == 'PM') {
+        
+                /*
+                 * Morning only
+                 */
+        
+                $record['clock_in'] = $timestamps[0]->format('h:i A');
+                $record['lunch_in'] = $timestamps[1]->format('h:i A');
+        
+            } else {
+        
+                $record['clock_in'] = $timestamps[0]->format('h:i A');
+                $record['clock_out'] = $timestamps[1]->format('h:i A');
+            }
         } elseif($timestamps->count() == 1) {
            // dd('here4');
-            $record['clock_in'] = $timestamps[0]->format('h:i A');
+                if ($offset && $offset->request_type == 'AM') {
+
+                    /*
+                    * Afternoon only
+                    */
+            
+                    $record['lunch_out'] = $timestamps[0]->format('h:i A');
+                    //$record['clock_out'] = $timestamps[1]->format('h:i A');
+            
+                } elseif ($offset && $offset->request_type == 'PM') {
+            
+                    /*
+                    * Morning only
+                    */
+            
+                    $record['clock_in'] = $timestamps[0]->format('h:i A');
+                   // $record['lunch_out'] = $timestamps[1]->format('h:i A');
+            
+                } else {
+    
+                    $record['clock_in'] = $timestamps[0]->format('h:i A');
+                }    
         } else {
         // dd($timestamps );
             # Fallback: assign based on time ranges

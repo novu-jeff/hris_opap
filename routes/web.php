@@ -85,6 +85,7 @@ use App\Http\Controllers\Employee\ProfileController as EmployeeProfileController
 use App\Http\Controllers\Employee\AnnouncementController as EmployeeAnnouncementController;
 use App\Http\Controllers\Employee\BusinessSlipController;
 use App\Http\Controllers\Employee\OffsetController;
+use App\Http\Controllers\Employee\OffsetPdfController;
 use App\Http\Controllers\Employee\DirectoryController as EmployeeDirectoryController;
 use App\Http\Controllers\Employee\EmployeeDailyTimeRecordController;
 use App\Http\Controllers\Employee\TimeAdjustmentsController;
@@ -584,6 +585,11 @@ Route::prefix('employee')->middleware('check_employee_allowed_module')->group(fu
                 ->name('employee.offset.edit');
         
         });
+
+        Route::get(
+            '/employee/offset/download/{id}',
+            [OffsetPdfController::class, 'download']
+        )->name('employee.offset.download');
 
         Route::prefix('time-adjustments')->group(function() {
 
