@@ -179,6 +179,7 @@
                             </ul>
                         @endif
                     </div>
+                    
                 </div>
                 <hr class="mx-3">
                 <div class="card-footer bg-transparent border-0 d-flex justify-content-end">
