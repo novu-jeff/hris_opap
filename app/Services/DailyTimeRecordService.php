@@ -1349,7 +1349,7 @@ Log::info('return aut', ['aut' => $aut]);
                 $UNDERTIME_MINUTES += $minutesUndertime;
                 $UNDERTIME_FREQ++;
 
-                $ownRemark[] = 'Undertimesss';
+                $ownRemark[] = 'Undertime';
                 $ownRemark[] = 'No Logout';
 
             } elseif ($lastLog->lessThan($undertimeReference)) {

@@ -120,7 +120,7 @@ td{
     <tr>
     
     <td
-    width="90"
+    width="5"
     style="border:none;">
     
     @if(file_exists($logo))
