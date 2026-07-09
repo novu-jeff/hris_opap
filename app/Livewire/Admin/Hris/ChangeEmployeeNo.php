@@ -153,6 +153,18 @@ class ChangeEmployeeNo extends Component
                 \App\Models\EmployeeUpdateSkillsHobbies::class => 'employee_no',
                 \App\Models\EmployeeUpdateTrainings::class => 'employee_no',
                 \App\Models\Loan::class => 'employee_no',
+                \App\Models\BonusItemsPayroll::class => 'employee_no',
+                \App\Models\ClothingAllowanceItemsPayroll::class => 'employee_no',
+                \App\Models\EmployeeOffsetCredit::class => 'employee_no',
+                \App\Models\EmployeeOffsetRequest::class => 'employee_no',
+                \App\Models\EmployeeOvertime::class => 'employee_no',
+                \App\Models\EmployeePayslipRequest::class => 'employee_no',
+                \App\Models\OTItemsPayroll::class => 'employee_no',
+                \App\Models\PayrollEmeItems::class => 'employee_no',
+                \App\Models\PayrollEmeRataItems::class => 'employee_no',
+                \App\Models\PayrollGratuityItems::class => 'employee_no',
+                \App\Models\SalaryItemsPayroll::class => 'employee_no',
+
             ];
              \Log::info("STEP 4: Relations array built", ['count' => count($relations)]);
             $jobs = [];
