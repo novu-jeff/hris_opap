@@ -19,11 +19,13 @@ class Index extends Component
     public $view_records;
     public $selected_id;
     public $activeTab = 'pending';
-    protected $listeners = ['remove', 'disapproved', 'approved'];
+    protected $listeners = ['remove', 'disapproved', 'approved', 'revertToPending',];
 
     protected $paginationTheme = 'bootstrap';
     public $entries = 10;
     public $search = '';
+
+    public $disapproval_remarks = '';
 
     public function view(int $id) {
         $this->selected_id = $id;
@@ -41,17 +43,25 @@ class Index extends Component
             ->first();
     }
 
-    public function disapproved(bool $isNotify = true) {
+    public function disapproved(bool $isNotify = true)
+    {
+        if ($isNotify) {
 
-        if($isNotify) {
+            if (blank(trim($this->disapproval_remarks))) {
+                return $this->dispatch('alert', [
+                    'showAlert' => true,
+                    'status' => 'error',
+                    'title' => 'Remarks Required',
+                    'message' => 'Please provide the reason for disapproval.'
+                ]);
+            }
 
-            $title = 'Are you sure to continue?';
-            $message = 'Please be informed that you are about to disapprove this OB application <b>#' . strtoupper(format_id($this->selected_id, 6)) . '</b>. Once this action is processed, it cannot be undone or reversed!';
-            $action = 'disapproved';
             $this->dispatch('showConfirmation', [
-                'title' => $title,
-                'message' => $message,
-                'action' => $action
+                'title' => 'Are you sure to continue?',
+                'message' => 'Please be informed that you are about to disapprove this OB application <b>#'
+                    . strtoupper(format_id($this->selected_id, 6))
+                    . '</b>. Once this action is processed, it cannot be undone or reversed!',
+                'action' => 'disapproved'
             ]);
 
         } else {
@@ -59,24 +69,40 @@ class Index extends Component
             $record = EmployeeBusinessSlip::where('id', $this->selected_id)
                 ->where('status', 'pending')
                 ->first();
-            
-            $record->status = 'disapproved';
-            $record->action_by_id = Auth::user()->id;
-            $record->save();
+
+            if (!$record) {
+                return;
+            }
+
+            $record->update([
+                'status' => 'disapproved',
+                'remarks' => $this->disapproval_remarks,
+                'action_by_id' => Auth::id(),
+            ]);
+
+            $this->reset('disapproval_remarks');
 
             $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
-            $user?->notify(new Notifications('error', 'You\'re official business slip application <strong>#' . format_id($record->id, 6) . '</strong> was <strong>DISAPPROVED</strong>.', route('employee.obs.index'), 'employee'));
+
+            $user?->notify(new Notifications(
+                'error',
+                'Your Official Business application <strong>#'
+                . format_id($record->id, 6)
+                . '</strong> was <strong>DISAPPROVED</strong>.<br><br>
+                <strong>Reason:</strong><br>'
+                . e($record->remarks),
+                route('employee.obs.index'),
+                'employee'
+            ));
 
             $this->dispatch('alert', [
                 'id' => $this->selected_id,
                 'showAlert' => true,
                 'status' => 'success',
-                'title' => 'Success', 
+                'title' => 'Success',
                 'isRemoveRowDT' => true,
                 'message' => 'Application has been disapproved'
             ]);
-
-
         }
     }
 
@@ -164,6 +190,57 @@ class Index extends Component
                 ]);
             }
         }
+    }
+
+    public function revertToPending(bool $isNotify = true)
+    {
+        if ($isNotify) {
+
+            $this->dispatch('showConfirmation', [
+                'title' => 'Revert Application?',
+                'message' => 'This Official Business application will be returned to Pending for re-evaluation.',
+                'action' => 'revertToPending'
+            ]);
+
+            return;
+        }
+
+        $record = EmployeeBusinessSlip::find($this->selected_id);
+
+        if (!$record) {
+            return;
+        }
+
+        // Only approved or disapproved can be reverted
+        if (!in_array($record->status, ['approved', 'disapproved'])) {
+            return;
+        }
+
+        $record->update([
+            'status' => 'pending',
+            'remarks' => null,
+            'action_by_id' => Auth::id(),
+        ]);
+
+        $user = EmployeeAccount::where('employee_no', $record->employee_no)->first();
+
+        $user?->notify(new Notifications(
+            'warning',
+            'Your Official Business application <strong>#'
+            . format_id($record->id, 6)
+            . '</strong> has been returned to <strong>PENDING</strong> for re-evaluation.',
+            route('employee.obs.index'),
+            'employee'
+        ));
+
+        $this->loadRecords($record->id);
+
+        $this->dispatch('alert', [
+            'showAlert' => true,
+            'status' => 'success',
+            'title' => 'Success',
+            'message' => 'Application has been reverted to Pending.'
+        ]);
     }
 
     public function render()
