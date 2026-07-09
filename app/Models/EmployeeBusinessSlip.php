@@ -18,6 +18,7 @@ class EmployeeBusinessSlip extends Model
         'departure_time',
         'arrival_time',
         'requested_by',
+        'remarks',
         'status',
         'approved_by_id'
     ];
