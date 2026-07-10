@@ -51,6 +51,10 @@ class Index extends Component
     public $actionBy;
     public $isTransferingEmp;
 
+    public array $selectedEmployees = [];
+
+    public bool $selectAll = false;
+
     public bool $lazy = true;
 
     protected $listeners = ['remove', 'unlock', 'restore', 'loading', 'loadRecords'];
@@ -555,6 +559,95 @@ class Index extends Component
                 ]);
             }
         }
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if (!$value) {
+            $this->selectedEmployees = [];
+            return;
+        }
+
+        $query = EmployeeInformation::with([
+            'account',
+            'personal',
+            'section.department',
+        ])
+        ->leftJoin('sections', 'employee_information.section_id', '=', 'sections.id')
+        ->leftJoin('departments', 'sections.department_id', '=', 'departments.id')
+        ->select('employee_information.*')
+        ->orderByRaw("
+            CASE
+                WHEN employee_information.section_id IS NULL THEN 999
+                ELSE FIELD(
+                    departments.code,
+                    'EO',
+                    'P1',
+                    'P2',
+                    'P3',
+                    'P4',
+                    'P5',
+                    'P6',
+                    'P7',
+                    'P8'
+                )
+            END
+        ")
+        ->orderBy('sections.name')
+        ->orderBy('employee_information.employee_no');
+
+        if ($this->selectedType !== null) {
+            if ($this->selectedType === 'unassigned') {
+                $query->whereNull('employment_type_id')
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
+            } elseif ($this->selectedType === 'inactive') {
+                $query->where('status', 'inactive');
+            } elseif ($this->selectedType === 'archived') {
+                $query->where('isDeleted', true);
+            } else {
+                $query->where('employment_type_id', $this->selectedType)
+                    ->where('isDeleted', false)
+                    ->where('status', 'active');
+            }
+        } else {
+            $query->where('isDeleted', false);
+        }
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('employee_no', 'like', "%{$this->search}%")
+                    ->orWhereHas('personal', function ($q) {
+                        $q->whereRaw(
+                            "CONCAT(firstname,' ',lastname) LIKE ?",
+                            ["%{$this->search}%"]
+                        );
+                    });
+            });
+        }
+
+        $this->selectedEmployees = $query
+            ->paginate($this->entries)
+            ->pluck('employee_no')
+            ->toArray();
+    }
+
+    public function bulkChangeEmployeeNo()
+    {
+        if (count($this->selectedEmployees) == 0) {
+
+            return $this->dispatch('alert', [
+                'status' => 'error',
+                'title' => 'Oops!',
+                'showAlert' => true,
+                'message' => 'Please select at least one employee.'
+            ]);
+        }
+
+        $this->dispatch('showModal', [
+            'modal' => 'change_employee_no'
+        ]);
+        $this->dispatch('setEmployees', employees: $this->selectedEmployees);
     }
 
     public function unlock(bool $isNotify = true, ? string $employee_no = null) {

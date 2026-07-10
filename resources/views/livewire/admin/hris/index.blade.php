@@ -220,10 +220,35 @@
             </div>
         </div>
         <div class="table-responsive mt-3">
+            @if(count($selectedEmployees))
+
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+
+                <strong>
+                    {{ count($selectedEmployees) }} employee(s) selected
+                </strong>
+
+                <button
+                    class="btn btn-primary"
+                    wire:click="bulkChangeEmployeeNo">
+
+                    Bulk Change Employee No
+
+                </button>
+
+            </div>
+
+        @endif
             <table class="table table-striped table-bordered w-100">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th width="40">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                wire:model.live="selectAll">
+                        </th>
+                        <th width="40"></th>
                         <th>Employee No</th>
                         <th>Unit</th>
                         <th>Employee Name</th>
@@ -235,6 +260,15 @@
                     @forelse($employees as $key => $item)
                   
                         <tr data-id="{{$item->employee_no}}">
+                            <td class="text-center">
+
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    wire:model.live="selectedEmployees"
+                                    value="{{ $item->employee_no }}">
+                            
+                            </td>
                             <td class="text-center">
                                 @php
                                     $fullname = optional($item->personal)->firstname && optional($item->personal)->lastname

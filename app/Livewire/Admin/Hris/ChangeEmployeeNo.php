@@ -28,7 +28,15 @@ class ChangeEmployeeNo extends Component
 
     public bool $isMigrating = false;
 
-    protected $listeners = ['setEmployeeNo', 'save', 'employeeMigrationProgress' => 'incrementProgress'];
+    public bool $isBulk = false;
+
+    public array $employees = [];
+
+    public string $current_employee_no_bulk = '';
+
+    public string $new_employee_no_bulk = '';
+
+    protected $listeners = ['setEmployeeNo', 'setEmployees', 'save', 'employeeMigrationProgress' => 'incrementProgress'];
 
     public function incrementProgress()
     {
@@ -42,9 +50,25 @@ class ChangeEmployeeNo extends Component
         $this->actionBy = Auth::user();
     }
 
+    public function setEmployees(array $employees)
+    {
+        $this->isBulk = true;
+        $this->employees = [];
+
+        foreach ($employees as $employeeNo) {
+            $this->employees[] = [
+                'selected' => true,
+                'current_employee_no' => $employeeNo,
+                'new_employee_no' => '',
+            ];
+        }
+    }
+
     public function setEmployeeNo($employee_no)
     {
+        $this->isBulk = false;
         $this->current_employee_no = $employee_no;
+        $this->new_employee_no = '';
     }
 
     public function save(bool $isNotify = true) {
@@ -75,27 +99,74 @@ class ChangeEmployeeNo extends Component
 
         }  else {
 
-            $validator = \Validator::make([
-                'current_employee_no' => $this->current_employee_no,
-                'new_employee_no' => $this->new_employee_no,
-            ], [
-                'current_employee_no' => 'required|exists:employee_information,employee_no',
-                'new_employee_no' => 'required|unique:employee_information,employee_no',
-            ]);
-            
-            if($validator->fails()) {
-                $this->dispatch('alert', [
-                    'showAlert' => true,
-                    'status' => 'error',
-                    'title' => 'Oops!', 
-                    'isRemoveRowDT' => false,
-                    'message' => $validator->errors()->first(),
-                ]);
+            // ----------------------------
+            // BULK MODE
+            // ----------------------------
+            if ($this->isBulk) {
+
+                foreach ($this->employees as $employee) {
+
+                    if (!$employee['selected']) {
+                        continue;
+                    }
+
+                    $validator = validator([
+                        'current_employee_no' => $employee['current_employee_no'],
+                        'new_employee_no'     => $employee['new_employee_no'],
+                    ], [
+                        'current_employee_no' => 'required|exists:employee_information,employee_no',
+                        'new_employee_no'     => 'required|unique:employee_information,employee_no',
+                    ]);
+
+                    if ($validator->fails()) {
+
+                        $this->dispatch('alert', [
+                            'status' => 'error',
+                            'title' => 'Oops!',
+                            'showAlert' => true,
+                            'message' => $validator->errors()->first(),
+                        ]);
+
+                        return;
+                    }
+
+                    $this->changeEmployeeNo(
+                        $employee['current_employee_no'],
+                        strtoupper($employee['new_employee_no'])
+                    );
+                }
+
                 return;
             }
 
-            $this->changeEmployeeNo($this->current_employee_no, $this->new_employee_no);
+            // ----------------------------
+            // SINGLE MODE
+            // ----------------------------
 
+            $validator = validator([
+                'current_employee_no' => $this->current_employee_no,
+                'new_employee_no'     => $this->new_employee_no,
+            ], [
+                'current_employee_no' => 'required|exists:employee_information,employee_no',
+                'new_employee_no'     => 'required|unique:employee_information,employee_no',
+            ]);
+
+            if ($validator->fails()) {
+
+                $this->dispatch('alert', [
+                    'status' => 'error',
+                    'title' => 'Oops!',
+                    'showAlert' => true,
+                    'message' => $validator->errors()->first(),
+                ]);
+
+                return;
+            }
+
+            $this->changeEmployeeNo(
+                $this->current_employee_no,
+                strtoupper($this->new_employee_no)
+            );
         }
     }
 
@@ -228,12 +299,25 @@ class ChangeEmployeeNo extends Component
                 'modal' => 'change_employee_no'
             ]);
 
-            $this->dispatch('alert', [
-                'status' => 'success',
-                'title' => 'info',
-                'showAlert' => true,
-                'message' => 'Migration of employee ' . $oldEmployeeNo . ' to ' . $newEmployeeNo . ' has been started. We\'ll notify you once it\'s done. Thank you!',
-            ]);
+            if ($this->isBulk) {
+
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Information',
+                    'showAlert' => true,
+                    'message' => 'Bulk employee number migration has been started. The selected employee records are now being processed in the background. You will receive a notification once all migrations have been completed.',
+                ]);
+            
+            } else {
+            
+                $this->dispatch('alert', [
+                    'status' => 'success',
+                    'title' => 'Information',
+                    'showAlert' => true,
+                    'message' => 'Migration of employee ' . $oldEmployeeNo . ' to ' . $newEmployeeNo . ' has been started. You will be notified once it has been completed.',
+                ]);
+            
+            }
 
             return;
 
@@ -259,10 +343,19 @@ class ChangeEmployeeNo extends Component
 
 
 
-     public function closeModal()
+    public function closeModal()
     {
-        $this->reset(['current_employee_no', 'new_employee_no', 'isMigrating']);
-        $this->dispatch('hideModal', ['modal' => 'change_employee_no']);
+        $this->reset([
+            'current_employee_no',
+            'new_employee_no',
+            'employees',
+            'isBulk',
+            'isMigrating'
+        ]);
+    
+        $this->dispatch('hideModal', [
+            'modal' => 'change_employee_no'
+        ]);
     }
 
     public function checkMigrationStatus()

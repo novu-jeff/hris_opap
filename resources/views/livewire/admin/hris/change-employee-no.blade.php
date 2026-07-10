@@ -60,23 +60,109 @@
 
                             
                             <form wire:submit.prevent="save">
+                                @if(!$isBulk)
+
                                 <div class="mb-3 mt-3 d-flex align-items-center gap-1 justify-content-between">
+                                
                                     <div class="w-100">
-                                        <label for="current_employee_no" class="form-label">From</label>
-                                        <input type="text" id="current_employee_no" class="form-control restricted" value="{{ $current_employee_no }}" readonly>
+                                        <label class="form-label">
+                                            From
+                                        </label>
+                                
+                                        <input
+                                            class="form-control"
+                                            value="{{ $current_employee_no }}"
+                                            readonly>
                                     </div>
-
-                                    <div class="d-flex align-items-center justify-content-center h-100 pt-4" style="min-width: 40px;">
-                                        <i class="fa-solid fa-arrow-right fs-5"></i>
+                                
+                                    <div class="pt-4 px-3">
+                                        <i class="fa-solid fa-arrow-right"></i>
                                     </div>
-
+                                
                                     <div class="w-100">
-                                        <label for="new_employee_no" class="form-label">To <span class="text-danger">*</span></label>
-                                        <input type="text" wire:model.defer="new_employee_no" id="new_employee_no" class="form-control" placeholder="########">
-                                        @error('new_employee_no') <span class="text-danger">{{ $message }}</span> @enderror
+                                        <label class="form-label">
+                                            To
+                                        </label>
+                                
+                                        <input
+                                            wire:model.defer="new_employee_no"
+                                            class="form-control">
                                     </div>
+                                
                                 </div>
+                                
+                                @else
+                                
+                                <div class="table-responsive">
+                                
+                                <table class="table table-bordered align-middle">
+                                
+                                    <thead>
+                                
+                                        <tr>
+                                
+                                            <th width="60">
+                                                Select
+                                            </th>
+                                
+                                            <th>
+                                                Current Employee No.
+                                            </th>
+                                
+                                            <th>
+                                                New Employee No.
+                                            </th>
+                                
+                                        </tr>
+                                
+                                    </thead>
+                                
+                                    <tbody>
+                                
+                                    @foreach($employees as $index => $employee)
+                                
+                                        <tr>
+                                
+                                            <td>
+                                
+                                                <input
+                                                    type="checkbox"
+                                                    wire:model="employees.{{ $index }}.selected">
+                                
+                                            </td>
+                                
+                                            <td>
+                                
+                                                <input
+                                                    class="form-control"
+                                                    value="{{ $employee['current_employee_no'] }}"
+                                                    readonly>
+                                
+                                            </td>
+                                
+                                            <td>
+                                
+                                                <input
+                                                    class="form-control"
+                                                    placeholder="New Employee No."
+                                                    wire:model.defer="employees.{{ $index }}.new_employee_no">
+                                
+                                            </td>
+                                
+                                        </tr>
+                                
+                                    @endforeach
+                                
+                                    </tbody>
+                                
+                                </table>
+                                
+                                </div>
+                                
+                                @endif
 
+
+                               
                                 <div class="d-flex justify-content-between mt-5">
                                     <button class="btn btn-outline-primary px-4 py-3 text-uppercase fw-bold" type="button" onclick="goToTab('notice')">
                                         <i class="fa-solid fa-arrow-left me-2"></i> Previous 
